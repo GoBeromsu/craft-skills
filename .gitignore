@@ -1,0 +1,11 @@
+.DS_Store
+.omc/
+.omo/
+.omx/
+.claude/worktrees/
+node_modules/
+*.log
+__pycache__/
+*.pyc
+.env
+!.env.example

@@ -1,0 +1,31 @@
+# .codex/config.yaml — Codex CLI project configuration
+#
+# craft-skills: Engineering and research work-craft skills for Claude Code, Codex, and Hermes.
+#
+# Codex reads AGENTS.md natively — no extra import step is required for skill context.
+# This file handles per-project Codex CLI hook registration.
+#
+# ASSUMPTION NOTE: Codex CLI (OpenAI, open-source) uses a `hooks` block in its project
+# config. The key name `pre_tool_call` is used here based on the Codex CLI documented
+# hook interface (https://github.com/openai/codex). If the installed Codex version uses a
+# different key (e.g. `pre_tool_use`, `preToolCall`), update the key accordingly.
+# Verify with: codex --help | grep -i hook
+
+project: craft-skills
+
+# ── PROTECT-SKILLIFY HOOK (not yet active) ─────────────────────────────────────────────
+#
+# Once .claude/hooks/protect-skillify.sh is authored and made executable (+x), uncomment
+# the block below to activate skillify write-protection in Codex.
+#
+# The script reads stdin JSON, checks whether the tool_name (Write / Edit / Bash) targets
+# a path inside skills/skillify/**, and exits 2 (deny) or 0 (allow). Exit code 2 surfaces
+# as a hard block in Codex. The same script is shared by Claude Code and Hermes to prevent
+# drift between runtimes.
+#
+# hooks:
+#   pre_tool_call:
+#     - command: "bash \"${PWD}/.claude/hooks/protect-skillify.sh\""
+#       # No matcher filter here — the script self-gates by tool_name and exits 0
+#       # immediately for all tools that are not Write / Edit / Bash targeting
+#       # skills/skillify/**, so it is safe to call on every tool invocation.

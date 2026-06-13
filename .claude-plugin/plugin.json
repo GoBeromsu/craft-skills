@@ -1,0 +1,11 @@
+{
+  "name": "craft-skills",
+  "description": "Work-craft Claude Code skills (research + engineering) by Beomsu Koh",
+  "version": "0.1.0",
+  "author": {
+    "name": "Beomsu Koh"
+  },
+  "homepage": "https://github.com/GoBeromsu/craft-skills",
+  "repository": "https://github.com/GoBeromsu/craft-skills",
+  "license": "MIT"
+}

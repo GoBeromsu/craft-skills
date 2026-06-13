@@ -1,0 +1,17 @@
+{
+  "name": "craft-skills",
+  "description": "Work-craft skills for research + engineering: docs ontology, worktree workflow, project bootstrap, and a self-governing skill-authoring gate.",
+  "owner": {
+    "name": "GoBeromsu"
+  },
+  "plugins": [
+    {
+      "name": "craft-skills",
+      "source": {
+        "source": "github",
+        "repo": "GoBeromsu/craft-skills"
+      },
+      "description": "Work-craft Claude Code skills (research + engineering) by Beomsu Koh"
+    }
+  ]
+}
