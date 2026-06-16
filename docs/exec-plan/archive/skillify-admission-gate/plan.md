@@ -1,7 +1,7 @@
 ---
 slug: skillify-admission-gate
 type: plan
-status: active
+status: done
 date: 2026-06-16
 author: gobeumsu
 spec: ./spec.md
