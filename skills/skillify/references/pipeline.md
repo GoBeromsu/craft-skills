@@ -8,6 +8,41 @@ Update the templates here; `SKILL.md` references these sections by name only.
 note/template stub and **no** `## Change Log` section inside `SKILL.md`. The change history lives in the
 package's `CHANGELOG.md`. The canonical format is `references/schemas.md`.
 
+## § Admission Task
+
+Stage 0. Runs before Harvest, as a fresh subagent in a clean context. Single pass — never the
+multi-model consensus loop. The reviewer agent runs in `admission` mode and is **not** given the
+author's promotion rationale.
+
+```
+Task(
+  subagent_type = "oh-my-claudecode:code-reviewer",
+  model         = "sonnet",
+  prompt        = """
+    PERSONA OVERRIDE: You are the skillify reviewer agent in ADMISSION mode. Suppress all default
+    code-review heuristics (style, complexity, test coverage). Read your charter and the admission
+    rubric and execute them verbatim:
+      skills/skillify/agents/reviewer.md          — the impartial-judge charter (admission mode)
+      skills/skillify/references/checklist.md      — the five drop-questions, fail-actions, routing
+
+    Judge SCOPE ONLY: does this candidate belong in craft-skills? Default every drop-question to ✗;
+    mark ✓ only with named evidence. Do NOT read or request the author's promotion rationale — you
+    judge the candidate on its own evidence. Do NOT check format (that is a Layer-1 script's job).
+
+    Candidate slug:        {candidate_slug}
+    Candidate workflow:    {candidate_description_or_path}
+    Tier definitions:      skills/skillify/references/checklist.md
+
+    Output: write the admission receipt (the Admission output block defined in reviewer.md —
+    per-question ✓/✗ + one-line evidence + routed destination + ADMIT|REJECT verdict) to
+    skills/skillify/evals/admission-{candidate_slug}-{date}.md. No prose outside the receipt.
+  """
+)
+```
+
+On REJECT the author has no veto; surface the receipt and escalate to the human. On ADMIT the
+candidate proceeds to the Writer Task below.
+
 ## § Writer Task
 
 ```
