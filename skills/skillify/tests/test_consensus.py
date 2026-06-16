@@ -183,5 +183,72 @@ class GracefulDegradationTest(unittest.TestCase):
                 self.fail(f"consensus raised unexpectedly: {exc}")
 
 
+# ---------------------------------------------------------------------------
+# 4. Diff-scoped review (--diff-base)
+# ---------------------------------------------------------------------------
+
+class DiffScopingTest(unittest.TestCase):
+    """When --diff-base yields a diff, the panel reviews only the changed lines;
+    a missing/empty/failed diff falls back to whole-file review without raising."""
+
+    def test_build_prompt_whole_file_when_no_diff(self) -> None:
+        prompt = consensus.build_prompt("codex", "SKILL BODY", None, None)
+        self.assertIn("SKILL BODY", prompt)
+        self.assertNotIn("DIFF-ONLY REVIEW", prompt)
+
+    def test_build_prompt_diff_scoped_when_diff_present(self) -> None:
+        prompt = consensus.build_prompt(
+            "codex", "SKILL BODY", None, "+added line\n-removed line"
+        )
+        self.assertIn("DIFF-ONLY REVIEW", prompt)
+        self.assertIn("+added line", prompt)
+        # full file stays in as judging context
+        self.assertIn("SKILL BODY", prompt)
+        # scope preamble precedes the role prompt / file body
+        self.assertLess(prompt.index("DIFF-ONLY REVIEW"), prompt.index("SKILL BODY"))
+
+    def test_build_prompt_diff_and_prior_coexist(self) -> None:
+        prompt = consensus.build_prompt("gemini", "BODY", "PRIOR FINDING", "DIFFTEXT")
+        self.assertIn("DIFF-ONLY REVIEW", prompt)
+        self.assertIn("DIFFTEXT", prompt)
+        self.assertIn("PRIOR FINDING", prompt)
+
+    def test_compute_diff_errors_on_non_repo_without_raising(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            diff_text, err = consensus.compute_diff(Path(tmp), "origin/main...HEAD")
+            self.assertIsNone(diff_text)
+            self.assertIsNotNone(err)
+
+    def test_diff_base_falls_back_to_whole_file_on_git_error(self) -> None:
+        """A diff-base that can't resolve (non-repo tmp) must not raise and must
+        still write a receipt tagged `scope: whole-file`."""
+        with tempfile.TemporaryDirectory() as tmp:
+            skill_dir = _make_skill_dir(Path(tmp))
+            with mock.patch.object(consensus, "check_provider_available", return_value=False):
+                rc = consensus.main_with_args(
+                    skill=str(skill_dir),
+                    round_n=1,
+                    prior=None,
+                    providers=["codex"],
+                    diff_base="origin/main...HEAD",
+                )
+            self.assertIn(rc, (0, 2), f"Expected 0 or 2 (degraded), got {rc}")
+            receipts = list((skill_dir / "evals").glob("consensus-*.md"))
+            self.assertTrue(receipts, "Expected a consensus receipt to be written")
+            self.assertIn("scope: whole-file", receipts[0].read_text(encoding="utf-8"))
+
+    def test_receipt_records_scope_line(self) -> None:
+        """Every receipt carries a `scope:` line (default whole-file)."""
+        text = consensus.synthesize_receipt(
+            skill_name="demo",
+            round_n=1,
+            verdicts={},
+            errors={"codex": "missing"},
+            providers=["codex"],
+            today="2026-06-16",
+        )
+        self.assertIn("scope: whole-file", text)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -7,13 +7,17 @@ artifacts and a synthesized consensus receipt.
 
 Usage:
     python3 consensus.py --skill <skill-dir> [--round N] \\
-                         [--prior <receipt-path>] [--providers codex,gemini,claude]
+                         [--prior <receipt-path>] [--providers codex,gemini,claude] \\
+                         [--diff-base origin/main...HEAD]
 
 Design:
     - Calls each model CLI DIRECTLY via subprocess. Never invokes the OMC binary.
     - Graceful degradation: missing or erroring CLIs are recorded and skipped.
     - A run with fewer than all requested models live is flagged "degraded".
     - Headless-safe: no interactive prompts; Bash-callable from a subagent.
+    - Diff-scoped review (--diff-base): mirrors Layer-1's --diff-base contract.
+      The panel judges only the lines the change adds or modifies; pre-existing
+      prose is out of scope. The full SKILL.md still ships as judging context.
 """
 from __future__ import annotations
 
@@ -107,13 +111,73 @@ ROLE_PROMPTS: dict[str, str] = {
 }
 
 
+# Prepended to every prompt when the run is diff-scoped (--diff-base). Keeps the
+# panel from re-flagging pre-existing prose on every additive change — the root
+# cause of multi-round flip-flop divergence on small, sound edits.
+DIFF_SCOPE_PREAMBLE = (
+    "SCOPE — DIFF-ONLY REVIEW.\n"
+    "Raise findings ONLY about lines this change ADDS or MODIFIES (the unified diff "
+    "at the end of this prompt). Pre-existing issues in unchanged lines are OUT OF "
+    "SCOPE — do not report them, even ones you would otherwise flag. The full SKILL.md "
+    "is provided solely as context to judge the diff. If the diff introduces no issue "
+    "in your area of review, respond VERDICT: APPROVE.\n\n"
+)
+
+
 # --------------------------------------------------------------------------- #
 # Core functions
 # --------------------------------------------------------------------------- #
 
-def build_prompt(provider: str, skill_text: str, prior_text: str | None) -> str:
-    """Build a role-scoped evaluation prompt for the given provider."""
+def compute_diff(skill_dir: Path, diff_base: str) -> tuple[str | None, str | None]:
+    """Compute the package-scoped git diff against ``diff_base``.
+
+    Runs ``git -C <skill_dir> diff <diff_base> -- .`` so the diff covers only
+    changes inside the skill package — mirroring Layer-1's --diff-base contract.
+
+    Returns ``(diff_text, error_message)``. On success ``error_message`` is None.
+    On failure ``diff_text`` is None and ``error_message`` describes the problem
+    (the caller falls back to whole-file review rather than crashing).
+    """
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(skill_dir), "diff", diff_base, "--", "."],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except FileNotFoundError:
+        return None, "git binary not found on PATH"
+    except subprocess.TimeoutExpired:
+        return None, "git diff timed out after 30s"
+    except Exception as exc:  # noqa: BLE001
+        return None, f"git diff failed: {exc}"
+    if result.returncode != 0:
+        return None, result.stderr.strip() or f"git diff exit {result.returncode}"
+    return result.stdout, None
+
+
+def build_prompt(
+    provider: str,
+    skill_text: str,
+    prior_text: str | None,
+    diff_text: str | None = None,
+) -> str:
+    """Build a role-scoped evaluation prompt for the given provider.
+
+    When ``diff_text`` is provided the prompt is diff-scoped: a SCOPE preamble
+    instructs the model to judge only the changed lines, and the unified diff is
+    appended after the full SKILL.md (which stays in as judging context). This
+    stops the panel from re-flagging pre-existing prose on every additive change.
+    """
     base = ROLE_PROMPTS[provider].format(skill_text=skill_text)
+    if diff_text:
+        base = (
+            DIFF_SCOPE_PREAMBLE
+            + base
+            + "\n\n---\n"
+            "UNIFIED DIFF UNDER REVIEW (scope every finding to these changes):\n"
+            + diff_text
+        )
     if prior_text:
         base += (
             "\n\n---\n"
@@ -189,6 +253,7 @@ def synthesize_receipt(
     errors: dict[str, str],
     providers: list[str],
     today: str,
+    scope: str = "whole-file",
 ) -> str:
     """Build the synthesized consensus receipt text."""
     live = [p for p in providers if p not in errors]
@@ -207,6 +272,7 @@ def synthesize_receipt(
         f"# Consensus Receipt — {skill_name} — round {round_n} — {today}",
         "",
         f"status: {status}",
+        f"scope: {scope}",
         f"providers_requested: {', '.join(providers)}",
         f"providers_live: {', '.join(live) if live else '(none)'}",
         "",
@@ -265,6 +331,7 @@ def main_with_args(
     round_n: int = 1,
     prior: str | None = None,
     providers: list[str] | None = None,
+    diff_base: str | None = None,
 ) -> int:
     """Core consensus logic, callable directly (for tests and programmatic use).
 
@@ -284,6 +351,28 @@ def main_with_args(
 
     skill_text = skill_md.read_text(encoding="utf-8")
     skill_name = skill_dir.name
+
+    diff_text: str | None = None
+    scope_label = "whole-file"
+    if diff_base:
+        diff_text, diff_err = compute_diff(skill_dir, diff_base)
+        if diff_err:
+            print(
+                f"WARNING: --diff-base {diff_base!r} failed ({diff_err}); "
+                "falling back to whole-file review.",
+                file=sys.stderr,
+            )
+            diff_text = None
+        elif not diff_text.strip():
+            print(
+                f"WARNING: no committed package changes in {skill_dir} vs "
+                f"{diff_base}; falling back to whole-file review. Commit the "
+                "change first for diff-scoped review.",
+                file=sys.stderr,
+            )
+            diff_text = None
+        else:
+            scope_label = f"diff ({diff_base})"
 
     prior_text: str | None = None
     if prior:
@@ -314,7 +403,7 @@ def main_with_args(
             continue
 
         print(f"  [{provider}] invoking...", file=sys.stderr)
-        prompt = build_prompt(provider, skill_text, prior_text)
+        prompt = build_prompt(provider, skill_text, prior_text, diff_text)
         output, err = invoke_provider(provider, prompt)
 
         if err:
@@ -332,6 +421,7 @@ def main_with_args(
         errors=errors,
         providers=providers,
         today=today,
+        scope=scope_label,
     )
 
     evals_dir.mkdir(parents=True, exist_ok=True)
@@ -374,6 +464,17 @@ def main() -> int:
             f"(default: {','.join(PROVIDER_DEFAULTS)})."
         ),
     )
+    ap.add_argument(
+        "--diff-base", default=None, dest="diff_base", metavar="REF",
+        help=(
+            "Git ref/range to diff the skill package against (e.g. "
+            "'origin/main...HEAD'). When set, the panel reviews ONLY changed lines "
+            "— pre-existing prose is out of scope — mirroring Layer-1. Requires the "
+            "change to be committed; an empty or failed diff falls back to "
+            "whole-file review. Omit for whole-file review (the default; correct "
+            "for a brand-new skill where every line is new)."
+        ),
+    )
     args = ap.parse_args()
 
     providers = [p.strip() for p in args.providers.split(",") if p.strip()]
@@ -382,6 +483,7 @@ def main() -> int:
         round_n=args.round_n,
         prior=args.prior,
         providers=providers,
+        diff_base=args.diff_base,
     )
 
 
