@@ -1,7 +1,7 @@
 ---
 name: skillify
 description: '"make a skill", "스킬 만들자", "skillify this workflow", "turn this into a skill", "update this skill", "fix this skill", "edit this skill", "move this skill", "/skillify" — create, update, move, or promote a reusable craft-skills skill through the tested two-layer promotion gate.'
-version: 3.0.4
+version: 3.1.0
 allowed-tools: [Bash, Read, Edit, Write, Grep, Glob]
 compatibility: claude-code, codex
 ---
@@ -12,7 +12,7 @@ The **craft-skills promotion gate**: turn a workflow into a trusted, resolvable,
 
 ## Overview
 
-A craft-skills skill package is `SKILL.md` + `CHANGELOG.md`, plus optional `references/`, `scripts/`, `tests/`, `evals/`, `agents/` (role-prompt charters — writer.md, reviewer.md, grader.md — for skills that spawn sub-agents; `agents/` is a **skillify-package surface** holding this package's writer/reviewer/grader charters and is NOT a global requirement imposed on every craft-skills skill), and a gitignored `.env` (commit only `.env.example`). skillify owns the full lifecycle — create, update, move/rename, deprecate — and the two-layer gate that makes a package trustworthy.
+A craft-skills skill package is `SKILL.md` + `CHANGELOG.md`, plus optional `references/`, `scripts/`, `tests/`, `evals/`, `agents/` (role-prompt charters — writer.md, reviewer.md, grader.md — for skills that spawn sub-agents; `agents/` is **optional for craft-skills skills in general**, but **mandatory for skillify itself**: skillify spawns these three charters by name from `references/pipeline.md`, so they are required for this package and are not a global requirement imposed on every other skill), and a gitignored `.env` (commit only `.env.example`). skillify owns the full lifecycle — create, update, move/rename, deprecate — and the two-layer gate that makes a package trustworthy.
 
 ## When to Use
 
@@ -25,6 +25,35 @@ A craft-skills skill package is `SKILL.md` + `CHANGELOG.md`, plus optional `refe
 **NOT for:** prompts under `70. Collections/02 Prompt/` · templates under `90. Settings/02 Templates/` · one-off scripts with no reuse intent.
 
 ## Core Process
+
+### Stage 0: Admission — does this candidate belong here?
+
+Run **before** Harvest. Admission is a scope gate, not a quality gate: it answers whether a candidate
+workflow belongs in craft-skills at all, so a project-local, upstream-owned, or non-portable
+candidate is rejected before any authoring cost is spent. It is distinct from Layer 1 (format) and
+Layer 2 (trust) and runs upstream of both.
+
+Spawn the reviewer agent as a **fresh subagent in a clean context** (`§ Admission Task` in
+`references/pipeline.md`), handing it `references/checklist.md` + the candidate + the tier
+definitions. The judgment is a **single clean pass** — never the Layer-2 consensus loop; consensus is
+reserved for the trust layer. The reviewer is not given the author's promotion rationale: scope is
+judged on the candidate's own evidence.
+
+The reviewer applies the five drop-questions (Q1 Reusability, Q2 Ownership, Q3 Convention-not-artifact,
+Q4 Portability, Q5 Boundary-purity), each defaulting to ✗, and writes an **admission receipt** to
+`skills/skillify/evals/admission-<candidate-slug>-<date>.md` — the **skillify package owns the receipt**,
+because a rejected candidate may have no skill directory of its own yet — recording per-question ✓/✗ +
+one-line evidence + verdict + routed destination.
+
+```
+ADMIT  (all five ✓)  →  proceed to Harvest
+REJECT (any ✗)       →  record routed destination (project-local / using-our-stack reference /
+                        split-then-resubmit); STOP. The author has no veto — disagreement
+                        escalates to the human, never back to the author for self-approval.
+```
+
+A candidate already carrying a REJECT receipt for an unchanged reason is not re-judged — point at the
+existing receipt. Re-admission requires a material change recorded as a fresh receipt.
 
 ### The 3 stages: Harvest → Prove → Cement
 
@@ -43,10 +72,12 @@ SKILL_DIR="skills/<skill-name>"          # flat (default), or skills/<area>/<ski
 test -f "$SKILL_DIR/SKILL.md" && mode=update || mode=create
 ```
 
-- **Create:** scaffold the package, author via the writer agent, register routing, seed `CHANGELOG.md`, validate (Layer 1 → Layer 2), PR.
+- **Create:** clear **Stage 0: Admission** first (a new candidate has no prior receipt), then scaffold the package, author via the writer agent, register routing, seed `CHANGELOG.md`, validate (Layer 1 → Layer 2), PR.
 - **Update:** patch `SKILL.md`/references, bump `version`, append a `CHANGELOG.md` bullet, validate, PR.
 - **Move/rename:** move the whole directory and update every routing surface — see `references/topology-and-routing.md`.
 - **Deprecate/delete:** mark deprecation in the **body**, never in frontmatter — the 5-key frontmatter is fixed and admits no `status` key. Add a `## Deprecated` section at the top of `SKILL.md` pointing to the replacement skill, and annotate or remove the routing entry; bump **MAJOR** (a trigger phrase is leaving the contract); append a `CHANGELOG.md` bullet; PR. Prefer a deprecated stub over physical deletion whenever another skill takes over. Delete the directory only after confirming no routing entry and no scheduled job still references the skill.
+
+**Stage 0 gates `create` only.** A new candidate must pass admission before any authoring. `update`, `move/rename`, and `deprecate` operate on a skill already admitted — they reference the existing admission receipt rather than re-run the gate. Re-admission is required only when an update **materially changes scope** (a new trigger phrase, a broadened domain, or a merge with another skill alters what was originally admitted); that re-judgment is recorded as a fresh receipt.
 
 Before any change, start clean: run `git status` first and stash or set aside any unrelated uncommitted work — never discard user-owned changes to reach a clean tree — then `git fetch origin --prune`, switch to `main`, `git pull --ff-only origin main`, and branch. Do not stack edits on a dirty branch.
 
@@ -63,7 +94,7 @@ An abandoned promotion records nothing in `main` — the branch is the only arti
 
 ### Author via the Writer → Reviewer pipeline
 
-The writer agent (`agents/writer.md`) drafts the package against `references/schemas.md`. The reviewer agent (`agents/reviewer.md`) audits judgment quality — trigger-fit, anatomy intent, recipe-law compliance, and routing coherence — in a **separate lane** from the writer. The grader agent (`agents/grader.md`) grades tier-gate assertions against actual run outputs. Format compliance is a **script gate, not a prompt** — see Layer 1 below.
+The writer agent (`agents/writer.md`) drafts the package against `references/schemas.md`. The reviewer agent (`agents/reviewer.md`) is a checklist-driven impartial judge with two modes selected by which rubric it is handed and when it is invoked: in **admission** mode (Stage 0, fed `references/checklist.md`) it judges scope; in **quality** mode (post-author, the anatomy axes) it audits judgment quality — trigger-fit, anatomy intent, compliance with the recipe-completeness law (present-tense imperative, no history/attribution/jargon), and routing coherence — in a **separate lane** from the writer. The grader agent (`agents/grader.md`) grades tier-gate assertions against actual run outputs. Format compliance is a **script gate, not a prompt** — see Layer 1 below.
 
 **Lane rule:** author lane and eval lane never run in the same active context. Never self-approve.
 
@@ -154,6 +185,10 @@ python3 skills/skillify/scripts/consensus.py \
 
 ```
 Tier 1 (entry — register routing):
+  [ ] Admission receipt skills/skillify/evals/admission-<candidate-slug>-<date>.md exists with verdict ADMIT
+      (create: Stage 0 cleared before any authoring — a non-admitted candidate never reaches Tier 1.
+       update/move/deprecate of an already-admitted skill cite the existing receipt; a fresh one is
+       required only when an update materially changes the admitted scope)
   [ ] SKILL.md conforms to references/schemas.md (5-key frontmatter + sections)
   [ ] CHANGELOG.md seeded with a dated bullet
   [ ] Layer 1 scripts pass (validate-skill-format.py + validate-runtime-hygiene.py)
