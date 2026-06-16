@@ -1,7 +1,7 @@
 ---
 name: skillify
 description: '"make a skill", "스킬 만들자", "skillify this workflow", "turn this into a skill", "update this skill", "fix this skill", "edit this skill", "move this skill", "/skillify"'
-version: 3.1.1
+version: 3.2.0
 allowed-tools: [Bash, Read, Edit, Write, Grep, Glob]
 compatibility: claude-code, codex
 ---
@@ -168,12 +168,15 @@ python3 skills/skillify/scripts/consensus.py \
   --skill skills/<skill-name> \
   [--round N] \
   [--prior skills/<skill-name>/evals/consensus-<skill>-<prev-date>.md] \
-  [--providers codex,gemini,claude]
+  [--providers codex,gemini,claude] \
+  [--diff-base origin/main...HEAD]
 ```
+
+**Diff-scoped review (`--diff-base`, recommended for updates).** Without it the panel reviews the *whole* `SKILL.md` every round, so a small sound edit keeps getting blocked by the file's pre-existing prose — the panel flip-flops and never converges. With `--diff-base` set (mirroring Layer-1's `origin/main...HEAD` contract) the panel judges **only the lines this change adds or modifies**; the full file still ships as context. Use it for **update** mode (the change must be committed first, exactly as Layer-1 requires). Omit it for **create** mode, where every line is new and whole-file review is correct. An empty or unresolvable diff falls back to whole-file review with a warning.
 
 **Artifacts:**
 - `skills/<skill>/evals/<provider>-r<N>.md` — per-model verdict for round N
-- `skills/<skill>/evals/consensus-<skill>-<date>.md` — synthesized receipt; `status: CONVERGED` when all live models APPROVE
+- `skills/<skill>/evals/consensus-<skill>-<date>.md` — synthesized receipt; `scope:` line records `diff (<base>)` or `whole-file`; `status: CONVERGED` when all live models APPROVE
 
 **Script resilience (graceful degradation):** a missing or unauthenticated CLI is recorded in the receipt and skipped — the script never hard-crashes on a missing provider and always writes the receipt. A run with fewer than all requested models is flagged `status: degraded`. Headless-safe for subagents.
 
