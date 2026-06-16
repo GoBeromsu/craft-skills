@@ -1,7 +1,7 @@
 ---
 name: skillify
-description: '"make a skill", "스킬 만들자", "skillify this workflow", "turn this into a skill", "update this skill", "fix this skill", "edit this skill", "move this skill", "/skillify" — create, update, move, or promote a reusable craft-skills skill through the tested two-layer promotion gate.'
-version: 3.1.0
+description: '"make a skill", "스킬 만들자", "skillify this workflow", "turn this into a skill", "update this skill", "fix this skill", "edit this skill", "move this skill", "/skillify"'
+version: 3.1.1
 allowed-tools: [Bash, Read, Edit, Write, Grep, Glob]
 compatibility: claude-code, codex
 ---
@@ -19,7 +19,7 @@ A craft-skills skill package is `SKILL.md` + `CHANGELOG.md`, plus optional `refe
 - "make a skill", "스킬 만들자", "skillify this workflow", "turn this into a skill", "/skillify"
 - "update this skill", "fix this skill", "edit this skill", "move this skill"
 - Turning a repeated workflow into a resolvable, tested skill package
-- Promoting a bundled/local skill copy into the repo SSOT
+- Promoting a bundled/local skill copy into the repo's single source of truth
 - Reviewing a session and encoding a durable workflow correction into the governing skill
 
 **NOT for:** prompts under `70. Collections/02 Prompt/` · templates under `90. Settings/02 Templates/` · one-off scripts with no reuse intent.
@@ -134,9 +134,9 @@ python3 skills/skillify/scripts/validate-runtime-hygiene.py --diff-base origin/m
 
 Both run in CI in `--diff-base` mode: only skills changed in the PR are enforced. Run `validate-skill-format.py --advisory` for a full non-blocking inventory of legacy gaps. **CI runs Layer 1 only — never Layer 2.**
 
-#### Layer 2 — Multi-model consensus convergence loop (local, OMC-independent)
+#### Layer 2 — Multi-model consensus convergence loop (local, orchestrator-independent)
 
-After Layer 1 passes, run `scripts/consensus.py`. This script is **vendored and OMC-independent** — it calls `codex`, `gemini`, and `claude` CLIs directly via subprocess, never the `omc` binary.
+After Layer 1 passes, run `scripts/consensus.py`. This script is **vendored and orchestrator-independent** — it calls the `codex`, `gemini`, and `claude` CLIs directly via subprocess, with no dependency on any agent-orchestration runtime.
 
 **Convergence loop:**
 
@@ -235,7 +235,7 @@ Newest last; never reorder or edit existing bullets. History lives **only** in `
 
 ## Governance
 
-skillify is **protected infrastructure**. No arbitrary modify or delete. Mutations require explicit user permission, enforced by PreToolUse hooks across Claude Code and Codex. Do not touch `skills/skillify/**` without explicit operator approval.
+**This protection applies to the skillify package itself (`skills/skillify/**`), not to the skills it manages.** Editing skillify's own body, references, agents, or scripts requires explicit current-turn operator approval, enforced by PreToolUse hooks across Claude Code and Codex — no arbitrary modify or delete. Ordinary skill lifecycle work skillify performs *on other skills* (create, update, move, deprecate under `skills/<other>/**`) follows the normal branch → commit → PR flow and does **not** need this break-glass approval.
 
 Every skill change is delivered as branch → commit → PR unless the operator explicitly requests local-only. A patched file is not the deliverable; reviewable repo state is. Mechanics: `references/skill-pr-branch-hygiene.md`.
 
