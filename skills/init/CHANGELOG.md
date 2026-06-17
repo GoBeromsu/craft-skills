@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Added S7a fixture-repo semantic proof for GitHub governance install/verify behavior, reinstall idempotency, and override config resolution.
+
 ## [1.1.0] - 2026-06-17
 
 - Added shared governance-config resolver plus GitHub label installer/verifier scripts for the init skill's issue-driven governance foundation.
