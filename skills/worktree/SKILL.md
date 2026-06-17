@@ -56,18 +56,23 @@ If any check fails, install by running the bundled `setup-hooks.sh` from the ski
 ## Step 2 — Create a Worktree
 
 ```bash
-git wt <issue#>            # e.g. git wt 17
-git wt <issue#> --type fix # override the type label
+git wt <issue#>                         # e.g. git wt 17
+git wt <issue#> --type fix              # explicit type override
+git wt <issue#> --slug api --type feat  # fan-out slice branch
 ```
 
-`git wt` reads the issue's `type:` label (`feat|fix|chore|docs|refactor|test`, fallback `feat`) and title via `gh`, derives the branch name `<type>/<issue#>-<slug>`, fetches `origin/<default>`, and creates the worktree **outside** the repo root so `git status` stays clean.
+`git wt` reads the issue's `type:` label (`feat|fix|chore|docs|refactor|test`) and title via `gh`, derives the branch name `<type>/<issue#>-<slug>`, fetches `origin/<default>`, and creates the worktree **outside** the repo root so `git status` stays clean.
+
+If the issue has no `type: *` label, `git wt` stops and requires `--type`. This keeps governed repositories from silently creating `feat/*` branches. Manual or offline cases are still allowed by passing `--type` explicitly.
 
 Branch naming:
-- `<type>`: from the issue's `type: *` label; falls back to `feat`
+- `<type>`: from the issue's `type: *` label, or explicit `--type`
 - `<issue#>`: GitHub issue number
-- `<slug>`: title lowercased, non-alphanumeric chars → `-`, capped at 50 chars
+- `<slug>`: title lowercased, non-alphanumeric chars → `-`, capped at 50 chars; explicit `--slug <slice-slug>` overrides the title slug for fan-out PR slices
 
 Examples: `feat/17-add-inference-endpoint`, `fix/23-rtsp-timeout`, `chore/31-update-deps`
+
+Fan-out example for multiple PRs from the same issue: `git wt 17 --type feat --slug api`, `git wt 17 --type feat --slug ui`, and `git wt 17 --type test --slug coverage` create separate branches/worktrees under the same issue number.
 
 The worktree path is printed on success. `cd` to it to begin work.
 
