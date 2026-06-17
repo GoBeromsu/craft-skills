@@ -56,8 +56,12 @@ def build_label_change_plan(config: dict[str, Any], existing: dict[str, dict[str
     return plan
 
 
+def _type_token(label_name: str) -> str:
+    return label_name.removeprefix("type: ")
+
+
 def render_issue_template(config: dict[str, Any]) -> str:
-    options = "\n".join(f"        - {name}" for name in type_label_names(config))
+    options = "\n".join(f"        - {_type_token(name)}" for name in type_label_names(config))
     return f"""name: Issue
 description: File work that should be governed by issue-driven labels.
 title: ""
@@ -116,9 +120,10 @@ jobs:
               core.setFailed('Missing ### Type section; refusing to apply a default type label.');
               return;
             }}
-            const selected = match[1].trim();
+            const selectedToken = match[1].trim().split(/\s+/)[0];
+            const selected = `type: ${{selectedToken}}`;
             if (!typeLabels.includes(selected)) {{
-              core.setFailed(`Unknown Type '${{selected}}'; refusing to apply a default type label.`);
+              core.setFailed(`Unknown Type '${{selectedToken}}'; refusing to apply a default type label.`);
               return;
             }}
             for (const label of typeLabels.filter((label) => label !== selected)) {{

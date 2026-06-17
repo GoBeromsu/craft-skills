@@ -142,6 +142,7 @@ def pr_check_resolved_errors(text: str, config: dict[str, object]) -> list[str]:
 def governance_file_errors(repo_root: Path) -> list[str]:
     config = resolve_config(repo_root)
     expected_types = type_label_names(config)
+    expected_type_options = [name.removeprefix("type: ") for name in expected_types]
     errors: list[str] = []
 
     template = repo_root / ISSUE_TEMPLATE_PATH
@@ -151,7 +152,7 @@ def governance_file_errors(repo_root: Path) -> list[str]:
         text = template.read_text(encoding="utf-8")
         if "### Type" not in text:
             errors.append("Issue template must contain a literal ### Type heading.")
-        if extract_template_type_options(text) != expected_types:
+        if extract_template_type_options(text) != expected_type_options:
             errors.append("Issue template Type options do not match resolved type labels.")
         if text != render_issue_template(config):
             errors.append("Issue template content is not the resolved installer output.")
@@ -167,6 +168,7 @@ def governance_file_errors(repo_root: Path) -> list[str]:
             "Missing ### Type section; refusing to apply a default type label.",
             "Unknown Type",
             "core.setFailed",
+            "const selected = `type: ${selectedToken}`;",
             "labels: [selected]",
             "typeLabels.filter((label) => label !== selected)",
         ]

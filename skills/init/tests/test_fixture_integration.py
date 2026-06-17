@@ -128,7 +128,7 @@ class FixtureIntegrationTest(unittest.TestCase):
             self.assertEqual((root / path).read_text(encoding="utf-8"), expected)
         template = (root / ISSUE_TEMPLATE_PATH).read_text(encoding="utf-8")
         for name in type_label_names(config):
-            self.assertIn(f"        - {name}", template)
+            self.assertIn(f"        - {name.removeprefix('type: ')}", template)
 
     def test_fixture_repo_install_verify_and_reinstall_are_semantic_and_idempotent(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -149,7 +149,7 @@ class FixtureIntegrationTest(unittest.TestCase):
             self.assertIn("already up to date", reinstall.stdout)
             self.assertEqual(self.snapshot(root, state_path), before)
             log = log_path.read_text(encoding="utf-8")
-            self.assertIn("label create feat", log)
+            self.assertIn("label create type: feat", log)
             self.assertIn("label list --limit 1000 --json name,color,description", log)
 
     def test_override_fixture_changes_resolved_behavior_without_network(self) -> None:
@@ -163,10 +163,10 @@ class FixtureIntegrationTest(unittest.TestCase):
                     "allowed_base: [trunk]",
                     "labels:",
                     "  type:",
-                    "    - name: spike",
+                    "    - name: type: spike",
                     "      color: 5319e7",
                     "      description: Research spike",
-                    "    - name: bug",
+                    "    - name: type: bug",
                     "      color: d73a4a",
                     "      description: Bug fix",
                     "  domain:",

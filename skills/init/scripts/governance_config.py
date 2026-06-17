@@ -19,12 +19,12 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "allowed_base": ["main", "release/*", "hotfix/*"],
     "labels": {
         "type": [
-            {"name": "feat", "color": "0e8a16", "description": "Feature work"},
-            {"name": "fix", "color": "d73a4a", "description": "Bug fix"},
-            {"name": "chore", "color": "cfd3d7", "description": "Maintenance or tooling"},
-            {"name": "docs", "color": "0075ca", "description": "Documentation"},
-            {"name": "refactor", "color": "5319e7", "description": "Code change without feature or bug behavior"},
-            {"name": "test", "color": "fbca04", "description": "Test-only change"},
+            {"name": "type: feat", "color": "0e8a16", "description": "Feature work"},
+            {"name": "type: fix", "color": "d73a4a", "description": "Bug fix"},
+            {"name": "type: chore", "color": "cfd3d7", "description": "Maintenance or tooling"},
+            {"name": "type: docs", "color": "0075ca", "description": "Documentation"},
+            {"name": "type: refactor", "color": "5319e7", "description": "Code change without feature or bug behavior"},
+            {"name": "type: test", "color": "fbca04", "description": "Test-only change"},
         ],
         "domain": [],  # Repos may add product-specific ownership labels sparsely.
         "size": [

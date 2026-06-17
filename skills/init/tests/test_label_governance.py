@@ -22,7 +22,7 @@ INSTALLER = REPO_ROOT / "skills/init/scripts/install_github_governance.py"
 VERIFIER = REPO_ROOT / "skills/init/scripts/verify_github_governance.py"
 
 DEFAULT_LABEL_NAMES = [
-    "chore", "docs", "feat", "fix", "refactor", "test",
+    "type: chore", "type: docs", "type: feat", "type: fix", "type: refactor", "type: test",
     "size/L", "size/M", "size/S", "size/XL", "size/override",
 ]
 
@@ -84,13 +84,13 @@ class LabelGovernanceTest(unittest.TestCase):
     def test_install_dry_run_prints_change_plan_without_mutation(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            env, log_path = self.fake_env(root, [{"name": "feat", "color": "000000", "description": "old"}])
+            env, log_path = self.fake_env(root, [{"name": "type: feat", "color": "000000", "description": "old"}])
 
             result = self.run_script(INSTALLER, root, env, "--dry-run")
 
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertIn("GitHub governance change plan:", result.stdout)
-            self.assertIn("UPDATE label feat", result.stdout)
+            self.assertIn("UPDATE label type: feat", result.stdout)
             self.assertIn("CREATE label size/override", result.stdout)
             self.assertIn(f"WRITE {ISSUE_TEMPLATE_PATH}", result.stdout)
             self.assertIn(f"WRITE {AUTO_LABEL_WORKFLOW_PATH}", result.stdout)
@@ -110,16 +110,16 @@ class LabelGovernanceTest(unittest.TestCase):
                 "\n".join([
                     "labels:",
                     "  type:",
-                    "    - name: spike",
+                    "    - name: type: spike",
                     "      color: 5319e7",
                     "      description: Research spike",
-                    "    - name: bug",
+                    "    - name: type: bug",
                     "      color: d73a4a",
                     "      description: Bug fix",
                 ]),
                 encoding="utf-8",
             )
-            env, _ = self.fake_env(root, [{"name": "spike", "color": "5319e7", "description": "Research spike"}, {"name": "bug", "color": "d73a4a", "description": "Bug fix"}])
+            env, _ = self.fake_env(root, [{"name": "type: spike", "color": "5319e7", "description": "Research spike"}, {"name": "type: bug", "color": "d73a4a", "description": "Bug fix"}])
 
             result = self.run_script(INSTALLER, root, env)
 
@@ -130,7 +130,7 @@ class LabelGovernanceTest(unittest.TestCase):
             self.assertIn("        - spike", template)
             self.assertIn("        - bug", template)
             self.assertNotIn("        - feat", template)
-            self.assertIn("TYPE_LABELS: '[\"spike\", \"bug\"]'", workflow)
+            self.assertIn("TYPE_LABELS: '[\"type: spike\", \"type: bug\"]'", workflow)
             self.assertIn("core.setFailed('Missing ### Type section", workflow)
             self.assertIn("Unknown Type", workflow)
             self.assertIn("labels: [selected]", workflow)
@@ -189,13 +189,13 @@ class LabelGovernanceTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             _write_desired_files(root)
-            env, log_path = self.fake_env(root, [{"name": "feat"}])
+            env, log_path = self.fake_env(root, [{"name": "type: feat"}])
 
             result = self.run_script(VERIFIER, root, env, "--check")
 
             self.assertEqual(result.returncode, 1)
             self.assertIn("Missing GitHub governance labels:", result.stdout)
-            self.assertIn("- fix", result.stdout)
+            self.assertIn("- type: fix", result.stdout)
             log = log_path.read_text(encoding="utf-8")
             self.assertIn("label list --limit 1000 --json name", log)
             self.assertNotIn("label create", log)
@@ -219,7 +219,7 @@ class LabelGovernanceTest(unittest.TestCase):
             root = Path(tmp)
             _write_desired_files(root)
             workflow = root / AUTO_LABEL_WORKFLOW_PATH
-            workflow.write_text(workflow.read_text(encoding="utf-8").replace('"fix"', '"unknown"', 1), encoding="utf-8")
+            workflow.write_text(workflow.read_text(encoding="utf-8").replace('"type: fix"', '"type: unknown"', 1), encoding="utf-8")
             env, _ = self.fake_env(root, [{"name": name} for name in DEFAULT_LABEL_NAMES])
 
             result = self.run_script(VERIFIER, root, env, "--check")
