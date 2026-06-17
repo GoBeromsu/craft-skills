@@ -1,6 +1,6 @@
 ---
 name: programming
-description: '"write/edit a .py or .ts file", "start a new Python/TypeScript project", "review this for over-engineering" — correctness-first, type-strict engineering for Python and TypeScript. Make illegal states unrepresentable, parse at boundaries, match exhaustively, type every error, ban any/cast/ignore, cap files at 250 pure LOC, drive with TDD, and write only what the task needs without ever cutting validation, security, data-loss handling, or accessibility. Routes to references/python.md and references/typescript.md.'
+description: '"write/edit a .py or .ts file", "start a new Python/TypeScript project", "review this for over-engineering" — correctness-first, type-strict engineering for Python and TypeScript. Routes through a PHASE 0 gate to per-language references (references/python.md, references/typescript.md) and an always-loaded task-workflow reference that carries the full discipline.'
 version: 1.1.0
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 compatibility: claude-code, codex
@@ -56,7 +56,7 @@ The task procedure in `references/workflow.md` is mandatory; these invariants ar
 
 Before adding code, stop at the first rung that holds. The ladder runs *after* the correctness requirements are known, never instead of them.
 
-1. **Does this need to exist?** Speculative need → skip it, say so in one line. (YAGNI)
+1. **Does this need to exist?** Speculative need → skip it, say so in one line (YAGNI — you aren't gonna need it).
 2. **Does the stdlib do it?** Use it.
 3. **Does a native platform feature cover it?** Use it: `<input type="date">` over a date-picker library, CSS over JS layout, a DB constraint over an app-side check, `URL` / `Intl` / `structuredClone` / `pathlib` over a dependency.
 4. **Does an already-installed dependency solve it?** Use it. Never add a new dependency for what a few lines cover.

@@ -1,6 +1,6 @@
 # Python reference
 
-Modern Python. Type-strict, stack-first, async-correct. The type checker is your compiler: make illegal states unrepresentable, parse at boundaries, own resources explicitly.
+Modern Python: strictly typed, built on the project's canonical libraries and toolchain, and correct under async. The type checker is your first line of defense — encode invariants as types, parse untrusted input at boundaries, and own every resource explicitly.
 
 Load this file in full before writing or editing Python. The rules below are deliberate project choices — violations are wrong, not stylistic.
 

@@ -1,6 +1,6 @@
 # TypeScript reference
 
-Modern TypeScript. Type-strict, stack-first, async-correct. The compiler is your proof system: make illegal states unrepresentable, parse at boundaries, give every function a contract the types enforce.
+Modern TypeScript: strictly typed, built on the project's canonical libraries and toolchain, and correct under async. The compiler is your first line of defense — encode invariants as types, parse untrusted input at boundaries, and give every function a contract the types enforce.
 
 Load this file in full before writing or editing TypeScript. The rules below are deliberate project choices — violations are wrong, not stylistic.
 
@@ -27,7 +27,7 @@ Override a default only when the project manifest explicitly picks something els
 2. **Branded types for distinct primitives** — `type UserId = Brand<string, "UserId">`. Never pass a raw `string`/`number` where a branded type exists.
 3. **Exhaustive switch** — every `switch` on a discriminated union ends with `default: assertNever(x)`. No fall-through.
 4. **No `any`** — banned in annotations, returns, and parameters. Use `unknown` and narrow.
-5. **No type assertions** — `as any` / `as unknown` banned. `as const` and `satisfies` are fine.
+5. **No type assertions** — `as T` is banned; it overrides the checker. The only allowed forms are `as const` and `satisfies`. To change a type, narrow with a type guard or re-parse — never assert.
 6. **No non-null assertion** — `x!` is banned. Narrow, or use optional chaining (`x?.y`).
 7. **No `@ts-ignore` / `@ts-expect-error`** — fix the type.
 8. **No `enum`** — use an `as const` object plus a literal union type.
@@ -121,7 +121,7 @@ HTTP rule: production code never uses bare `fetch()` — it has no retry, timeou
 
 | Catches | Resolution |
 |---|---|
-| `as any` / `as unknown` | redesign the types |
+| an `as` assertion other than `as const` / `satisfies` | redesign the types or narrow with a guard |
 | `@ts-ignore` / `@ts-expect-error` | fix the type |
 | `enum` declaration | use `as const` + literal union |
 | `x!` non-null assertion | narrow or `?.` |
