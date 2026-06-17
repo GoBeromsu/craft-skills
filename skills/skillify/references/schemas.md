@@ -109,6 +109,14 @@ compatibility: claude-code, codex
 Document them in the `SKILL.md` body under `## Requirements` as prose. Frontmatter declares
 agent-layer tool permissions; runtime prerequisites are prose in the skill body.
 
+### Name style
+
+The `name` is a compact handle, not a sentence — discoverability lives in `description` (the trigger phrases), so the name stays terse and stable.
+
+- Name the **one concept** the skill owns, in the fewest tokens that stay unambiguous. Prefer a single word (`programming`, `refactor`, `documents`); a verb for an action skill, a noun for a domain skill.
+- Cap at **two tokens**. A third is justified only when the concept genuinely needs it (`remove-ai-slops`). Hyphens join the words of one concept; they never decorate.
+- Banned: a `-skill` / `-tool` / `-helper` / `-workflow` suffix (the package is already a skill), a `how-to-` / `auto-` / `my-` prefix, a verb-plus-object phrase that reads as a sentence (`generate-the-report`), and a name that merely restates the description.
+
 ---
 
 ## 3. Anatomy Section Flow

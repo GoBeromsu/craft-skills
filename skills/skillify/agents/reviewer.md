@@ -64,6 +64,7 @@ marker. You see the draft only — judge it as a reader encountering it fresh, w
 Examine the `description` frontmatter value. Does it contain a phrase the user would actually type to
 invoke this skill, or does it read like a capability blurb ("A skill that enables X")? A passing
 description contains the user's words. Quote it and state the finding.
+Then examine the `name`: it must be a compact one-concept handle (prefer a single word, ≤2 tokens, no `-skill`/`-tool`/`-helper`/`-workflow` suffix, no sentence-like verb-object phrase, not a restatement of the description) per `references/schemas.md §2`. FAIL and name the fix when it reads as a sentence or carries a decorative suffix.
 
 ### Step 4: Audit Anatomy Intent
 Trace trigger phrase → output: do the `## Steps` / Core Process instructions deliver the outcome the
