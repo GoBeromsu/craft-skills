@@ -13,7 +13,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS = REPO_ROOT / "skills/init/scripts"
 sys.path.insert(0, str(SCRIPTS))
 
-from governance_config import all_label_specs, resolve_config  # noqa: E402
+from governance_config import all_label_specs, resolve_config, type_label_names  # noqa: E402
 
 
 class GovernanceConfigTest(unittest.TestCase):
@@ -29,6 +29,7 @@ class GovernanceConfigTest(unittest.TestCase):
             self.assertIn("fix", names)
             self.assertIn("size/S", names)
             self.assertIn("size/override", names)
+            self.assertEqual(type_label_names(config), ["feat", "fix", "chore", "docs", "refactor", "test"])
             self.assertEqual(config["labels"]["domain"], [])
             self.assertIn("**/tests/**", config["non_logic_globs"])
             self.assertIn("pnpm-lock.yaml", config["non_logic_globs"])

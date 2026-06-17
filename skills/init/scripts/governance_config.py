@@ -250,3 +250,8 @@ def all_label_specs(config: dict[str, Any]) -> list[dict[str, str]]:
     for key in ("type", "domain", "size", "override"):
         combined.extend(labels.get(key, []))
     return sorted(combined, key=lambda item: item["name"])
+
+
+def type_label_names(config: dict[str, Any]) -> list[str]:
+    """Return resolved type label names in configured issue-template order."""
+    return [label["name"] for label in config.get("labels", {}).get("type", [])]
