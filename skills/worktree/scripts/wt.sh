@@ -3,12 +3,13 @@
 #
 #   git wt <issue#>            Create branch <type>/<issue#>-<slug> off origin/<default>
 #                              and a worktree for it; print the worktree path.
+#   git wt <issue#> --slug s   Create a fan-out branch using explicit slug s.
 #   git wt rm <issue#|branch>  Remove the worktree (git worktree remove + prune).
 #                              Does NOT delete the branch — use `git branch -d` after merge.
 #   git wt ls                  List worktrees.
 #
-# <type> is read from the issue's `type: <x>` label (feat|fix|chore|docs|refactor|test),
-# falling back to feat. Override with `git wt <issue#> --type fix`.
+# <type> is read from the issue's `type: <x>` label (feat|fix|chore|docs|refactor|test).
+# If the issue has no type label, pass `git wt <issue#> --type fix` explicitly.
 #
 # Worktrees live OUTSIDE the repo to avoid dirtying status:
 #   WORKTREE_ROOT (default: <repo-parent>/<repo>-worktrees) / <branch>
@@ -78,9 +79,11 @@ issue_title() { gh issue view "$1" --json title --jq '.title' 2>/dev/null || pri
 cmd_create() {
   num=""
   type_override=""
+  slug_override=""
   while [ $# -gt 0 ]; do
     case "$1" in
-      --type) type_override="${2:-}"; shift 2 ;;
+      --type) [ -n "${2:-}" ] || gg_die "--type requires a value"; type_override="$2"; shift 2 ;;
+      --slug) [ -n "${2:-}" ] || gg_die "--slug requires a value"; slug_override="$2"; shift 2 ;;
       -h|--help) usage 0 ;;
       -*) gg_die "unknown flag: $1" ;;
       *) num="$1"; shift ;;
@@ -94,15 +97,25 @@ cmd_create() {
   [ -n "$title" ] || gg_die "could not read issue #$num (does it exist? is gh authed?)"
 
   type="$type_override"
-  [ -n "$type" ] || type=$(issue_type "$num")
-  [ -n "$type" ] || type="feat"
+  if [ -z "$type" ]; then
+    type=$(issue_type "$num")
+    if [ -z "$type" ]; then
+      gg_warn "issue #$num has no 'type: <x>' label; pass --type explicitly for manual/offline work"
+      gg_die "missing issue type label"
+    fi
+  fi
   case "$type" in
     feat|fix|chore|docs|refactor|test) ;;
     *) gg_warn "non-standard type '$type' — proceeding anyway" ;;
   esac
 
-  slug=$(slugify "$title")
-  [ -n "$slug" ] || slug="issue"
+  if [ -n "$slug_override" ]; then
+    slug=$(slugify "$slug_override")
+    [ -n "$slug" ] || gg_die "--slug must contain at least one alphanumeric character"
+  else
+    slug=$(slugify "$title")
+    [ -n "$slug" ] || slug="issue"
+  fi
   branch="$type/$num-$slug"
 
   if git show-ref --verify --quiet "refs/heads/$branch"; then
@@ -117,54 +130,7 @@ cmd_create() {
   path="$(worktree_root)/$branch"
   mkdir -p "$(dirname "$path")"
   git worktree add -b "$branch" "$path" "origin/$base" >&2
-  link_ml_data "$path"
-  link_ml_models "$path"
-
   printf '%s\n' "$path"
-}
-
-# ml/data is gitignored, so a fresh worktree sees an empty data tree. The
-# canonical physical store is the MAIN checkout's ml/data (ADR-012 /
-# docs/rules/ml-filesystem-layout.md); link the new worktree to it so the
-# demo and training scripts see real data. A missing link degrades silently
-# in the demo (empty dropdown) but hard-crashes training.
-link_ml_data() {
-  wt_path="$1"
-  main_root=$(git worktree list --porcelain | awk '/^worktree /{print $2; exit}')
-  main_data="$main_root/ml/data"
-  if [ ! -d "$main_data" ]; then
-    gg_warn "main checkout has no ml/data ($main_data) — skipped ml/data symlink; demo/training will see no data"
-    return 0
-  fi
-  [ -d "$wt_path/ml" ] || return 0
-  if [ -e "$wt_path/ml/data" ]; then
-    gg_warn "$wt_path/ml/data already exists — skipped ml/data symlink"
-    return 0
-  fi
-  ln -s "$main_data" "$wt_path/ml/data"
-  gg_warn "linked ml/data -> $main_data"
-}
-
-# ml/models is gitignored (whole tree — weights, trained artifacts, third-party
-# checkpoints).  The canonical physical store is the MAIN checkout's ml/models
-# (ADR-015); link the new worktree to it so training/serving scripts see real
-# models.  A missing link degrades silently in the demo (models report unavailable)
-# but hard-crashes any serving path that tries to load a model.
-link_ml_models() {
-  wt_path="$1"
-  main_root=$(git worktree list --porcelain | awk '/^worktree /{print $2; exit}')
-  main_models="$main_root/ml/models"
-  if [ ! -d "$main_models" ]; then
-    gg_warn "main checkout has no ml/models ($main_models) — skipped ml/models symlink; serving/training will see no models"
-    return 0
-  fi
-  [ -d "$wt_path/ml" ] || return 0
-  if [ -e "$wt_path/ml/models" ]; then
-    gg_warn "$wt_path/ml/models already exists — skipped ml/models symlink"
-    return 0
-  fi
-  ln -s "$main_models" "$wt_path/ml/models"
-  gg_warn "linked ml/models -> $main_models"
 }
 
 resolve_worktree_path() {

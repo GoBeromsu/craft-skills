@@ -56,18 +56,32 @@ If any check fails, install by running the bundled `setup-hooks.sh` from the ski
 ## Step 2 — Create a Worktree
 
 ```bash
-git wt <issue#>            # e.g. git wt 17
-git wt <issue#> --type fix # override the type label
+git wt <issue#>                         # e.g. git wt 17
+git wt <issue#> --type fix              # explicit type override
+git wt <issue#> --slug api --type feat  # fan-out slice branch
 ```
 
-`git wt` reads the issue's `type:` label (`feat|fix|chore|docs|refactor|test`, fallback `feat`) and title via `gh`, derives the branch name `<type>/<issue#>-<slug>`, fetches `origin/<default>`, and creates the worktree **outside** the repo root so `git status` stays clean.
+`git wt` reads the issue's `type:` label (`feat|fix|chore|docs|refactor|test`) and title via `gh`, derives the branch name `<type>/<issue#>-<slug>`, fetches `origin/<default>`, and creates the worktree **outside** the repo root so `git status` stays clean.
+
+If the issue has no `type: *` label, `git wt` stops and requires `--type`. This keeps governed repositories from silently creating `feat/*` branches. Manual or offline cases are still allowed by passing `--type` explicitly.
 
 Branch naming:
-- `<type>`: from the issue's `type: *` label; falls back to `feat`
+- `<type>`: from the issue's `type: *` label, or explicit `--type`
 - `<issue#>`: GitHub issue number
-- `<slug>`: title lowercased, non-alphanumeric chars → `-`, capped at 50 chars
+- `<slug>`: title lowercased, non-alphanumeric chars → `-`, capped at 50 chars; explicit `--slug <slice-slug>` overrides the title slug for fan-out PR slices
 
 Examples: `feat/17-add-inference-endpoint`, `fix/23-rtsp-timeout`, `chore/31-update-deps`
+
+Fan-out example for multiple PRs from the same issue: `git wt 17 --type feat --slug api`, `git wt 17 --type feat --slug ui`, and `git wt 17 --type test --slug coverage` create separate branches/worktrees under the same issue number.
+For local fan-out orchestration, run the bundled tmux helper from the target repo after self-install:
+
+```bash
+scripts/git-guard/tmux-fanout.sh 17 api ui coverage
+```
+
+The helper creates or reuses a local tmux session named `wt-17`, creates one window per slice, and runs `git wt 17 --slug <slice>` in that window. Existing windows with the same normalized slice name are skipped, so re-running the command is safe. The printed `tmux attach -t wt-17` command attaches to the fan-out session.
+
+Local tmux fan-out is intentionally lightweight: it only creates local tmux windows and invokes `git wt`; it does not introduce team mailbox, dispatch, lifecycle, or remote-worker governance. The optional Tailscale flow below remains remote-only and is not the default.
 
 The worktree path is printed on success. `cd` to it to begin work.
 
@@ -156,7 +170,7 @@ Set in `.env` (gitignored). See `.env.example` for the placeholder.
 Dependencies:
 - `gh` CLI authenticated (`gh auth status`) — required for `git wt` to read issue metadata.
 - `git` >= 2.5 (worktree support).
-- `tmux` on the remote host — required for Tailscale extension only.
+- `tmux` locally — required only for `tmux-fanout.sh` local fan-out helper; also required on the remote host for the Tailscale extension.
 - `tailscale` CLI or equivalent — required for Tailscale extension reachability check only.
 
 ---
@@ -169,6 +183,7 @@ Dependencies:
 | `scripts/assert-not-main.sh` | Exits 1 when HEAD is on a protected branch |
 | `scripts/check-freshness.sh` | Compares HEAD to upstream; `block` (exit 1) or `warn` mode |
 | `scripts/wt.sh` | Issue → worktree creator and manager (`create`, `rm`, `ls`) |
+| `scripts/tmux-fanout.sh` | Local tmux fan-out helper: one `git wt <issue#> --slug <slice>` window per slice |
 | `scripts/setup-hooks.sh` | Idempotent post-clone setup: `core.hooksPath`, `alias.wt`, `chmod +x` |
 | `scripts/deny-assets.sh` | Blocks model weights, media files, and blobs > 5 MB at commit/push |
 
