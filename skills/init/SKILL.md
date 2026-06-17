@@ -20,6 +20,7 @@ skip notices with no side effects.
 | Author and maintain content inside `docs/` | `documents` skill |
 | Install and manage git-hook enforcement logic | `worktree` skill's installer — init delegates to it |
 | Scaffold consumer plugin manifests (`.claude-plugin`, etc.) | **out of scope for init** |
+| Resolve GitHub governance config and install/verify issue label taxonomy | **init** scripts under `skills/init/scripts/` |
 
 ## Core Process
 
