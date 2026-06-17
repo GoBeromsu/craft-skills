@@ -13,6 +13,7 @@ from governance_config import all_label_specs, resolve_config, type_label_names
 
 ISSUE_TEMPLATE_PATH = Path(".github/ISSUE_TEMPLATE/issue.yml")
 AUTO_LABEL_WORKFLOW_PATH = Path(".github/workflows/auto-label.yml")
+PR_CHECK_WORKFLOW_PATH = Path(".github/workflows/pr-check.yml")
 
 
 def _run_gh(args: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
@@ -139,10 +140,149 @@ jobs:
 """
 
 
+def _label_names(config: dict[str, Any], group: str) -> list[str]:
+    return [label["name"] for label in config["labels"].get(group, [])]
+
+
+def render_pr_check_workflow(config: dict[str, Any]) -> str:
+    threshold = int(config["churn_threshold"])
+    allowed_bases_json = json.dumps(config["allowed_base"], ensure_ascii=False)
+    non_logic_globs_json = json.dumps(config["non_logic_globs"], ensure_ascii=False)
+    size_labels_json = json.dumps(_label_names(config, "size"), ensure_ascii=False)
+    override_labels = _label_names(config, "override")
+    override_label = override_labels[0] if override_labels else "size/override"
+    override_label_json = json.dumps(override_label, ensure_ascii=False)
+    return f"""name: PR size check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  pr-size:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enforce PR logic churn policy
+        uses: actions/github-script@v7
+        env:
+          CHURN_THRESHOLD: '{threshold}'
+          ALLOWED_BASES: '{allowed_bases_json}'
+          NON_LOGIC_GLOBS: '{non_logic_globs_json}'
+          SIZE_LABELS: '{size_labels_json}'
+          OVERRIDE_LABEL: '{override_label_json}'
+        with:
+          script: |
+            // === SIZE-CHECK-LOGIC-START ===
+            const threshold = Number(process.env.CHURN_THRESHOLD);
+            const allowedBases = JSON.parse(process.env.ALLOWED_BASES);
+            const nonLogicGlobs = JSON.parse(process.env.NON_LOGIC_GLOBS);
+            const sizeLabels = JSON.parse(process.env.SIZE_LABELS);
+            const overrideLabel = JSON.parse(process.env.OVERRIDE_LABEL);
+            const pr = context.payload.pull_request;
+
+            function escapeRegex(value) {{
+              return value.replace(/[|\\{{}}()[\\]^$+*?.]/g, '\\$&');
+            }}
+
+            function globToRegex(glob) {{
+              let regex = '^';
+              for (let i = 0; i < glob.length; i += 1) {{
+                const char = glob[i];
+                if (char === '*') {{
+                  if (glob[i + 1] === '*') {{
+                    i += 1;
+                    if (glob[i + 1] === '/') {{
+                      i += 1;
+                      regex += '(?:.*/)?';
+                    }} else {{
+                      regex += '.*';
+                    }}
+                  }} else {{
+                    regex += '[^/]*';
+                  }}
+                }} else if (char === '?') {{
+                  regex += '[^/]';
+                }} else {{
+                  regex += escapeRegex(char);
+                }}
+              }}
+              return new RegExp(`${{regex}}$`);
+            }}
+
+            const nonLogicMatchers = nonLogicGlobs.map((glob) => globToRegex(glob));
+            function isNonLogicPath(path) {{
+              const basename = path.split('/').pop();
+              return nonLogicMatchers.some((matcher) => matcher.test(path) || matcher.test(basename));
+            }}
+
+            function allowedBaseMatches(base) {{
+              return allowedBases.some((pattern) => globToRegex(pattern).test(base));
+            }}
+
+            function sizeBucket(churn) {{
+              if (churn <= 100) return sizeLabels[0];
+              if (churn <= 300) return sizeLabels[1];
+              if (churn <= threshold) return sizeLabels[2];
+              return sizeLabels[3];
+            }}
+
+            if (!allowedBaseMatches(pr.base.ref)) {{
+              core.setFailed(`Base branch '${{pr.base.ref}}' is not allowed for issue governance.`);
+              return;
+            }}
+            if (pr.draft) {{
+              core.info('Draft PR; skipping size enforcement.');
+              return;
+            }}
+            const currentLabels = pr.labels.map((label) => label.name);
+            const hasOverride = currentLabels.includes(overrideLabel);
+            const files = await github.paginate(github.rest.pulls.listFiles, {{
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              per_page: 100,
+            }});
+            const logicChurn = files
+              .filter((file) => !isNonLogicPath(file.filename))
+              .reduce((sum, file) => sum + file.additions + file.deletions, 0);
+            const bucket = sizeBucket(logicChurn);
+            for (const label of sizeLabels.filter((label) => currentLabels.includes(label) && label !== bucket)) {{
+              await github.rest.issues.removeLabel({{
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                name: label,
+              }}).catch((error) => {{
+                if (error.status !== 404) throw error;
+              }});
+            }}
+            if (!currentLabels.includes(bucket)) {{
+              await github.rest.issues.addLabels({{
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                labels: [bucket],
+              }});
+            }}
+            if (logicChurn > threshold && !hasOverride) {{
+              core.setFailed(`Logic churn ${{logicChurn}} exceeds threshold ${{threshold}}; add '${{overrideLabel}}' only with reviewer-approved exception.`);
+            }} else {{
+              core.info(`Logic churn ${{logicChurn}} classified as ${{bucket}}.`);
+            }}
+            // === SIZE-CHECK-LOGIC-END ===
+"""
+
+
 def desired_files(config: dict[str, Any]) -> dict[Path, str]:
     return {
         ISSUE_TEMPLATE_PATH: render_issue_template(config),
         AUTO_LABEL_WORKFLOW_PATH: render_auto_label_workflow(config),
+        PR_CHECK_WORKFLOW_PATH: render_pr_check_workflow(config),
     }
 
 
@@ -206,7 +346,7 @@ def apply_change_plan(plan: list[dict[str, Any]], repo_root: Path, config: dict[
 
 def print_change_plan(plan: list[dict[str, Any]]) -> None:
     if not plan:
-        print("GitHub governance labels, issue template, and auto-label workflow are already up to date.")
+        print("GitHub governance labels, issue template, auto-label workflow, and PR check workflow are already up to date.")
         return
     print("GitHub governance change plan:")
     for change in plan:

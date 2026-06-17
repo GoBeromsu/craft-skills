@@ -13,7 +13,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS = REPO_ROOT / "skills/init/scripts"
 sys.path.insert(0, str(SCRIPTS))
 
-from governance_config import all_label_specs, resolve_config, type_label_names  # noqa: E402
+from governance_config import all_label_specs, is_non_logic_path, resolve_config, type_label_names  # noqa: E402
 
 
 class GovernanceConfigTest(unittest.TestCase):
@@ -33,6 +33,7 @@ class GovernanceConfigTest(unittest.TestCase):
             self.assertEqual(config["labels"]["domain"], [])
             self.assertIn("**/tests/**", config["non_logic_globs"])
             self.assertIn("pnpm-lock.yaml", config["non_logic_globs"])
+            self.assertIn("test_*.py", config["non_logic_globs"])
 
     def test_sparse_repo_override_merges_with_defaults(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -96,6 +97,15 @@ class GovernanceConfigTest(unittest.TestCase):
                 os.environ.pop("CONFIG_DIR", None)
             self.assertEqual(config["default_branch"], "trunk")
             self.assertEqual(config["non_logic_globs"], ["docs/**", "generated/**"])
+
+
+    def test_multi_language_test_paths_are_non_logic(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            config = resolve_config(tmp)
+            self.assertTrue(is_non_logic_path("ml/training/test_evaluate_nh.py", config))
+            self.assertTrue(is_non_logic_path("ml/tests/test_serving_model.py", config))
+            self.assertTrue(is_non_logic_path("backend/src/foo_test.ts", config))
+            self.assertFalse(is_non_logic_path("ml/training/evaluate_nh.py", config))
 
 
 if __name__ == "__main__":

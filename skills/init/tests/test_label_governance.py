@@ -16,7 +16,7 @@ SCRIPTS = REPO_ROOT / "skills/init/scripts"
 sys.path.insert(0, str(SCRIPTS))
 
 from governance_config import resolve_config  # noqa: E402
-from install_github_governance import AUTO_LABEL_WORKFLOW_PATH, ISSUE_TEMPLATE_PATH, desired_files  # noqa: E402
+from install_github_governance import AUTO_LABEL_WORKFLOW_PATH, ISSUE_TEMPLATE_PATH, PR_CHECK_WORKFLOW_PATH, desired_files  # noqa: E402
 
 INSTALLER = REPO_ROOT / "skills/init/scripts/install_github_governance.py"
 VERIFIER = REPO_ROOT / "skills/init/scripts/verify_github_governance.py"
@@ -94,6 +94,7 @@ class LabelGovernanceTest(unittest.TestCase):
             self.assertIn("CREATE label size/override", result.stdout)
             self.assertIn(f"WRITE {ISSUE_TEMPLATE_PATH}", result.stdout)
             self.assertIn(f"WRITE {AUTO_LABEL_WORKFLOW_PATH}", result.stdout)
+            self.assertIn(f"WRITE {PR_CHECK_WORKFLOW_PATH}", result.stdout)
             log = log_path.read_text(encoding="utf-8")
             self.assertIn("label list --limit 1000 --json name,color,description", log)
             self.assertNotIn("label create", log)
@@ -134,6 +135,44 @@ class LabelGovernanceTest(unittest.TestCase):
             self.assertIn("Unknown Type", workflow)
             self.assertIn("labels: [selected]", workflow)
 
+
+    def test_install_writes_pr_check_from_resolved_config(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            config_path = root / ".github/issue-driven-governance.yml"
+            config_path.parent.mkdir(parents=True)
+            config_path.write_text(
+                "\n".join([
+                    "churn_threshold: 42",
+                    "allowed_base: [trunk, release/*]",
+                    "non_logic_globs:",
+                    "  - docs/**",
+                    "  - **/fixtures/**",
+                    "labels:",
+                    "  size:",
+                    "    - name: xs",
+                    "    - name: md",
+                    "    - name: lg",
+                    "    - name: huge",
+                    "  override:",
+                    "    - name: governance/size-override",
+                ]),
+                encoding="utf-8",
+            )
+            env, _ = self.fake_env(root, [{"name": name} for name in DEFAULT_LABEL_NAMES])
+
+            result = self.run_script(INSTALLER, root, env)
+
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            workflow = (root / PR_CHECK_WORKFLOW_PATH).read_text(encoding="utf-8")
+            self.assertIn("CHURN_THRESHOLD: '42'", workflow)
+            self.assertIn("ALLOWED_BASES: '[\"trunk\", \"release/*\"]'", workflow)
+            self.assertIn("NON_LOGIC_GLOBS: '[\"docs/**\", \"**/fixtures/**\"]'", workflow)
+            self.assertIn("SIZE_LABELS: '[\"xs\", \"md\", \"lg\", \"huge\"]'", workflow)
+            self.assertIn("OVERRIDE_LABEL: '\"governance/size-override\"'", workflow)
+            self.assertIn("// === SIZE-CHECK-LOGIC-START ===", workflow)
+            self.assertIn("logicChurn > threshold && !hasOverride", workflow)
+
     def test_verify_check_passes_when_all_governance_present(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -143,7 +182,7 @@ class LabelGovernanceTest(unittest.TestCase):
             result = self.run_script(VERIFIER, root, env, "--check")
 
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-            self.assertIn("All GitHub governance labels, issue template, and auto-label workflow are present.", result.stdout)
+            self.assertIn("All GitHub governance labels, issue template, auto-label workflow, and PR check workflow are present.", result.stdout)
             self.assertIn("label list --limit 1000 --json name", log_path.read_text(encoding="utf-8"))
 
     def test_verify_check_fails_when_labels_missing(self) -> None:
@@ -187,6 +226,20 @@ class LabelGovernanceTest(unittest.TestCase):
 
             self.assertEqual(result.returncode, 1)
             self.assertIn("Auto-label workflow TYPE_LABELS do not match resolved type labels.", result.stdout)
+
+
+    def test_verify_check_fails_when_pr_check_resolved_values_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_desired_files(root)
+            pr_check = root / PR_CHECK_WORKFLOW_PATH
+            pr_check.write_text(pr_check.read_text(encoding="utf-8").replace("CHURN_THRESHOLD: '1000'", "CHURN_THRESHOLD: '5'"), encoding="utf-8")
+            env, _ = self.fake_env(root, [{"name": name} for name in DEFAULT_LABEL_NAMES])
+
+            result = self.run_script(VERIFIER, root, env, "--check")
+
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("PR check workflow threshold does not match resolved config.", result.stdout)
 
 
 if __name__ == "__main__":

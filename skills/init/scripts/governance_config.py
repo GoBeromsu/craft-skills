@@ -2,6 +2,7 @@
 """Shared issue-driven governance configuration resolver for the init skill."""
 from __future__ import annotations
 
+import fnmatch
 import json
 import os
 import re
@@ -41,6 +42,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "**/tests/**",
         "*_test.*",
         "test_*.*",
+        "test_*.py",
         "*.spec.*",
         "*.test.*",
         "docs/**",
@@ -219,6 +221,17 @@ def _normalize(config: dict[str, Any]) -> dict[str, Any]:
     config["allowed_base"] = [str(item) for item in config.get("allowed_base", [])]
     config["non_logic_globs"] = [str(item) for item in config.get("non_logic_globs", [])]
     return config
+
+
+def is_non_logic_path(path: str, config: dict[str, Any]) -> bool:
+    """Return whether path is excluded from logic churn by resolved config."""
+    normalized = path.replace("\\", "/").lstrip("/")
+    basename = normalized.rsplit("/", 1)[-1]
+    for pattern in config.get("non_logic_globs", []):
+        glob = str(pattern).replace("\\", "/")
+        if fnmatch.fnmatchcase(normalized, glob) or fnmatch.fnmatchcase(basename, glob):
+            return True
+    return False
 
 
 def resolve_config(repo_root: str | Path) -> dict[str, Any]:

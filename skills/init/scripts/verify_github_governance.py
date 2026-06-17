@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 from governance_config import all_label_specs, resolve_config, type_label_names
-from install_github_governance import AUTO_LABEL_WORKFLOW_PATH, ISSUE_TEMPLATE_PATH, render_auto_label_workflow, render_issue_template
+from install_github_governance import AUTO_LABEL_WORKFLOW_PATH, ISSUE_TEMPLATE_PATH, PR_CHECK_WORKFLOW_PATH, render_auto_label_workflow, render_issue_template, render_pr_check_workflow
 
 
 def _run_gh(args: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
@@ -84,6 +84,61 @@ def auto_label_type_labels(text: str) -> list[str] | None:
     return labels
 
 
+def extract_size_check_logic(text: str) -> str | None:
+    match = re.search(r"// === SIZE-CHECK-LOGIC-START ===\n(?P<body>.*?)\n\s*// === SIZE-CHECK-LOGIC-END ===", text, re.DOTALL)
+    return match.group("body") if match else None
+
+
+def workflow_env_value(text: str, name: str) -> str | None:
+    match = re.search(rf"^\s*{re.escape(name)}:\s*'([^']*)'\s*$", text, re.MULTILINE)
+    return match.group(1) if match else None
+
+
+def workflow_env_json(text: str, name: str) -> object | None:
+    value = workflow_env_value(text, name)
+    if value is None:
+        return None
+    try:
+        return json.loads(value)
+    except json.JSONDecodeError:
+        return None
+
+
+def pr_check_resolved_errors(text: str, config: dict[str, object]) -> list[str]:
+    errors: list[str] = []
+    logic = extract_size_check_logic(text)
+    if logic is None:
+        return ["PR check workflow is missing an extractable SIZE-CHECK-LOGIC block."]
+
+    threshold_value = workflow_env_value(text, "CHURN_THRESHOLD")
+    if threshold_value is None or int(threshold_value) != int(config["churn_threshold"]):
+        errors.append("PR check workflow threshold does not match resolved config.")
+    if workflow_env_json(text, "ALLOWED_BASES") != config["allowed_base"]:
+        errors.append("PR check workflow allowed bases do not match resolved config.")
+    if workflow_env_json(text, "NON_LOGIC_GLOBS") != config["non_logic_globs"]:
+        errors.append("PR check workflow non-logic globs do not match resolved config.")
+    size_labels = [label["name"] for label in config["labels"]["size"]]  # type: ignore[index]
+    if workflow_env_json(text, "SIZE_LABELS") != size_labels:
+        errors.append("PR check workflow size labels do not match resolved config.")
+    override_labels = [label["name"] for label in config["labels"].get("override", [])]  # type: ignore[union-attr,index]
+    expected_override = override_labels[0] if override_labels else "size/override"
+    if workflow_env_json(text, "OVERRIDE_LABEL") != expected_override:
+        errors.append("PR check workflow override label does not match resolved config.")
+
+    behavior_fragments = [
+        "function isNonLogicPath(path)",
+        "function allowedBaseMatches(base)",
+        "function sizeBucket(churn)",
+        "logicChurn > threshold && !hasOverride",
+        "github.paginate(github.rest.pulls.listFiles",
+        "pr.draft",
+    ]
+    for fragment in behavior_fragments:
+        if fragment not in logic:
+            errors.append(f"PR check workflow logic is missing behavior fragment: {fragment}")
+    return errors
+
+
 def governance_file_errors(repo_root: Path) -> list[str]:
     config = resolve_config(repo_root)
     expected_types = type_label_names(config)
@@ -121,6 +176,15 @@ def governance_file_errors(repo_root: Path) -> list[str]:
         if text != render_auto_label_workflow(config):
             errors.append("Auto-label workflow content is not the resolved installer output.")
 
+    pr_check = repo_root / PR_CHECK_WORKFLOW_PATH
+    if not pr_check.exists():
+        errors.append(f"Missing PR check workflow: {PR_CHECK_WORKFLOW_PATH}")
+    else:
+        text = pr_check.read_text(encoding="utf-8")
+        errors.extend(pr_check_resolved_errors(text, config))
+        if text != render_pr_check_workflow(config):
+            errors.append("PR check workflow content is not the resolved installer output.")
+
     return errors
 
 
@@ -153,7 +217,7 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"- {error}")
         return 1
 
-    print("All GitHub governance labels, issue template, and auto-label workflow are present.")
+    print("All GitHub governance labels, issue template, auto-label workflow, and PR check workflow are present.")
     return 0
 
 
