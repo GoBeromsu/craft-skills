@@ -23,6 +23,7 @@ chmod +x .githooks/pre-commit \
          scripts/git-guard/assert-not-main.sh \
          scripts/git-guard/check-freshness.sh \
          scripts/git-guard/wt.sh \
+         scripts/git-guard/tmux-fanout.sh \
          scripts/git-guard/setup-hooks.sh
 
 # 4. Confirmation summary.
