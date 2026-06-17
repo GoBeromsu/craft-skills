@@ -1,7 +1,7 @@
 ---
 name: skillify
 description: '"make a skill", "스킬 만들자", "skillify this workflow", "turn this into a skill", "update this skill", "fix this skill", "edit this skill", "move this skill", "/skillify"'
-version: 3.2.0
+version: 3.3.0
 allowed-tools: [Bash, Read, Edit, Write, Grep, Glob]
 compatibility: claude-code, codex
 ---
@@ -215,6 +215,7 @@ Default to a **flat** package at `skills/<skill-name>/`. Promote into an area fo
 In craft-skills, skills are discovered by Claude Code from the `description` field in `SKILL.md` frontmatter — there is no RESOLVER.md requirement for flat skills. A flat skill at `skills/<skill-name>/` needs only a well-formed `description` trigger phrase. Area folders with ≥2 sibling skills use a RESOLVER.md for disambiguation (full schema: `references/schemas.md §5`). Full move mechanics and routing rules: `references/topology-and-routing.md`.
 
 Leaf descriptions are written as **real user trigger phrases**, not capability blurbs.
+Leaf **names** are compact one-concept handles — prefer a single word, cap at two tokens, no `-skill`/`-tool` suffix or sentence-like phrasing (full contract: `references/schemas.md §2`).
 
 ## Requirements
 
@@ -260,6 +261,7 @@ Changes touching authority boundaries need explicit scoped current-turn approval
 | "I'll credit the source that inspired this rule, for context." | Attribution is provenance, not recipe. Keep the principle imperative; move the credit to CHANGELOG.md. A reader executing the recipe never needs to know who it came from. |
 | "This term is well-known — no need to define it." | An unexplained term of art is a contamination. Define it inline at first use (present-tense, self-contained), or replace the abstract phrasing with a concrete technical equivalent. Move the clarification rationale to CHANGELOG.md. The reader of the skill may not share your context. |
 | "My own review is enough — Layer-2 consensus is optional." | Single-model judgment is not robust. The convergence loop surfaces blind spots no one reviewer catches; the Tier-2 gate requires a consensus receipt. |
+| "A longer, descriptive skill name is clearer." | The name is a compact handle; discoverability lives in the description's trigger phrases. Prefer one concept word; ban `-skill`/`-tool` suffixes and sentence-like names. Full contract: `references/schemas.md §2`. |
 
 ## Red Flags
 
@@ -276,6 +278,7 @@ Changes touching authority boundaries need explicit scoped current-turn approval
 - Two package parts or sections owning the same responsibility (not mutually exclusive), or a concern with no home (not collectively exhaustive) — the skill is not MECE
 - Running Layer-2 consensus from CI (Layer 2 is local only; CI runs Layer 1 only)
 - Tool skill drafted without reading the upstream README first
+- A skill name that reads as a sentence, carries a `-skill`/`-tool`/`-helper`/`-workflow` suffix, or restates the description instead of naming one concept (`references/schemas.md §2` name style)
 
 ## Verification
 
