@@ -163,19 +163,36 @@ present. Do not fail hard on a missing optional installer — record the skip an
 
 #### Worktree / git-guard installer
 
-The worktree skill's git-guard installer wires `core.hooksPath` and registers the `git wt`
-alias. Detect and invoke:
+git-guard ships **by default** with init. Init does not wait for the guard scripts to already
+exist in the target repo — it invokes the worktree skill's bundled `install.sh`, which copies the
+guard scripts into `scripts/git-guard/`, copies the shipped hooks into `.githooks/`, and wires
+`core.hooksPath` + the `git wt` alias. The installer is idempotent and never clobbers existing
+files, so re-running is safe.
+
+Locate the worktree skill's `install.sh` using Glob (same lookup style as the documents
+templates). Try each pattern and use the first that resolves:
+
+```
+~/.claude/skills/*/skills/worktree/scripts/install.sh
+~/.claude/plugins/*/*/skills/worktree/scripts/install.sh
+~/.claude/plugins/*/skills/worktree/scripts/install.sh
+~/.claude/plugins/cache/*/*/*/skills/worktree/scripts/install.sh
+```
+
+Then invoke it from the target repo root:
 
 ```bash
-GUARD_SCRIPT="scripts/git-guard/setup-hooks.sh"
-if [ -f "$GUARD_SCRIPT" ]; then
-  bash "$GUARD_SCRIPT"
-  echo "Wired: git-guard (core.hooksPath set)"
+WT_INSTALL="<path resolved above>"
+if [ -f "$WT_INSTALL" ]; then
+  sh "$WT_INSTALL"
+  echo "Wired: git-guard (scripts + hooks scaffolded, core.hooksPath set)"
 else
-  echo "Notice: $GUARD_SCRIPT not found — git-guard wiring skipped."
-  echo "Add the worktree skill's git-guard scripts and re-run init, or wire manually."
+  echo "Notice: worktree install.sh not found — git-guard wiring skipped."
+  echo "Install/enable the worktree skill and re-run init, or wire manually."
 fi
 ```
+
+Always confirm `git config core.hooksPath` returns `.githooks` afterward.
 
 #### GitHub governance rails
 
@@ -221,8 +238,9 @@ After running init, confirm all of the following:
 - [ ] `docs/architecture.md` present (seeded from documents skill or placeholder with warning)
 - [ ] `README.md` present at repo root (pre-existing or seeded with warning if documents
   skill was not found)
-- [ ] git-guard wired: `git config core.hooksPath` returns the hooks directory,
-  or a skip notice was recorded
+- [ ] git-guard scaffolded by default: `scripts/git-guard/` and `.githooks/pre-commit` /
+  `.githooks/pre-push` exist, and `git config core.hooksPath` returns `.githooks`
+  (or a skip notice was recorded because the worktree installer could not be located)
 - [ ] GitHub governance install preview was reviewed with `install_github_governance.py --dry-run`
 - [ ] GitHub governance rails were applied with `install_github_governance.py` or an explicit skip was recorded
 - [ ] GitHub governance verifier passed with `verify_github_governance.py --check`
@@ -236,6 +254,7 @@ After running init, confirm all of the following:
 | "I'll just create the folders by hand — no need for init." | Manual setup diverges across repos and is not auditable. Init is the single explicit, idempotent entry point for scaffold consistency. |
 | "README.md exists but looks incomplete — init should patch it." | Init does not patch existing files. The `documents` skill authors and updates content; init only seeds when a file is absent. |
 | "I'll also scaffold the .claude-plugin here." | Plugin manifests are consumer-side configuration, not docs/ rails. Init's scope ends at docs/ and git-hook wiring. |
+| "git-guard only installs if its scripts are already in the repo." | No. init scaffolds git-guard **by default** via the worktree skill's `install.sh` — it copies the scripts and hooks in, then wires them. A fresh clone gets enforcement without a manual pre-step. |
 | "The worktree installer failed — I'll skip it silently." | Record every skip explicitly. A missing enforcement rail is a gap the operator must close before conventions are enforced. |
 | "The GitHub governance installer is optional docs polish." | It is an init-owned enforcement rail. Preview with `--dry-run`, apply intentionally, then verify with `--check`. |
 | "The Development Flow block can be pasted wherever." | Keep it in one managed block, preserve surrounding content, and replace only the block on re-run. |

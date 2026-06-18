@@ -37,13 +37,19 @@ git config alias.wt                 # must be set
 ls scripts/git-guard/setup-hooks.sh # must exist
 ```
 
-If any check fails, install by running the bundled `setup-hooks.sh` from the skill's `scripts/` directory into the repo:
+If any check fails, run the bundled installer from the skill's `scripts/` directory against the target repo:
 
-1. Copy `skills/worktree/scripts/` into the repo at `scripts/git-guard/` (skip if already present).
-2. Ensure `.githooks/pre-commit` and `.githooks/pre-push` exist (create stubs that call the guard scripts if absent).
-3. Run `sh scripts/git-guard/setup-hooks.sh` from the repo root.
+```bash
+sh skills/worktree/scripts/install.sh   # run from the target repo root
+```
 
-`setup-hooks.sh` is idempotent — re-running when already installed is a no-op. After install, confirm output shows:
+`install.sh` is the single entry point. It performs all three steps and never clobbers existing files:
+
+1. Copies the guard scripts into the repo at `scripts/git-guard/` (skip per-file if already present).
+2. Copies the shipped `githooks/pre-commit` and `githooks/pre-push` into `.githooks/` (skip if present) — these are real files in the skill, not improvised stubs.
+3. Runs `scripts/git-guard/setup-hooks.sh` to wire `core.hooksPath`, register `alias.wt`, and `chmod +x` the scripts and hooks.
+
+Both `install.sh` and `setup-hooks.sh` are idempotent — re-running when already installed is a no-op. After install, confirm output shows:
 
 ```
 [git-guard] core.hooksPath  = .githooks
@@ -179,6 +185,9 @@ Dependencies:
 
 | Script | Role |
 |---|---|
+| `scripts/install.sh` | Bundled first-run installer: copies guard scripts + hooks into the repo, then runs `setup-hooks.sh`. The single entry point `worktree`/`init` delegate to |
+| `githooks/pre-commit` | Shipped hook: assert-not-main + deny-assets (staged) + check-freshness (warn). Copied into the repo's `.githooks/` |
+| `githooks/pre-push` | Shipped hook: assert-not-main + check-freshness (block) + deny-assets (push). Copied into the repo's `.githooks/` |
 | `scripts/lib.sh` | Shared helpers: `gg_warn`, `gg_die`, protected-branch list |
 | `scripts/assert-not-main.sh` | Exits 1 when HEAD is on a protected branch |
 | `scripts/check-freshness.sh` | Compares HEAD to upstream; `block` (exit 1) or `warn` mode |

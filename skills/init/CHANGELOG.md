@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- Step 4 now installs git-guard **by default**: instead of only running `setup-hooks.sh` when guard scripts already exist (a chicken-and-egg that left fresh repos unprotected), init locates and invokes the worktree skill's bundled `install.sh`, which scaffolds the guard scripts + hooks and wires `core.hooksPath`. Verification checklist and rationalizations updated accordingly.
 - Added S7a fixture-repo semantic proof for GitHub governance install/verify behavior, reinstall idempotency, and override config resolution.
 
 ## [1.1.0] - 2026-06-17
