@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+# git-guard pre-push hook.
+#   - assert-not-main : refuse pushes from a protected branch
+#   - check-freshness : block the push when the branch is behind upstream
+#   - deny-assets     : block model weights / media / oversized blobs in outgoing commits
+#
+# Git passes ref-update lines on stdin; assert-not-main and check-freshness do not
+# read stdin, so it stays intact for `deny-assets.sh push`, which consumes it.
+# This hook only dispatches; all logic lives in scripts/git-guard/.
+set -eu
+
+guard="$(git rev-parse --show-toplevel)/scripts/git-guard"
+"$guard/assert-not-main.sh"
+"$guard/check-freshness.sh" block
+"$guard/deny-assets.sh" push
