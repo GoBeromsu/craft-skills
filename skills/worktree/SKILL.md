@@ -1,7 +1,7 @@
 ---
 name: worktree
 description: '"git wt", "make a worktree", "work on issue #N", "/worktree" — create an isolated worktree off a <type>/<issue#>-<slug> branch and install the git-guard rails in the target repo.'
-version: 1.0.0
+version: 1.0.1
 allowed-tools: [Bash, Read, Write, Edit, Grep, Glob]
 compatibility: claude-code, codex
 ---
@@ -103,11 +103,19 @@ git wt rm <issue#> --force # force-remove a dirty worktree
 
 Use `git wt rm` — never `rm -rf`. Manual deletion leaves phantom `.git/worktrees/` entries that block `git branch -d` and `git checkout` until `git worktree prune` is run manually. `git wt rm` calls `git worktree remove` + `git worktree prune` automatically.
 
-After the PR is merged, delete the local branch:
+### After the PR is merged — cleanup order matters
+
+The branch is **held by its worktree**. You cannot delete the branch while the worktree exists, and you cannot run the cleanup *from inside* the worktree being removed. Two failures follow from ignoring this:
+
+1. **Don't merge with `--delete-branch`.** `gh pr merge --squash --delete-branch` fails with `cannot delete branch '<branch>' used by worktree` whenever a worktree still holds it. Merge plain, then clean up locally.
+2. **`cd` to the primary checkout first.** Running `git worktree remove`, `git checkout <default>`, or `git branch -d` *from inside* the worktree you are removing fails (`'<default>' is already used by worktree …`, or `branch '<branch>' used by worktree …`). Step out, then:
 
 ```bash
-git branch -d <branch>
+git wt rm <issue#>        # remove worktree + prune (run from primary checkout)
+git branch -d <branch>    # branch is now free to delete
 ```
+
+Use `git branch -d` (not `-D`) — a merged branch deletes cleanly, and the safe form catches the "not actually merged" case.
 
 ---
 
@@ -200,6 +208,8 @@ Dependencies:
 
 ## Rationalizations / Red Flags
 
+- `gh pr merge --delete-branch` exiting with `cannot delete branch '<branch>' used by worktree` is expected, not a fault — the worktree still holds it. Merge without `--delete-branch`, then `git wt rm <issue#>` + `git branch -d <branch>`.
+- Cleanup commands (`git worktree remove`, `git checkout <default>`, `git branch -d`) failing with `... already used by worktree` usually means you are running them *inside* the worktree you are removing. `cd` to the primary checkout and retry.
 - If `git worktree list` shows a phantom entry for a branch after a manual `rm -rf`, run `git worktree prune` to clear it — then the branch can be deleted or checked out.
 - If `git wt` reports "branch already exists", use `git wt ls` to find the existing worktree path instead of creating a duplicate.
 - If the freshness check warns but you are certain the upstream has no relevant changes, run `git fetch` then re-check with `git rev-list --count HEAD..@{upstream}` before suppressing.
