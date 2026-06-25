@@ -9,6 +9,7 @@ compatibility: claude-code, codex
 # documents
 
 Owns the full project documentation system: the `docs/` folder ontology, the lifecycle of every artifact type, and the routing rules that place each artifact in the right location with the right template.
+This guidance is derived and thickened from the addyosmani/agent-skills `documentation-and-adrs` SSOT, adapted to this repository's self-complete ADR model.
 
 ## Artifact types (MECE)
 
@@ -20,7 +21,7 @@ Every documentation artifact answers exactly one question. Never let one artifac
 | **references** | *What does this external source say* — verbatim static archive of a third-party document | Permanent snapshot; never edited after capture | `templates/references.md` | `docs/research/references/{slug}.md` |
 | **spec** | *What* is this work and are the requirements clear? | Work-scoped, one-shot | `templates/spec.md` | `docs/exec-plan/active/{slug}/spec.md` |
 | **plan** | *How* to implement (steps, files, order) | Work-scoped; body immutable after finalize | `templates/plan.md` | `docs/exec-plan/active/{slug}/plan.md` |
-| **decision** | One expensive-to-reverse *cross-cutting* decision | Permanent (superseded only, never deleted) | `templates/decision.md` | `docs/decisions/ADR-NNN-{topic}.md` |
+| **decision** | One expensive-to-reverse *cross-cutting* decision | Permanent topic anchor; body edited in place to the current decision; each change logged as one line in the ADR's ## Changelog (git holds full history) | `templates/decision.md` | `docs/decisions/ADR-NNN-{topic}.md` |
 | **rule** | A standing convention (ongoing constraint, not work-scoped) | Alive as long as the convention holds | `templates/rule.md` | `docs/rules/{topic}.md` |
 
 ## Routing
@@ -102,10 +103,22 @@ A plan is finalized on the first git commit that includes its `plan.md`. From th
 ### ADR lifecycle
 
 ```
-PROPOSED → ACCEPTED → (SUPERSEDED | DEPRECATED)
+PROPOSED → ACCEPTED → DEPRECATED
 ```
 
-Never delete an ADR. When a decision changes, write a new ADR that references and supersedes the old one, then flip the old one's status to `Superseded by ADR-NNN`. ADRs must be MECE — one decision each, no overlap.
+An ADR describes the current decision for one topic as a self-complete, MECE record. When the decision changes, edit that ADR body in place so it contains only the current decision, then add one line to its `## Changelog`: `- YYYY-MM-DD: what changed`. Do not create ADR replacement chains, coverage matrices, or retired-source tracking; git holds the detailed history. The ADR number is a stable topic anchor.
+Document the **why**, not the what. Code and rules show what the system does; ADRs preserve the context, constraints, trade-offs, and rejected alternatives that explain why the system is shaped this way.
+
+### Why there is no "supersede"
+
+An ADR is the self-complete, MECE, current decision for one atomic topic. "Supersede" collapses different relationships that must stay separate:
+
+- Same decision changed → edit the ADR body in place and add one line to `## Changelog`; git holds the full history. Do not create a new ADR or chain.
+- More specific sub-decision → create a separate atomic ADR that `Refines:` the broader decision. Both remain current.
+- Different decision that builds on another → create a separate atomic ADR that `References:` the other decision. Both remain current.
+- "Only clause X changed" → the ADR was probably not atomic. Split it into atomic ADRs, then update the changed decision in place.
+
+If each ADR is atomic, MECE, and self-complete, supersede chains collapse into in-place edits with `## Changelog` plus `References:` / `Refines:` links. ADR status is only `Proposed | Accepted | Deprecated`.
 
 ## Plan vs ADR — boundary
 
@@ -115,8 +128,8 @@ This is the most common filing error. They answer different questions.
 |---|---|---|
 | Question | *How* to implement this specific work | *Why* this cross-cutting choice — and what alternatives were rejected |
 | Scope | One feature / task (work-scoped) | Cross-cutting — constrains all future work |
-| Lifespan | Archivable when work ends | Permanent — superseded only, never deleted |
-| Body | Immutable after finalize; scope change → new slug | Superseded by a new ADR referencing the old one |
+| Lifespan | Archivable when work ends | Permanent topic anchor; body edited in place to current decision |
+| Body | Immutable after finalize; scope change → new slug | Updated in place; each change is one line in the ADR's ## Changelog (git holds detail) |
 | Location | `active/{slug}/plan.md` → `archive/{slug}/` | `docs/decisions/ADR-NNN-*.md` |
 
 ### Distill rule
@@ -127,11 +140,30 @@ Decision test: *"Would a future engineer or agent working on an unrelated featur
 - Yes → write an ADR.
 - No, it only affects this feature's implementation details → leave it in the plan.
 
+### When to write an ADR
+- Choosing a framework, library, or major dependency
+- Designing a data model or schema
+- Selecting an auth strategy
+- Choosing API architecture (`REST` vs `GraphQL` vs `tRPC`, public contract shape, versioning model)
+- Choosing build tools, hosting, or infrastructure
+- Any cross-cutting decision that would be costly to reverse
+
 ### Do not write an ADR for
 
 - Implementation steps or file-level details (belong in the plan)
 - Choices that will be revisited within this same work item
 - Trivial configuration values with no architectural consequence
+
+### Common rationalizations
+| Rationalization | Reality |
+|---|---|
+| "The code is self-documenting." | Code documents what exists; ADRs document why this path won and which paths lost. |
+| "We'll document it once the API stabilizes." | Writing the ADR is the first test of the design; unclear rationale usually means the design is not stable yet. |
+| "Nobody reads docs." | Future agents, future engineers, and you three months from now read the decision trail when changing the system. |
+| "ADRs are overhead." | A 10-minute ADR prevents the same two-hour architecture argument six months later. |
+| "Comments go stale." | What-comments go stale; why-comments and ADR rationale stay useful because the historical constraint remains true. |
+
+Document known gotchas inline with a pointer back to the decision: `See ADR-NNN for rationale`.
 
 ## Slug naming
 
@@ -158,7 +190,7 @@ Keep it a map, not a manual. If it starts duplicating an ADR body, replace the d
 
 - A research doc that asserts a decision (research presents; it does not decide)
 - A plan and an ADR conflated into one file
-- ADRs that overlap or contradict without a supersede link
+- ADRs that overlap (not MECE), or a decision change with no ## Changelog entry
 - Scratch drafts treated as canonical (never moved into `docs/`)
 - `architecture.md` that restates ADR bodies instead of linking them
 - Completed or discarded work still sitting in `active/` with no `status` frontmatter
@@ -169,7 +201,7 @@ Keep it a map, not a manual. If it starts duplicating an ADR body, replace the d
 - [ ] Each artifact answers exactly one of the six questions (research/references/spec/plan/decision/rule)
 - [ ] Cross-cutting decisions are distilled into ADRs, not buried in plans
 - [ ] Completed/discarded work moved from `active/` to `archive/` with a `status` line
-- [ ] ADRs are sequentially numbered, MECE, and none deleted
+- [ ] ADRs are MECE (one decision each); changed decisions are edited in place with a ## Changelog one-line entry and cross-ADR links use `References:` / `Refines:`
 - [ ] `architecture.md` is a map that links out, not a manual that duplicates
 - [ ] References files contain verbatim source content, not your synthesis
 - [ ] Slug frontmatter field matches the folder name exactly
