@@ -26,7 +26,9 @@ craft-skills/
 │   │   └── SKILL.md
 │   ├── init/                    # Project bootstrap / rail-laying
 │   │   └── SKILL.md
-│   └── skillify/                # Vendored skill-authoring promotion gate (self-governing)
+│   ├── skillify/                # Vendored skill-authoring promotion gate (self-governing)
+│   │   └── SKILL.md
+│   └── technical-report/        # Canonical technical-report engine — YAML-frame TOC + structure/source validators
 │       └── SKILL.md
 ├── install.sh                   # POSIX-sh multi-runtime convenience installer
 ├── AGENTS.md                    # ← this file (single source of truth for all runtimes)
@@ -45,6 +47,7 @@ One imperative sentence per skill. Load the skill's `SKILL.md` for the full reci
 | `worktree` | Run the `git wt <issue#>` dedicated-worktree workflow, self-install git-guard on first use, and optionally exec on a remote Tailscale host via tmux. |
 | `init` | Bootstrap a project's `docs/` scaffold, wire standing conventions, and invoke each skill's self-installer in one explicit, one-time pass. |
 | `skillify` | Create, update, move, or promote a craft-skills skill through the vendored two-layer promotion gate. |
+| `technical-report` | Scaffold a per-project `technical-report.yaml` frame through a depth-ordered interview, then author/review canonical section markdown against it under code-enforced structure and source-coverage gates. |
 
 ---
 

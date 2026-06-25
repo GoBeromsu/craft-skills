@@ -16,6 +16,7 @@ two domains never bleed into each other's context.
 | `worktree` | `git wt <issue#>` dedicated-worktree workflow, git-guard self-install, and optional remote execution via Tailscale + tmux. |
 | `init` | One-time project bootstrap — scaffolds the `docs/` folder structure, wires standing conventions, and invokes each skill's self-installer. |
 | `skillify` | Vendored skill-authoring promotion gate — create, update, move, or promote craft-skills skills through a two-layer review gate. |
+| `technical-report` | Build and enforce a project's canonical technical report — Scaffold mode interviews depth-by-depth to fill a per-project `technical-report.yaml` frame; Author/Validate mode writes/reviews section markdown against it and gates structure + source coverage with two validators. |
 
 ---
 
