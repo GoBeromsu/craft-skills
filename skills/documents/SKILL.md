@@ -9,6 +9,7 @@ compatibility: claude-code, codex
 # documents
 
 Owns the full project documentation system: the `docs/` folder ontology, the lifecycle of every artifact type, and the routing rules that place each artifact in the right location with the right template.
+This guidance is derived and thickened from the addyosmani/agent-skills `documentation-and-adrs` SSOT, adapted to this repository's self-complete ADR model.
 
 ## Artifact types (MECE)
 
@@ -106,6 +107,7 @@ PROPOSED → ACCEPTED → DEPRECATED
 ```
 
 An ADR describes the current decision for one topic as a self-complete, MECE record. When the decision changes, edit that ADR body in place so it contains only the current decision, then add one line to its `## Changelog`: `- YYYY-MM-DD: what changed`. Do not create supersede chains, coverage matrices, or retired-source tracking; git holds the detailed history. The ADR number is a stable topic anchor.
+Document the **why**, not the what. Code and rules show what the system does; ADRs preserve the context, constraints, trade-offs, and rejected alternatives that explain why the system is shaped this way.
 
 ## Plan vs ADR — boundary
 
@@ -127,11 +129,30 @@ Decision test: *"Would a future engineer or agent working on an unrelated featur
 - Yes → write an ADR.
 - No, it only affects this feature's implementation details → leave it in the plan.
 
+### When to write an ADR
+- Choosing a framework, library, or major dependency
+- Designing a data model or schema
+- Selecting an auth strategy
+- Choosing API architecture (`REST` vs `GraphQL` vs `tRPC`, public contract shape, versioning model)
+- Choosing build tools, hosting, or infrastructure
+- Any cross-cutting decision that would be costly to reverse
+
 ### Do not write an ADR for
 
 - Implementation steps or file-level details (belong in the plan)
 - Choices that will be revisited within this same work item
 - Trivial configuration values with no architectural consequence
+
+### Common rationalizations
+| Rationalization | Reality |
+|---|---|
+| "The code is self-documenting." | Code documents what exists; ADRs document why this path won and which paths lost. |
+| "We'll document it once the API stabilizes." | Writing the ADR is the first test of the design; unclear rationale usually means the design is not stable yet. |
+| "Nobody reads docs." | Future agents, future engineers, and you three months from now read the decision trail when changing the system. |
+| "ADRs are overhead." | A 10-minute ADR prevents the same two-hour architecture argument six months later. |
+| "Comments go stale." | What-comments go stale; why-comments and ADR rationale stay useful because the historical constraint remains true. |
+
+Document known gotchas inline with a pointer back to the decision: `See ADR-NNN for rationale`.
 
 ## Slug naming
 
