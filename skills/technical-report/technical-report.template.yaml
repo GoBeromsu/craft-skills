@@ -1,0 +1,70 @@
+# technical-report.yaml — 한 프로젝트의 정본 기술 문서 강제 정의 (단일 소스 / SSOT).
+#
+# 이것은 빈 틀(frame)이다. 프로젝트마다 내용은 달라지지만 골격은 같다.
+# Scaffold 인터뷰가 이 틀을 depth 순서로 채운다. 채워진 결과가
+# $TECHNICAL_REPORT_YAML 가 가리키는 프로젝트별 SSOT 다.
+#
+# depth가 곧 골격이다:
+#   depth-1  document.<섹션>            — book 디렉토리의 마크다운 파일 하나 (## 없는 abstract 포함)
+#   depth-2  <섹션>.headings.<## 헤딩>  — 그 파일이 가져야 하는 ## 헤딩
+#   depth-3  must                       — 그 헤딩(또는 섹션)이 반드시 담아야 하는 내용. 빠지면 미완.
+#
+# 인터뷰 기본 진입점은 depth-1 이다: 먼저 섹션 목록을 정하고, 각 섹션의 ## 헤딩(depth-2)을
+# 정한 뒤, 마지막에 헤딩별 must(depth-3)를 채운다.
+#
+# 경로·민감값을 이 파일에 박지 않는다. book 위치는 $TECHNICAL_REPORT_BOOK,
+# 이 파일 위치는 $TECHNICAL_REPORT_YAML 로 주입한다. 호스트·포트·토큰·사설 IP·실경로는
+# references/source-model.md 의 민감정보 규칙에 따라 금지한다(REDACTED 또는 참조키로 대체).
+
+meta:
+  purpose: 이 단일 YAML이 <프로젝트> 정본 기술 문서의 전체 TOC depth를 강제한다. document의 모든 섹션·헤딩·must를 채워야 문서가 완결된다.
+  truth_source: 진리 원천을 한 줄로 적는다(예 — 실제 code/스펙/정본 노트). stale 위험이 있는 보조 참조는 따로 표시한다.
+  target: $TECHNICAL_REPORT_BOOK 아래 정본 마크다운 파일들(Index + 섹션별 *.md).
+  usage: technical-report 스킬이 이 파일을 읽어 섹션별 must를 체크리스트로 강제하고, background를 작성 배경지식으로 쓴다.
+  source_model: references/source-model.md가 source manifest 계약, source status, must_coverage 매핑, 민감정보 규칙을 정의한다.
+  source_validator: validate_sources.py가 validate.py 이후 섹션별 source manifest를 검증한다.
+  completion_bar: 이 문서만 읽고 작업/온보딩을 시작할 수 있어야 한다(완결 기준을 한 줄로 적는다).
+
+depth_rules:
+  depth_1: document.<섹션> — book 디렉토리의 마크다운 파일 하나
+  depth_2: '<섹션>.headings.<## 헤딩> — 그 파일의 ## 헤딩'
+  depth_3: must — 그 헤딩이 반드시 담아야 하는 내용(빠지면 미완)
+  background: background.<영역> — 문서를 쓸 때 참조하는 배경지식(선택, 별도 depth)
+  source_of_truth: 섹션별 source manifest가 현재 주장 근거를 제공하며, 형식은 references/source-model.md를 따른다.
+
+governance:
+  intent: 이 문서의 응집 원칙을 한 줄로 적는다(예 — Index가 응집점이고 각 섹션은 승인된 정본으로 완결된다).
+  must:
+  - 확정 수정 권한과 승인 절차를 한 줄로 적는다(누가 승인하는지는 역할로만, 개인 식별 정보 없이).
+  - 정본과 원시 로그를 구분하는 규칙을 적는다(자동 동기화 여부 등).
+  - 문서 스타일 규칙을 적는다(문단 중심/불릿 사용 범위, 인용·링크 규약 등).
+
+document:
+  # ── depth-1: 섹션 목록 ───────────────────────────────────────────────
+  # abstract 예시 — ## 헤딩이 없는 섹션은 headings: [] 로 둔다.
+  0_abstract:
+    title: 0 Abstract
+    file: <PROJECT> 0 Abstract.md
+    intent: 문서 전체의 현상·문제·갭·해법·현재 위치를 한 문단으로 압축한다.
+    headings: []
+    must:
+    - 한 문단으로 핵심을 압축해 담는다(무엇을·왜·지금 어디까지).
+  # 섹션 예시 — ## 헤딩(depth-2)과 헤딩별 must(depth-3)를 가진 일반 섹션.
+  1_introduction:
+    title: 1 Introduction
+    file: <PROJECT> 1 Introduction.md
+    intent: 이 섹션이 답해야 하는 질문을 한 줄로 적는다.
+    headings:
+      # ── depth-2: 이 섹션의 ## 헤딩들 ──────────────────────────────────
+      # 헤딩 이름이 곧 마크다운의 "## 헤딩 이름"이다. # 가 들어가면 따옴표로 감싼다.
+      "<첫 번째 헤딩 이름>":
+        intent: 이 헤딩이 무엇을 설명하는지 한 줄로 적는다.
+        must:
+        # ── depth-3: 이 헤딩이 반드시 담아야 하는 내용 ──────────────────
+        - 반드시 담아야 하는 사실/주장 1.
+        - 반드시 담아야 하는 사실/주장 2.
+  # 섹션을 필요한 만큼 추가한다(2_…, 3_…). 번호 순서가 곧 문서 순서다.
+
+# background 는 선택이다 — 문서를 쓸 때 참조하는 시스템/도메인 배경지식을 depth로 둔다.
+# 필요 없으면 통째로 비우거나 삭제한다. 민감값은 REDACTED 또는 참조키로만 둔다.
+background: {}
