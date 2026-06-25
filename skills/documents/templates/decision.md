@@ -3,6 +3,8 @@ slug: ADR-NNN-{topic}             # must match the filename (without .md)
 date: YYYY-MM-DD
 author: {name or agent}
 status: Proposed                   # Proposed | Accepted | Deprecated
+references: []                       # optional: ADRs or docs this decision builds on
+refines: []                          # optional: broader ADRs this decision narrows
 ---
 
 # ADR-NNN: {Decision Title}
@@ -39,6 +41,8 @@ Requirements and constraints that forced a decision.
 State as facts and pressures, not preferences.
 Reference related research docs (docs/research/) if applicable.
 -->
+Related ADRs may be listed as `references:` when this decision builds on them,
+or `refines:` when this decision is a more specific sub-decision.
 
 ## Decision
 
@@ -82,3 +86,7 @@ Include both positive and negative consequences.
 ## Changelog
 
 - YYYY-MM-DD: initial decision
+
+## References
+
+<!-- Optional: links to related ADRs, research, or external references. -->

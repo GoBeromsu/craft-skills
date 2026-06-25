@@ -106,8 +106,19 @@ A plan is finalized on the first git commit that includes its `plan.md`. From th
 PROPOSED → ACCEPTED → DEPRECATED
 ```
 
-An ADR describes the current decision for one topic as a self-complete, MECE record. When the decision changes, edit that ADR body in place so it contains only the current decision, then add one line to its `## Changelog`: `- YYYY-MM-DD: what changed`. Do not create supersede chains, coverage matrices, or retired-source tracking; git holds the detailed history. The ADR number is a stable topic anchor.
+An ADR describes the current decision for one topic as a self-complete, MECE record. When the decision changes, edit that ADR body in place so it contains only the current decision, then add one line to its `## Changelog`: `- YYYY-MM-DD: what changed`. Do not create ADR replacement chains, coverage matrices, or retired-source tracking; git holds the detailed history. The ADR number is a stable topic anchor.
 Document the **why**, not the what. Code and rules show what the system does; ADRs preserve the context, constraints, trade-offs, and rejected alternatives that explain why the system is shaped this way.
+
+### Why there is no "supersede"
+
+An ADR is the self-complete, MECE, current decision for one atomic topic. "Supersede" collapses different relationships that must stay separate:
+
+- Same decision changed → edit the ADR body in place and add one line to `## Changelog`; git holds the full history. Do not create a new ADR or chain.
+- More specific sub-decision → create a separate atomic ADR that `Refines:` the broader decision. Both remain current.
+- Different decision that builds on another → create a separate atomic ADR that `References:` the other decision. Both remain current.
+- "Only clause X changed" → the ADR was probably not atomic. Split it into atomic ADRs, then update the changed decision in place.
+
+If each ADR is atomic, MECE, and self-complete, supersede chains collapse into in-place edits with `## Changelog` plus `References:` / `Refines:` links. ADR status is only `Proposed | Accepted | Deprecated`.
 
 ## Plan vs ADR — boundary
 
@@ -190,7 +201,7 @@ Keep it a map, not a manual. If it starts duplicating an ADR body, replace the d
 - [ ] Each artifact answers exactly one of the six questions (research/references/spec/plan/decision/rule)
 - [ ] Cross-cutting decisions are distilled into ADRs, not buried in plans
 - [ ] Completed/discarded work moved from `active/` to `archive/` with a `status` line
-- [ ] ADRs are MECE (one decision each); changed decisions are edited in place with a ## Changelog one-line entry (no supersede chains)
+- [ ] ADRs are MECE (one decision each); changed decisions are edited in place with a ## Changelog one-line entry and cross-ADR links use `References:` / `Refines:`
 - [ ] `architecture.md` is a map that links out, not a manual that duplicates
 - [ ] References files contain verbatim source content, not your synthesis
 - [ ] Slug frontmatter field matches the folder name exactly
