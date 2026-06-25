@@ -2,16 +2,16 @@
 slug: ADR-NNN-{topic}             # must match the filename (without .md)
 date: YYYY-MM-DD
 author: {name or agent}
-status: Proposed                   # Proposed | Accepted | Superseded by ADR-NNN | Deprecated
-superseded-by:                     # fill only when status: Superseded by ADR-NNN
+status: Proposed                   # Proposed | Accepted | Deprecated
 ---
 
 # ADR-NNN: {Decision Title}
 
 <!--
 PURPOSE: Record one expensive-to-reverse, cross-cutting decision and its rationale.
-One decision per ADR. This file is permanent — never deleted.
-When a decision changes, write a NEW ADR that supersedes this one.
+One decision per ADR. This file is a stable topic anchor — never deleted.
+When the decision changes, edit this ADR in place so it remains self-complete
+and describes only the current decision, then add one line to ## Changelog.
 
 Write here when:
 - Choosing a framework, library, or major dependency
@@ -78,3 +78,7 @@ Include both positive and negative consequences.
 ### New constraints
 
 -
+
+## Changelog
+
+- YYYY-MM-DD: initial decision

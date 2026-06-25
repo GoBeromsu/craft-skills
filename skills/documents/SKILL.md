@@ -20,7 +20,7 @@ Every documentation artifact answers exactly one question. Never let one artifac
 | **references** | *What does this external source say* — verbatim static archive of a third-party document | Permanent snapshot; never edited after capture | `templates/references.md` | `docs/research/references/{slug}.md` |
 | **spec** | *What* is this work and are the requirements clear? | Work-scoped, one-shot | `templates/spec.md` | `docs/exec-plan/active/{slug}/spec.md` |
 | **plan** | *How* to implement (steps, files, order) | Work-scoped; body immutable after finalize | `templates/plan.md` | `docs/exec-plan/active/{slug}/plan.md` |
-| **decision** | One expensive-to-reverse *cross-cutting* decision | Permanent (superseded only, never deleted) | `templates/decision.md` | `docs/decisions/ADR-NNN-{topic}.md` |
+| **decision** | One expensive-to-reverse *cross-cutting* decision | Permanent topic anchor; body edited in place to the current decision; each change logged as one line in the ADR's ## Changelog (git holds full history) | `templates/decision.md` | `docs/decisions/ADR-NNN-{topic}.md` |
 | **rule** | A standing convention (ongoing constraint, not work-scoped) | Alive as long as the convention holds | `templates/rule.md` | `docs/rules/{topic}.md` |
 
 ## Routing
@@ -102,10 +102,10 @@ A plan is finalized on the first git commit that includes its `plan.md`. From th
 ### ADR lifecycle
 
 ```
-PROPOSED → ACCEPTED → (SUPERSEDED | DEPRECATED)
+PROPOSED → ACCEPTED → DEPRECATED
 ```
 
-Never delete an ADR. When a decision changes, write a new ADR that references and supersedes the old one, then flip the old one's status to `Superseded by ADR-NNN`. ADRs must be MECE — one decision each, no overlap.
+An ADR describes the current decision for one topic as a self-complete, MECE record. When the decision changes, edit that ADR body in place so it contains only the current decision, then add one line to its `## Changelog`: `- YYYY-MM-DD: what changed`. Do not create supersede chains, coverage matrices, or retired-source tracking; git holds the detailed history. The ADR number is a stable topic anchor.
 
 ## Plan vs ADR — boundary
 
@@ -115,8 +115,8 @@ This is the most common filing error. They answer different questions.
 |---|---|---|
 | Question | *How* to implement this specific work | *Why* this cross-cutting choice — and what alternatives were rejected |
 | Scope | One feature / task (work-scoped) | Cross-cutting — constrains all future work |
-| Lifespan | Archivable when work ends | Permanent — superseded only, never deleted |
-| Body | Immutable after finalize; scope change → new slug | Superseded by a new ADR referencing the old one |
+| Lifespan | Archivable when work ends | Permanent topic anchor; body edited in place to current decision |
+| Body | Immutable after finalize; scope change → new slug | Updated in place; each change is one line in the ADR's ## Changelog (git holds detail) |
 | Location | `active/{slug}/plan.md` → `archive/{slug}/` | `docs/decisions/ADR-NNN-*.md` |
 
 ### Distill rule
@@ -158,7 +158,7 @@ Keep it a map, not a manual. If it starts duplicating an ADR body, replace the d
 
 - A research doc that asserts a decision (research presents; it does not decide)
 - A plan and an ADR conflated into one file
-- ADRs that overlap or contradict without a supersede link
+- ADRs that overlap (not MECE), or a decision change with no ## Changelog entry
 - Scratch drafts treated as canonical (never moved into `docs/`)
 - `architecture.md` that restates ADR bodies instead of linking them
 - Completed or discarded work still sitting in `active/` with no `status` frontmatter
@@ -169,7 +169,7 @@ Keep it a map, not a manual. If it starts duplicating an ADR body, replace the d
 - [ ] Each artifact answers exactly one of the six questions (research/references/spec/plan/decision/rule)
 - [ ] Cross-cutting decisions are distilled into ADRs, not buried in plans
 - [ ] Completed/discarded work moved from `active/` to `archive/` with a `status` line
-- [ ] ADRs are sequentially numbered, MECE, and none deleted
+- [ ] ADRs are MECE (one decision each); changed decisions are edited in place with a ## Changelog one-line entry (no supersede chains)
 - [ ] `architecture.md` is a map that links out, not a manual that duplicates
 - [ ] References files contain verbatim source content, not your synthesis
 - [ ] Slug frontmatter field matches the folder name exactly
