@@ -46,7 +46,10 @@ Pick the mode first:
 Paths are per-project and injected, never hardcoded:
 
 - `TECHNICAL_REPORT_YAML` — path to this project's filled YAML (SSOT). Default
-  `./technical-report.yaml`.
+  `./technical-report.yaml`. **Do not place this file under a tool-private directory**
+  (`.claude/`, `.codex/`, `.gjc/`, `.hermes/`, etc.) — the YAML is the SSOT for _all_
+  agents, and tool-private dirs are invisible to other runtimes. Recommended locations:
+  repo root (`./technical-report.yaml`) or `docs/technical-report.yaml`.
 - `TECHNICAL_REPORT_BOOK` — directory holding the canonical markdown (Index + section
   files). Default `./book`.
 
