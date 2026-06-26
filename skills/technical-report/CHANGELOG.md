@@ -1,5 +1,10 @@
 # Changelog
 
+- 2026-06-26 — v0.1.1 warn against tool-private YAML placement (#18). `SKILL.md` Setup and
+  `.env.example` now state the `technical-report.yaml` SSOT must live at a tool-neutral path
+  (repo root or `docs/`), never under a single tool's private dir (`.claude/`, `.codex/`,
+  `.gjc/`, `.hermes/`, `.cursor/`) where other runtimes cannot discover it. Docs-only; no
+  validator or runtime change.
 - 2026-06-25 — Harvest-stage draft (v0.1.0). Promoted from a project-local skill into a
   portable engine: split into a reusable empty frame (`technical-report.template.yaml`) and
   a two-mode engine (Scaffold depth-1 interview + Author/Validate). Generalized both
