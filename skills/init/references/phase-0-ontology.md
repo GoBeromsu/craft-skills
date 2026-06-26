@@ -136,6 +136,7 @@ Use an issue-driven loop for all repository work:
 
 Conventions agents must follow:
 
+- Keep each change scoped to its issue. When work — planning, a requirements interview, or implementation — surfaces an out-of-scope problem (a new topic, unrelated bug, or follow-up idea beyond the current issue), open a new GitHub issue for it with one Type label instead of expanding the current change.
 - Plan before editing non-trivial code.
 - Prefer fan-out PRs over broad mixed-purpose PRs.
 - Include review evidence before requesting/performing review.
