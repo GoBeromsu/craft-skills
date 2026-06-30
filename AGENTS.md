@@ -54,7 +54,7 @@ One imperative sentence per skill. Load the skill's `SKILL.md` for the full reci
 | Skill | What it does |
 |-------|-------------|
 | `documents` | Waypoint that routes project documentation through the `docs/` ontology (research→ADR→plan pipeline) and loads nested sub-recipes on demand for ADRs, README, API docs, project changelog, and the comment-the-why convention. |
-| `worktree` | Run the `git wt <issue#>` dedicated-worktree workflow, self-install git-guard on first use, and optionally exec on a remote Tailscale host via tmux. |
+| `worktree` | Run the `git wt <name>` simple-worktree workflow, self-install git-guard on first use, and optionally exec on a remote Tailscale host via tmux. |
 | `init` | Dual-entry: bootstrap a project's `docs/` ontology + ADR rails (Phase 0 graft), then generate a complexity-scored hierarchical `AGENTS.md` knowledge base (Phases 1–4, init-deep cartography engine in `references/`), with a single-agent fallback for non-fan-out runtimes. |
 | `skillify` | Create, update, move, or promote a craft-skills skill through the vendored two-layer promotion gate. |
 | `hookify` | Turn a convention or SE best-practice into local deterministic enforcement (Claude Code / Codex runtime hook → lint → pre-commit), shipping a starter guard and red-proving it fires. |

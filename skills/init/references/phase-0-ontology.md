@@ -128,7 +128,7 @@ replacement** in the final report (phase-4 observability). Do not leave stale ha
 Use an issue-driven loop for all repository work:
 
 1. Open or select one GitHub issue describing the change.
-2. Create a dedicated worktree with `git wt <issue-number>` and do all implementation there. Never commit directly on `main`.
+2. Never commit directly on `main`. Use a worktree when you need isolation: `git wt <name>` creates (or reuses) a named worktree off the default branch. Reuse a small fixed pool (e.g. `lane-1`~`lane-3`) rather than making a new one per issue.
 3. Plan first for non-trivial work: write the intended change, affected files, verification, and rollback note before editing.
 4. Fan out into small PRs when a change spans unrelated domains, mixes assets with logic, or needs independent review lanes.
 5. Attach review evidence to each PR: tests or checks run, screenshots/transcripts for user-facing behavior, and the issue/ADR links that justify the change.

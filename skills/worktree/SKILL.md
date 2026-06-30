@@ -1,7 +1,7 @@
 ---
 name: worktree
-description: '"git wt", "make a worktree", "work on issue #N", "/worktree" — create an isolated worktree off a <type>/<issue#>-<slug> branch and install the git-guard rails in the target repo.'
-version: 1.0.1
+description: '"git wt", "make a worktree", "new worktree", "/worktree" — create (or reuse) a named git worktree off the default branch and install the git-guard rails in the target repo.'
+version: 2.0.0
 allowed-tools: [Bash, Read, Write, Edit, Grep, Glob]
 compatibility: claude-code, codex
 ---
@@ -10,51 +10,50 @@ compatibility: claude-code, codex
 
 ## Purpose
 
-Enforce one task per dedicated worktree off a `<type>/<issue#>-<slug>` branch. Never branch directly from a protected branch. Install the git-guard enforcement layer on first run (idempotent).
+Make a named worktree off the default branch with one command, and never work directly on a protected branch. Install the git-guard enforcement layer on first run (idempotent).
+
+`git wt <name>` is a plain worktree maker — no issue numbers, no type labels. Pick a short name (e.g. a small fixed pool `lane-1`~`lane-3`) and reuse it; don't spawn a new worktree per task.
 
 ---
 
 ## Core Rule
 
-Every task maps to a GitHub Issue, which maps to a branch, which maps to a worktree outside the repo root.
-
 ```
-GitHub Issue  →  branch <type>/<issue#>-<slug>  →  worktree at $WORKTREE_ROOT/<branch>
+git wt <name>  →  branch <name>  →  worktree at $WORKTREE_ROOT/<name>
 ```
 
-Protected branch (`main` by default) is blocked at pre-commit and pre-push by the git-guard hooks. Never work directly on it.
+The default branch (`main`) is blocked at pre-commit and pre-push by the git-guard hooks. Never work directly on it.
 
 ---
 
 ## Step 1 — Self-Install (idempotent, run on first invocation)
 
-Check whether the git-guard rails are installed in the target repo. If any of the three conditions below are missing, run the bundled installer:
+Check whether the git-guard rails are installed in the target repo:
 
 ```bash
-# Check installation state
 git config core.hooksPath           # must equal ".githooks"
 git config alias.wt                 # must be set
 ls scripts/git-guard/setup-hooks.sh # must exist
 ```
 
-If any check fails, run the bundled installer from the skill's `scripts/` directory against the target repo:
+If any check fails, run the bundled installer from the target repo root:
 
 ```bash
-sh skills/worktree/scripts/install.sh   # run from the target repo root
+sh skills/worktree/scripts/install.sh
 ```
 
-`install.sh` is the single entry point. It performs all three steps and never clobbers existing files:
+`install.sh` is the single entry point. It never clobbers existing files:
 
-1. Copies the guard scripts into the repo at `scripts/git-guard/` (skip per-file if already present).
-2. Copies the shipped `githooks/pre-commit` and `githooks/pre-push` into `.githooks/` (skip if present) — these are real files in the skill, not improvised stubs.
+1. Copies the guard scripts into the repo at `scripts/git-guard/` (skip per-file if present).
+2. Copies the shipped `githooks/pre-commit` and `githooks/pre-push` into `.githooks/` (skip if present) — real files in the skill, not improvised stubs.
 3. Runs `scripts/git-guard/setup-hooks.sh` to wire `core.hooksPath`, register `alias.wt`, and `chmod +x` the scripts and hooks.
 
-Both `install.sh` and `setup-hooks.sh` are idempotent — re-running when already installed is a no-op. After install, confirm output shows:
+Both installers are idempotent. After install, confirm:
 
 ```
 [git-guard] core.hooksPath  = .githooks
 [git-guard] alias.wt        = ...
-[git-guard] setup complete  — run `git wt <issue#>` to start work on an issue.
+[git-guard] setup complete  — run `git wt <name>` to create a worktree.
 ```
 
 ---
@@ -62,34 +61,12 @@ Both `install.sh` and `setup-hooks.sh` are idempotent — re-running when alread
 ## Step 2 — Create a Worktree
 
 ```bash
-git wt <issue#>                         # e.g. git wt 17
-git wt <issue#> --type fix              # explicit type override
-git wt <issue#> --slug api --type feat  # fan-out slice branch
+git wt <name>          # e.g. git wt lane-1
 ```
 
-`git wt` reads the issue's `type:` label (`feat|fix|chore|docs|refactor|test`) and title via `gh`, derives the branch name `<type>/<issue#>-<slug>`, fetches `origin/<default>`, and creates the worktree **outside** the repo root so `git status` stays clean.
+`git wt <name>` creates (or reuses) a worktree named `<name>` off `origin/<default>` and prints its path. The worktree lives **outside** the repo root (`$WORKTREE_ROOT`, default `<repo-parent>/<repo>-worktrees/<name>`) so `git status` stays clean. Running it again with the same name returns the existing path — no duplicate. `cd` to the printed path to begin work.
 
-If the issue has no `type: *` label, `git wt` stops and requires `--type`. This keeps governed repositories from silently creating `feat/*` branches. Manual or offline cases are still allowed by passing `--type` explicitly.
-
-Branch naming:
-- `<type>`: from the issue's `type: *` label, or explicit `--type`
-- `<issue#>`: GitHub issue number
-- `<slug>`: title lowercased, non-alphanumeric chars → `-`, capped at 50 chars; explicit `--slug <slice-slug>` overrides the title slug for fan-out PR slices
-
-Examples: `feat/17-add-inference-endpoint`, `fix/23-rtsp-timeout`, `chore/31-update-deps`
-
-Fan-out example for multiple PRs from the same issue: `git wt 17 --type feat --slug api`, `git wt 17 --type feat --slug ui`, and `git wt 17 --type test --slug coverage` create separate branches/worktrees under the same issue number.
-For local fan-out orchestration, run the bundled tmux helper from the target repo after self-install:
-
-```bash
-scripts/git-guard/tmux-fanout.sh 17 api ui coverage
-```
-
-The helper creates or reuses a local tmux session named `wt-17`, creates one window per slice, and runs `git wt 17 --slug <slice>` in that window. Existing windows with the same normalized slice name are skipped, so re-running the command is safe. The printed `tmux attach -t wt-17` command attaches to the fan-out session.
-
-Local tmux fan-out is intentionally lightweight: it only creates local tmux windows and invokes `git wt`; it does not introduce team mailbox, dispatch, lifecycle, or remote-worker governance. The optional Tailscale flow below remains remote-only and is not the default.
-
-The worktree path is printed on success. `cd` to it to begin work.
+The name is sanitized to be safe as both a branch and a path segment (lowercased; non-`[a-z0-9._/-]` → `-`). If a branch of that name already exists, the worktree checks it out; otherwise it branches off `origin/<default>`.
 
 ---
 
@@ -97,22 +74,22 @@ The worktree path is printed on success. `cd` to it to begin work.
 
 ```bash
 git wt ls                  # list all worktrees
-git wt rm <issue#>         # remove a worktree (preferred over rm -rf)
-git wt rm <issue#> --force # force-remove a dirty worktree
+git wt rm <name>           # remove a worktree (preferred over rm -rf)
+git wt rm <name> --force   # force-remove a dirty worktree
 ```
 
-Use `git wt rm` — never `rm -rf`. Manual deletion leaves phantom `.git/worktrees/` entries that block `git branch -d` and `git checkout` until `git worktree prune` is run manually. `git wt rm` calls `git worktree remove` + `git worktree prune` automatically.
+Use `git wt rm` — never `rm -rf`. Manual deletion leaves phantom `.git/worktrees/` entries that block `git branch -d` and `git checkout` until `git worktree prune` runs. `git wt rm` calls `git worktree remove` + `git worktree prune` automatically. The branch is **kept** — delete it after merge with `git branch -d`.
 
 ### After the PR is merged — cleanup order matters
 
-The branch is **held by its worktree**. You cannot delete the branch while the worktree exists, and you cannot run the cleanup *from inside* the worktree being removed. Two failures follow from ignoring this:
+The branch is **held by its worktree**. You cannot delete the branch while the worktree exists, and you cannot run the cleanup *from inside* the worktree being removed:
 
 1. **Don't merge with `--delete-branch`.** `gh pr merge --squash --delete-branch` fails with `cannot delete branch '<branch>' used by worktree` whenever a worktree still holds it. Merge plain, then clean up locally.
-2. **`cd` to the primary checkout first.** Running `git worktree remove`, `git checkout <default>`, or `git branch -d` *from inside* the worktree you are removing fails (`'<default>' is already used by worktree …`, or `branch '<branch>' used by worktree …`). Step out, then:
+2. **`cd` to the primary checkout first**, then:
 
 ```bash
-git wt rm <issue#>        # remove worktree + prune (run from primary checkout)
-git branch -d <branch>    # branch is now free to delete
+git wt rm <name>          # remove worktree + prune (run from primary checkout)
+git branch -d <name>      # branch is now free to delete
 ```
 
 Use `git branch -d` (not `-D`) — a merged branch deletes cleanly, and the safe form catches the "not actually merged" case.
@@ -154,20 +131,20 @@ This extension activates only when the environment variable `CRAFT_WT_REMOTE_HOS
 
 1. Verify reachability: `ping -c 1 $CRAFT_WT_REMOTE_HOST` (or `tailscale ping`). Abort with a clear message if unreachable.
 2. SSH to the host: `ssh $CRAFT_WT_REMOTE_HOST`.
-3. Open (or attach to) a named tmux session: `tmux new-session -As wt-<issue#>` on the remote.
-4. Run `git wt <issue#>` inside the tmux session to create a dedicated remote worktree.
+3. Open (or attach to) a named tmux session: `tmux new-session -As wt-<name>` on the remote.
+4. Run `git wt <name>` inside the tmux session to create a dedicated remote worktree.
 5. Work inside the remote worktree via the tmux session.
 
 ### Teardown (explicit — do not auto-detect)
 
 Ask the user to confirm before tearing down:
 
-> "Work complete on issue #N. Confirm teardown? (y/N)"
+> "Work complete. Confirm teardown? (y/N)"
 
 On confirmation:
 1. Commit and push all changes, or open a PR (`gh pr create`).
-2. Close the tmux session: `tmux kill-session -t wt-<issue#>`.
-3. Remove the remote worktree: `git wt rm <issue#>` on the remote.
+2. Close the tmux session: `tmux kill-session -t wt-<name>`.
+3. Remove the remote worktree: `git wt rm <name>` on the remote.
 
 Never auto-detect completion and never tear down without explicit user confirmation.
 
@@ -177,15 +154,14 @@ Never auto-detect completion and never tear down without explicit user confirmat
 
 | Variable | Purpose | Required |
 |---|---|---|
+| `WORKTREE_ROOT` | Where worktrees are created | No — defaults to `<repo-parent>/<repo>-worktrees` |
 | `CRAFT_WT_REMOTE_HOST` | Tailscale hostname or `user@host` for remote execution | No — omit to use local-only mode |
 
 Set in `.env` (gitignored). See `.env.example` for the placeholder.
 
 Dependencies:
-- `gh` CLI authenticated (`gh auth status`) — required for `git wt` to read issue metadata.
 - `git` >= 2.5 (worktree support).
-- `tmux` locally — required only for `tmux-fanout.sh` local fan-out helper; also required on the remote host for the Tailscale extension.
-- `tailscale` CLI or equivalent — required for Tailscale extension reachability check only.
+- `tmux` + `tailscale` (or equivalent) — required only for the optional Tailscale remote extension.
 
 ---
 
@@ -194,13 +170,12 @@ Dependencies:
 | Script | Role |
 |---|---|
 | `scripts/install.sh` | Bundled first-run installer: copies guard scripts + hooks into the repo, then runs `setup-hooks.sh`. The single entry point `worktree`/`init` delegate to |
-| `githooks/pre-commit` | Shipped hook: assert-not-main + deny-assets (staged) + check-freshness (warn). Copied into the repo's `.githooks/` |
-| `githooks/pre-push` | Shipped hook: assert-not-main + check-freshness (block) + deny-assets (push). Copied into the repo's `.githooks/` |
+| `githooks/pre-commit` | Shipped hook: assert-not-main + deny-assets (staged) + check-freshness (warn) |
+| `githooks/pre-push` | Shipped hook: assert-not-main + check-freshness (block) + deny-assets (push) |
 | `scripts/lib.sh` | Shared helpers: `gg_warn`, `gg_die`, protected-branch list |
 | `scripts/assert-not-main.sh` | Exits 1 when HEAD is on a protected branch |
 | `scripts/check-freshness.sh` | Compares HEAD to upstream; `block` (exit 1) or `warn` mode |
-| `scripts/wt.sh` | Issue → worktree creator and manager (`create`, `rm`, `ls`) |
-| `scripts/tmux-fanout.sh` | Local tmux fan-out helper: one `git wt <issue#> --slug <slice>` window per slice |
+| `scripts/wt.sh` | Simple worktree maker/manager (`<name>`, `rm`, `ls`) |
 | `scripts/setup-hooks.sh` | Idempotent post-clone setup: `core.hooksPath`, `alias.wt`, `chmod +x` |
 | `scripts/deny-assets.sh` | Blocks model weights, media files, and blobs > 5 MB at commit/push |
 
@@ -208,9 +183,8 @@ Dependencies:
 
 ## Rationalizations / Red Flags
 
-- `gh pr merge --delete-branch` exiting with `cannot delete branch '<branch>' used by worktree` is expected, not a fault — the worktree still holds it. Merge without `--delete-branch`, then `git wt rm <issue#>` + `git branch -d <branch>`.
-- Cleanup commands (`git worktree remove`, `git checkout <default>`, `git branch -d`) failing with `... already used by worktree` usually means you are running them *inside* the worktree you are removing. `cd` to the primary checkout and retry.
-- If `git worktree list` shows a phantom entry for a branch after a manual `rm -rf`, run `git worktree prune` to clear it — then the branch can be deleted or checked out.
-- If `git wt` reports "branch already exists", use `git wt ls` to find the existing worktree path instead of creating a duplicate.
-- If the freshness check warns but you are certain the upstream has no relevant changes, run `git fetch` then re-check with `git rev-list --count HEAD..@{upstream}` before suppressing.
-- Never set `GIT_GUARD_PROTECTED=` in shell startup files — it disables enforcement globally and permanently for all sessions.
+- `gh pr merge --delete-branch` exiting with `cannot delete branch '<branch>' used by worktree` is expected, not a fault — the worktree still holds it. Merge without `--delete-branch`, then `git wt rm <name>` + `git branch -d <name>`.
+- Cleanup commands failing with `... already used by worktree` usually means you are running them *inside* the worktree you are removing. `cd` to the primary checkout and retry.
+- A phantom `git worktree list` entry after a manual `rm -rf` clears with `git worktree prune` — then the branch can be deleted or checked out.
+- Spawning a fresh worktree per task instead of reusing a small fixed pool — pick a `lane-N` and reuse it.
+- Never set `GIT_GUARD_PROTECTED=` in shell startup files — it disables enforcement globally and permanently.
