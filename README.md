@@ -14,7 +14,7 @@ two domains never bleed into each other's context.
 |-------|---------|
 | `documents` | Project documentation system — `docs/` folder ontology (research / spec / plan / ADR / rule), the research→ADR→plan decision pipeline, and routing for what belongs where. |
 | `worktree` | `git wt <issue#>` dedicated-worktree workflow, git-guard self-install, and optional remote execution via Tailscale + tmux. |
-| `init` | One-time project bootstrap — scaffolds the `docs/` folder structure, wires standing conventions, and invokes each skill's self-installer. |
+| `init` | Dual-entry bootstrap + cartography — scaffolds the `docs/` ontology + ADR rails (Phase 0), then generates a complexity-scored hierarchical `AGENTS.md` knowledge base (Phases 1–4, ported from init-deep) in one pass. |
 | `skillify` | Vendored skill-authoring promotion gate — create, update, move, or promote craft-skills skills through a two-layer review gate. |
 | `technical-report` | Build and enforce a project's canonical technical report — Scaffold mode interviews depth-by-depth to fill a per-project `technical-report.yaml` frame; Author/Validate mode writes/reviews section markdown against it and gates structure + source coverage with two validators. |
 

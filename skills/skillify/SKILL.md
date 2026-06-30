@@ -1,7 +1,7 @@
 ---
 name: skillify
 description: '"make a skill", "스킬 만들자", "skillify this workflow", "turn this into a skill", "update this skill", "fix this skill", "edit this skill", "move this skill", "/skillify"'
-version: 3.3.0
+version: 3.5.0
 allowed-tools: [Bash, Read, Edit, Write, Grep, Glob]
 compatibility: claude-code, codex
 ---
@@ -214,6 +214,8 @@ Default to a **flat** package at `skills/<skill-name>/`. Promote into an area fo
 
 In craft-skills, skills are discovered by Claude Code from the `description` field in `SKILL.md` frontmatter — there is no RESOLVER.md requirement for flat skills. A flat skill at `skills/<skill-name>/` needs only a well-formed `description` trigger phrase. Area folders with ≥2 sibling skills use a RESOLVER.md for disambiguation (full schema: `references/schemas.md §5`). Full move mechanics and routing rules: `references/topology-and-routing.md`.
 
+A skill that owns several deep sub-topics may instead be a **thick skill**: one discovered waypoint `SKILL.md` plus nested `skills/<skill>/<child>/SKILL.md` sub-recipes (2-key frontmatter) that the waypoint `Read`s on demand, each with an optional colocated `template.md`. Sub-recipes are progressive-disclosure refs, not discovered commands — no RESOLVER, no `plugin.json` `skills` manifest entry. Distinguish a thick skill (one command, nested sub-recipes) from an area (≥2 sibling commands, RESOLVER): `references/topology-and-routing.md` and `references/schemas.md §1.6`.
+
 Leaf descriptions are written as **real user trigger phrases**, not capability blurbs.
 Leaf **names** are compact one-concept handles — prefer a single word, cap at two tokens, no `-skill`/`-tool` suffix or sentence-like phrasing (full contract: `references/schemas.md §2`).
 
@@ -229,13 +231,17 @@ Every access path, API key, OAuth token, and host-specific value lives in a **pe
 
 ## Change history — per-package CHANGELOG
 
-Every skill package owns a `CHANGELOG.md`. Every change appends one bullet:
+Every skill package owns a `CHANGELOG.md`. Every change appends **one compact line** — the reason that forced the change, then `→`, then what it became — so the file stays scannable as bullets stack up:
 
 ```
-- YYYY-MM-DD — why; what changed
+- YYYY-MM-DD — [vX.Y.Z: ]<why it changed> → <what it became>.
 ```
 
-Newest last; never reorder or edit existing bullets. History lives **only** in `CHANGELOG.md` — `SKILL.md` must not contain a `## Change Log` section. Bump `version` (semver) on each change. Version-bump rubric: `references/schemas.md §6`.
+- **One line, `why → what`.** Lead with the problem/trigger, not the artifact. Full detail lives in git — the bullet is the summary, not the diff.
+- **Link what you reference.** When a bullet names another skill, a reference/script file, or an external source, link it with `[text](path)` (repo-relative from the CHANGELOG, e.g. `../<other>/SKILL.md`, `references/<f>.md`, or a full URL).
+- **Carry the version tag** (`vX.Y.Z:`) on the lead bullet of a release; refinement bullets between releases need only the date.
+
+Newest last; never reorder or edit existing bullets (a one-time reformat to this convention is the lone sanctioned exception). History lives **only** in `CHANGELOG.md` — `SKILL.md` must not contain a `## Change Log` section. Bump `version` (semver) on each change. Version-bump rubric: `references/schemas.md §6`.
 
 ## Governance
 
@@ -254,6 +260,7 @@ Changes touching authority boundaries need explicit scoped current-turn approval
 | "It's a small edit, skip the branch/PR." | The deliverable is reviewable repo state. A patched file with no PR is not done (unless the operator explicitly requests local-only). |
 | "I'll add the CHANGELOG bullet later." | Layer-1 CI fails a changed package with no dated bullet. Add it in the same commit. |
 | "This domain feels like an area, I'll nest it now." | Flat-first. One skill is not an area. Premature hierarchy creates fake dispatcher clauses. |
+| "It has children, so register them in plugin.json as commands." | A thick skill's children are sub-recipes the waypoint Reads on demand, not discovered commands. Registering them creates unwanted flat `/<plugin>:<child>` commands. No RESOLVER, no manifest entry. |
 | "I'll write the tests first to lock it down." | Consensus eval precedes tests. Tests over unproven behavior lock in mediocrity. |
 | "The reviewer prompt checks the format." | Format is a Layer-1 script gate. The reviewer judges quality only; `validate-skill-format.py` judges format. |
 | "I'll put the API key inline for now." | Secrets live in the per-skill `.env`. A committed secret means history rewrite + rotation. |

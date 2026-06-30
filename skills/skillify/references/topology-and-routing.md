@@ -24,6 +24,25 @@ proven cohesive cluster   → skills/<area>/<skill>/          (area — promote 
 Promotion is a deliberate move, not a default. When a flat skill later joins a cluster, move
 the whole directory (below) rather than leaving it flat while pretending it is routed.
 
+## Area vs thick skill — two different reasons to nest
+
+Nesting under a parent directory means two structurally different things. Do not conflate them.
+
+| | **Area** (`skills/<area>/<skill>/`) | **Thick skill** (`skills/<skill>/<child>/`) |
+|---|---|---|
+| What the parent dir is | A bucket with **no `SKILL.md`** of its own | A real skill **with its own `SKILL.md`** (the waypoint) |
+| What the children are | ≥2 **full** sibling skills, each a discovered command | **sub-recipes** (2-key frontmatter) the parent `Read`s on demand |
+| Discovery | Each leaf is discovered by Claude Code from its own `SKILL.md` | Only the parent is discovered; children are progressive-disclosure refs |
+| Routing surface | Area `RESOLVER.md` routes the siblings | **No RESOLVER** — the parent waypoint names which `<child>/SKILL.md` to load |
+| Versioning | Each leaf versions independently, owns its `CHANGELOG.md` | One package version; children share the parent's `CHANGELOG.md` |
+| Use when | ≥2 cohesive sibling skills share an owner/charter | One skill owns several deep sub-topics each needing a recipe + `template.md` |
+
+`documents` is a **thick skill**: `documents/SKILL.md` is the discovered waypoint and
+`documents/adr/`, `documents/readme/`, … are sub-recipes it loads on demand. It is **not** an
+area — there is no area RESOLVER, and `adr` is not a separately discovered command. Adding a
+`plugin.json` `skills` manifest entry to register the children would turn them into flat
+`/<plugin>:<child>` commands; that is explicitly not wanted. See `schemas.md` §1.6 / §2.
+
 ## Moving a skill (flat→area, or area→area)
 
 Resolver text alone is never enough — move the real directory.
