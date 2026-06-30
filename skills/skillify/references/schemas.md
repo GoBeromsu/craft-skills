@@ -81,6 +81,20 @@ These rules override the upstream guide where they conflict.
    share the author's context execute this sentence without guessing what the term means?" If
    no, define it inline or replace it; move the clarification rationale to `CHANGELOG.md`.
 
+6. **A skill may be flat OR a thick skill with nested sub-recipes.** The default is flat
+   (one discovered `SKILL.md`). When one skill owns several deep sub-topics that each deserve
+   their own multi-section recipe + colocated `template.md`, author it as a **thick skill**: a
+   parent `SKILL.md` (the only entry Claude Code discovers) plus nested
+   `skills/<skill>/<child>/SKILL.md` sub-recipes the parent `Read`s on demand. The nested
+   `SKILL.md` files are progressive-disclosure reference files — NOT separately registered
+   commands. No `plugin.json` `skills` manifest change and no RESOLVER are involved (registering
+   them would create flat `/<plugin>:<child>` commands, which is explicitly not wanted). A
+   sub-recipe carries only `name` + `description` (the agentskills.io minimum) and shares its
+   parent package's `version` and `CHANGELOG.md`. This is distinct from an *area* (§5): an area
+   has ≥2 sibling skills routed by a RESOLVER and each leaf is a full discovered command; a
+   thick skill has one discovered command whose children are loaded by the parent. See §2 for
+   the sub-recipe frontmatter and §4 for the `template.md` / sub-recipe package parts.
+
 ---
 
 ## 2. 5-Key Frontmatter Schema
@@ -116,6 +130,28 @@ The `name` is a compact handle, not a sentence — discoverability lives in `des
 - Name the **one concept** the skill owns, in the fewest tokens that stay unambiguous. Prefer a single word (`programming`, `refactor`, `documents`); a verb for an action skill, a noun for a domain skill.
 - Cap at **two tokens**. A third is justified only when the concept genuinely needs it (`remove-ai-slops`). Hyphens join the words of one concept; they never decorate.
 - Banned: a `-skill` / `-tool` / `-helper` / `-workflow` suffix (the package is already a skill), a `how-to-` / `auto-` / `my-` prefix, a verb-plus-object phrase that reads as a sentence (`generate-the-report`), and a name that merely restates the description.
+
+### Sub-recipe (2-key) frontmatter
+
+A nested sub-recipe under a thick skill (§1.6) is not a standalone package, so it carries only
+the agentskills.io minimum — `name` + `description`:
+
+```yaml
+---
+name: <matches the child dir; same rules as above>
+description: <real trigger phrase the parent waypoint routes on + what the sub-recipe does; ≤1024>
+---
+```
+
+- `name` must equal the child directory name; `description` is non-empty and ≤1024 — the same
+  two rules as a full package.
+- `version`, `allowed-tools`, and `compatibility` are **omitted** — the sub-recipe inherits its
+  parent package's version and is governed by the parent's `compatibility`.
+- The sub-recipe has **no `CHANGELOG.md`** of its own; its changes are logged in the parent
+  package's `CHANGELOG.md`.
+- The `## Change Log`-section ban and the `.env` hygiene rule still apply.
+- `validate-skill-format.py` detects a sub-recipe structurally (any ancestor dir up to `skills/`
+  exclusive has its own `SKILL.md`) and applies only these lighter checks.
 
 ---
 
@@ -205,6 +241,8 @@ For the explanatory decision guide with concrete examples and rationale, see
 | Part | Create when |
 |------|-------------|
 | `SKILL.md` | Always (required). Keep body < 500 lines / < 5000 tokens with refs one level deep. |
+| `<child>/SKILL.md` (sub-recipe) | A thick skill (§1.6) owns a deep sub-topic that deserves its own multi-section recipe. Nest it at `skills/<skill>/<child>/SKILL.md`, 2-key frontmatter (§2), loaded by the parent on demand — not a discovered command, no RESOLVER. |
+| `template.md` | A skill (or sub-recipe) emits one canonical artifact whose shape is fixed. Colocate the fill-in skeleton as `template.md` beside the `SKILL.md` that owns it (e.g. `adr/template.md`). Multiple artifact templates with no single owner stay under a shared `templates/` dir instead. |
 | `scripts/` | A step must be deterministic and repeatable (format checks, transforms, fan-out). Prefer a script over a prompt for anything verifiable. |
 | `references/` | Bulk knowledge loaded on demand (schemas, per-variant docs). A reference file > 300 lines gets a table of contents. |
 | `assets/` | Files used in the skill's output (templates, icons, fonts). |

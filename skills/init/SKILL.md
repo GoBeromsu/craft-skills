@@ -98,23 +98,24 @@ PROPOSED → ACCEPTED → (SUPERSEDED | DEPRECATED)
 
 #### docs/architecture.md and README.md
 
-These templates are owned by the `documents` skill and live as standalone files in its
-`templates/` directory. Do not duplicate them here — read the template **files** directly
+These templates are owned by the `documents` skill and live as standalone files: the
+architecture template under its `templates/` directory, and the README template inside the
+`readme/` sub-recipe. Do not duplicate them here — read the template **files** directly
 (no prose-section extraction):
 
-1. Locate the documents skill's `templates/` directory using Glob. Try each pattern and use
+1. Locate the documents skill's root directory using Glob. Try each pattern and use
    the first that resolves:
    ```
-   ~/.claude/skills/*/skills/documents/templates/
-   ~/.claude/plugins/*/*/skills/documents/templates/
-   ~/.claude/plugins/*/skills/documents/templates/
+   ~/.claude/skills/*/skills/documents/
+   ~/.claude/plugins/*/*/skills/documents/
+   ~/.claude/plugins/*/skills/documents/
    ```
 2. For `docs/architecture.md` (only if absent): read `templates/architecture.md` from the
    located directory and write its contents verbatim.
-3. For `README.md` at repo root (only if absent): read `templates/readme.md` from the located
+3. For `README.md` at repo root (only if absent): read `readme/template.md` from the located
    directory and write its contents verbatim.
 
-If the documents skill's `templates/` directory cannot be located, write a one-line placeholder
+If the documents skill's directory cannot be located, write a one-line placeholder
 (`# Architecture` or `# Project Name`) and record this warning:
 `"documents templates not found — placeholder written; run documents to fill in templates."`
 

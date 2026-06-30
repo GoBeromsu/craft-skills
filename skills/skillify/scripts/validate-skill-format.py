@@ -170,7 +170,25 @@ def changed_skill_dirs(diff_base: str) -> set[Path] | None:
     return dirs
 
 
-def check_skill(skill_dir: Path) -> list[Finding]:
+def is_subrecipe(skill_dir: Path) -> bool:
+    """A nested SKILL.md owned by a parent skill is a sub-recipe, not a standalone package.
+
+    True when any ancestor directory up to (but excluding) ``skills/`` has its own
+    SKILL.md. A sub-recipe shares its parent package's version and CHANGELOG.md and is
+    loaded by the parent via progressive disclosure, not discovered as its own command;
+    it carries only ``name`` + ``description`` frontmatter (agentskills.io minimum).
+    An area folder (which has no SKILL.md of its own) does NOT make its leaves sub-recipes —
+    those stay full packages.
+    """
+    p = skill_dir.parent
+    while p != SKILLS_DIR and SKILLS_DIR in p.parents:
+        if (p / "SKILL.md").exists():
+            return True
+        p = p.parent
+    return False
+
+
+def check_skill(skill_dir: Path, subrecipe: bool = False) -> list[Finding]:
     name = skill_dir.name
     findings: list[Finding] = []
     skill_md = skill_dir / "SKILL.md"
@@ -180,6 +198,7 @@ def check_skill(skill_dir: Path) -> list[Finding]:
     if fm is None:
         return [Finding(name, "NO_FRONTMATTER", "SKILL.md has no YAML frontmatter")]
 
+    # --- Checks shared by full packages and sub-recipes ---
     if fm.get("name") != name:
         findings.append(Finding(name, "NAME_MISMATCH",
                                 f"frontmatter name {fm.get('name')!r} != dir {name!r}"))
@@ -188,6 +207,21 @@ def check_skill(skill_dir: Path) -> list[Finding]:
         findings.append(Finding(name, "NO_DESCRIPTION", "missing description"))
     elif len(desc) > 1024:
         findings.append(Finding(name, "DESCRIPTION_TOO_LONG", f"{len(desc)} > 1024 chars"))
+
+    if CHANGE_LOG_HEADING_RE.search(text):
+        findings.append(Finding(name, "CHANGELOG_IN_SKILL",
+                                "## Change Log belongs in CHANGELOG.md, not SKILL.md"))
+
+    for env in tracked_env_files(skill_dir):
+        findings.append(Finding(name, "TRACKED_ENV", f"committed real env file: {env}"))
+
+    # A sub-recipe inherits its parent package's version and CHANGELOG.md, so the
+    # full-package-only checks below (version, allowed-tools, compatibility, CHANGELOG)
+    # do not apply to it.
+    if subrecipe:
+        return findings
+
+    # --- Full-package-only checks ---
     version = fm.get("version", "")
     if not version:
         findings.append(Finding(name, "NO_VERSION", "missing version"))
@@ -211,10 +245,6 @@ def check_skill(skill_dir: Path) -> list[Finding]:
             findings.append(Finding(name, "BAD_COMPATIBILITY",
                                     f"compatibility is {len(compat_str)} chars, max 500"))
 
-    if CHANGE_LOG_HEADING_RE.search(text):
-        findings.append(Finding(name, "CHANGELOG_IN_SKILL",
-                                "## Change Log belongs in CHANGELOG.md, not SKILL.md"))
-
     changelog = skill_dir / "CHANGELOG.md"
     if not changelog.exists():
         findings.append(Finding(name, "NO_CHANGELOG", "missing CHANGELOG.md beside SKILL.md"))
@@ -223,9 +253,6 @@ def check_skill(skill_dir: Path) -> list[Finding]:
         if not any(CHANGELOG_BULLET_RE.match(line) for line in cl.splitlines()):
             findings.append(Finding(name, "CHANGELOG_NO_DATED_BULLET",
                                     "CHANGELOG.md has no '- YYYY-MM-DD ...' bullet"))
-
-    for env in tracked_env_files(skill_dir):
-        findings.append(Finding(name, "TRACKED_ENV", f"committed real env file: {env}"))
 
     return findings
 
@@ -257,7 +284,7 @@ def main() -> int:
 
     findings: list[Finding] = []
     for d in targets:
-        findings.extend(check_skill(d))
+        findings.extend(check_skill(d, subrecipe=is_subrecipe(d)))
 
     if not findings:
         print(f"skill-format: OK — {len(targets)} package(s) validated.")

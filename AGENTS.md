@@ -20,8 +20,14 @@ craft-skills/
 ├── .hermes/
 │   └── README.md                # Hermes mount instructions (skills.external_dirs)
 ├── skills/                      ← Claude Code plugin mount + Hermes external_dirs target
-│   ├── documents/               # Project documentation system — docs/ ontology, templates, routing
-│   │   └── SKILL.md
+│   ├── documents/               # Documentation waypoint — docs/ ontology, routing, nested sub-recipes
+│   │   ├── SKILL.md             #   waypoint: ontology + routing + docs/ layout + Children index
+│   │   ├── adr/                 #   sub-recipe: Architecture Decision Records (+ template.md)
+│   │   ├── readme/              #   sub-recipe: repository README (+ template.md)
+│   │   ├── api-docs/            #   sub-recipe: JSDoc/docstring + OpenAPI (+ template.md)
+│   │   ├── changelog/           #   sub-recipe: project CHANGELOG (+ template.md)
+│   │   ├── inline-comments/     #   sub-recipe: comment-the-why convention (no template)
+│   │   └── templates/           #   research/references/spec/plan/rule/architecture skeletons
 │   ├── worktree/                # git wt workflow, git-guard self-install, optional remote exec
 │   │   └── SKILL.md
 │   ├── init/                    # Project bootstrap / rail-laying
@@ -43,7 +49,7 @@ One imperative sentence per skill. Load the skill's `SKILL.md` for the full reci
 
 | Skill | What it does |
 |-------|-------------|
-| `documents` | Author and route project documentation artifacts (research, spec, plan, ADR, rule) through the `docs/` ontology using the research→ADR→plan decision pipeline. |
+| `documents` | Waypoint that routes project documentation through the `docs/` ontology (research→ADR→plan pipeline) and loads nested sub-recipes on demand for ADRs, README, API docs, project changelog, and the comment-the-why convention. |
 | `worktree` | Run the `git wt <issue#>` dedicated-worktree workflow, self-install git-guard on first use, and optionally exec on a remote Tailscale host via tmux. |
 | `init` | Bootstrap a project's `docs/` scaffold, wire standing conventions, and invoke each skill's self-installer in one explicit, one-time pass. |
 | `skillify` | Create, update, move, or promote a craft-skills skill through the vendored two-layer promotion gate. |
@@ -86,6 +92,14 @@ compatibility: claude-code, codex, hermes    # intended runtimes; ≤500 chars
 ```
 
 - `description` must be trigger-dense — real phrases a user types, not a capability blurb.
+- **Thick skills carry nested sub-recipes.** A skill may be flat (default — one discovered
+  `SKILL.md`) or a thick skill: a parent waypoint `SKILL.md` plus nested
+  `skills/<skill>/<child>/SKILL.md` sub-recipes the parent `Read`s on demand (e.g. `documents/`
+  with `adr/`, `readme/`, …). A sub-recipe carries only `name` + `description` (the
+  agentskills.io minimum) and an optional colocated `template.md`; it shares its parent
+  package's `version` and `CHANGELOG.md` and is **not** a separately discovered command (no
+  `plugin.json` `skills` manifest entry, no RESOLVER). This is distinct from an *area*
+  (≥2 sibling skills + RESOLVER). See `skills/skillify/references/schemas.md` §1.6 / §2.
 - External binary requirements (`git`, `python3`, `tmux`, …) go in a `## Requirements` body
   section, not in frontmatter.
 - Use `${ENV_VAR}` placeholders throughout. Never hardcode absolute paths.

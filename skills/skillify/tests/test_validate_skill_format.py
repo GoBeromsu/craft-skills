@@ -25,6 +25,18 @@ A demo skill.
 """
 GOOD_CHANGELOG = "# Change Log\n\n- 2026-06-07 — initial; created the demo skill.\n"
 
+# A sub-recipe carries only the agentskills.io minimum: name + description.
+GOOD_SUBRECIPE = """---
+name: adr
+description: Author an Architecture Decision Record. Loaded by the documents waypoint when the user asks to write an ADR.
+---
+
+# adr
+
+## Overview
+Deep recipe for ADR authoring.
+"""
+
 
 class SkillFormatValidatorTest(unittest.TestCase):
     def run_validator(self, root: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -39,6 +51,19 @@ class SkillFormatValidatorTest(unittest.TestCase):
         (d / "SKILL.md").write_text(skill_md, encoding="utf-8")
         if changelog is not None:
             (d / "CHANGELOG.md").write_text(changelog, encoding="utf-8")
+        return d
+
+    def _make_subrecipe(self, root: Path, parent: str, child: str, skill_md: str) -> Path:
+        """Create a nested sub-recipe under a full parent package.
+
+        The parent gets a well-formed 5-key SKILL.md + CHANGELOG; the child carries
+        only the supplied SKILL.md (no version / CHANGELOG of its own).
+        """
+        self._make_skill(root, parent, GOOD_SKILL.replace("name: demo", f"name: {parent}"),
+                         GOOD_CHANGELOG)
+        d = root / "skills" / parent / child
+        d.mkdir(parents=True)
+        (d / "SKILL.md").write_text(skill_md, encoding="utf-8")
         return d
 
     def test_accepts_well_formed_package(self) -> None:
@@ -127,6 +152,60 @@ class SkillFormatValidatorTest(unittest.TestCase):
             result = self.run_validator(root)
             self.assertEqual(result.returncode, 1)
             self.assertIn("NO_COMPATIBILITY", result.stdout)
+
+    # ------------------------------------------------------------------
+    # nested sub-recipe (thick-skill / progressive-disclosure) support
+    # ------------------------------------------------------------------
+
+    def test_accepts_subrecipe_with_only_name_and_description(self) -> None:
+        """A nested SKILL.md whose parent dir has its own SKILL.md is a sub-recipe:
+        it needs only name + description, no version/allowed-tools/compatibility/CHANGELOG."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._make_subrecipe(root, "documents", "adr", GOOD_SUBRECIPE)
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_subrecipe_still_enforces_name_dir_match(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._make_subrecipe(root, "documents", "adr",
+                                 GOOD_SUBRECIPE.replace("name: adr", "name: wrong"))
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("NAME_MISMATCH", result.stdout)
+
+    def test_subrecipe_requires_description(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            no_desc = "---\nname: adr\n---\n\n# adr\n"
+            self._make_subrecipe(root, "documents", "adr", no_desc)
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("NO_DESCRIPTION", result.stdout)
+
+    def test_subrecipe_bans_changelog_section_in_body(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            bad = GOOD_SUBRECIPE + "\n## Change Log\n- 2026-06-07 — nope\n"
+            self._make_subrecipe(root, "documents", "adr", bad)
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("CHANGELOG_IN_SKILL", result.stdout)
+
+    def test_area_leaf_is_not_a_subrecipe(self) -> None:
+        """An area folder (no SKILL.md of its own) does NOT make its leaves sub-recipes;
+        those leaves stay full packages and must carry the full 5-key shape + CHANGELOG."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            # skills/area/leaf where skills/area has NO SKILL.md → leaf is a full package.
+            leaf = root / "skills" / "area" / "leaf"
+            leaf.mkdir(parents=True)
+            (leaf / "SKILL.md").write_text(GOOD_SUBRECIPE.replace("name: adr", "name: leaf"),
+                                           encoding="utf-8")
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("NO_VERSION", result.stdout)
 
     # ------------------------------------------------------------------
     # diff-base scoping regression
