@@ -30,8 +30,10 @@ craft-skills/
 │   │   └── templates/           #   research/references/spec/plan/rule/architecture skeletons
 │   ├── worktree/                # git wt workflow, git-guard self-install, optional remote exec
 │   │   └── SKILL.md
-│   ├── init/                    # Project bootstrap / rail-laying
-│   │   └── SKILL.md
+│   ├── init/                    # Dual-entry: docs/ ontology bootstrap + hierarchical AGENTS.md cartography
+│   │   ├── SKILL.md             #   triage: classify runtime → Phase 0 graft → orchestrate phases 1-4
+│   │   ├── references/          #   phase-0-ontology (graft) + phase-1..4 (init-deep cartography engine)
+│   │   └── CHANGELOG.md
 │   ├── skillify/                # Vendored skill-authoring promotion gate (self-governing)
 │   │   └── SKILL.md
 │   └── technical-report/        # Canonical technical-report engine — YAML-frame TOC + structure/source validators
@@ -51,7 +53,7 @@ One imperative sentence per skill. Load the skill's `SKILL.md` for the full reci
 |-------|-------------|
 | `documents` | Waypoint that routes project documentation through the `docs/` ontology (research→ADR→plan pipeline) and loads nested sub-recipes on demand for ADRs, README, API docs, project changelog, and the comment-the-why convention. |
 | `worktree` | Run the `git wt <issue#>` dedicated-worktree workflow, self-install git-guard on first use, and optionally exec on a remote Tailscale host via tmux. |
-| `init` | Bootstrap a project's `docs/` scaffold, wire standing conventions, and invoke each skill's self-installer in one explicit, one-time pass. |
+| `init` | Dual-entry: bootstrap a project's `docs/` ontology + ADR rails (Phase 0 graft), then generate a complexity-scored hierarchical `AGENTS.md` knowledge base (Phases 1–4, init-deep cartography engine in `references/`), with a single-agent fallback for non-fan-out runtimes. |
 | `skillify` | Create, update, move, or promote a craft-skills skill through the vendored two-layer promotion gate. |
 | `technical-report` | Scaffold a per-project `technical-report.yaml` frame through a depth-ordered interview, then author/review canonical section markdown against it under code-enforced structure and source-coverage gates. |
 
