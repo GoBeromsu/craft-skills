@@ -1,7 +1,7 @@
 ---
 name: skillify
 description: '"make a skill", "스킬 만들자", "skillify this workflow", "turn this into a skill", "update this skill", "fix this skill", "edit this skill", "move this skill", "/skillify"'
-version: 3.4.0
+version: 3.5.0
 allowed-tools: [Bash, Read, Edit, Write, Grep, Glob]
 compatibility: claude-code, codex
 ---
@@ -231,13 +231,17 @@ Every access path, API key, OAuth token, and host-specific value lives in a **pe
 
 ## Change history — per-package CHANGELOG
 
-Every skill package owns a `CHANGELOG.md`. Every change appends one bullet:
+Every skill package owns a `CHANGELOG.md`. Every change appends **one compact line** — the reason that forced the change, then `→`, then what it became — so the file stays scannable as bullets stack up:
 
 ```
-- YYYY-MM-DD — why; what changed
+- YYYY-MM-DD — [vX.Y.Z: ]<why it changed> → <what it became>.
 ```
 
-Newest last; never reorder or edit existing bullets. History lives **only** in `CHANGELOG.md` — `SKILL.md` must not contain a `## Change Log` section. Bump `version` (semver) on each change. Version-bump rubric: `references/schemas.md §6`.
+- **One line, `why → what`.** Lead with the problem/trigger, not the artifact. Full detail lives in git — the bullet is the summary, not the diff.
+- **Link what you reference.** When a bullet names another skill, a reference/script file, or an external source, link it with `[text](path)` (repo-relative from the CHANGELOG, e.g. `../<other>/SKILL.md`, `references/<f>.md`, or a full URL).
+- **Carry the version tag** (`vX.Y.Z:`) on the lead bullet of a release; refinement bullets between releases need only the date.
+
+Newest last; never reorder or edit existing bullets (a one-time reformat to this convention is the lone sanctioned exception). History lives **only** in `CHANGELOG.md` — `SKILL.md` must not contain a `## Change Log` section. Bump `version` (semver) on each change. Version-bump rubric: `references/schemas.md §6`.
 
 ## Governance
 
