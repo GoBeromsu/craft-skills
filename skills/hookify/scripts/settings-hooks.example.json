@@ -1,0 +1,16 @@
+{
+  "//": "Claude Code PreToolUse wiring for the tier-1 guard. Merge hooks.* into your .claude/settings.json (project) or ~/.claude/settings.json (global). matcher uses regex alternation; the command receives the tool-call JSON on stdin. Replace the path with where you committed the guard.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/scripts/claude-code-pretooluse-guard.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+# Codex CLI runtime-hook wiring (tier 1). Merge into .codex/config.toml (project)
+# or ~/.codex/config.toml (global). Codex mirrors Claude Code's model: a command
+# fires before a tool call, receives the call payload on stdin, and a non-zero
+# exit blocks the call. Reuse the SAME guard script across both runtimes.
+#
+# Field names track the Codex version you run — verify against `codex --help` /
+# your installed config schema; the shape below is the portable intent, not a
+# frozen API. See references/codex-hooks.md.
+
+[hooks.pre_tool_use]
+# Match the file-mutating tools your Codex build exposes (edit/apply_patch/write).
+match = "edit|apply_patch|write"
+command = "${CODEX_PROJECT_DIR}/scripts/claude-code-pretooluse-guard.sh"
