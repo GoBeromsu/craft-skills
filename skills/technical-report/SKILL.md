@@ -1,7 +1,7 @@
 ---
 name: technical-report
 description: '"technical-report", "기술 문서 써줘", "정본 문서", "TOC 강제", "기술 보고서 골격", "scaffold a technical report", "/technical-report" — build and enforce a project''s canonical technical report. Scaffold mode interviews you depth-by-depth (sections → ## headings → required content) to fill a per-project technical-report.yaml frame; Author/Validate mode writes or reviews section markdown against that YAML as the single source of truth and gates structure + source coverage with two validators.'
-version: 0.1.0
+version: 0.1.1
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 compatibility: claude-code, codex
 ---
@@ -46,7 +46,10 @@ Pick the mode first:
 Paths are per-project and injected, never hardcoded:
 
 - `TECHNICAL_REPORT_YAML` — path to this project's filled YAML (SSOT). Default
-  `./technical-report.yaml`.
+  `./technical-report.yaml`. **Do not place this file under a tool-private directory**
+  (`.claude/`, `.codex/`, `.gjc/`, `.hermes/`, etc.) — the YAML is the SSOT for _all_
+  agents, and tool-private dirs are invisible to other runtimes. Recommended locations:
+  repo root (`./technical-report.yaml`) or `docs/technical-report.yaml`.
 - `TECHNICAL_REPORT_BOOK` — directory holding the canonical markdown (Index + section
   files). Default `./book`.
 
