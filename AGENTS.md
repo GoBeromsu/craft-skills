@@ -38,8 +38,9 @@ craft-skills/
 │   │   └── SKILL.md
 │   ├── hookify/                 # Convention → local deterministic enforcement (runtime hook/lint/pre-commit) + starter guards
 │   │   └── SKILL.md
-│   └── technical-report/        # Canonical technical-report engine — YAML-frame TOC + structure/source validators
-│       └── SKILL.md
+│   ├── technical-report/        # Canonical technical-report engine — YAML-frame TOC + structure/source validators
+│   │   └── SKILL.md
+│   └── PROVENANCE.md            # Cross-skill lineage registry — source skill per skill
 ├── install.sh                   # POSIX-sh multi-runtime convenience installer
 ├── AGENTS.md                    # ← this file (single source of truth for all runtimes)
 └── README.md                    # Project overview + install matrix
@@ -121,6 +122,21 @@ compatibility: claude-code, codex, hermes    # intended runtimes; ≤500 chars
 | `MAJOR` | Trigger phrase removed/renamed, `allowed-tools` gains entries callers must permission, or output format breaks downstream consumers | Yes |
 | `MINOR` | New phase, flag, routing branch, or user-visible behavioral addition (backward-compatible) | Yes |
 | `PATCH` | Bug fix, prose correction, checklist/dependency bump — no interface change | No |
+
+### Provenance
+
+Record where a skill came from — never in `SKILL.md` (body or frontmatter): the recipe is
+present-tense imperative only, and naming a source there fails skillify's attribution gate.
+
+- **Per-change credit → `CHANGELOG.md`.** On the bullet for the change that introduces or re-sources
+  a skill, append a `Provenance:` clause:
+  `- YYYY-MM-DD — <why; what changed>; Provenance: <what> adapted from <source> @ <repo/ref>.`
+- **At-a-glance lineage → `skills/PROVENANCE.md`.** One row per skill mapping it to its source
+  skill(s) and relationship (`derived` / `adapted` / `vendored` / `original`). This is the current
+  snapshot; it links back to the dated `CHANGELOG.md` detail, never restating it.
+
+This keeps the three surfaces MECE: `SKILL.md` is the recipe, `CHANGELOG.md` is the dated per-change
+credit, and `skills/PROVENANCE.md` is the current cross-skill lineage view.
 
 ---
 
