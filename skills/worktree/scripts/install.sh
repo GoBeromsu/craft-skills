@@ -24,7 +24,7 @@ mkdir -p scripts/git-guard .githooks
 
 # 1. Guard scripts -> scripts/git-guard/ (copy if absent; never clobber local edits).
 #    Keep this list in sync with setup-hooks.sh's chmod set.
-for f in lib.sh assert-not-main.sh check-freshness.sh deny-assets.sh wt.sh tmux-fanout.sh setup-hooks.sh; do
+for f in lib.sh assert-not-main.sh check-freshness.sh deny-assets.sh wt.sh setup-hooks.sh; do
   if [ -f "scripts/git-guard/$f" ]; then
     echo "Skipped (exists): scripts/git-guard/$f"
   elif [ -f "$src/$f" ]; then

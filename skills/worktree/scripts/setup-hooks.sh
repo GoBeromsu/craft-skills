@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # Idempotent post-clone setup:
 #   - sets core.hooksPath to .githooks  (enables git-native enforcement)
-#   - registers the `git wt` alias      (issue->worktree front door)
+#   - registers the `git wt` alias      (simple worktree front door)
 #   - chmod +x all hooks and guard scripts
 #
 # Safe to re-run — git config is idempotent, chmod on already-executable files is a no-op.
@@ -24,7 +24,6 @@ chmod +x .githooks/pre-commit \
          scripts/git-guard/check-freshness.sh \
          scripts/git-guard/deny-assets.sh \
          scripts/git-guard/wt.sh \
-         scripts/git-guard/tmux-fanout.sh \
          scripts/git-guard/setup-hooks.sh
 
 # 4. Confirmation summary.
@@ -32,4 +31,4 @@ printf '[git-guard] core.hooksPath  = %s\n' "$(git config core.hooksPath)"
 printf '[git-guard] alias.wt        = %s\n' "$(git config alias.wt)"
 printf '[git-guard] hooks active    : .githooks/pre-commit  .githooks/pre-push\n'
 printf '[git-guard] guard scripts   : scripts/git-guard/\n'
-printf '[git-guard] setup complete  — run `git wt <issue#>` to start work on an issue.\n'
+printf '[git-guard] setup complete  — run `git wt <name>` to create a worktree.\n'
