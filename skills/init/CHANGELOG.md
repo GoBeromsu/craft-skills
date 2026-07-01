@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.1.0] - 2026-06-30
+
+- 2026-06-30 — nothing stopped agents from absorbing off-topic discoveries into the active change, and no git hook can detect scope creep → the Development Flow managed block's convention list now carries an out-of-scope routing rail: keep each change scoped to its issue and open a new GitHub issue (one Type label) when planning, a requirements interview, or implementation surfaces a problem beyond the current issue (#21).
+
 ## [2.0.0] - 2026-06-30
 
 - 2026-06-30 — init was a docs-scaffold-only bootstrap and duplicated heavy GitHub-governance/audit machinery the project deemed overkill → **BREAKING full rewrite**: init is now a dual-entry skill built on `init-deep`'s complexity-scored hierarchical `AGENTS.md` cartography engine (base) with the original docs/ ontology + ADR scaffold grafted on as Phase 0. Bootstrap path ("init this repo") seeds docs/ rails; cartography path ("deep init", "generate AGENTS.md", "map this codebase") generates the AGENTS.md knowledge base.

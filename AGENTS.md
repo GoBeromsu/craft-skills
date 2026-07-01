@@ -173,3 +173,16 @@ Hermes mounts `${CRAFT_SKILLS_REPO_PATH}/skills` via `skills.external_dirs`. Onl
 `hermes skills list` that updated skills are visible.
 
 See `.hermes/README.md` for the exact config snippet and deployment steps.
+
+---
+
+## 8. Scope Discipline & Issue Routing
+
+All repository work follows the issue-driven loop (`init` installs the canonical Development
+Flow recipe into a project's `AGENTS.md`). One standing rail applies to this repo too:
+
+- **Out-of-scope discoveries route to a new issue immediately.** When work — including a
+  `deep-interview`/requirements session, planning, or implementation — surfaces a problem
+  beyond the topic you started with, do not expand the current change to absorb it. Open a
+  new GitHub issue capturing it (with exactly one Type label: `feat`, `fix`, `chore`, `docs`,
+  `refactor`, or `test`), then keep the current work scoped to its original issue.

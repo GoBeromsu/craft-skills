@@ -1,7 +1,7 @@
 ---
 name: init
 description: '"init this repo", "deep init", "set up the docs structure", "bootstrap craft conventions", "generate AGENTS.md", "map this codebase", "/init" — dual-entry skill: scaffold the docs/ ontology + ADR rails (bootstrap), then generate a complexity-scored hierarchical AGENTS.md knowledge base (cartography) in one pass.'
-version: 2.0.0
+version: 2.1.0
 allowed-tools: [Bash, Read, Write, Edit, Grep, Glob, Task]
 compatibility: claude-code, codex, hermes
 ---
