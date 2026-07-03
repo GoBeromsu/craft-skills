@@ -37,19 +37,23 @@ Then invoke any skill by name, e.g. `documents`, `worktree`, `init`, `skillify`.
 
 ### Codex
 
-Codex reads `AGENTS.md` natively for skill context — no separate import step required.
+Install via the Codex plugin marketplace:
 
-1. Clone the repo to a stable location:
-   ```bash
-   git clone https://github.com/GoBeromsu/craft-skills.git ~/dev/GoBeromsu/craft-skills
-   ```
-2. In your Codex project, reference the AGENTS.md for skill context (e.g. import it into
-   your project's own `AGENTS.md`, or set the repo path in your workflow).
-3. Optionally copy `.codex/config.yaml` into your project root to register per-project hooks
-   (uncomment the `hooks:` block once `.claude/hooks/protect-skillify.sh` exists).
+```bash
+codex plugin marketplace add GoBeromsu/craft-skills
+codex plugin add craft-skills@craft-skills
+```
 
-Codex will resolve skill descriptions from `AGENTS.md` and route to `skills/<name>/SKILL.md`
-for the full recipe.
+For local validation while developing this repository:
+
+```bash
+codex plugin marketplace add ./
+codex plugin list --marketplace craft-skills --available --json
+codex plugin add craft-skills@craft-skills --json
+```
+
+The Codex plugin exposes the tracked `skills/` tree through
+`plugins/craft-skills/skills -> ../../skills`.
 
 ---
 
@@ -116,6 +120,9 @@ The script is idempotent and safe to re-run.
 
 ```bash
 claude plugin validate .
+codex plugin marketplace add ./
+codex plugin list --marketplace craft-skills --available --json
+codex plugin add craft-skills@craft-skills --json
 ```
 
 ## License

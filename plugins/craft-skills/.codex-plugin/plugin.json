@@ -1,0 +1,37 @@
+{
+  "name": "craft-skills",
+  "version": "0.2.0",
+  "description": "Work-craft Codex skills for research, engineering documentation, worktree workflow, bootstrap, hooks, and skill-authoring gates.",
+  "author": {
+    "name": "Beomsu Koh"
+  },
+  "homepage": "https://github.com/GoBeromsu/craft-skills",
+  "repository": "https://github.com/GoBeromsu/craft-skills",
+  "license": "MIT",
+  "keywords": [
+    "engineering",
+    "documentation",
+    "worktree",
+    "hooks",
+    "codex-skills"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "craft-skills",
+    "shortDescription": "Work-craft skills for Codex",
+    "longDescription": "craft-skills packages reusable Codex skills for engineering documentation, project bootstrap, worktree workflow, hook authoring, technical reports, and skill-authoring governance.",
+    "developerName": "Beomsu Koh",
+    "category": "Engineering",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/GoBeromsu/craft-skills",
+    "defaultPrompt": [
+      "Use craft-skills documents to structure project docs",
+      "Use craft-skills worktree to set up an issue branch"
+    ],
+    "brandColor": "#0F766E",
+    "screenshots": []
+  }
+}

@@ -1,0 +1,59 @@
+name: Test Plugin Installation
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate marketplaces
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Validate Claude marketplace manifest
+        run: claude plugin validate .
+
+      - name: Install Codex CLI
+        run: npm install -g @openai/codex
+
+      - name: Validate Codex marketplace manifest
+        run: |
+          set -euo pipefail
+          codex plugin marketplace add ./
+          codex plugin list --marketplace craft-skills --available --json | tee /tmp/craft-skills-codex-available.json
+          python3 - <<'PY'
+          import json
+          with open('/tmp/craft-skills-codex-available.json', 'r', encoding='utf-8') as fh:
+              data = json.load(fh)
+          names = {plugin.get('name') for plugin in data.get('available', [])}
+          if 'craft-skills' not in names:
+              raise SystemExit('craft-skills was not listed as an available Codex plugin')
+          PY
+
+  test-install:
+    name: Test Codex install
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Codex CLI
+        run: npm install -g @openai/codex
+
+      - name: Install Codex plugin
+        run: |
+          set -euo pipefail
+          codex plugin marketplace add ./
+          codex plugin add craft-skills@craft-skills --json | tee /tmp/craft-skills-codex-install.json
+          python3 - <<'PY'
+          import json
+          with open('/tmp/craft-skills-codex-install.json', 'r', encoding='utf-8') as fh:
+              data = json.load(fh)
+          if data.get('name') != 'craft-skills':
+              raise SystemExit(f"unexpected installed plugin payload: {data!r}")
+          PY
