@@ -8,7 +8,7 @@
       "name": "craft-skills",
       "source": {
         "source": "local",
-        "path": "./plugins/craft-skills"
+        "path": "."
       },
       "policy": {
         "installation": "AVAILABLE",

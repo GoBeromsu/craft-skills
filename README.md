@@ -52,8 +52,8 @@ codex plugin list --marketplace craft-skills --available --json
 codex plugin add craft-skills@craft-skills --json
 ```
 
-The Codex plugin exposes the tracked `skills/` tree through
-`plugins/craft-skills/skills -> ../../skills`.
+The Codex plugin root is the repository root, so the tracked `skills/` tree is
+packaged directly.
 
 ---
 
