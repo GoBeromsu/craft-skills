@@ -1,9 +1,6 @@
 ---
 name: worktree
 description: '"git wt", "make a worktree", "new worktree", "/worktree" — create (or reuse) a named git worktree off the default branch and install the git-guard rails in the target repo.'
-version: 2.0.0
-allowed-tools: [Bash, Read, Write, Edit, Grep, Glob]
-compatibility: claude-code, codex
 ---
 
 # Worktree Workflow Skill
@@ -12,7 +9,7 @@ compatibility: claude-code, codex
 
 Make a named worktree off the default branch with one command, and never work directly on a protected branch. Install the git-guard enforcement layer on first run (idempotent).
 
-`git wt <name>` is a plain worktree maker — no issue numbers, no type labels. Pick a short name (e.g. a small fixed pool `lane-1`~`lane-3`) and reuse it; don't spawn a new worktree per task.
+`git wt <name>` is a plain worktree maker — no issue numbers, no type labels. Prefer picking a short name from a small fixed pool (e.g. `lane-1`~`lane-3`) and reusing it; a dedicated worktree per parallel work lane is also fine when isolation is needed.
 
 ---
 
@@ -26,7 +23,7 @@ The default branch (`main`) is blocked at pre-commit and pre-push by the git-gua
 
 ---
 
-## Step 1 — Self-Install (idempotent, run on first invocation)
+## Step 1 — Propose Install (checked on first invocation)
 
 Check whether the git-guard rails are installed in the target repo:
 
@@ -36,10 +33,10 @@ git config alias.wt                 # must be set
 ls scripts/git-guard/setup-hooks.sh # must exist
 ```
 
-If any check fails, run the bundled installer from the target repo root:
+If any check fails, propose the install to the user in one line before running it — state what it does: copies the guard scripts to `scripts/git-guard/`, copies the `pre-commit`/`pre-push` hooks to `.githooks/`, and wires `core.hooksPath` + the `git wt` alias. Only after the user accepts, run the bundled installer from the target repo root:
 
 ```bash
-sh skills/worktree/scripts/install.sh
+sh skills/git/worktree/scripts/install.sh
 ```
 
 `install.sh` is the single entry point. It never clobbers existing files:
@@ -48,7 +45,7 @@ sh skills/worktree/scripts/install.sh
 2. Copies the shipped `githooks/pre-commit` and `githooks/pre-push` into `.githooks/` (skip if present) — real files in the skill, not improvised stubs.
 3. Runs `scripts/git-guard/setup-hooks.sh` to wire `core.hooksPath`, register `alias.wt`, and `chmod +x` the scripts and hooks.
 
-Both installers are idempotent. After install, confirm:
+Both installers are idempotent — safe to re-run once accepted. After install, confirm:
 
 ```
 [git-guard] core.hooksPath  = .githooks
@@ -98,8 +95,7 @@ Use `git branch -d` (not `-D`) — a merged branch deletes cleanly, and the safe
 
 ## Step 4 — Freshness
 
-- `pre-push`: blocks the push if the branch is behind `origin` (exit 1).
-- `pre-commit` and session start: warn if behind, do not block (exit 0).
+- `pre-push`, `pre-commit`, and session start: warn if the branch is behind `origin` (exit 0) — never blocks.
 
 To sync: `git pull --rebase`.
 
@@ -171,7 +167,7 @@ Dependencies:
 |---|---|
 | `scripts/install.sh` | Bundled first-run installer: copies guard scripts + hooks into the repo, then runs `setup-hooks.sh`. The single entry point `worktree`/`init` delegate to |
 | `githooks/pre-commit` | Shipped hook: assert-not-main + deny-assets (staged) + check-freshness (warn) |
-| `githooks/pre-push` | Shipped hook: assert-not-main + check-freshness (block) + deny-assets (push) |
+| `githooks/pre-push` | Shipped hook: assert-not-main + check-freshness (warn) + deny-assets (push) |
 | `scripts/lib.sh` | Shared helpers: `gg_warn`, `gg_die`, protected-branch list |
 | `scripts/assert-not-main.sh` | Exits 1 when HEAD is on a protected branch |
 | `scripts/check-freshness.sh` | Compares HEAD to upstream; `block` (exit 1) or `warn` mode |
@@ -186,5 +182,5 @@ Dependencies:
 - `gh pr merge --delete-branch` exiting with `cannot delete branch '<branch>' used by worktree` is expected, not a fault — the worktree still holds it. Merge without `--delete-branch`, then `git wt rm <name>` + `git branch -d <name>`.
 - Cleanup commands failing with `... already used by worktree` usually means you are running them *inside* the worktree you are removing. `cd` to the primary checkout and retry.
 - A phantom `git worktree list` entry after a manual `rm -rf` clears with `git worktree prune` — then the branch can be deleted or checked out.
-- Spawning a fresh worktree per task instead of reusing a small fixed pool — pick a `lane-N` and reuse it.
+- Spawning a fresh worktree for every trivial task when a small reused pool (`lane-N`) would do — reuse the pool for sequential solo work; a dedicated worktree per parallel work lane is fine when isolation is genuinely needed.
 - Never set `GIT_GUARD_PROTECTED=` in shell startup files — it disables enforcement globally and permanently.

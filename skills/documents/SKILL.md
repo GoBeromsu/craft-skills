@@ -1,7 +1,7 @@
 ---
 name: documents
-description: '"write an ADR", "set up docs/", "where does this spec go", "write a README", "write the changelog", "document this API", "how should I comment this", "write a design.md", "set up a design system", "define UI tokens", "/documents" — author and route project documentation: research/references/spec/plan/decision/rule artifacts plus README, API docs, changelog, code comments, and design system tokens.'
-version: 1.2.0
+description: '"write an ADR", "set up docs/", "where does this spec go", "write a README", "write the changelog", "how should I comment this", "write a design.md", "set up a design system", "define UI tokens", "/documents" — author and route project documentation: research/references/spec/plan/decision/rule artifacts plus README, changelog, code comments, and design system tokens.'
+version: 2.0.0
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 compatibility: claude-code, codex
 ---
@@ -33,7 +33,6 @@ For a sub-task below, **Read the named sub-recipe before authoring** — it carr
 |---|---|
 | Write or update an ADR / record a cross-cutting decision | `adr/SKILL.md` (+ `adr/template.md`) |
 | Write or update the repository README | `readme/SKILL.md` (+ `readme/template.md`) |
-| Document a function/method or REST endpoint (JSDoc, OpenAPI) | `api-docs/SKILL.md` (+ `api-docs/template.md`) |
 | Write the project-level CHANGELOG / release notes | `changelog/SKILL.md` (+ `changelog/template.md`) |
 | Decide how to comment code (comment-the-why) | `inline-comments/SKILL.md` |
 | Write or update a project's design system source of truth (design.md) | `design/SKILL.md` (+ `design/template.md`) |
@@ -142,7 +141,7 @@ Keep it a map, not a manual. If it starts duplicating an ADR body, replace the d
 - `architecture.md` that restates ADR bodies instead of linking them
 - Completed or discarded work still sitting in `active/` with no `status` frontmatter
 - A references file containing your own synthesis (that belongs in research)
-- Authoring an ADR, README, API doc, or changelog without first loading its sub-recipe
+- Authoring an ADR, README, or changelog without first loading its sub-recipe
 
 ## Verification
 
@@ -152,4 +151,4 @@ Keep it a map, not a manual. If it starts duplicating an ADR body, replace the d
 - [ ] `architecture.md` is a map that links out, not a manual that duplicates
 - [ ] References files contain verbatim source content, not your synthesis
 - [ ] Slug frontmatter field matches the folder name exactly
-- [ ] Deep-format work (ADR, README, API docs, changelog, comments) was authored from its sub-recipe
+- [ ] Deep-format work (ADR, README, changelog, comments) was authored from its sub-recipe

@@ -24,13 +24,10 @@ craft-skills/
 │   │   ├── SKILL.md             #   waypoint: ontology + routing + docs/ layout + Children index
 │   │   ├── adr/                 #   sub-recipe: Architecture Decision Records (+ template.md)
 │   │   ├── readme/              #   sub-recipe: repository README (+ template.md)
-│   │   ├── api-docs/            #   sub-recipe: JSDoc/docstring + OpenAPI (+ template.md)
 │   │   ├── changelog/           #   sub-recipe: project CHANGELOG (+ template.md)
 │   │   ├── inline-comments/     #   sub-recipe: comment-the-why convention (no template)
 │   │   ├── design/              #   sub-recipe: project design.md — design-system source of truth (+ template.md)
 │   │   └── templates/           #   research/references/spec/plan/rule/architecture skeletons
-│   ├── worktree/                # git wt workflow, git-guard self-install, optional remote exec
-│   │   └── SKILL.md
 │   ├── init/                    # Dual-entry: docs/ ontology bootstrap + hierarchical AGENTS.md cartography
 │   │   ├── SKILL.md             #   triage: classify runtime → Phase 0 graft → orchestrate phases 1-4
 │   │   ├── references/          #   phase-0-ontology (graft) + phase-1..4 (init-deep cartography engine)
@@ -54,7 +51,8 @@ craft-skills/
 │   ├── refactor/                # Behavior-preserving restructuring — smell/move catalogs + scripts/detect-smells.sh
 │   │   └── SKILL.md
 │   ├── git/                     # Version-control craft — atomic commits, conventions, history surgery
-│   │   └── SKILL.md
+│   │   ├── SKILL.md
+│   │   └── worktree/            #   sub-recipe: git wt workflow + git-guard rails (propose-first install)
 │   ├── security/                # Defensive security triage — web/API/LLM/secrets detection references
 │   │   └── SKILL.md
 │   ├── technical-report/        # Canonical technical-report engine — YAML-frame TOC + structure/source validators
@@ -73,8 +71,7 @@ One imperative sentence per skill. Load the skill's `SKILL.md` for the full reci
 
 | Skill | What it does |
 |-------|-------------|
-| `documents` | Waypoint that routes project documentation through the `docs/` ontology (research→ADR→plan pipeline) and loads nested sub-recipes on demand for ADRs, README, API docs, project changelog, the comment-the-why convention, and the project design.md. |
-| `worktree` | Run the `git wt <name>` simple-worktree workflow, self-install git-guard on first use, and optionally exec on a remote Tailscale host via tmux. |
+| `documents` | Waypoint that routes project documentation through the `docs/` ontology (research→ADR→plan pipeline) and loads nested sub-recipes on demand for ADRs, README, the project changelog, the comment-the-why convention, and the project design.md. |
 | `init` | Dual-entry: bootstrap a project's `docs/` ontology + ADR rails (Phase 0 graft), then generate a complexity-scored hierarchical `AGENTS.md` knowledge base (Phases 1–4, init-deep cartography engine in `references/`), with a single-agent fallback for non-fan-out runtimes. |
 | `skillify` | Create, update, move, or promote a craft-skills skill through the vendored two-layer promotion gate. |
 | `hookify` | Turn a convention or SE best-practice into local deterministic enforcement (Claude Code / Codex runtime hook → lint → pre-commit), shipping a starter guard and red-proving it fires. |
@@ -85,7 +82,7 @@ One imperative sentence per skill. Load the skill's `SKILL.md` for the full reci
 | `agents` | Build and change LLM agents under the eval-first law — prompts-as-code, tool design, and context/tracing discipline, handing tool-permission and consumption enforcement to `security`. |
 | `testing` | Architect test suites — taxonomy with resource-based sizing, a placement decision tree, the prove-it bug-fix law, and structure/integration/e2e conventions each with a detection command. |
 | `refactor` | Restructure code behavior-preservingly — when-to-refactor triggers, a characterization-test protocol for legacy code, a 17-smell detection catalog, a 12-move catalog, and `scripts/detect-smells.sh`. |
-| `git` | Commit and rewrite history safely — atomic-commit split protocol, incumbent repo-style detection, commit/branch/PR conventions, and non-interactive-safe history surgery. |
+| `git` | Commit and rewrite history safely — atomic-commit split protocol, incumbent repo-style detection, commit/branch/PR conventions, and non-interactive-safe history surgery; the `worktree` sub-recipe runs the `git wt` worktree workflow with git-guard rails. |
 | `security` | Triage defensive security across web, API, and LLM surfaces — trust-boundary mapping, per-class detection commands, reachability × severity triage, and secrets/dependency hygiene. |
 | `technical-report` | Scaffold a per-project `technical-report.yaml` frame through a depth-ordered interview, then author/review canonical section markdown against it under code-enforced structure and source-coverage gates. |
 
@@ -206,7 +203,7 @@ Use `${ENV_VAR}` placeholders in all skill content. Never hardcode `/Users/<name
 | Variable | Meaning | Example placeholder |
 |----------|---------|---------------------|
 | `CRAFT_SKILLS_REPO_PATH` | Absolute path to this repo root — used by Hermes `external_dirs` mount. | `/path/to/craft-skills` |
-| `CRAFT_WT_REMOTE_HOST` | Tailscale hostname for remote worktree exec (worktree skill; optional). | `m1-pro` |
+| `CRAFT_WT_REMOTE_HOST` | Tailscale hostname for remote worktree exec (git skill's worktree sub-recipe; optional). | `m1-pro` |
 
 ---
 

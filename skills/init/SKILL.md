@@ -57,7 +57,7 @@ self-installs there on first use. So a missing guard is visible — not silently
 line at start:
 
 ```bash
-echo "git-guard: core.hooksPath = $(git config core.hooksPath 2>/dev/null || echo '<unset — worktree skill installs it on first use>')"
+echo "git-guard: core.hooksPath = $(git config core.hooksPath 2>/dev/null || echo '<unset — the git skill worktree sub-recipe proposes install on first use>')"
 ```
 
 ### Step C. Track all phases, then run them in order

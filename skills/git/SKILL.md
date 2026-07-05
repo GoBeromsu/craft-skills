@@ -20,8 +20,9 @@ This skill is an index. Shared rules live here; the deep recipe catalogs live in
 - Rebasing, squashing, or otherwise rewriting local or remote-tracked history.
 - Naming a branch, sizing a PR, or deciding a merge strategy.
 - Recovering from a rebase gone wrong or undoing a commit.
+- "git wt", "make/new worktree", or a missing guard-rail install — load `worktree/SKILL.md` (nested sub-recipe).
 
-Not for: git worktree lifecycle (branch/worktree creation and cleanup — load the `worktree` skill instead), PR review process or issue routing (the repo's own `AGENTS.md` development-flow section owns that).
+Not for: PR review process or issue routing (the repo's own `AGENTS.md` development-flow section owns that).
 
 ## PHASE 0 — ground truth + repo-style detection (run first, every time)
 
@@ -113,7 +114,7 @@ matching=$(git branch -a --format='%(refname:short)' | grep -vE 'HEAD|->|(^|/)(m
 echo "$matching / $total"
 ```
 
-Ratio (`matching / total`, printed last) ≥ 2/3 of listed branches matching one shape → follow it, matching the exact type spelling found (`feat/` and `feature/` are different conventions — copy the one observed, don't guess). Below 2/3, or `total` is 0 (fresh repo, or ticket-based names) → default to `<type>/<slug>` using the type list in `references/conventions.md`. Tool-managed branch names (e.g. the `worktree` skill's lane branches) are outside this rule — the managing skill owns them; apply incumbent detection only to branches you name yourself.
+Ratio (`matching / total`, printed last) ≥ 2/3 of listed branches matching one shape → follow it, matching the exact type spelling found (`feat/` and `feature/` are different conventions — copy the one observed, don't guess). Below 2/3, or `total` is 0 (fresh repo, or ticket-based names) → default to `<type>/<slug>` using the type list in `references/conventions.md`. Tool-managed branch names (e.g. this skill's `worktree` sub-recipe's lane branches) are outside this rule — the managing sub-recipe owns them; apply incumbent detection only to branches you name yourself.
 
 ## PR sizing rule
 
