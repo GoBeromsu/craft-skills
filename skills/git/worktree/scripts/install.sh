@@ -3,16 +3,17 @@
 #
 # Scaffolds the guard scripts and git hooks into the TARGET repo, then wires
 # git config via setup-hooks.sh. This is the single entry point the `worktree`
-# and `init` skills delegate to so git-guard comes by default after a clone.
+# sub-recipe (git skill) and `init` skill delegate to so git-guard comes by
+# default after a clone.
 #
 # Safe to re-run: existing files are never clobbered, and the git config / chmod
 # performed by setup-hooks.sh are idempotent.
 #
 # Run from anywhere inside the target repo:
-#   sh /path/to/skills/worktree/scripts/install.sh
+#   sh /path/to/skills/git/worktree/scripts/install.sh
 set -eu
 
-# Source: this script lives in the worktree skill's scripts/ dir; hooks are a sibling.
+# Source: this script lives in the worktree sub-recipe's scripts/ dir; hooks are a sibling.
 src=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 hooks_src=$(CDPATH= cd -- "$src/../githooks" && pwd)
 
