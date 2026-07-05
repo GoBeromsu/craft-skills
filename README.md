@@ -12,10 +12,20 @@ two domains never bleed into each other's context.
 
 | Skill | Purpose |
 |-------|---------|
-| `documents` | Project documentation system — `docs/` folder ontology (research / spec / plan / ADR / rule), the research→ADR→plan decision pipeline, and routing for what belongs where. |
+| `documents` | Project documentation system — `docs/` folder ontology (research / spec / plan / ADR / rule), the research→ADR→plan decision pipeline, routing for what belongs where, and sub-recipes for ADRs, README, API docs, changelog, comments, and the project design.md. |
 | `worktree` | `git wt <issue#>` dedicated-worktree workflow, git-guard self-install, and optional remote execution via Tailscale + tmux. |
 | `init` | Dual-entry bootstrap + cartography — scaffolds the `docs/` ontology + ADR rails (Phase 0), then generates a complexity-scored hierarchical `AGENTS.md` knowledge base (Phases 1–4, ported from init-deep) in one pass. |
 | `skillify` | Vendored skill-authoring promotion gate — create, update, move, or promote craft-skills skills through a two-layer review gate. |
+| `programming` | Correctness-first Python and TypeScript engineering discipline — routes code edits through shared workflow rules plus language-specific references before writing. |
+| `frontend` | Rendering-architecture-gated frontend engineering — SPA / SSR-RSC / SSG / islands absolute rules, component-reuse layers, state placement, and folder conventions, gated on the project's design.md. |
+| `backend` | Architecture-gated backend engineering — layered / vertical-slice / hexagonal detection gate, dependency-direction rules, API design contract law, and per-framework folder conventions. |
+| `ml` | ML/DL research engineering — reproducible `pyproject` + `src/` layout, leakage-safe dataset construction, the training-discipline ladder, and vision-specific practice. |
+| `agents` | LLM-agent engineering — eval-first shipping law, prompts-as-code, tool design, and context/tracing discipline for building and changing agent behavior. |
+| `testing` | Suite-level test architecture — taxonomy with resource-based sizing, placement decision tree, prove-it bug-fix law, and structure/integration/e2e conventions with detection commands. |
+| `refactor` | Behavior-preserving restructuring — when-to-refactor triggers, characterization-test protocol for legacy code, 17-smell + 12-move catalogs, and a one-pass `detect-smells.sh`. |
+| `git` | Version-control craft — atomic-commit split protocol, incumbent repo-style detection, commit/branch/PR conventions, and non-interactive-safe history surgery. |
+| `security` | Defensive security triage across web, API, and LLM surfaces — trust-boundary mapping, per-class detection commands, severity triage, and secrets/dependency hygiene. |
+| `hookify` | Turn a convention or engineering best-practice into local deterministic enforcement — choose the earliest reliable hook/lint/pre-commit surface, ship a starter guard, and red-prove it fires. |
 | `technical-report` | Build and enforce a project's canonical technical report — Scaffold mode interviews depth-by-depth to fill a per-project `technical-report.yaml` frame; Author/Validate mode writes/reviews section markdown against it and gates structure + source coverage with two validators. |
 
 ---
@@ -31,7 +41,7 @@ Install via the marketplace (interactive, inside Claude Code):
 /plugin install craft-skills@craft-skills
 ```
 
-Then invoke any skill by name, e.g. `documents`, `worktree`, `init`, `skillify`.
+Then invoke any skill by name, e.g. `documents`, `worktree`, `init`, `skillify`, `programming`, `frontend`, `backend`, `ml`, `agents`, `testing`, `refactor`, `git`, `security`, `hookify`, `technical-report`.
 
 ---
 
@@ -78,7 +88,7 @@ Mount `skills/` via `skills.external_dirs` in your Hermes config:
    ```
 4. Verify:
    ```bash
-   hermes skills list | grep -E 'documents|worktree|init|skillify'
+   hermes skills list | grep -E 'documents|worktree|init|skillify|programming|frontend|backend|ml|agents|testing|refactor|git|security|hookify|technical-report'
    ```
 
 See `.hermes/README.md` for full deployment details and the future skillify protection hook.
@@ -95,6 +105,17 @@ skills/documents/SKILL.md
 skills/worktree/SKILL.md
 skills/init/SKILL.md
 skills/skillify/SKILL.md
+skills/programming/SKILL.md
+skills/frontend/SKILL.md
+skills/backend/SKILL.md
+skills/ml/SKILL.md
+skills/agents/SKILL.md
+skills/testing/SKILL.md
+skills/refactor/SKILL.md
+skills/git/SKILL.md
+skills/security/SKILL.md
+skills/hookify/SKILL.md
+skills/technical-report/SKILL.md
 ```
 
 No runtime-specific config required.
