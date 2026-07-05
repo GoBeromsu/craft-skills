@@ -63,10 +63,10 @@ Refactoring code with no test coverage, without doing this first, is how "harmle
 Detect a commit mixing the two before it lands:
 
 ```bash
-git diff --staged -- '*test*' '*spec*' '*_test.*' '*.test.*' | grep -E '^[+-][^+-].*\b(assert|expect)\b'
+git diff --staged --diff-filter=M -- '*test*' '*spec*' '*_test.*' '*.test.*' | grep -E '^[+-][^+-].*\b(assert|expect)\b'
 ```
 
-Any output here on a commit being called "refactor" means a test's expected behavior changed — split the commit: the assertion change is a behavior commit, the rest is the refactor commit.
+`--diff-filter=M` scopes this to test files that already existed before the commit, so a brand-new test file — characterization tests, added coverage — never shows up here at all; that case is exempt by construction, not by judgment call. No output → clean, nothing to split. Output on an existing test file is grey zone — judge by whether an existing expected value changed: a `-`/`+` pair flipping `assert x == 47` to `assert x == 48` (or deleting an assertion outright) is the behavior-change signal — split the commit, the assertion change is a behavior commit and the rest is the refactor commit. A `+`-only line adding a new assertion beside untouched ones is added coverage, not proof by itself.
 
 ## Scope Guard
 
@@ -80,7 +80,7 @@ Any output here on a commit being called "refactor" means a test's expected beha
 
 - Which smell, which command, which threshold → `references/code-smells.md` (the detection catalog — load this before calling anything a "smell").
 - Which mechanical move fixes which smell → `references/catalog.md`.
-- A one-shot terminal scan across a whole directory → `scripts/detect-smells.sh <dir>` (reporter, not a gate — always exits 0; read every finding before acting, false-positive profile documented per rule).
+- A one-shot terminal scan across a whole directory → `scripts/detect-smells.sh <dir>` (reporter, not a gate — always exits 0; read every finding before acting, false-positive profile documented per rule). The script ships inside this skill package, not the target project — at invocation time the agent's cwd is the target project being scanned, so route it by absolute path resolved from the directory containing this SKILL.md, never as a bare relative path: `bash <skill-package-dir>/scripts/detect-smells.sh <target-dir>`.
 - File-size ceiling (250 pure LOC) and its escape hatches → the `programming` skill; this skill owns function-level size, not file-level.
 - Turning any rule below into an enforced pre-commit/lint/hook check → the `hookify` skill.
 

@@ -1,13 +1,13 @@
 # Frontend Rendering Architectures
 
-A rendering model is a contract about *when* and *where* markup is produced: at build time, at request time on a server, or at runtime in the browser. Each model below is a closed set of absolute rules — mixing two inside one app breaks the contract silently, usually as a hydration mismatch or a leaked secret.
+A rendering model is a contract about *when* and *where* markup is produced: at build time, at request time on a server, or at runtime in the browser. Each model below is a closed set of absolute rules. Bolting a **second rendering runtime/framework** — a distinct framework or hand-rolled pipeline not native to the incumbent one — onto an app breaks the contract silently, usually as a hydration mismatch or a leaked secret. This does not forbid mixed rendering *modes* that are the detected framework's own native architecture: Next.js's `app/` router natively renders some routes as SSR, some as SSG via `generateStaticParams`, and some leaf components as pure client; Astro natively mixes SSG pages with islands and on-demand SSR. That mixing is the framework's contract, not a violation of it — as long as each mode choice is recorded in `design.md` rather than drifting unrecorded.
 
 ## Hard rules
 
 | Concern | Do | Never |
 |---|---|---|
-| Rendering model per app | Pick exactly one of SPA / SSR-RSC / SSG / islands and apply its rules everywhere | Mix two models in one app (e.g. an SSR app with a hand-rolled client router bypassing the framework's routing) |
-| Existing project | Detect the incumbent model (PHASE 0 in `SKILL.md`) and follow its rules for every edit | Introduce a second model "just for this one page" without a stated migration plan |
+| Rendering model per app | Pick exactly one framework/runtime (SPA / SSR-RSC / SSG / islands, or the multi-mode architecture native to the detected framework) and apply its rules everywhere | Introduce a second rendering runtime/framework into the app (e.g. an SSR/Next.js app with a hand-rolled client router bypassing the framework's routing) |
+| Existing project | Detect the incumbent framework (PHASE 0 in `SKILL.md`) and follow its rules — including whatever rendering-mode mixing is native to it — for every edit | Let a rendering-mode drift (SSR ↔ SSG ↔ client) inside the incumbent framework go unrecorded in `design.md`, or bolt on a second framework "just for this one page" without a stated migration plan |
 | New project | Choose from the decision table below before scaffolding | Default to the model you personally know best regardless of the project's needs |
 
 ## Decision table — new project
@@ -34,7 +34,7 @@ When it's genuinely ambiguous (an app with both a public marketing site and a ga
 
 ```bash
 total=$(find app src/app -type f \( -name '*.tsx' -o -name '*.jsx' \) 2>/dev/null | wc -l)
-client=$(grep -rl '^"use client"' app src/app 2>/dev/null | wc -l)
+client=$(grep -rlE "^[\"']use client[\"']" app src/app 2>/dev/null | wc -l)
 echo "client components: $client / $total"
 ```
 
@@ -52,7 +52,7 @@ Any file printed uses a browser API with no `"use client"` directive at its head
 **Detect: server secret reachable from a client file.**
 
 ```bash
-grep -rl '^"use client"' app src/app 2>/dev/null \
+grep -rlE "^[\"']use client[\"']" app src/app 2>/dev/null \
   | xargs grep -nE 'process\.env\.[A-Z_]+' 2>/dev/null \
   | grep -v 'process\.env\.NEXT_PUBLIC_'
 ```

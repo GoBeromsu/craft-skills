@@ -27,22 +27,22 @@ Do not use for: per-file type/style discipline or parse-don't-validate input han
 
 Do not write or edit service code before this gate.
 
-1. Detect the existing architecture from folder shape:
+1. Detect the existing architecture from folder shape. Run every command below from the service's own root — the directory holding that service's `pyproject.toml` or `package.json` — never from a monorepo root. Running from a monorepo root mixes multiple services' folders into one reading and manufactures false mixed-pattern-drift flags; different services in the same monorepo may legitimately use different architectures.
 
 ```bash
 # Layered signal — controller/service/repository triad
 find . -type d \( -iname controllers -o -iname services -o -iname repositories \) \
-  -not -path '*/node_modules/*' -not -path '*/.venv/*'
+  -not -path '*/node_modules/*' -not -path '*/.venv/*' | sed 's|.*/||' | sort -u
 
 # Vertical-slice signal — features/<use-case> grouping
-find . -maxdepth 3 -type d -path '*/features/*' -not -path '*/node_modules/*'
+find . -maxdepth 5 -type d -path '*/features/*' -not -path '*/node_modules/*'
 
 # Hexagonal signal — domain/ports/adapters triad
 find . -type d \( -iname domain -o -iname ports -o -iname adapters \) \
-  -not -path '*/node_modules/*'
+  -not -path '*/node_modules/*' | sed 's|.*/||' | sort -u
 ```
 
-Read: whichever triad returns the most non-empty hits is the incumbent architecture. Two triads both hitting strongly means mixed-pattern drift already exists (see `folders.md`) — flag it; do not layer a third pattern on top.
+Read: the two triad commands each print their distinct matched folder names (`sort -u` collapses repeats, so 0–3 lines out). A triad needs **≥2 of its 3 names present** to classify the incumbent architecture — layered needs 2 of {`controllers`, `services`, `repositories`}; hexagonal needs 2 of {`domain`, `ports`, `adapters`}. Exactly one name present (a lone `services/` with no `controllers/` or `repositories/` anywhere) does not clear the threshold: grey zone — judge by import/dependency direction instead (does that lone folder's code reach straight into an ORM/session, layered-style, or does it sit behind a port/interface, hexagonal-style?). Both triads clearing the ≥2 threshold at once means mixed-pattern drift already exists (see `folders.md`) — flag it; do not layer a third pattern on top.
 
 2. **Respect the incumbent — the #1 absolute rule.** An existing service keeps its detected architecture for every edit. Never mix patterns in one service: a controller calling a repository directly in an otherwise-layered service, or a use-case importing framework code in an otherwise-hexagonal service, are both violations. Migrating a whole service's architecture is a separate, explicitly-scoped change — never a side effect of a feature edit.
 
@@ -71,6 +71,7 @@ Grey zone — genuinely ambiguous (mid-size team, moderate complexity, no clear 
 - `grep`, `find`: POSIX; used for every detection command in this skill and its references.
 - Python services: FastAPI + Pydantic v2 + `uv` (see the `programming` skill for per-file discipline).
 - TypeScript services: Express or Nest + zod + strict `tsc` (see the `programming` skill for per-file discipline).
+- Any other language: the two stacks above are anchors for Python and TypeScript work only. The architecture and dependency-direction rules in this skill apply regardless of language; stack conventions (framework, validation library, package manager) come from the incumbent codebase, not from this list.
 
 ## Common Rationalizations
 
@@ -98,6 +99,6 @@ Grey zone — genuinely ambiguous (mid-size team, moderate complexity, no clear 
 - [ ] PHASE 0 detection commands were run and the incumbent architecture (or its absence) was confirmed before writing code.
 - [ ] The matching reference file was read in full before structural changes.
 - [ ] No dependency-direction violation — the grep commands in the loaded reference return no unexplained hits.
-- [ ] No architecture mixing — exactly one pattern's folder shape is present per service.
+- [ ] No architecture mixing — exactly one pattern's folder shape is present per service, confirmed by running PHASE 0 detection from that service's own root (never a monorepo root).
 - [ ] New API surface followed the contract-first and observed-behavior rules in `api-design.md`.
 - [ ] Folder shape matches `folders.md` for the chosen architecture and framework.

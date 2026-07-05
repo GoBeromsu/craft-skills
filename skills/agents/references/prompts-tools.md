@@ -77,7 +77,7 @@ Pass: no output. Fail: any hit — a tool whose argument surface bypasses schema
 
 Design each tool's own argument and action surface as narrow as the task allows — a tool that can only append a comment has a smaller blast radius than a generic `update_ticket` tool that happens to also delete, before any allowlist is even applied. This is a property of the tool's own design, not a runtime permission check.
 
-The runtime half — which agent is allowed to call which tool at all, the least-privilege allowlist per agent, and the detection command that audits every agent's tool grant — is owned by `security`. Read `security`'s `references/llm.md` section "Tool-permission scoping" before wiring a tool into an agent that will run beyond a local experiment.
+The runtime half — which agent is allowed to call which tool at all, the least-privilege allowlist per agent, and the detection command that audits every agent's tool grant — is owned by `security`. Load the `security` skill before wiring a tool into an agent that will run beyond a local experiment; its own PHASE 0 gate routes to `references/llm.md` section "Tool-permission scoping" for the allowlist rule and its detection command.
 
 ## Worked example — a complete system prompt
 

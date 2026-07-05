@@ -15,7 +15,7 @@ Every run leaves a trail long enough to replay it — context that entered the m
 | User message | Semi-trusted (states intent, not a command over the system) | Instruction channel, scoped |
 | Retrieved document / tool result | Untrusted | Data channel, delimited |
 
-Enforcing that separation against an injection attempt is `security`'s job (`references/llm.md`, "Prompt injection"); this skill's job is keeping the provenance tag present in the first place so there is something for that rule to check.
+Enforcing that separation against an injection attempt is `security`'s job — load the `security` skill, whose own PHASE 0 gate routes to `references/llm.md` ("Prompt injection"); this skill's job is keeping the provenance tag present in the first place so there is something for that rule to check.
 
 ### Tracing law
 
@@ -57,7 +57,7 @@ Every agent run logs its running consumption alongside the trace record: iterati
 {"run_id": "r_8f2a", "iteration": 4, "max_iterations": 12, "tokens_used": 8200, "token_budget": 20000, "recursion_depth": 1}
 ```
 
-Declaring the numeric budgets and enforcing the hard stop when one is exhausted — the loop-break logic itself and its detection command — is owned by `security`. Read `security`'s `references/llm.md` section "Unbounded-consumption guards" before shipping any agent loop; this skill's job ends at making sure the counters exist for that rule to check.
+Declaring the numeric budgets and enforcing the hard stop when one is exhausted — the loop-break logic itself and its detection command — is owned by `security`. Load the `security` skill before shipping any agent loop; its own PHASE 0 gate routes to `references/llm.md` section "Unbounded-consumption guards" for the loop-break rule and its detection command. This skill's job ends at making sure the counters exist for that rule to check.
 
 ### Memory hygiene
 

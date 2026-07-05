@@ -30,26 +30,29 @@ Do not write a commit message, rebase, or push before this gate. Stale mental mo
 ### Ground truth
 
 ```bash
+BASE=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null || echo origin/main)
 git status --short
 git diff --stat
 git diff --staged --stat
 git branch --show-current
 git log -15 --oneline
-git rev-parse --abbrev-ref @{upstream}
-git merge-base HEAD origin/main
+git rev-parse --abbrev-ref @{upstream} 2>/dev/null || echo "no upstream — first push"
+git merge-base HEAD "$BASE"
 ```
 
-Read every line before acting: `status --short` shows what's changed and whether staged/unstaged are mixed; the two `diff --stat` calls separate "about to be committed" from "not yet staged"; `branch --show-current` confirms you're not on a protected branch (hand off to `worktree` if you are); `log -15` is the local style sample; `@{upstream}` confirms a remote-tracking branch exists before any push-safety command matters; `merge-base HEAD origin/main` is the divergence point the PR-sizing diff below measures from.
+Read every line before acting: `BASE` resolves the repo's actual default branch from `origin/HEAD` (set by `git clone` or `git remote set-head origin -a`), falling back to `origin/main` only when no remote reports one — never assume `main` on a repo that uses `master`, `develop`, or `trunk`; reuse `"$BASE"` (re-run this line first if it's a fresh shell) anywhere below that would otherwise hardcode a branch name. `status --short` shows what's changed and whether staged/unstaged are mixed; the two `diff --stat` calls separate "about to be committed" from "not yet staged"; `branch --show-current` confirms you're not on a protected branch (hand off to `worktree` if you are); `log -15` is the local style sample; `@{upstream}` confirms a remote-tracking branch exists before any push-safety command matters — no output and no error means a local-only branch that hasn't been pushed yet, not a failure; `merge-base HEAD "$BASE"` is the divergence point the PR-sizing diff below measures from.
 
 ### Repo-style detection
 
 ```bash
+total=$(git log --oneline -30 | wc -l | tr -d ' ')
 git log --oneline -30 | grep -ciE '^[0-9a-f]+ (feat|fix|chore|docs|refactor|test|style|perf|build|ci|revert)(\([a-z0-9_-]+\))?!?:'
 git log -30 --format=%s | perl -CSD -ne 'print if /[\x{AC00}-\x{D7A3}]/' | wc -l
 git log -30 --format=%s | awk '{ s += length($0); n++ } END { if (n) print s/n }'
+echo "sample size: $total"
 ```
 
-Reading: first count ÷ 30 ≥ 2/3 → the repo uses conventional-commit prefixes; use them (type table in `references/conventions.md`). Below 2/3 → do not import conventional commits onto an unprefixed repo; match its plain imperative-subject style. Second command counts commits containing Hangul; count ÷ 30 > half → write commit subjects in Korean, keeping whichever prefix convention the first check found. Third command gives the repo's actual average subject length — target that norm, not the ≤72 ceiling as a goal in itself. **Incumbent style always wins over personal preference or an outside standard.**
+Reading: `total` is the actual number of commits sampled (a young repo has fewer than 30 — divide by what `total` prints, never by a hardcoded 30). First count ÷ `total` ≥ 2/3 → the repo uses conventional-commit prefixes; use them (type table in `references/conventions.md`). Below 2/3 → do not import conventional commits onto an unprefixed repo; match its plain imperative-subject style. Second command counts commits containing Hangul; count ÷ `total` > half → write commit subjects in Korean, keeping whichever prefix convention the first check found. Third command gives the repo's actual average subject length — target that norm, not the ≤72 ceiling as a goal in itself. **Incumbent style always wins over personal preference or an outside standard.**
 
 ## Atomic commit law
 
@@ -105,15 +108,18 @@ Any hit → unstage or fix before committing.
 
 ```bash
 git branch -a --format='%(refname:short)' | grep -vE 'HEAD|->|(^|/)(main|master|develop)$'
-git branch -a --format='%(refname:short)' | grep -cE '^(origin/)?(feat|feature|fix|bugfix|chore|hotfix)/[a-z0-9._-]+$'
+total=$(git branch -a --format='%(refname:short)' | grep -vE 'HEAD|->|(^|/)(main|master|develop)$' | wc -l | tr -d ' ')
+matching=$(git branch -a --format='%(refname:short)' | grep -vE 'HEAD|->|(^|/)(main|master|develop)$' | grep -cE '^(origin/)?(feat|feature|fix|bugfix|chore|hotfix)/[a-z0-9._-]+$')
+echo "$matching / $total"
 ```
 
-Ratio ≥ 2/3 of listed branches matching one shape → follow it, matching the exact type spelling found (`feat/` and `feature/` are different conventions — copy the one observed, don't guess). No dominant shape found (fresh repo, or ticket-based names) → default to `<type>/<slug>` using the type list in `references/conventions.md`. Tool-managed branch names (e.g. the `worktree` skill's lane branches) are outside this rule — the managing skill owns them; apply incumbent detection only to branches you name yourself.
+Ratio (`matching / total`, printed last) ≥ 2/3 of listed branches matching one shape → follow it, matching the exact type spelling found (`feat/` and `feature/` are different conventions — copy the one observed, don't guess). Below 2/3, or `total` is 0 (fresh repo, or ticket-based names) → default to `<type>/<slug>` using the type list in `references/conventions.md`. Tool-managed branch names (e.g. the `worktree` skill's lane branches) are outside this rule — the managing skill owns them; apply incumbent detection only to branches you name yourself.
 
 ## PR sizing rule
 
 ```bash
-git diff origin/main...HEAD --shortstat
+BASE=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null || echo origin/main)
+git diff "$BASE"...HEAD --shortstat
 ```
 
 Insertions + deletions over ~400 → the diff is large enough to slow review meaningfully; split before opening the PR. When the work must land as one deployable unit, stack branches instead of collapsing it into one PR:

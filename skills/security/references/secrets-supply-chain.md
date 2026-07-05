@@ -75,7 +75,8 @@ An unaudited dependency tree can carry a known-vulnerable transitive package, or
 ```bash
 npm audit --omit=dev
 pip-audit
-uv pip list --outdated
+# uv projects — export the resolved lockfile and audit it without needing a pip/venv build:
+uv export --format requirements-txt | uvx pip-audit -r /dev/stdin --disable-pip --no-deps
 ```
 
 **Detect** — lockfile presence:

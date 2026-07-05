@@ -33,25 +33,24 @@ Do not write or edit UI code before this gate.
 
    ```bash
    test -f next.config.js -o -f next.config.mjs -o -f next.config.ts && echo "SSR/RSC (Next.js)"
-   test -d app && grep -rl '"use client"' app 2>/dev/null | head -1 >/dev/null && echo "RSC boundary present"
+   test -d app && grep -rlE "[\"']use client[\"']" app 2>/dev/null | head -1 >/dev/null && echo "RSC boundary present"
    test -f astro.config.mjs -o -f astro.config.ts && echo "SSG/islands (Astro)"
    test -f gatsby-config.js && echo "SSG (Gatsby)"
-   test -f vite.config.ts -o -f vite.config.js && ! test -f next.config.js && echo "SPA (Vite) — confirm no server entry:"
+   test -f vite.config.ts -o -f vite.config.js && ! test -f next.config.js -o -f next.config.mjs -o -f next.config.ts && echo "SPA (Vite) — confirm no server entry:"
    find . -maxdepth 2 -iname 'server.*' -not -path '*/node_modules/*'
    ```
 
    Reading: a hit on `next.config.*` or an `app/` dir with `"use client"` markers → SSR/RSC. A hit on `astro.config.*` → SSG or islands (Astro ships both; confirm by counting hydration directives — see `references/architectures.md`). A hit on `gatsby-config.js` → SSG. A `vite.config.*` with no server entrypoint file and a client-only router (`react-router`, `@tanstack/router`) → SPA. No hit on any of these → new project; use the decision table in `references/architectures.md`.
 
-2. STOP and read the matching reference in full before writing code:
+2. STOP and read `references/architectures.md` in full before writing code — always, on every task this skill handles, since PHASE 0's detection and incumbent-respect rules live there. Then read whichever of the remaining references match scope:
 
    | Scope | Read |
    |---|---|
-   | Any rendering-architecture decision or SPA/SSR-RSC/SSG/islands boundary rule | `references/architectures.md` |
    | Component reuse, prop-API shape, or "should this be extracted" decision | `references/components.md` |
    | "Where does this state live" decision | `references/state.md` |
    | New project layout or folder-convention audit | `references/folders.md` |
 
-3. Existing project → the detected architecture and its absolute rules win; do not introduce a second rendering model into one app (see the incumbent-respect rule in each reference). New project → run the decision table in `references/architectures.md` before scaffolding.
+3. Existing project → the detected architecture and its absolute rules win. The rule is precise: never introduce a **second rendering runtime/framework** — a distinct framework or hand-rolled pipeline not native to the incumbent one (e.g. bolting a Vite/react-router SPA onto a Next.js `app/` router project) — and never let a rendering-mode drift (SSR ↔ SSG ↔ client) inside the incumbent framework go unrecorded in `design.md`. Mixing SSR, SSG, and client output *within* the one detected framework (Next.js and Astro both do this natively) is that framework's own architecture, not a second one — see the incumbent-respect rule in `references/architectures.md`. New project → run the decision table in `references/architectures.md` before scaffolding.
 
 ## The design.md GATE (no UI code before this exists)
 
@@ -86,7 +85,7 @@ Do not write UI component code — not a button, not a page shell — before the
 ## Red Flags
 
 - A UI component landing in a commit with no `docs/design.md` in the repository at all.
-- Two rendering models mixed in one app (a Next.js `app/` router page manually re-implementing client-side-only routing, or an SPA entry point importing a server-only data accessor).
+- A second rendering runtime/framework bolted onto an app with an incumbent one (a Next.js `app/` router page manually re-implementing client-side-only routing via react-router, or an SPA entry point importing a server-only data accessor) — or a rendering-mode drift (SSR ↔ SSG ↔ client) inside the incumbent framework that `design.md` does not record.
 - A component in a primitives/design-system layer importing from a feature directory (upward or sideways dependency — see `references/components.md`).
 - Server-fetched data copied into a global UI store via `useEffect` + `setState` (see the iron rule in `references/state.md`).
 - A folder tree that mixes type-based and feature-based conventions in the same app with no stated migration in progress.
@@ -96,6 +95,6 @@ Do not write UI component code — not a button, not a page shell — before the
 - [ ] PHASE 0 rendering-architecture detection ran and its output is stated in the work notes or final report.
 - [ ] `docs/design.md` exists (or its scaffolding via `documents/design` was completed first) before any UI component code was written.
 - [ ] The matching reference file(s) were read before code was written: `architectures.md` always; `components.md` / `state.md` / `folders.md` as the task touched them.
-- [ ] No second rendering model was introduced into an app with an existing incumbent architecture.
+- [ ] No second rendering runtime/framework was introduced into an app with an existing incumbent architecture, and any rendering-mode drift (SSR ↔ SSG ↔ client) within that framework is recorded in `design.md`.
 - [ ] Every piece of new or moved state was classified against the taxonomy in `references/state.md`.
 - [ ] Component-dependency direction stayed downward only (primitives → composed → feature-bound).

@@ -37,9 +37,9 @@ Do not propose a fix before this gate.
    | Web UI / frontend rendering | `references/web.md` |
    | API / server-side handler | `references/api.md` |
    | LLM-powered feature (agent, prompt, retrieval-augmented generation (RAG), tool use) | `references/llm.md` |
-   | Secrets, dependencies, CI, install scripts | `references/secrets-supply-chain.md` |
+   | **Always — every review, regardless of which surfaces above apply** | `references/secrets-supply-chain.md` |
 
-   A single review often routes to more than one reference — a web app with an LLM feature reads `web.md`, `api.md`, and `llm.md`. Every review reads `secrets-supply-chain.md` at least once; it applies regardless of surface.
+   A single review often routes to more than one reference — a web app with an LLM feature reads `web.md`, `api.md`, and `llm.md`. `secrets-supply-chain.md` is not surface-gated like the rows above it: read it on every review, even one that hits none of the other three rows.
 
 Quick surface-identification heuristics — approximate, confirm by reading the code, not by the grep alone:
 
@@ -62,8 +62,8 @@ grep -rnE "anthropic|openai|langchain" --include="*.py" --include="*.ts" --inclu
 
 | Tier | Actions |
 |---|---|
-| **Always do** | Read code and configs; run detection commands and dependency audits; report every finding with `file:line` evidence and the command that surfaced it; propose and, once accepted, apply source-level fixes; add or update a test that proves a closed vulnerability stays closed. |
-| **Ask first** | Rotate or revoke a live credential; change authentication/session/authorization logic; modify a CI/CD security gate; delete or overwrite data discovered during the audit; disclose a finding to anyone outside the immediate team. |
+| **Always do** | Read code and configs; run detection commands and dependency audits; report every finding with `file:line` evidence and the command that surfaced it; fix a vulnerability at its source in code the user owns, and add or update a test that proves it stays closed — apply both directly, with no separate go-ahead needed. |
+| **Ask first** | Propose the change and apply it only once explicitly accepted: authentication/session/authorization model changes; rotating or revoking a live credential; a major-version dependency bump taken as the fix; modifying a CI/CD security gate; deleting or overwriting data discovered during the audit; disclosing a finding to anyone outside the immediate team. |
 | **Never do** | Write or run exploit code beyond the minimal local proof needed to confirm a fix works; probe, access, or scan any system, account, or endpoint outside what the user explicitly owns or authorized; paste, log, or otherwise expose a real secret found during the audit — redact it in every report; leave a known exploitable path live "to see if it gets hit." |
 
 ## Severity triage
@@ -100,7 +100,7 @@ Reachability, not a demonstrated exploit, drives the tree — a finding with cle
 
 - POSIX `grep`, `find`, `awk` for the detection commands in every reference file.
 - `git` for tracked-file and history secret scans.
-- `npm audit` / `pnpm audit` (Node) or `pip-audit` / `uv` (Python) for dependency audits — see `references/secrets-supply-chain.md`.
+- `npm audit` / `pnpm audit` (Node) or `pip-audit` / the uv-native audit command (Python/uv) for dependency audits — see `references/secrets-supply-chain.md` for the exact commands.
 - Optional: `ast-grep` for structural matches where a plain regex produces too many false positives — an optional extra, not a substitute for the commands shipped in the references.
 
 ## Common Rationalizations
@@ -129,8 +129,9 @@ Reachability, not a demonstrated exploit, drives the tree — a finding with cle
 
 - [ ] Every ingress channel for the reviewed feature is enumerated with a parse/validate/limit decision.
 - [ ] PHASE 0 routed to every matching reference before any fix was proposed.
+- [ ] `references/secrets-supply-chain.md` was read this review — always, regardless of which other surfaces applied.
 - [ ] Each finding carries a fix-now / next-release / backlog verdict from the severity tree, with the reachability and severity reasoning stated.
 - [ ] Every finding cites `file:line` evidence and the detection command that surfaced it.
 - [ ] No real secret value appears anywhere in the report — redacted placeholders only.
-- [ ] A dependency audit (`npm audit` / `pip-audit` / `uv`) has been run and its output reviewed.
+- [ ] A dependency audit (`npm audit` / `pip-audit` / the uv-native command in `references/secrets-supply-chain.md`) has been run and its output reviewed.
 - [ ] Every applied fix is proven closed by a test or a re-run of the same detection command showing a pass.

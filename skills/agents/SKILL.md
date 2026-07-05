@@ -29,16 +29,16 @@ This skill is an index for LLM-agent engineering: building an agent, changing wh
 Do not change agent behavior, write a prompt, or wire a tool before this gate.
 
 1. Identify the work type:
-   - **Agent or LLM-feature behavior change** (new agent, prompt edit, tool logic change, routing change) → `references/evals.md` FIRST. Eval-first is the entry law, not a step you get to after the change already looks good.
-   - **Prompt or tool authoring** (writing a system prompt, designing a tool's argument schema) → `references/prompts-tools.md`.
+   - **Agent or LLM-feature behavior change** (new agent, prompt edit, tool logic change, routing change) → `references/evals.md` FIRST, always. Eval-first is the entry law, not a step you get to after the change already looks good.
+   - **Prompt or tool authoring** (writing a system prompt, designing a tool's argument schema) is itself a behavior change, not a separate lane — read `references/evals.md` first like every behavior change, then `references/prompts-tools.md` for the authoring rules.
    - **Retrieval, memory, or observability work** (RAG wiring, session memory, trace/logging setup) → `references/context-tracing.md`.
    - **Model training or fine-tuning** → STOP. This skill does not cover it — load `ml` instead.
-2. STOP and read the matching reference in full:
+2. STOP and read the matching reference(s) in full, in this order:
 
    | Scope | Read |
    |---|---|
-   | Every behavior change (always, first) | `references/evals.md` |
-   | Prompt/tool authoring | `references/prompts-tools.md` |
+   | Every behavior change, including prompt/tool authoring (always, first) | `references/evals.md` |
+   | Prompt/tool authoring (after evals.md) | `references/prompts-tools.md` |
    | Retrieval/memory/observability | `references/context-tracing.md` |
    | Model training/fine-tuning | STOP — load `ml` |
 
@@ -59,6 +59,8 @@ git diff --name-only <base>...HEAD | grep -qE '(^|/)(prompts?|agents?)/.*\.(py|t
 
 Pass: no `FLAG` line — either nothing behavior-relevant changed, or the eval set changed alongside it. Fail: `FLAG` printed — the change is blocked until an eval case covers it; see `references/evals.md` for what "covers" means.
 
+Grey zone — the command above is a floor, not a ceiling: it only greps `prompts?/` and `agents?/` paths, so it misses a behavior change landing in `src/`, `app/`, or a framework module. Judge by whether the diff alters agent behavior (tool logic, routing, system prompts), not by path — a change that meets that test still needs an eval case even when the command above stays silent.
+
 ### Prompts are code
 
 A prompt is source code: it lives in a dedicated `prompts/` directory (or module), gets a diff, and gets reviewed — never only inside a vendor dashboard where changes are unversioned and unreviewable.
@@ -77,11 +79,11 @@ Pass: no output. Fail: any `file:start-end` line — a prompt long enough to nee
 
 ### LLM output is untrusted input
 
-Whatever the model produces — a completion, a tool-call argument, a generated query — carries no more trust than the least-trusted content that fed into generating it. This skill states the principle; it does not own the enforcement catalog. Before shipping any code that acts on a model completion or tool-call argument, read `security`'s `references/llm.md` section "Model output is untrusted input" for the parse/validate pattern and its detection command.
+Whatever the model produces — a completion, a tool-call argument, a generated query — carries no more trust than the least-trusted content that fed into generating it. This skill states the principle; it does not own the enforcement catalog. Before shipping any code that acts on a model completion or tool-call argument, load the `security` skill — its own PHASE 0 gate routes an LLM-powered feature to `references/llm.md`, section "Model output is untrusted input," for the parse/validate pattern and its detection command.
 
 ## Hand-offs
 
-- Prompt-injection defense, output-execution hardening, and tool-permission enforcement (least-privilege allowlists, plus the detection command for both) → `security` (`references/llm.md`). This skill states the design-time principle for each; `security` owns the enforcement/detection catalog.
+- Prompt-injection defense, output-execution hardening, and tool-permission enforcement (least-privilege allowlists, plus the detection command for both) → load the `security` skill; its own PHASE 0 gate routes to `references/llm.md` for the LLM surface. This skill states the design-time principle for each; `security` owns the enforcement/detection catalog.
 - Model training or fine-tuning → `ml`.
 - Serving the model or agent behind an API → `backend`.
 - Deterministic, model-free business logic — unit and integration tests → `testing`.
@@ -117,4 +119,4 @@ Whatever the model produces — a completion, a tool-call argument, a generated 
 - [ ] Every prompt over 10 lines lives in a dedicated `prompts/` file, not inline (detection command clean).
 - [ ] Every tool handler validates its arguments against a typed schema before acting.
 - [ ] The agent entrypoint logs a `run_id`/`trace_id` alongside the prompt/config hash it used.
-- [ ] Prompt-injection, output-execution, and tool-permission enforcement were reviewed against `security`'s `references/llm.md`, not re-implemented here.
+- [ ] Prompt-injection, output-execution, and tool-permission enforcement were reviewed by loading the `security` skill (its PHASE 0 gate routes to `references/llm.md`), not re-implemented here.

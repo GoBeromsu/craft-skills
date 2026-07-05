@@ -65,7 +65,7 @@ subprocess.run(["convert", filename, "out.png"], shell=False)
 
 ### Path traversal
 
-Path traversal is a request-derived filename reaching a filesystem call with no normalization, letting `../../etc/passwd`-style input escape the intended directory.
+Path traversal is a request-derived filename reaching a filesystem call with no normalization, letting `../../`-style input escape the intended directory.
 
 **Detect**:
 

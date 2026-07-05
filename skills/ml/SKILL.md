@@ -12,7 +12,7 @@ Run ML/DL work under one discipline: **reproducibility first, evaluation honesty
 
 ## Overview
 
-This skill is an index. Shared rules live here; the per-topic iron list lives in `references/`. Load the matching reference before touching a project layout, a dataset, or a training run. This skill covers classical ML and deep learning research/engineering work — it does not cover building or operating an LLM-powered agent or feature; that discipline belongs to the `agents` skill and is out of scope here by design.
+This skill is an index. Shared rules live here; the per-topic iron list lives in `references/`. Load the matching reference before touching a project layout, a dataset, or a training run. This skill covers classical ML and deep learning research/engineering work — it does not cover building or operating an LLM-powered agent or feature; that discipline belongs to the `agents` skill and is out of scope here by design. Standalone LLM fine-tuning — SFT, LoRA, or evaluating a fine-tuned model against your own data — is training work and belongs here under the training-discipline ladder; only building or changing agent behavior (prompts, tools, agent evals) routes to `agents`.
 
 ## When to Use
 
@@ -27,15 +27,17 @@ This skill is an index. Shared rules live here; the per-topic iron list lives in
 
 Do not write dataset, training, or vision code before this gate.
 
-1. Identify the task type from the request:
+1. Identify the task type from the request. Rows stack — load every reference whose row matches the task, not only the first one that fits:
 
    | Task | Read | Notes |
    |---|---|---|
    | New project, or an existing one missing `pyproject.toml` / `src/` / a lockfile | `references/project-layout.md` | Always load this one, even alongside another reference below — it is the absolute packaging/layout baseline. |
-   | Dataset construction, ingestion, splitting, labeling, or versioning | `references/datasets.md` | |
+   | Dataset construction, ingestion, splitting, labeling, or versioning | `references/datasets.md` | Stacks with `training.md` and/or `vision.md` below whenever the dataset also feeds a training run or is image/video data. |
    | A training run for any model class | `references/training.md` | |
    | A vision task (image/video pipeline, augmentation, detection/segmentation) | `references/vision.md` | Load in addition to `training.md` — vision rules layer on top of the general training ladder, they do not replace it. |
    | Building or changing an LLM agent, prompt, tool-use loop, or other LLM-powered feature | **STOP.** Do not proceed in this skill. | Load the `agents` skill instead — eval-first law, prompt/tool design, and context/tracing discipline live there, not here. |
+
+   Example: labeling and splitting an image dataset that will then be trained on matches three rows at once — load `references/datasets.md` + `references/training.md` + `references/vision.md` together, not `vision.md` alone.
 
 2. Confirm the task is not agent work before writing a single line — "the model calls a tool" or "the pipeline reasons over retrieved text" is agent work even when it also touches a model file.
 3. Apply the core rules below plus the per-reference iron list.

@@ -16,7 +16,7 @@ This skill is an index. Shared rules live here; the per-kind iron list lives in 
 
 ## When to Use
 
-- Deciding what kind of test a piece of behavior needs (unit, integration, e2e, contract, property) and how big it should be.
+- Deciding what kind of test a piece of behavior needs (unit, integration, or e2e — plus the property/contract techniques where one applies) and how big it should be.
 - Setting up or reorganizing test structure, fixtures, or test data for a project or package.
 - Writing the reproduction test for a bug fix.
 - Diagnosing a flaky, slow, or untrustworthy test suite.
@@ -28,7 +28,7 @@ Not for the in-file red/when/then loop while implementing one function — load 
 
 Do not write a test before this gate.
 
-1. Identify the work: new test authoring, suite/fixture structure setup, an integration test, an e2e test, or a bug-fix reproduction (a bug fix always needs a reproduction test, regardless of kind — see the prove-it law below).
+1. Identify the work: new test authoring, suite/fixture structure setup, an integration test, an e2e test, a contract check, a property check, or a bug-fix reproduction (a bug fix always needs a reproduction test, regardless of kind — see the prove-it law below).
 2. STOP and read the matching reference in full:
 
    | Scope | Read |
@@ -37,20 +37,31 @@ Do not write a test before this gate.
    | Test-file location, fixture organization, test data builders | `references/structure.md` |
    | A test crosses a process boundary you or a container manage (DB, cache, queue, another internal service) | `references/integration.md` |
    | A test drives the real app through its user-visible interface (browser, CLI) | `references/e2e.md` |
+   | A contract check — a boundary's request/response shape both independently-deployed sides must agree on | `references/integration.md` — contract is a technique hosted at integration size, detailed there |
+   | A property check — generated inputs proving an invariant over a large/infinite space | Core rules below — property is a technique hosted at unit size; see the taxonomy section's cross-cutting techniques note |
 
 3. Apply the core rules below plus the per-kind iron list from the reference.
 
 ## Test taxonomy (MECE)
 
-The five kinds below are MECE (Mutually Exclusive, Collectively Exhaustive): every test fits exactly one row, and the rows together cover every kind of test a suite needs.
+The three kinds below are MECE (Mutually Exclusive, Collectively Exhaustive): every test fits exactly one row, and the rows together cover every kind of test a suite needs.
 
 | Kind | Scope | Speed budget | Mandatory when |
 |---|---|---|---|
 | Unit | single function/class, no I/O | <10ms each; whole suite <10s | every non-trivial logic branch |
 | Integration | crosses one process boundary (DB, cache, queue, another service) | <1s each | every repository/adapter and every external-service client |
 | E2E | drives the real app through its real interface | seconds each; whole suite minutes | every critical user journey (auth, checkout, primary CRUD) |
-| Contract | verifies a boundary's request/response shape both sides agree on | <1s each | every service-to-service or client-to-API boundary with independently deployed sides |
-| Property | generates inputs to check an invariant holds | budget like unit | an invariant with a large or infinite input space (parsers, serializers, math) |
+
+### Cross-cutting techniques — not a fourth or fifth kind
+
+Property and contract are techniques layered onto one of the three kinds above, not peer kinds — they answer *how* a test builds its confidence, not *what* it costs or *where* it sits. A property test is still a unit test that generates its inputs instead of hand-picking them; a contract test is still an integration test that checks shape instead of full behavior.
+
+| Technique | What it checks | Host kind | Mandatory when |
+|---|---|---|---|
+| Property | an invariant holds across generated inputs | Unit (budget like unit) | an invariant with a large or infinite input space (parsers, serializers, math) |
+| Contract | a boundary's request/response shape both sides agree on | Integration (<1s each) | every service-to-service or client-to-API boundary with independently deployed sides |
+
+Contract's full treatment lives in `references/integration.md` (its host kind's reference — see "Contract tests for service boundaries"). Property has no dedicated reference: its host kind (Unit) uses the core rules on this page directly; the input-generation library for each stack is named under Requirements below.
 
 ## Resource-based size model — orthogonal to taxonomy
 
@@ -116,16 +127,19 @@ Pass: no output, or every hit lives in an e2e/large test file (which uses auto-w
 Every test asserts something specific about behavior; no test exists that is incapable of failing.
 
 ```bash
-grep -rLE 'assert|expect\(|\.should' --include='*.test.*' --include='test_*.py' --include='*_test.py' <test-dir>
+grep -rLE 'assert|expect\(|\.should|assertThat\(|assertEquals\(|\bt\.(is|true|false|deepEqual|truthy|falsy|throws)\(' \
+  --include='*.test.*' --include='test_*.py' --include='*_test.py' <test-dir>
 ```
 
-Pass: no output. Fail: any file listed — a test file with zero assertion keywords. One behavior per test — grey zone: two `assert` statements checking unrelated facts about unrelated code paths is two tests in one; multiple assertions confirming one behavior (a response's status *and* its body) are fine — judge by whether reverting one code path would fail only one of the assertions.
+Pass: no output. Fail: any file listed — a test file with zero assertion keywords across the major families (`assert`/`assertEquals`/`assertThat`, `expect(...)` incl. chai's `expect().to`, `.should`, AVA's `t.is`/`t.true`/etc.). Helper-only support files with no test cases (`conftest.py`, a fixtures/factories module) can trip this same grep even though nothing is actually missing — grey zone — judge by whether the file defines test cases. One behavior per test — grey zone: two `assert` statements checking unrelated facts about unrelated code paths is two tests in one; multiple assertions confirming one behavior (a response's status *and* its body) are fine — judge by whether reverting one code path would fail only one of the assertions.
 
 ## Requirements
 
+The sizing, placement, and prove-it rules above bind every stack. The tool names below anchor Python and TypeScript specifically — for any other stack, keep the rules unchanged and swap in that stack's incumbent test runner, order-randomization plugin, and property-testing library.
+
 - Python: `pytest`, `pytest-randomly` (order-dependency flake detection), `hypothesis` for property tests.
 - TypeScript: `vitest`, `fast-check` for property tests.
-- `grep`, `find`, `git` for the detection commands above.
+- Any stack: `grep`, `find`, `git` for the detection commands above.
 
 ## Common Rationalizations
 
