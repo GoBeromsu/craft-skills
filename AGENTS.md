@@ -27,6 +27,7 @@ craft-skills/
 │   │   ├── api-docs/            #   sub-recipe: JSDoc/docstring + OpenAPI (+ template.md)
 │   │   ├── changelog/           #   sub-recipe: project CHANGELOG (+ template.md)
 │   │   ├── inline-comments/     #   sub-recipe: comment-the-why convention (no template)
+│   │   ├── design/              #   sub-recipe: project design.md — design-system source of truth (+ template.md)
 │   │   └── templates/           #   research/references/spec/plan/rule/architecture skeletons
 │   ├── worktree/                # git wt workflow, git-guard self-install, optional remote exec
 │   │   └── SKILL.md
@@ -37,6 +38,24 @@ craft-skills/
 │   ├── skillify/                # Vendored skill-authoring promotion gate (self-governing)
 │   │   └── SKILL.md
 │   ├── hookify/                 # Convention → local deterministic enforcement (runtime hook/lint/pre-commit) + starter guards
+│   │   └── SKILL.md
+│   ├── programming/             # Correctness-first Python/TypeScript engineering discipline + language references
+│   │   └── SKILL.md
+│   ├── frontend/                # Rendering-architecture-gated frontend engineering — SPA/SSR-RSC/SSG/islands rules + reuse/state/folder references
+│   │   └── SKILL.md
+│   ├── backend/                 # Architecture-gated backend engineering — layered/vertical-slice/hexagonal + API/folder references
+│   │   └── SKILL.md
+│   ├── ml/                      # ML/DL research engineering — layout/datasets/training/vision references
+│   │   └── SKILL.md
+│   ├── agents/                  # LLM-agent engineering — eval-first law, prompts-as-code, context/tracing references
+│   │   └── SKILL.md
+│   ├── testing/                 # Suite-level test architecture — structure/integration/e2e references
+│   │   └── SKILL.md
+│   ├── refactor/                # Behavior-preserving restructuring — smell/move catalogs + scripts/detect-smells.sh
+│   │   └── SKILL.md
+│   ├── git/                     # Version-control craft — atomic commits, conventions, history surgery
+│   │   └── SKILL.md
+│   ├── security/                # Defensive security triage — web/API/LLM/secrets detection references
 │   │   └── SKILL.md
 │   ├── technical-report/        # Canonical technical-report engine — YAML-frame TOC + structure/source validators
 │   │   └── SKILL.md
@@ -54,11 +73,20 @@ One imperative sentence per skill. Load the skill's `SKILL.md` for the full reci
 
 | Skill | What it does |
 |-------|-------------|
-| `documents` | Waypoint that routes project documentation through the `docs/` ontology (research→ADR→plan pipeline) and loads nested sub-recipes on demand for ADRs, README, API docs, project changelog, and the comment-the-why convention. |
+| `documents` | Waypoint that routes project documentation through the `docs/` ontology (research→ADR→plan pipeline) and loads nested sub-recipes on demand for ADRs, README, API docs, project changelog, the comment-the-why convention, and the project design.md. |
 | `worktree` | Run the `git wt <name>` simple-worktree workflow, self-install git-guard on first use, and optionally exec on a remote Tailscale host via tmux. |
 | `init` | Dual-entry: bootstrap a project's `docs/` ontology + ADR rails (Phase 0 graft), then generate a complexity-scored hierarchical `AGENTS.md` knowledge base (Phases 1–4, init-deep cartography engine in `references/`), with a single-agent fallback for non-fan-out runtimes. |
 | `skillify` | Create, update, move, or promote a craft-skills skill through the vendored two-layer promotion gate. |
 | `hookify` | Turn a convention or SE best-practice into local deterministic enforcement (Claude Code / Codex runtime hook → lint → pre-commit), shipping a starter guard and red-proving it fires. |
+| `programming` | Write/review Python and TypeScript with correctness-first discipline, loading the shared workflow plus per-language references before editing code. |
+| `frontend` | Route frontend work through a PHASE 0 rendering-architecture gate (SPA / SSR-RSC / SSG / islands), then apply architecture-specific rules, component-reuse layers, state placement, and folder conventions — gated on the project's design.md. |
+| `backend` | Route backend work through an architecture-detection gate (layered / vertical-slice / hexagonal), then apply dependency-direction rules, the API design contract law, and per-framework folder conventions. |
+| `ml` | Run ML/DL research engineering through a task gate — reproducible `pyproject` + `src/` layout, leakage-safe dataset construction, the training-discipline ladder, and vision-specific practice. |
+| `agents` | Build and change LLM agents under the eval-first law — prompts-as-code, tool design, and context/tracing discipline, handing tool-permission and consumption enforcement to `security`. |
+| `testing` | Architect test suites — taxonomy with resource-based sizing, a placement decision tree, the prove-it bug-fix law, and structure/integration/e2e conventions each with a detection command. |
+| `refactor` | Restructure code behavior-preservingly — when-to-refactor triggers, a characterization-test protocol for legacy code, a 17-smell detection catalog, a 12-move catalog, and `scripts/detect-smells.sh`. |
+| `git` | Commit and rewrite history safely — atomic-commit split protocol, incumbent repo-style detection, commit/branch/PR conventions, and non-interactive-safe history surgery. |
+| `security` | Triage defensive security across web, API, and LLM surfaces — trust-boundary mapping, per-class detection commands, reachability × severity triage, and secrets/dependency hygiene. |
 | `technical-report` | Scaffold a per-project `technical-report.yaml` frame through a depth-ordered interview, then author/review canonical section markdown against it under code-enforced structure and source-coverage gates. |
 
 ---

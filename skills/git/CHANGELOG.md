@@ -1,0 +1,3 @@
+# Changelog
+
+- 2026-07-05 — v1.0.0: no version-control craft discipline existed for atomic commits, incumbent repo-style detection, and safe non-interactive history rewriting → SKILL.md's ground-truth gate, atomic-commit `git add -p` split protocol, commit-message/branch-naming/PR-sizing conventions, and force-push/rebase safety rules, plus references/history-surgery.md (non-interactive-safe fixup/autosquash, reword, split, scripted bisect, undo decision table) and references/conventions.md (conventional-commit type table, scope/breaking-change footer, merge-strategy detection). Provenance: ground-truth command block and repo-style detection adapted from git-master @ code-yeongyu/lazycodex.
