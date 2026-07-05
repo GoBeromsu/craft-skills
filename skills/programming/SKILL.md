@@ -1,7 +1,7 @@
 ---
 name: programming
-description: '"write/edit a .py or .ts file", "start a new Python/TypeScript project", "review this for over-engineering" — correctness-first, type-strict engineering for Python and TypeScript. Routes through a PHASE 0 gate to per-language references (references/python.md, references/typescript.md) and an always-loaded task-workflow reference that carries the full discipline.'
-version: 1.1.0
+description: '"write/edit Python or TypeScript", "refactor this module", "review strict TS or Python types", "fix code smells", "split an oversized file" — correctness-first code work for Python and TypeScript, routed through a PHASE 0 surface/language gate, shared workflow, per-language references, and code-smell checks.'
+version: 1.2.0
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
 compatibility: claude-code, codex
 ---
@@ -19,16 +19,21 @@ This skill is an index. Shared rules live here; the hard per-language iron list 
 - Writing or editing any `.py`, `.pyi`, `.ts`, `.tsx`, `.mts`, `.cts` file — including one-off scripts.
 - Touching a manifest: `pyproject.toml`, `package.json`, `tsconfig.json`, `biome.json`.
 - Starting a new Python or TypeScript project.
-- Reviewing code for over-engineering, type holes, or oversized files.
+- Reviewing code for over-engineering, type holes, escape hatches, code smells, or oversized files.
+- Refactoring pure code, libraries, CLIs, scripts, tests, or shared modules.
 
-Do not use for Rust, Go, shell, or config-only languages — this skill covers Python and TypeScript only.
+Do not use for Rust, Go, shell, or config-only languages — this skill covers Python and TypeScript only. If UI/UX or backend contracts dominate the task, load `frontend` or `backend` as the surface owner and keep this skill for language-level discipline.
 
-## PHASE 0 — language gate (run first, every time)
+## PHASE 0 — surface and language gate (run first, every time)
 
 Do not write or edit a line of code before this gate.
 
-1. Identify the language from the file extension or the request.
-2. STOP and read the matching reference in full:
+1. Identify the surface:
+   - UI/UX, accessibility, visual QA, frontend performance, or component behavior → load `frontend` as the surface owner, then continue here for Python/TypeScript edits.
+   - API/RPC, database, auth/secret, background job, queue, or observability work → load `backend` as the surface owner, then continue here for Python/TypeScript edits.
+   - Pure library, CLI, script, test, refactor, or language-level correctness work → stay in this skill.
+2. Identify the language from the file extension or the request.
+3. STOP and read the matching reference in full:
 
    | Scope | Read |
    |---|---|
@@ -36,9 +41,23 @@ Do not write or edit a line of code before this gate.
    | `.py`, `.pyi`, "Python" | `references/python.md` |
    | `.ts`, `.tsx`, `.mts`, `.cts`, "TypeScript" | `references/typescript.md` |
 
-3. Apply the shared philosophy below plus the per-language iron list from the reference.
+4. Check the code-smell triggers below before adding lines.
+5. Apply the shared philosophy below plus the per-language iron list from the reference.
 
 No exception for "small" or "throwaway" code. `uv run` + PEP 723 (Python) and `bun run` (TypeScript) make disposable scripts cost nothing to write with full discipline.
+
+## Code-smell triggers
+
+Treat these as activation triggers for refactor pressure, not as permission to broaden the task beyond the requested behavior.
+
+| Trigger | Required response |
+|---|---|
+| File will cross 200 pure LOC | Plan the split before adding code; crossing 250 is a defect unless the file is indivisible and justified. |
+| New helper has one caller | Inline it unless it names a real domain concept or is the seam under test. |
+| New dependency is proposed | Re-check stdlib, platform, and installed dependencies first. |
+| `Any`, `unknown`, `cast`, `!`, `# type: ignore`, or `@ts-ignore` appears | Encode the contract in types or leave a narrow, explained escape hatch only when no type-safe option exists. |
+| A tagged variant is matched by `if`/`elif` or non-exhaustive `switch` | Replace with exhaustive matching. |
+| Validation repeats inside business logic | Move parsing to the trust boundary and pass typed values inward. |
 
 ## Working discipline (non-negotiable, every task)
 
@@ -163,7 +182,7 @@ Any answer fails → fix it before declaring done.
 
 ## Verification
 
-- [ ] PHASE 0 reference for the language was read before writing code.
+- [ ] PHASE 0 surface owner was selected and the matching language reference was read before writing code.
 - [ ] Every changed file is ≤ 250 pure LOC (or carries a justified exception comment).
 - [ ] Boundaries parse untrusted input into typed values; no `Any` / `unknown` leaks inward.
 - [ ] Every tagged-variant branch is an exhaustive `match` / `switch` with `assert_never` / `assertNever`.
