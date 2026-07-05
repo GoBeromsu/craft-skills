@@ -6,9 +6,11 @@ This script owns the DETERMINISTIC half of routing audit:
   1. Load-key resolution — every Load key cell in every RESOLVER.md routing
      table must map to an existing directory under the skills root that contains
      either SKILL.md (leaf skill or flat skill) or RESOLVER.md (area dispatch).
-  2. RESOLVER presence — an area folder with ≥2 immediate-child leaf skills
-     (directories containing SKILL.md) must carry its own RESOLVER.md.
-  3. Spurious RESOLVER — a flat/single-leaf skill directory must NOT carry a
+  2. RESOLVER presence — manifest kind=area must carry its own RESOLVER.md.
+     Manifest kind=thick may carry child SKILL.md recipes without a RESOLVER.md.
+     Without a manifest entry, the legacy heuristic still treats a folder with
+     ≥2 immediate-child leaf skills as an area.
+  3. Spurious RESOLVER — a flat/single-leaf/thick skill directory must NOT carry a
      RESOLVER.md.
 
 The JUDGMENT half of routing audit — are trigger phrases real user phrases? are
@@ -18,8 +20,8 @@ checks, never judgment calls.
 
 Finding codes:
   UNRESOLVED_LOAD_KEY    A Load key cell resolves to no SKILL.md or RESOLVER.md.
-  SPURIOUS_RESOLVER      A RESOLVER.md exists on a directory with <2 leaf skills.
-  MISSING_AREA_RESOLVER  A directory has ≥2 leaf skills but no RESOLVER.md.
+  SPURIOUS_RESOLVER      A non-area skill directory carries RESOLVER.md.
+  MISSING_AREA_RESOLVER  A manifest area, or legacy area-shaped directory, lacks RESOLVER.md.
 
 Exit codes:
   0  No findings (or --advisory mode).
@@ -29,6 +31,7 @@ Exit codes:
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from dataclasses import dataclass
@@ -38,6 +41,7 @@ from pathlib import Path
 SKILLS_DIR = Path(__file__).resolve().parents[2]
 
 _TABLE_HEADING_RE = re.compile(r"^##\s+Routing Table\b", re.IGNORECASE)
+_MANIFEST_NAME = "skills-manifest.yaml"
 _SECTION_HEADING_RE = re.compile(r"^##\s+\S")
 
 
@@ -150,17 +154,51 @@ def _count_leaf_skills(directory: Path) -> int:
         if child.is_dir() and (child / "SKILL.md").exists()
     )
 
+def _strip_comment_lines(text: str) -> str:
+    return "\n".join(line for line in text.splitlines() if not line.lstrip().startswith("#"))
 
-def check_resolver_presence(skills_dir: Path) -> list[Finding]:
-    """Enforce the RESOLVER-required rule across all directories under skills_dir.
+
+def load_manifest_kinds(skills_dir: Path) -> dict[str, str]:
+    """Return top-level skill name → manifest kind from skills-manifest.yaml."""
+    manifest_path = skills_dir.parent / _MANIFEST_NAME
+    if not manifest_path.is_file():
+        return {}
+    try:
+        data = json.loads(_strip_comment_lines(manifest_path.read_text(encoding="utf-8")))
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+    kinds: dict[str, str] = {}
+    packages = data.get("packages") if isinstance(data, dict) else None
+    if not isinstance(packages, list):
+        return kinds
+
+    for package in packages:
+        if not isinstance(package, dict):
+            continue
+        package_id = package.get("id")
+        kind = package.get("kind")
+        if not isinstance(package_id, str) or not isinstance(kind, str) or "/" not in package_id:
+            continue
+        skill_name = package_id.split("/", 1)[1]
+        if "/" not in skill_name and kind in {"leaf", "thick", "area"}:
+            kinds[skill_name] = kind
+    return kinds
+
+
+def check_resolver_presence(skills_dir: Path, manifest_kinds: dict[str, str] | None = None) -> list[Finding]:
+    """Enforce RESOLVER rules across all directories under skills_dir.
 
     skills_dir itself is always exempt (its RESOLVER.md is the master).
 
     Rules applied to every other directory:
-      - leaf_count >= 2 and no RESOLVER.md  → MISSING_AREA_RESOLVER
-      - leaf_count <  2 and has RESOLVER.md → SPURIOUS_RESOLVER
+      - manifest kind=area and no RESOLVER.md → MISSING_AREA_RESOLVER
+      - manifest kind!=area and has RESOLVER.md → SPURIOUS_RESOLVER
+      - without manifest kind, legacy leaf_count >= 2 and no RESOLVER.md → MISSING_AREA_RESOLVER
+      - without manifest kind, legacy leaf_count <  2 and has RESOLVER.md → SPURIOUS_RESOLVER
     """
     findings: list[Finding] = []
+    manifest_kinds = manifest_kinds or {}
 
     for dirpath in sorted(skills_dir.rglob("*")):
         if not dirpath.is_dir():
@@ -171,20 +209,22 @@ def check_resolver_presence(skills_dir: Path) -> list[Finding]:
         leaf_count = _count_leaf_skills(dirpath)
         has_resolver = (dirpath / "RESOLVER.md").exists()
         rel = dirpath.relative_to(skills_dir).as_posix()
+        declared_kind = manifest_kinds.get(rel) if "/" not in rel else None
+        is_area = declared_kind == "area" or (declared_kind is None and leaf_count >= 2)
 
-        if leaf_count >= 2 and not has_resolver:
+        if is_area and not has_resolver:
             findings.append(Finding(
                 rel,
                 "MISSING_AREA_RESOLVER",
-                f"{rel}/ has {leaf_count} leaf skill(s) but no RESOLVER.md",
+                f"{rel}/ has kind={declared_kind or 'legacy-area'} and {leaf_count} leaf skill(s) but no RESOLVER.md",
             ))
-        elif leaf_count < 2 and has_resolver:
+        elif not is_area and has_resolver:
             findings.append(Finding(
                 rel,
                 "SPURIOUS_RESOLVER",
                 (
-                    f"{rel}/ has {leaf_count} leaf skill(s) but carries a RESOLVER.md "
-                    f"(RESOLVER required only for areas with ≥2 leaf skills)"
+                    f"{rel}/ has kind={declared_kind or 'legacy-non-area'} and {leaf_count} leaf skill(s) "
+                    "but carries a RESOLVER.md (RESOLVER required only for areas)"
                 ),
             ))
 
@@ -228,9 +268,11 @@ def main() -> int:
     for rpath in resolver_paths:
         findings.extend(check_load_keys(rpath, SKILLS_DIR))
 
+    manifest_kinds = load_manifest_kinds(SKILLS_DIR)
+
     # Check 2 — RESOLVER presence rules.
     # Runs even when no RESOLVERs exist (e.g. to catch MISSING_AREA_RESOLVER).
-    findings.extend(check_resolver_presence(SKILLS_DIR))
+    findings.extend(check_resolver_presence(SKILLS_DIR, manifest_kinds))
 
     if not findings:
         print(f"routing: OK — {len(resolver_paths)} RESOLVER(s) validated, 0 findings.")
