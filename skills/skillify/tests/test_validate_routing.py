@@ -55,6 +55,21 @@ class RoutingValidatorTest(unittest.TestCase):
         d.mkdir(parents=True, exist_ok=True)
         (d / "RESOLVER.md").write_text(content, encoding="utf-8")
 
+    def _write_manifest(self, skills_root: Path, package_name: str, kind: str) -> None:
+        """Write a minimal skills-manifest.yaml next to a skills root."""
+        manifest = (
+            "{\n"
+            '  "schema_version": 1,\n'
+            '  "packages": [\n'
+            "    {\n"
+            f'      "id": "craft-skills/{package_name}",\n'
+            f'      "kind": "{kind}"\n'
+            "    }\n"
+            "  ]\n"
+            "}\n"
+        )
+        (skills_root.parent / "skills-manifest.yaml").write_text(manifest, encoding="utf-8")
+
     # ------------------------------------------------------------------
     # Happy path
     # ------------------------------------------------------------------
@@ -74,6 +89,32 @@ class RoutingValidatorTest(unittest.TestCase):
             self.assertNotIn("UNRESOLVED_LOAD_KEY", result.stdout)
             self.assertNotIn("SPURIOUS_RESOLVER", result.stdout)
             self.assertNotIn("MISSING_AREA_RESOLVER", result.stdout)
+
+    def test_manifest_thick_exempts_multi_child_skill_from_area_heuristic(self) -> None:
+        """manifest kind=thick permits child recipes without a RESOLVER.md."""
+        with tempfile.TemporaryDirectory() as tmp:
+            project = Path(tmp) / "repo"
+            root = project / "skills"
+            root.mkdir(parents=True)
+
+            self._make_skill(root, "my-thick")
+            self._make_skill(root, "my-thick/child-one")
+            self._make_skill(root, "my-thick/child-two")
+            self._write_manifest(root, "my-thick", "thick")
+
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertNotIn("MISSING_AREA_RESOLVER", result.stdout)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._make_skill(root, "my-area")
+            self._make_skill(root, "my-area/leaf-one")
+            self._make_skill(root, "my-area/leaf-two")
+
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("MISSING_AREA_RESOLVER", result.stdout)
 
     # ------------------------------------------------------------------
     # UNRESOLVED_LOAD_KEY
