@@ -2,7 +2,7 @@
 name: programming
 description: Applies correctness-first, type-strict engineering discipline when writing or editing Python or TypeScript. Use when asked to write a `.py` or `.ts` file, scaffold a new Python/TypeScript project, add strict types to existing code, or review a diff for over-engineering, type holes, or an oversized file. Routes to `references/python.md` or `references/typescript.md` for the per-language iron list, plus the always-loaded `references/workflow.md` task discipline. Not for suite-level test architecture (use testing) or behavior-preserving restructuring of already-working code (use refactor).
 metadata:
-  version: 2.0.0
+  version: 2.0.1
 ---
 
 # programming
@@ -71,27 +71,21 @@ Assert the contract, not the dump — the value, not `is not None`. Prefer the r
 - TypeScript: `bun` (or `pnpm`), `tsc` (strict + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` + `verbatimModuleSyntax`), `biome`.
 - `awk` + `wc` for the LOC measurement.
 
-## Common Rationalizations
+## Anti-patterns
 
-| Rationalization | Reality |
-|---|---|
-| "It's a throwaway script, skip the types." | `uv run` + PEP 723 and `bun run` give full discipline at zero setup cost. Throwaway code still reaches production once. |
-| "Fewer lines is the goal." | Correctness is the goal; fewer lines is the byproduct. Never cut validation, security, or error handling to shrink a diff. |
-| "`any` / `cast` just here to ship." | The escape hatch hides the bug the type system was about to catch. Encode the contract in the type. |
-| "`if`/`elif` on the enum is clearer." | It silently swallows the next variant. `match`/`switch` + an exhaustiveness check fails the build instead. |
-| "The file is 240 lines, close enough." | A file about to grow past the ceiling is already over. Split now; don't race it. |
-| "I'll add the test after." | Tests-after rationalize the design already written. Red first, always. |
-| "It's an obvious shortcut, no comment needed." | An unmarked shortcut reads as a bug to the next person. Mark it `craft:` with its ceiling. |
-
-## Red Flags
-
-- A `dict[str, Any]` / `unknown` flowing past the boundary into business logic.
-- `except Exception` / an empty `catch` swallowing a stack trace.
-- A new file named `utils`, `helpers`, `common`, `shared`, or `misc`.
-- An interface/Protocol with exactly one implementation, or a factory for one product.
-- A `# type: ignore` / `@ts-ignore` with no explanation.
-- A shortcut with no `craft:` comment.
-- A feature with passing unit tests but no test that fails when the behavior is reverted.
+- Skipping types on a throwaway script → use `uv run` + PEP 723 / `bun run` for full discipline at zero setup cost; throwaway code still reaches production once.
+- Treating fewer lines as the goal → treat correctness as the goal and fewer lines as the byproduct; never cut validation, security, or error handling to shrink a diff.
+- Using `any`/`cast` just to ship → encode the contract in the type instead; the escape hatch hides the bug the type system was about to catch.
+- Using `if`/`elif` on a tagged enum → use `match`/`switch` with an exhaustiveness check; `if`/`elif` silently swallows the next variant.
+- Letting a file approach the 250-LOC ceiling ("close enough") → split now; a file about to grow past the ceiling is already over.
+- Adding the test after the code → write the failing test first, always; tests-after rationalize the design already written.
+- Leaving a shortcut uncommented → mark it with a `craft:` comment naming its ceiling; unmarked, it reads as a bug to the next person.
+- Letting `dict[str, Any]` / `unknown` flow past the boundary into business logic → parse untrusted input into a typed value at the boundary.
+- Using `except Exception` / an empty `catch` that swallows the stack trace → catch specific exceptions and handle or log them explicitly.
+- Naming a new file `utils`, `helpers`, `common`, `shared`, or `misc` → name it for the one responsibility it holds.
+- Introducing an interface/Protocol with exactly one implementation, or a factory for one product → use the concrete type directly until a second implementation exists.
+- Adding `# type: ignore` / `@ts-ignore` with no explanation → fix the type, or add a comment explaining why the escape hatch is unavoidable.
+- Shipping a feature with passing unit tests but no test that fails when the behavior is reverted → add a reverting test before calling it done.
 
 ## Verification
 

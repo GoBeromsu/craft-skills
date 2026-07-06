@@ -89,6 +89,11 @@ trigger phrases woven in naturally>. Not for <nearest-neighbor boundary — use 
   laws survive, compressed rather than deleted. If genuinely valuable content doesn't fit
   in the body, move it to `references/`; don't cut it.
 - A table the body already earns (a routing table, a gate) stays a table.
+- `## Anti-patterns` is the single registry for recorded unwanted behaviors — one line per
+  entry, shaped `- <unwanted behavior> → <what to do instead>.`, accumulated from real
+  operator corrections (see the lifecycle's record-a-correction flow), not invented upfront.
+  It subsumes `## Red Flags` and `## Common Rationalizations`; a package carries at most
+  this one such section.
 - Document external-binary requirements (`git`, `python3`, …) in a short `## Requirements`
   section only if the skill actually shells out to them.
 
@@ -121,6 +126,13 @@ the summary. Link any referenced skill or file with `[text](path)`. Newest last;
 never rewrite a past bullet (a one-time reformat to this convention is the only sanctioned
 exception, already spent for this library). `## Change Log` inside `SKILL.md` is forbidden
 — history lives only in `CHANGELOG.md`.
+
+When a change derives from operator-supplied source material — a doc, repo, article, or
+conversation handed over during authoring — record it in two places: append a
+`Provenance: <source>` clause to that bullet, and land any substantive excerpt worth
+re-consulting as a `references/*.md` file (rewritten to reference-style voice, §4) rather
+than leaving it only in chat history. The cross-skill lineage snapshot lives in
+`skills/PROVENANCE.md`; update its row when a package's primary source changes.
 
 ## 7. Eval-first authoring loop
 

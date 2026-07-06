@@ -8,3 +8,4 @@
 - 2026-06-30 — deny-assets.sh missing from executable set → fixed setup-hooks.sh to chmod +x it.
 - 2026-06-17 — v1.0.1: post-merge cleanup ordering undocumented → documented correct ordering + red-flag entries.
 - 2026-06-13 — no worktree workflow or branch-guard automation existed → initial release: git-guard scripts, git wt <issue#>, self-install, Tailscale extension.
+- 2026-07-06 — v2.0.1: contract adopted a single anti-patterns registry → merged Red Flags + Common Rationalizations into ## Anti-patterns.

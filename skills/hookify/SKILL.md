@@ -2,7 +2,7 @@
 name: hookify
 description: Turns a convention or best practice into local, deterministic enforcement so a violation is blocked before it happens, not corrected after. Use when asked to force a rule locally, hookify a convention, add a pre-commit or lint guard, block edits to a read-only path, stop a risky command in-loop, or wire a Claude Code or Codex runtime hook without relying on CI. Owns the repo's core.hooksPath / .githooks pre-commit mechanism as the sole install point — every other skill registers a guard by dropping an executable into .githooks/guards.d/, never by pointing core.hooksPath elsewhere. Not for git workflow craft itself (branching, worktrees, commit hygiene) — use git.
 metadata:
-  version: 1.0.0
+  version: 1.0.1
 ---
 
 # hookify
@@ -65,20 +65,16 @@ Copy `scripts/guard-skeleton.py` and narrow it to exactly one rule. A guard read
 
 An installed guard that's never been watched firing is unfinished. Run a violating input → blocked, and a clean input → passes, and see both happen (`echo | guard` examples in `references/claude-code-hooks.md`). The guard itself proves red/green via `guard-skeleton.py --selfcheck`.
 
-## Common Rationalizations
+## Anti-patterns
 
-- *"CI will catch it."* CI is the latest signal, after push/merge — the agent has already finished the bad behavior. Only a before-the-fact local block corrects it.
-- *"Give the guard a test suite, it'll be sturdier."* A guard needing its own tests is application code in the wrong tier (G2) — drop it to a softer surface.
-- *"Add more guards for coverage."* Blocking hooks spend a finite trust budget; one false positive teaches `--no-verify` (human) or a workaround (agent), and that erodes every other hook's trust too. Fewer, sharper guards.
-- *"The message can be vague."* A vague block reason gets bypassed. Name the rule and the fix, in one line.
-
-## Red Flags
-
-- A blocking hook is installed but has never been watched firing on a violation → unfinished (Phase 5).
-- The rule can't be stated in one sentence → not ready to enforce (Phase 0).
-- A guard reaches the network or a live backend → fails G1, disqualified from a blocking hook.
-- Trying to block a side effect from `PostToolUse` → can't; move it to `PreToolUse`.
-- The same rule lives only in CI, nothing local → latest possible signal; move it to a local surface.
+- Relying on CI alone to catch a violation, with no local enforcement → move it to a local surface; CI is the latest possible signal, after push/merge, when the agent has already finished the bad behavior.
+- Giving a guard its own test suite to make it sturdier → treat that as a sign it's application code in the wrong tier (fails G2) and drop it to a softer surface.
+- Adding more guards for broader coverage → keep guards few and sharp; blocking hooks spend a finite trust budget, and one false positive teaches `--no-verify` (human) or a workaround (agent), eroding trust in every other hook.
+- Leaving a guard's block message vague → name the rule and the exact fix in one line; a vague reason gets bypassed.
+- Installing a blocking hook without ever watching it fire on a violation → prove it red first: run a violating input and a clean input and observe both (Phase 5).
+- Trying to enforce a rule that can't be stated in one sentence → state it in prose first and observe until it's ready (Phase 0).
+- Writing a guard that reaches the network or a live backend → disqualify it from a blocking hook (fails G1); use a softer surface instead.
+- Trying to block a side effect from `PostToolUse` → move it to `PreToolUse`; only `PreToolUse` can block a side effect.
 
 ## Verification
 

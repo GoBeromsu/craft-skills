@@ -63,28 +63,18 @@ You are not alone in the repository. Treat anything you did not change as a team
 - Never revert, stash, commit, push, or delete changes you did not make, unless explicitly asked.
 - When you see unexpected edits, leave them; do not "clean up" someone else's work to clear your path.
 
-## Common Rationalizations
+## Anti-patterns
 
-| Rationalization | Reality |
-|---|---|
-| "The code looks correct, no need to run it." | Looking correct and being correct diverge exactly where the bugs live. Run the check. |
-| "I'll just update this function; callers are fine." | A signature or behavior change ripples to callers. Find references first; update the whole radius. |
-| "A stub unblocks the rest; I'll fill it later." | A stub presented as done is a hidden failure. Either implement it or report it as not-done. |
-| "Tests are failing for an unrelated reason, I'll skip them." | A skipped test is a removed bug report. Diagnose it; do not silence it. |
-| "Text replace is faster than a proper rename." | Text replace misses shadowing, re-exports, and other files. Use a symbol-aware rename. |
-| "This new `utils.ts` is the easy place to put it." | A catch-all file relocates the mess. Put the code with the responsibility it belongs to. |
-| "It mostly works; close enough to done." | Partial work presented as complete breaks trust. Report what works and what does not. |
-| "Someone else's stray change is in my way, I'll revert it." | That is a teammate's work. Leave it; route around it or ask. |
-
-## Red Flags
-
-- A "done" or "passing" claim with no command output behind it.
-- An edit to an exported symbol with no check of its references.
-- A new file named `utils`, `helpers`, `common`, `misc`, or `temp`.
-- A test that was skipped, deleted, or weakened to make the suite pass.
-- A function body that is `pass` / `return null` / `throw new Error("TODO")` in delivered work.
-- A described result ("the output shows…") that was never actually produced.
-- Obsolete code or stale comments left behind after a change.
+- Declaring code correct from reading it alone → looking correct and being correct diverge exactly where the bugs live; run the check.
+- A "done"/"passing" claim — or a narrated result ("the output shows…") — with no command actually run → back every claim with observed output.
+- Editing an exported symbol without checking its references → a signature or behavior change ripples; find references first and update the whole radius.
+- Shipping a stub (`pass` / `return null` / `throw new Error("TODO")`) as done → a hidden failure; implement it or report it as not-done.
+- Skipping, deleting, or weakening a failing test to make the suite pass → a skipped test is a removed bug report; diagnose it, don't silence it.
+- Renaming by text replace → it misses shadowing, re-exports, and other files; use a symbol-aware rename.
+- Creating a `utils` / `helpers` / `common` / `misc` / `temp` file → a catch-all relocates the mess; put code with the responsibility it belongs to.
+- Presenting partial work as complete ("mostly works") → report what works and what does not.
+- Reverting or "cleaning up" a teammate's stray change to clear your path → that is their in-progress work; route around it or ask.
+- Leaving obsolete code or stale comments behind after a change → sweep the change's blast radius before closing.
 
 ## Verification
 

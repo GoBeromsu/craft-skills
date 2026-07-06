@@ -2,7 +2,7 @@
 name: git
 description: 'Guides version-control craft: a ground-truth and incumbent-style detection gate before any commit or rebase, the atomic-commit `git add -p` split protocol, commit/branch/PR conventions matched to the repo''s own history, and non-interactive-safe history surgery (fixup, reword, split, scripted bisect, undo). Use when committing a change ("commit this", "커밋해줘"), rebasing or squashing history, sizing a PR, recovering from a broken rebase, or running "git wt" to create an isolated worktree with the git-guard rails. Not for hook-enforcement mechanics (runtime/lint/pre-commit guard authoring) — that belongs to hookify.'
 metadata:
-  version: 2.0.0
+  version: 2.0.1
 ---
 
 # git
@@ -122,19 +122,14 @@ One PR per slice, each targeting the previous branch; rebase the next slice when
 - `perl` — Unicode-aware Hangul check in repo-style detection.
 - A project test/lint command for `git bisect run` (`references/history-surgery.md`).
 
-## Common Rationalizations
+## Anti-patterns
 
-| Rationalization | Reality |
-|---|---|
-| "A couple of small fixes, one commit is fine." | A mixed diff breaks `git revert`/`git bisect` for either change alone. `git add -p` splits it for one extra commit. |
-| "No obvious convention here, I'll use conventional commits — they're better." | Detect first. No prefix history → plain imperative subjects, not an imported standard. |
-| "Force-pushing is faster than untangling this." | `--force` silently overwrites a collaborator's push; `--force-with-lease` refuses when the remote moved. |
-
-## Red Flags
-
-- A commit message that needed "and", or a PR diff over ~400 changed lines with no stacked-branch plan.
-- `git push --force` in shell history instead of `--force-with-lease`; `git diff --staged` never read before `git commit`.
-- A rebase abandoned without `git rebase --abort` — leftover conflict markers or a lingering `.git/rebase-merge`.
+- Committing a couple of small fixes together, or writing a message that needs "and" → split with `git add -p`, one commit per logical change; a mixed diff breaks `git revert`/`git bisect` for either change alone.
+- Defaulting to conventional-commit prefixes because there's no obvious convention → detect first (`references/conventions.md`); no prefix history means plain imperative subjects, not an imported standard.
+- Force-pushing to save time, or `git push --force` sitting in shell history → use `--force-with-lease`, which refuses when the remote moved; `--force` silently overwrites a collaborator's push.
+- A PR diff over ~400 changed lines with no stacked-branch plan → split the PR, or stack branches (`git checkout -b <slug>-2 <slug>-1`), one PR per slice.
+- Writing the commit message before reading `git diff --staged` in full → read every hunk first; memory drifts from what's actually staged.
+- Abandoning a rebase without `git rebase --abort`, leaving conflict markers or a lingering `.git/rebase-merge` → run `git rebase --abort` and reassess.
 
 ## Verification
 

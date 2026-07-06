@@ -2,7 +2,7 @@
 name: init
 description: Bootstraps a repository's docs/ ontology and ADR rails on a fresh repo, then generates a complexity-scored, hierarchical AGENTS.md knowledge base on a mature one, in a single triaged run. Use when initializing a repo's docs/ ontology and ADR rails ("init this repo", "bootstrap craft conventions"), deep-initing a mature codebase ("deep init", "generate AGENTS.md", "map this codebase"), or setting up the docs structure; falls back to a sequential single-agent path on runtimes without agent fan-out. Not for authoring the content inside docs/ (ADRs, README, architecture; use the `document` skill) or installing git-guard hooks (use the `git` skill).
 metadata:
-  version: 3.0.0
+  version: 3.0.1
 ---
 
 # init
@@ -97,12 +97,20 @@ map the documentation scaffold back onto itself.
 - Every run ends with the Phase 4 observability report (path taken, centrality measured/unmeasured,
   files created/updated, managed-block action) — no silent or degraded run.
 
-## Red Flags
+## Anti-patterns
 
-- Inlining the scoring matrix, generation templates, or phase procedures into this file (they live
-  in `references/` — this file stays at triage depth).
-- Overwriting an existing file (`docs/`, `README.md`, or an `AGENTS.md`) with a template.
-- Assuming `Task`/fan-out on a single-agent runtime instead of the sequential path.
-- Emitting a confident centrality number when neither LSP nor codegraph was available.
-- Leaving a legacy hard-rail managed block in place, or claiming init installs governance/enforcement.
-- Skipping the final report, or finishing without stating the path taken and managed-block action.
+- Inlining the scoring matrix, generation templates, or phase procedures into this file → keep
+  them in `references/`; this file stays at triage depth.
+- Overwriting an existing file (`docs/`, `README.md`, or an `AGENTS.md`) with a template →
+  `Edit` existing files, `Write` only new ones.
+- Assuming `Task`/fan-out on a single-agent runtime → run the sequential single-agent path
+  (`Bash` + `Grep` + `Glob`, one file at a time) instead.
+- Emitting a confident centrality number when neither LSP nor codegraph was available → mark
+  centrality "unmeasured" instead.
+- Leaving a legacy hard-rail managed block in place → replace it and log the replacement — the
+  only existing content init may overwrite.
+- Claiming init installs governance/enforcement → git-guard installation belongs to the `git`
+  skill; init only emits the diagnostic notice.
+- Skipping the final report, or finishing without stating the path taken and managed-block
+  action → every run ends with the Phase 4 observability report naming the path, centrality
+  measured/unmeasured, files created/updated, and managed-block action.

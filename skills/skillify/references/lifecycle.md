@@ -48,6 +48,21 @@ mkdir -p "$SKILL_DIR"
 Patch `SKILL.md` and/or `references/`, bump `metadata.version` per the version-bump rubric
 (contract §8), append one `CHANGELOG.md` bullet, validate, PR.
 
+### Record a correction
+
+When the operator corrects unwanted behavior mid-session ("this is not what I wanted"),
+encode it in the governing skill before the session ends — the three-way split:
+
+1. **The corrected behavior** → an imperative step in the skill's workflow, only when the
+   fix is a repeatable step rather than a one-off.
+2. **The failure it prevents** → one `## Anti-patterns` entry:
+   `- <unwanted behavior> → <what to do instead>.`
+3. **The event, date, and any operator-supplied source** → the `CHANGELOG.md` bullet, with
+   a `Provenance: <source>` clause when material was handed over (contract §6). Bump PATCH
+   — MINOR if the workflow gained a step.
+
+A correction that stays only in chat memory repeats; this flow is how the library learns.
+
 ## 4. Move or rename
 
 There is no routing-index file to update in this library's model — moving a skill means
