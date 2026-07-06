@@ -14,6 +14,7 @@ only, and naming a source there fails skillify's attribution gate.
 | skill | origin | upstream repo / ref | relationship |
 |---|---|---|---|
 | `document` | `documentation-and-adrs` SSOT; design.md section contract (`design/` sub-recipe) | addyosmani/agent-skills; code-yeongyu/lazycodex (MIT) | derived |
+| `distil` | operator's own WIP draft (absorbed 2026-07-06) | — | original |
 | `programming` | `programming` skill; ponytail; gajae-code agent discipline | code-yeongyu/lazycodex, DietrichGebert/ponytail (MIT) | adapted |
 | `frontend` | design-first gate and router shape; rendering-architecture/state/folder rules original synthesis | code-yeongyu/lazycodex (MIT; pattern-only) | adapted |
 | `backend` | API observed-behavior + one-version rules; architecture-detection rules original synthesis | addyosmani/agent-skills | adapted |

@@ -18,6 +18,7 @@ context.
 | `agents` | Build and change LLM-agent systems — prompts, tool schemas, context/tracing wiring — under an eval-first discipline that proves a behavior change against a versioned eval set before shipping. |
 | `backend` | Route backend engineering through an architecture-detection gate (layered / vertical-slice / hexagonal), then apply dependency-direction rules, an API design contract, and per-framework folder conventions. |
 | `debug` | Diagnose a failing program under a hypothesis-driven loop — reproduce before theorizing, log fact separately from inference, and confirm the mechanism with instrumentation before any fix lands. |
+| `distil` | Distil transferable rules and conventions from an external source — a repo, an article, an AGENTS.md, or a third-party skill — into the library under the authoring contract, with provenance recorded. |
 | `document` | Route any documentation task into a six-type `docs/` ontology (research, references, spec, plan, decision, rule) and author repo-level artifacts against their canonical templates. |
 | `frontend` | Gate frontend engineering on a rendering-architecture decision (SPA / SSR-RSC / SSG / islands) before UI code is written, then apply component-reuse, state-placement, and folder rules. |
 | `git` | Guide version-control craft — ground-truth and incumbent-style detection, the atomic-commit split protocol, commit/branch/PR conventions, and non-interactive-safe history surgery, including the `git wt` worktree workflow. |
@@ -45,7 +46,7 @@ Install via the marketplace (interactive, inside Claude Code):
 /plugin install craft-skills@craft-skills
 ```
 
-Then invoke any of the 16 skills above by name, e.g. `document`, `init`, `skillify`,
+Then invoke any of the 17 skills above by name, e.g. `document`, `init`, `skillify`,
 `programming`, `research`, `debug`.
 
 ---
@@ -84,7 +85,7 @@ Mount `skills/` via `skills.external_dirs` in your Hermes config:
    ```
 4. Verify:
    ```bash
-   hermes skills list | grep -E 'agents|backend|debug|document|frontend|git|hookify|init|ml|programming|refactor|research|security|skillify|testing|write-report'
+   hermes skills list | grep -E 'agents|backend|debug|distil|document|frontend|git|hookify|init|ml|programming|refactor|research|security|skillify|testing|write-report'
    ```
 
 See `.hermes/README.md` for full deployment details.
@@ -100,6 +101,7 @@ Point the agent's instruction-file import at the skill you want:
 skills/agents/SKILL.md
 skills/backend/SKILL.md
 skills/debug/SKILL.md
+skills/distil/SKILL.md
 skills/document/SKILL.md
 skills/frontend/SKILL.md
 skills/git/SKILL.md

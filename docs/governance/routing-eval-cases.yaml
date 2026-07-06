@@ -90,6 +90,16 @@
       "trigger": "bisect this bug to the commit that caused it",
       "expected_package": "craft-skills/debug",
       "forbidden_neighbors": ["craft-skills/refactor", "craft-skills/testing", "craft-skills/security"]
+    },
+    {
+      "trigger": "이 레포 규칙 파쿠리해줘",
+      "expected_package": "craft-skills/distil",
+      "forbidden_neighbors": ["craft-skills/skillify", "craft-skills/research", "craft-skills/document"]
+    },
+    {
+      "trigger": "absorb this external skill into our library",
+      "expected_package": "craft-skills/distil",
+      "forbidden_neighbors": ["craft-skills/skillify", "craft-skills/research", "craft-skills/init"]
     }
   ]
 }
