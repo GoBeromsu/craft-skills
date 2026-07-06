@@ -1,8 +1,8 @@
 ---
 name: programming
-description: Applies correctness-first, type-strict engineering discipline when writing or editing Python or TypeScript. Use when asked to write a `.py` or `.ts` file, scaffold a new Python/TypeScript project, add strict types to existing code, or review a diff for over-engineering, type holes, or an oversized file. Routes to `references/python.md` or `references/typescript.md` for the per-language iron list, plus the always-loaded `references/workflow.md` task discipline. Not for suite-level test architecture (use testing) or behavior-preserving restructuring of already-working code (use refactor).
+description: Applies correctness-first, type-strict engineering discipline when writing or editing Python or TypeScript. Use when asked to write a `.py` or `.ts` file, scaffold a new Python/TypeScript project, add strict types to existing code, or review a diff for over-engineering, code smells, type holes, or an oversized file. Routes to `references/python.md` or `references/typescript.md` for the per-language iron list, plus the always-loaded `references/workflow.md` task discipline. Not for suite-level test architecture (use testing) or behavior-preserving restructuring of already-working code (use refactor).
 metadata:
-  version: 2.0.1
+  version: 2.1.0
 ---
 
 # programming
@@ -17,20 +17,24 @@ Read the matching file in full before writing or editing a line — including a 
 |---|---|
 | Every code task, always | `references/workflow.md` — understand → plan → change → verify → report, and the completion contract (no fabrication, no placeholder-as-feature, no suppressing to go green) |
 | `.py`, `.pyi`, or "Python" | `references/python.md` — tooling table, iron list, data-modeling map |
-| `.ts`, `.tsx`, `.mts`, `.cts`, or "TypeScript" | `references/typescript.md` — tooling table, iron list, tsconfig flags |
+| `.ts`, `.tsx`, `.mts`, `.cts`, or "TypeScript" | `references/typescript.md` — tooling table, iron list, tsconfig flags; then `references/typescript/clean-code.md` — naming, function shape, structure |
+| Reviewing a diff or auditing for smells | `../refactor/references/code-smells.md` — the smell → fix catalog; `refactor` owns it, load it read-only from here |
 
 ## Write only what the task needs
 
 Stop at the first rung that holds, after the correctness requirements are already known — this ladder never substitutes for them:
 
 1. **Does this need to exist?** Speculative need → skip it, say so in one line (YAGNI).
-2. **Does the stdlib do it?** Use it.
-3. **Does a native platform feature cover it?** `<input type="date">` over a date-picker library, CSS over JS layout, a DB constraint over an app-side check.
-4. **Does an already-installed dependency solve it?** Use it; never add a dependency for what a few lines cover.
-5. **Can it be one line?** One line.
-6. **Only then:** the minimum code that works.
+2. **Does the codebase already have it?** Reuse the existing helper, util, or pattern — never rewrite it.
+3. **Does the stdlib do it?** Use it.
+4. **Does a native platform feature cover it?** `<input type="date">` over a date-picker library, CSS over JS layout, a DB constraint over an app-side check.
+5. **Does an already-installed dependency solve it?** Use it; never add a dependency for what a few lines cover.
+6. **Can it be one line?** One line.
+7. **Only then:** the minimum code that works.
 
 When two rungs hold, take the higher one. When two options are the same size, take the one correct on edge cases — fewer lines never means the flimsier algorithm. Validation at trust boundaries, error handling that prevents data loss, security, and accessibility are correctness, not brevity — never skimp on these.
+
+Deletion beats addition, boring beats clever, fewest files wins — and a complex request earns one question before it earns code: "do you actually need X, or does Y already cover it?" A bug report names a symptom, not the cause: grep every caller of the function you touch and fix the shared function once — one guard there is a smaller diff than one per caller, and patching only the reported path leaves a sibling caller broken.
 
 A deliberate shortcut carries a `craft:` comment naming its ceiling and upgrade path, so a reader sees intent, not ignorance:
 
@@ -86,6 +90,8 @@ Assert the contract, not the dump — the value, not `is not None`. Prefer the r
 - Introducing an interface/Protocol with exactly one implementation, or a factory for one product → use the concrete type directly until a second implementation exists.
 - Adding `# type: ignore` / `@ts-ignore` with no explanation → fix the type, or add a comment explaining why the escape hatch is unavoidable.
 - Shipping a feature with passing unit tests but no test that fails when the behavior is reverted → add a reverting test before calling it done.
+- Rewriting a helper the codebase already has → search for the existing util or pattern first; reuse is rung 2 of the ladder.
+- Patching only the code path a bug report names → grep every caller and fix the shared function once; the symptom path is rarely the only broken one.
 
 ## Verification
 
@@ -95,6 +101,7 @@ Assert the contract, not the dump — the value, not `is not None`. Prefer the r
 - [ ] Every tagged-variant branch is an exhaustive `match`/`switch` with `assert_never`/`assertNever`.
 - [ ] No unexplained escape hatch, and no dead null-check/try-except guarding an already-proven value.
 - [ ] No one-off helper/class introduced for a single caller.
+- [ ] No new code re-implements a helper, stdlib call, or platform feature that already covers it.
 - [ ] Every deliberate shortcut carries a `craft:` comment with its ceiling and upgrade path.
 - [ ] New behavior is locked by a test that fails when the change is reverted.
 - [ ] Type checker + linter pass clean (`basedpyright` + `ruff` / `tsc` + `biome`).

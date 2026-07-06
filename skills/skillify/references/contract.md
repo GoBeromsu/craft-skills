@@ -129,7 +129,10 @@ exception, already spent for this library). `## Change Log` inside `SKILL.md` is
 
 When a change derives from operator-supplied source material — a doc, repo, article, or
 conversation handed over during authoring — record it in two places: append a
-`Provenance: <source>` clause to that bullet, and land any substantive excerpt worth
+`Provenance:` clause to that bullet that names what was taken and links a public source
+as `[name](url)` — e.g. `Provenance: reuse rung from
+[ponytail](https://github.com/DietrichGebert/ponytail)`; a local source uses its plain
+path — and land any substantive excerpt worth
 re-consulting as a `references/*.md` file (rewritten to reference-style voice, §4) rather
 than leaving it only in chat history. The cross-skill lineage snapshot lives in
 `skills/PROVENANCE.md`; update its row when a package's primary source changes.
