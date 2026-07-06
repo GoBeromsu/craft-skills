@@ -9,3 +9,5 @@ __pycache__/
 *.pyc
 .env
 !.env.example
+# Temporal skillify admission/eval artifacts — never committed
+skills/*/evals/
