@@ -2,6 +2,15 @@
 
 A run is reproducible only when its code, its configuration, and its data are each independently pinned — the layout below enforces that separation structurally, so reproducibility does not depend on anyone remembering to be careful.
 
+## Table of Contents
+
+- [Hard rules](#hard-rules) — pyproject.toml + src/ layout, the canonical tree, artifact placement, thin scripts, immutable data/raw, notebooks never imported, one run = one config
+- [Grey zones](#grey-zones)
+- [Incumbent-respect clause](#incumbent-respect-clause)
+- [Hand-offs](#hand-offs)
+
+---
+
 ## Hard rules
 
 ### `pyproject.toml` + `src/` layout + a locked dependency file is absolute

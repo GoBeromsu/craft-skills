@@ -4,6 +4,18 @@ Modern TypeScript: strictly typed, built on the project's canonical libraries an
 
 Load this file in full before writing or editing TypeScript. The rules below are deliberate project choices — violations are wrong, not stylistic.
 
+## Contents
+
+- [Tooling](#tooling)
+- [The iron list](#the-iron-list)
+- [Data modeling — which construct, when](#data-modeling--which-construct-when)
+- [Exhaustive switch — the canonical shape](#exhaustive-switch--the-canonical-shape)
+- [Error handling — narrow with instanceof](#error-handling--narrow-with-instanceof)
+- [tsconfig — beyond `strict: true`](#tsconfig--beyond-strict-true)
+- [No-excuse audit (run before declaring done)](#no-excuse-audit-run-before-declaring-done)
+- [In tests](#in-tests)
+- [Editing an existing file](#editing-an-existing-file)
+
 ## Tooling
 
 | Category | Use | Never |

@@ -2,6 +2,18 @@
 
 Every rewrite here runs without an interactive editor and leaves `git rebase --abort` or `git reflog` as a way back — never trade a small mess for a bigger one.
 
+## Contents
+
+- [Hard rules](#hard-rules)
+- [Pre-flight — is this commit safe to rewrite?](#pre-flight--is-this-commit-safe-to-rewrite)
+- [Fixup flow (non-interactive-safe)](#fixup-flow-non-interactive-safe)
+- [Reword a commit](#reword-a-commit)
+- [Split a commit](#split-a-commit)
+- [Undo decision table](#undo-decision-table)
+- [Scripted bisect](#scripted-bisect)
+  - [Custom bisect terms](#custom-bisect-terms)
+- [Recovering from mid-rebase mess](#recovering-from-mid-rebase-mess)
+
 ## Hard rules
 
 | Concern | Do / Use | Never |

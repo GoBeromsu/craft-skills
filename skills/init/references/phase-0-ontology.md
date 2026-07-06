@@ -1,13 +1,24 @@
 # Phase 0 — docs/ Ontology + ADR Graft
 
-> **Graft (kept from craft-skills' original `init` v1.x).** This is the one layer carried onto the
-> init-deep base engine: the `docs/` ontology scaffold + ADR index, non-destructive and idempotent.
-> The original init's GitHub-governance / audit machinery is intentionally **not** ported.
+> **Graft.** This is the one layer carried onto the cartography base engine: the `docs/` ontology
+> scaffold + ADR index, non-destructive and idempotent. GitHub-governance / audit machinery is
+> intentionally **not** part of this graft.
 
 Phase 0 lays the documentation rails. On the **bootstrap path** (fresh repo) this is the substantive
 work; on the **cartography path** (mature repo) it mostly reports "already present" and skips. It
 runs **before** Phases 1–4, and the `docs/` scaffold it seeds is **excluded** from the Phase 2
 cartography scope (no self-mapping).
+
+## Table of Contents
+
+- [Idempotency contract](#idempotency-contract-applies-to-every-step-below)
+- [1. Detect existing state](#1-detect-existing-state)
+- [2. Scaffold missing docs/ folders](#2-scaffold-missing-docs-folders)
+- [3. Seed anchor files](#3-seed-anchor-files)
+- [4. Development Flow managed block](#4-development-flow-managed-block-convention-only)
+- [Phase 0 verification](#phase-0-verification)
+
+---
 
 ## Idempotency contract (applies to every step below)
 
@@ -90,16 +101,19 @@ PROPOSED → ACCEPTED → (SUPERSEDED | DEPRECATED)
 
 ### docs/architecture.md and README.md — owned by the `document` skill
 
-These templates live as standalone files inside the thick `document` skill's sub-recipes. Do **not**
-duplicate them here — read the template **files** directly (no prose-section extraction):
+These templates live as standalone files in the `document` skill's `templates/` directory. Do
+**not** duplicate them here — read the template **files** directly (no prose-section extraction):
 
-1. Locate the document skill's root directory with Glob. Try each pattern; use the first that resolves:
-   ```
-   ~/.claude/skills/*/skills/document/
-   ~/.claude/plugins/*/*/skills/document/
-   ~/.claude/plugins/*/skills/document/
-   ~/.claude/plugins/cache/*/*/*/skills/document/
-   ```
+1. Locate the document skill's root directory. Try each in order; use the first that resolves:
+   - `${CRAFT_SKILLS_REPO_PATH}/skills/document/` (repo checkout — Codex, Hermes; see the repo's
+     `.hermes/README.md` for how `CRAFT_SKILLS_REPO_PATH` is set).
+   - Glob, on Claude Code's plugin cache:
+     ```
+     ~/.claude/skills/*/skills/document/
+     ~/.claude/plugins/*/*/skills/document/
+     ~/.claude/plugins/*/skills/document/
+     ~/.claude/plugins/cache/*/*/*/skills/document/
+     ```
 2. For `docs/architecture.md` (only if absent): read **`templates/architecture.md`** from the located
    directory and write its contents verbatim.
 3. For `README.md` at repo root (only if absent): read **`templates/readme.md`** from the located
@@ -117,9 +131,9 @@ Install or refresh **one** managed block in the target repo's `AGENTS.md` (or th
 managed agent guide — record the path). Preserve all content outside the block. The block is owned by
 init and may be **replaced** on re-run.
 
-**Migration rule (init 2.0):** if a repo carries the **1.x** block — which claimed hard
-git-guard/governance rails — **replace** it with the convention-only block below and **log the
-replacement** in the final report (phase-4 observability). Do not leave stale hard-rail claims.
+**Migration rule:** if a repo carries a legacy block that claims hard git-guard/governance rails,
+**replace** it with the convention-only block below and **log the replacement** in the final report
+(phase-4 observability). Do not leave stale hard-rail claims.
 
 ```markdown
 <!-- BEGIN CRAFT-SKILLS INIT DEVELOPMENT FLOW -->
@@ -147,9 +161,8 @@ Conventions agents must follow:
 
 The block is an agent recipe, not an orchestrator — it tells agents how to run the loop. It must
 **not** claim that init opens issues, creates worktrees, fans out PRs, performs reviews, merges, or
-writes ADRs automatically. init 2.0 ships **no** hard-rail enforcement of its own; git-guard is the
-`worktree` skill's concern and self-installs there on first use (see the diagnostic notice in
-SKILL.md).
+writes ADRs automatically. init ships **no** hard-rail enforcement of its own; git-guard is the
+`git` skill's concern and self-installs there on first use (see the diagnostic notice in SKILL.md).
 
 ## Phase 0 verification
 
@@ -159,5 +172,5 @@ SKILL.md).
 - [ ] `docs/architecture.md` present (seeded from document skill or placeholder + warning).
 - [ ] `README.md` present at repo root (pre-existing or seeded; warning if document skill not found).
 - [ ] Development Flow managed block present in `AGENTS.md` / chosen guide; surrounding content
-      preserved; any 1.x block replaced-and-logged.
+      preserved; any legacy hard-rail block replaced-and-logged.
 - [ ] No existing file overwritten — confirmed via the "Skipped (exists)" notices.

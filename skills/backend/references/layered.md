@@ -2,6 +2,20 @@
 
 Three layers, one direction: a request enters at the controller, business logic runs in the service, persistence happens in the repository — and nothing calls upward or sideways past its neighbor.
 
+## Contents
+
+- [Hard rules](#hard-rules)
+  - [Responsibility law](#responsibility-law)
+  - [Controller must not touch the database or the ORM directly](#controller-must-not-touch-the-database-or-the-orm-directly)
+  - [Service must not depend on HTTP types](#service-must-not-depend-on-http-types)
+  - [Repository returns domain types, never ORM rows, across the boundary](#repository-returns-domain-types-never-orm-rows-across-the-boundary)
+  - [Dependency direction — controller → service → repository, never reversed, never skipped](#dependency-direction--controller--service--repository-never-reversed-never-skipped)
+  - [DTO / domain-model separation](#dto--domain-model-separation)
+- [Transaction ownership](#transaction-ownership)
+- [Incumbent-respect clause](#incumbent-respect-clause)
+- [Folder shape (see `folders.md` for full framework-specific trees)](#folder-shape-see-foldersmd-for-full-framework-specific-trees)
+- [Grey zones](#grey-zones)
+
 ## Hard rules
 
 ### Responsibility law
@@ -119,11 +133,6 @@ src/
   repositories/   # persistence — queries, ORM-row to domain mapping
   domain/         # shared domain types used across services/repositories
 ```
-
-## Grey zones
-
-- A repository method with a join across two aggregates for read efficiency is fine; a repository method that decides *whether* the join's result satisfies a business rule (rather than just returning it) has crossed into service territory.
-- A tiny CRUD endpoint where the "service" would be a single pass-through call to the repository is still worth keeping as its own function — not collapsed into the controller — so the layer boundary stays uniform across the codebase even where one layer is thin.
 
 ## Grey zones
 

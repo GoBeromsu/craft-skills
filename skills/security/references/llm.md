@@ -2,6 +2,15 @@
 
 A model's output and anything it retrieves are untrusted input, never instructions — the trust boundary sits between your system prompt and everything the model reads or produces afterward.
 
+## Contents
+
+- [Hard rules](#hard-rules)
+- [Prompt injection](#prompt-injection)
+- [Model output is untrusted input](#model-output-is-untrusted-input)
+- [Tool-permission scoping](#tool-permission-scoping)
+- [Unbounded-consumption guards](#unbounded-consumption-guards)
+- [RAG (Retrieval-Augmented Generation) isolation](#rag-retrieval-augmented-generation-isolation)
+
 ## Hard rules
 
 | Concern | Do / Use | Never |

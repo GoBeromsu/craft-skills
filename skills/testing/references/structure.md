@@ -2,6 +2,12 @@
 
 Test location is not a matter of taste — detect the project's existing convention first, and never let a second, competing convention appear beside it.
 
+## Contents
+
+- [Hard rules](#hard-rules)
+- [Fixture organization](#fixture-organization)
+- [Test data builders](#test-data-builders)
+
 ## Hard rules
 
 ### Convention taxonomy (MECE)

@@ -4,6 +4,13 @@ Vision models fail silently at the input pipeline more often than at the archite
 
 This reference layers on top of `references/training.md` — the discipline ladder there (smoke test, baseline, one variable, seeds, eval discipline) still applies in full; the rules below are vision-specific additions.
 
+## Table of Contents
+
+- [Hard rules](#hard-rules) — normalization stats, channel order/value range, resize/interpolation consistency, augmentation on train only, visualize-after-aug, class imbalance, error-analysis-first, fine-tune before scratch
+- [Hand-offs](#hand-offs)
+
+---
+
 ## Hard rules
 
 ### Normalization stats come from the train split, computed on this dataset

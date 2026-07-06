@@ -2,6 +2,16 @@
 
 A secret is compromised the moment it touches a tracked file, a log line, or a git commit — treat leak prevention and dependency provenance as one discipline, because both answer the same question: what do you trust to run with access to your systems.
 
+## Contents
+
+- [Hard rules](#hard-rules)
+- [Secret scanning](#secret-scanning)
+- [`.env` law](#env-law)
+- [Rotation-on-leak protocol](#rotation-on-leak-protocol)
+- [Dependency audit](#dependency-audit)
+- [CI secret hygiene](#ci-secret-hygiene)
+- [Install-script caution](#install-script-caution)
+
 ## Hard rules
 
 | Concern | Do / Use | Never |

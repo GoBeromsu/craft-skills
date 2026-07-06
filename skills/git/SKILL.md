@@ -1,34 +1,15 @@
 ---
 name: git
-description: '"commit this", "커밋해줘", "rebase", "squash", "커밋 정리" — atomic-commit discipline, incumbent repo-style detection, commit/branch/PR conventions, and non-interactive-safe history surgery (fixup/autosquash, scripted bisect, undo recovery).'
-version: 1.0.0
-allowed-tools: [Read, Bash, Grep, Glob]
-compatibility: claude-code, codex
+description: 'Guides version-control craft: a ground-truth and incumbent-style detection gate before any commit or rebase, the atomic-commit `git add -p` split protocol, commit/branch/PR conventions matched to the repo''s own history, and non-interactive-safe history surgery (fixup, reword, split, scripted bisect, undo). Use when committing a change ("commit this", "커밋해줘"), rebasing or squashing history, sizing a PR, recovering from a broken rebase, or running "git wt" to create an isolated worktree with the git-guard rails. Not for hook-enforcement mechanics (runtime/lint/pre-commit guard authoring) — that belongs to hookify.'
+metadata:
+  version: 2.0.0
 ---
 
 # git
 
-Version-control craft, in order: **truth over memory, one logical change per commit, incumbent style over personal preference.**
+Version-control craft, in order: **truth over memory, one logical change per commit, incumbent style over personal preference.** A commit is done right when it traces to one logical change, matches the repo's own detected conventions rather than an imported standard, and never rewrites shared history without the safe path. Deep recipes live in `references/`: `conventions.md` (commit-type/scope/merge-strategy tables), `history-surgery.md` (non-interactive fixup/reword/split/bisect/undo), `worktree.md` (`git wt` isolated-worktree workflow + guard install). Detection-by-code runs throughout — every rule ships a copy-pasteable command with a threshold, because the repo's actual history always outranks a general convention.
 
-## Overview
-
-This skill is an index. Shared rules live here; the deep recipe catalogs live in `references/` — load the matching reference before acting on history. Detection-by-code is the method throughout: every rule ships a copy-pasteable command with a threshold and a pass/fail reading, because a repo's actual history is always more authoritative than a general convention.
-
-## When to Use
-
-- Committing any change — "commit this", "커밋해줘", "커밋 정리".
-- Rebasing, squashing, or otherwise rewriting local or remote-tracked history.
-- Naming a branch, sizing a PR, or deciding a merge strategy.
-- Recovering from a rebase gone wrong or undoing a commit.
-- "git wt", "make/new worktree", or a missing guard-rail install — load `references/worktree.md` (nested sub-recipe).
-
-Not for: PR review process or issue routing (the repo's own `AGENTS.md` development-flow section owns that).
-
-## PHASE 0 — ground truth + repo-style detection (run first, every time)
-
-Do not write a commit message, rebase, or push before this gate. Stale mental models of "what's on this branch" cause the two most common failures in this domain: committing the wrong thing, and rewriting history that's no longer what you think it is.
-
-### Ground truth
+## Ground truth (run first, every time)
 
 ```bash
 BASE=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null || echo origin/main)
@@ -41,146 +22,127 @@ git rev-parse --abbrev-ref @{upstream} 2>/dev/null || echo "no upstream — firs
 git merge-base HEAD "$BASE"
 ```
 
-Read every line before acting: `BASE` resolves the repo's actual default branch from `origin/HEAD` (set by `git clone` or `git remote set-head origin -a`), falling back to `origin/main` only when no remote reports one — never assume `main` on a repo that uses `master`, `develop`, or `trunk`; reuse `"$BASE"` (re-run this line first if it's a fresh shell) anywhere below that would otherwise hardcode a branch name. `status --short` shows what's changed and whether staged/unstaged are mixed; the two `diff --stat` calls separate "about to be committed" from "not yet staged"; `branch --show-current` confirms you're not on a protected branch (hand off to `worktree` if you are); `log -15` is the local style sample; `@{upstream}` confirms a remote-tracking branch exists before any push-safety command matters — no output and no error means a local-only branch that hasn't been pushed yet, not a failure; `merge-base HEAD "$BASE"` is the divergence point the PR-sizing diff below measures from.
+`BASE` resolves the repo's actual default branch from `origin/HEAD`, falling back to `origin/main` only when nothing reports one — reuse `"$BASE"` below instead of hardcoding a branch name. The two `diff --stat` calls separate staged from unstaged; `log -15` samples local style; a missing `@{upstream}` means an unpushed branch, not a failure; `merge-base` anchors the PR-sizing diff below.
 
-### Repo-style detection
+## Repo-style detection
 
 ```bash
 total=$(git log --oneline -30 | wc -l | tr -d ' ')
 git log --oneline -30 | grep -ciE '^[0-9a-f]+ (feat|fix|chore|docs|refactor|test|style|perf|build|ci|revert)(\([a-z0-9_-]+\))?!?:'
 git log -30 --format=%s | perl -CSD -ne 'print if /[\x{AC00}-\x{D7A3}]/' | wc -l
 git log -30 --format=%s | awk '{ s += length($0); n++ } END { if (n) print s/n }'
-echo "sample size: $total"
 ```
 
-Reading: `total` is the actual number of commits sampled (a young repo has fewer than 30 — divide by what `total` prints, never by a hardcoded 30). First count ÷ `total` ≥ 2/3 → the repo uses conventional-commit prefixes; use them (type table in `references/conventions.md`). Below 2/3 → do not import conventional commits onto an unprefixed repo; match its plain imperative-subject style. Second command counts commits containing Hangul; count ÷ `total` > half → write commit subjects in Korean, keeping whichever prefix convention the first check found. Third command gives the repo's actual average subject length — target that norm, not the ≤72 ceiling as a goal in itself. **Incumbent style always wins over personal preference or an outside standard.**
+Divide every count by `total`, not a hardcoded 30 — a young repo samples fewer. First ratio ≥ 2/3 → use conventional-commit prefixes (`references/conventions.md`); below that → plain imperative subjects, never import the standard onto an unprefixed repo. Second command's Hangul ratio over half → write subjects in Korean. Third gives the actual average subject length — target that, not a ≤72 ceiling as a goal in itself. **Incumbent style always wins.**
 
 ## Atomic commit law
 
-One commit = one logical change. A commit whose message needs "and" to describe it is two commits.
+One commit = one logical change; a message needing "and" is two commits.
 
 ```bash
-git status --short                  # every changed file
-git diff <file>                     # read the full diff before staging anything
-git add -p <file>                   # stage one hunk at a time: y/n/s/e/q
-git diff --staged                   # confirm only the intended change is staged
-git commit -m "<subject per contract below>"
-git status --short                  # confirm remaining hunks await the next commit
+git status --short
+git diff <file>
+git add -p <file>          # stage one hunk at a time: y/n/s/e/q
+git diff --staged
+git commit -m "<subject>"
+git status --short
 ```
 
-Repeat the `add -p` → `diff --staged` → `commit` loop once per logical change until `git status --short` is empty.
-
-Detect a diff that spans unrelated concerns:
+Repeat `add -p` → `diff --staged` → `commit` per logical change until `status --short` is empty. Detect a mixed diff:
 
 ```bash
 git diff --staged --name-only | sed -E 's#/[^/]+$##' | sort -u | wc -l
 ```
 
-More than one top-level directory touched for **unrelated** reasons is a split signal. Grey zone — this is judgment, not a hard gate: a single cohesive change that happens to touch many files (a rename across the codebase, a type propagated through its callers) is one commit even at a high count; the test is whether the commit message needs "and", not the file count.
+More than one top-level directory touched for **unrelated** reasons is a split signal — judgment, not a hard gate: a rename across the codebase is one commit even at a high count. The test is whether the message needs "and", not the file count.
 
 ## Commit message contract
 
-- **Subject**: imperative mood ("Fix", never "Fixed"/"Fixes"), matches the repo's detected length norm, hard ceiling 72 chars.
-- **Body**: why the change was made and what was traded off — never a restatement of the diff.
-- **Footer**: `Refs: #<issue>` / `Closes: #<issue>` when it resolves a tracked issue; `BREAKING CHANGE: <description>` when applicable (see `references/conventions.md`).
-- Blank line between subject, body, and footer — the subject alone is what `git log --oneline` and most UIs show.
+- **Subject**: imperative ("Fix", never "Fixed"), matches the repo's detected length norm, ≤72 chars.
+- **Body**: why and what was traded off — never a restatement of the diff.
+- **Footer**: `Refs: #<issue>` / `Closes: #<issue>`; `BREAKING CHANGE: <description>` when applicable (`references/conventions.md`).
+- Blank line between subject, body, footer.
 
 ```bash
 git log -1 --format=%s | awk '{print length}'
 ```
 
-Over 72 → rewrite the subject before pushing (or use the reword recipe in `references/history-surgery.md` if already committed).
+Over 72 → reword before pushing (`references/history-surgery.md` if already committed).
 
 ## Pre-commit self-review
 
 ```bash
 git diff --staged
-```
-
-Read every hunk top to bottom before writing the commit message — this is the last checkpoint before the change becomes permanent history, and a message written from memory drifts from what's actually staged.
-
-```bash
 git diff --staged | grep -nE '^\+.*(console\.log\(|print\(|pdb\.set_trace|debugger;|TODO: remove|FIXME: remove)'
 ```
 
-Any hit → unstage or fix before committing.
+Read every hunk before writing the message — memory drifts from what's actually staged. Any grep hit → unstage or fix first.
 
 ## Branch naming from incumbent
 
 ```bash
-git branch -a --format='%(refname:short)' | grep -vE 'HEAD|->|(^|/)(main|master|develop)$'
 total=$(git branch -a --format='%(refname:short)' | grep -vE 'HEAD|->|(^|/)(main|master|develop)$' | wc -l | tr -d ' ')
 matching=$(git branch -a --format='%(refname:short)' | grep -vE 'HEAD|->|(^|/)(main|master|develop)$' | grep -cE '^(origin/)?(feat|feature|fix|bugfix|chore|hotfix)/[a-z0-9._-]+$')
 echo "$matching / $total"
 ```
 
-Ratio (`matching / total`, printed last) ≥ 2/3 of listed branches matching one shape → follow it, matching the exact type spelling found (`feat/` and `feature/` are different conventions — copy the one observed, don't guess). Below 2/3, or `total` is 0 (fresh repo, or ticket-based names) → default to `<type>/<slug>` using the type list in `references/conventions.md`. Tool-managed branch names (e.g. this skill's `worktree` sub-recipe's lane branches) are outside this rule — the managing sub-recipe owns them; apply incumbent detection only to branches you name yourself.
+Ratio ≥ 2/3 → follow the exact shape observed (`feat/` and `feature/` are different conventions — copy, don't guess). Below 2/3, or `total` is 0 → default to `<type>/<slug>` (`references/conventions.md`). `git wt`'s own lane branches are outside this rule.
 
-## PR sizing rule
+## PR sizing
 
 ```bash
-BASE=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null || echo origin/main)
 git diff "$BASE"...HEAD --shortstat
 ```
 
-Insertions + deletions over ~400 → the diff is large enough to slow review meaningfully; split before opening the PR. When the work must land as one deployable unit, stack branches instead of collapsing it into one PR:
+Over ~400 insertions+deletions → split. When the work must land as one deployable unit, stack branches instead:
 
 ```bash
-git checkout -b <slug>-2 <slug>-1     # second slice branches off the first, not off main
+git checkout -b <slug>-2 <slug>-1   # second slice branches off the first, not main
 ```
 
-Open one PR per slice, each targeting the previous branch. When the base branch's PR updates, rebase the next slice onto its new tip:
-
-```bash
-git log <slug>-1..<slug>-2 --oneline  # confirm only the intended delta shows
-```
+One PR per slice, each targeting the previous branch; rebase the next slice when the base PR updates.
 
 ## Safety rules
 
-| Concern | Do / Use | Never |
+| Concern | Do | Never |
 |---|---|---|
 | Update a pushed branch after rewriting history | `git push --force-with-lease` | `git push --force` |
-| Mid-rebase gets tangled or conflicts you don't understand | `git rebase --abort`, reassess, retry | Force-push a half-finished rebase to "fix" it forward |
-| Undo a change on a branch others have pulled | `git revert <sha>` | `git reset --hard` on a branch anyone else has fetched |
-| Uncertain whether a branch is shared | `git branch -r --contains <sha>`, or ask before rewriting | Assume "probably just me" and rewrite anyway |
+| Rebase gets tangled | `git rebase --abort`, reassess | Force-push a half-finished rebase |
+| Undo a change others have pulled | `git revert <sha>` | `git reset --hard` on a shared branch |
+| Uncertain whether a branch is shared | `git branch -r --contains <sha>`, or ask | Assume "probably just me" |
 
-`git rebase --abort` is always the first recovery move for a rebase in trouble — it returns to the exact pre-rebase state in one command, before any manual conflict-resolution attempt.
+## Worktrees
+
+`git wt <name>` creates or reuses an isolated worktree off the default branch — never work directly on a protected branch. Full workflow and guard install live in `references/worktree.md`. Guard scripts register into `.githooks/guards.d/`; `core.hooksPath` itself is owned by `hookify`, not this skill.
 
 ## Requirements
 
-- `git` >= 2.23 (for `git restore` and the default `--force-with-lease` behavior used throughout).
-- POSIX `grep`, `awk`, `sed` — commands in this package and `references/history-surgery.md` use `sed -i.bak` (portable across BSD and GNU sed; delete the `.bak` file after).
-- `perl` (present by default on macOS and virtually all Linux distributions) — used for the Unicode-aware language check in the repo-style detection block, since the platform's default `grep` may lack `-P`/PCRE support.
-- A project-specific test/lint command to pass to `git bisect run` when using `references/history-surgery.md`'s scripted bisect recipe.
+- `git` >= 2.23 (`git restore`, default `--force-with-lease`).
+- POSIX `grep`, `awk`, `sed` (`sed -i.bak`, portable across BSD and GNU).
+- `perl` — Unicode-aware Hangul check in repo-style detection.
+- A project test/lint command for `git bisect run` (`references/history-surgery.md`).
 
 ## Common Rationalizations
 
 | Rationalization | Reality |
 |---|---|
-| "It's a couple of small fixes, one commit is fine." | A mixed diff makes `git revert` and `git bisect` useless for either change on its own. `git add -p` splits it — same edits, one extra commit call. |
-| "This repo has no obvious convention, I'll just use conventional commits — they're better." | Detect first (repo-style prefix ratio above). A repo with no prefix history gets plain imperative subjects, not an imported outside standard. |
-| "Force-pushing is faster than untangling this." | `--force` overwrites whatever a collaborator pushed in between with no warning. `--force-with-lease` refuses when the remote moved — that's the entire point of using it. |
-| "The rebase got messy, I'll reset --hard and redo the edits." | `git rebase --abort` restores the exact pre-rebase state in one command; no reconstruction needed. |
-| "I'll write the commit message after I see what changed." | Read `git diff --staged` before writing the message — a message composed from memory drifts from what's actually staged. |
-| "This PR is 900 lines but it's all one feature." | Reviewability doesn't track conceptual unity. Split via stacked branches; each PR still reviews independently. |
-| "I already know branch-naming conventions from my last project." | Conventions are per-repo. Scan `git branch -a` for this repo's actual shape before naming anything. |
+| "A couple of small fixes, one commit is fine." | A mixed diff breaks `git revert`/`git bisect` for either change alone. `git add -p` splits it for one extra commit. |
+| "No obvious convention here, I'll use conventional commits — they're better." | Detect first. No prefix history → plain imperative subjects, not an imported standard. |
+| "Force-pushing is faster than untangling this." | `--force` silently overwrites a collaborator's push; `--force-with-lease` refuses when the remote moved. |
 
 ## Red Flags
 
-- A commit message that needed "and" to describe it in one sentence.
-- `git push --force` in shell history instead of `--force-with-lease`.
-- A PR diff stat over ~400 changed lines with no stacked-branch split plan.
-- `git diff --staged` never read before `git commit` — message doesn't match what's staged.
-- A rebase abandoned mid-way without `git rebase --abort` — leftover `<<<<<<<` conflict markers or a lingering `.git/rebase-merge` directory.
-- A new commit introducing a prefix or naming style the last 30 commits don't use.
+- A commit message that needed "and", or a PR diff over ~400 changed lines with no stacked-branch plan.
+- `git push --force` in shell history instead of `--force-with-lease`; `git diff --staged` never read before `git commit`.
+- A rebase abandoned without `git rebase --abort` — leftover conflict markers or a lingering `.git/rebase-merge`.
 
 ## Verification
 
 - [ ] Ground-truth block ran before the first edit, commit, or rebase this session.
-- [ ] Repo-style detection ran before the first commit (prefix ratio, language, subject-length norm).
-- [ ] Staged diff is one logical change (`git add -p` used to split any mixed diff).
-- [ ] `git diff --staged` was read in full before writing the commit message.
-- [ ] Commit subject is imperative, matches the repo's observed length norm, ≤72 chars.
-- [ ] Branch name matches the incumbent shape, or the `<type>/<slug>` default on a fresh repo.
-- [ ] PR diff is ≤~400 changed lines, or a stacked-branch split plan exists.
-- [ ] No `--force` in history for this change — only `--force-with-lease`, only on branches confirmed not shared.
+- [ ] Repo-style detection ran before the first commit.
+- [ ] Staged diff is one logical change.
+- [ ] `git diff --staged` was read in full before the commit message was written.
+- [ ] Commit subject is imperative, matches the repo's norm, ≤72 chars.
+- [ ] Branch name matches the incumbent shape, or `<type>/<slug>` on a fresh repo.
+- [ ] PR diff is ≤~400 changed lines, or a stacked-branch plan exists.
+- [ ] No `--force` in history for this change — only `--force-with-lease` on confirmed-unshared branches.

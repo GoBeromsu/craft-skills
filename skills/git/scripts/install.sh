@@ -1,19 +1,22 @@
 #!/usr/bin/env sh
-# Bundled first-run installer for the git-guard rails.
+# Bundled first-run installer for the git-guard checks.
 #
-# Scaffolds the guard scripts and git hooks into the TARGET repo, then wires
-# git config via setup-hooks.sh. This is the single entry point the `worktree`
-# sub-recipe (git skill) and `init` skill delegate to so git-guard comes by
-# default after a clone.
+# Scaffolds the guard scripts into the TARGET repo and registers the pre-commit
+# checks as .githooks/guards.d/ entries — the composable convention owned by
+# the `hookify` skill (issue #29: hookify is the sole owner of core.hooksPath
+# and .githooks/pre-commit; this installer never writes either). Also installs
+# .githooks/pre-push directly, since hookify has no push-time surface to
+# collide with. This is the single entry point the `worktree` reference (git
+# skill) and `init` skill delegate to.
 #
 # Safe to re-run: existing files are never clobbered, and the git config / chmod
 # performed by setup-hooks.sh are idempotent.
 #
 # Run from anywhere inside the target repo:
-#   sh /path/to/skills/git/worktree/scripts/install.sh
+#   sh /path/to/skills/git/scripts/install.sh
 set -eu
 
-# Source: this script lives in the worktree sub-recipe's scripts/ dir; hooks are a sibling.
+# Source: this script lives in scripts/; githooks/ is a sibling.
 src=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 hooks_src=$(CDPATH= cd -- "$src/../githooks" && pwd)
 
@@ -21,7 +24,7 @@ hooks_src=$(CDPATH= cd -- "$src/../githooks" && pwd)
 root=$(git rev-parse --show-toplevel)
 cd "$root"
 
-mkdir -p scripts/git-guard .githooks
+mkdir -p scripts/git-guard .githooks/guards.d
 
 # 1. Guard scripts -> scripts/git-guard/ (copy if absent; never clobber local edits).
 #    Keep this list in sync with setup-hooks.sh's chmod set.
@@ -36,15 +39,29 @@ for f in lib.sh assert-not-main.sh check-freshness.sh deny-assets.sh wt.sh setup
   fi
 done
 
-# 2. Git hooks -> .githooks/ (copy if absent).
-for h in pre-commit pre-push; do
-  if [ -f ".githooks/$h" ]; then
-    echo "Skipped (exists): .githooks/$h"
+# 2. Pre-commit checks -> .githooks/guards.d/ (copy if absent). hookify's own
+#    dispatcher runs every executable here in lexical order; this installer
+#    never writes .githooks/pre-commit and never touches core.hooksPath.
+for g in 10-assert-not-main.sh 20-deny-assets.sh 30-check-freshness.sh; do
+  if [ -f ".githooks/guards.d/$g" ]; then
+    echo "Skipped (exists): .githooks/guards.d/$g"
   else
-    cp "$hooks_src/$h" ".githooks/$h"
-    echo "Copied: .githooks/$h"
+    cp "$hooks_src/guards.d/$g" ".githooks/guards.d/$g"
+    echo "Copied: .githooks/guards.d/$g"
   fi
 done
 
-# 3. Wire git config + chmod (idempotent).
+# 3. pre-push hook -> .githooks/ (copy if absent). Installed directly, not via
+#    guards.d — hookify owns pre-commit only, so there is no push-time surface
+#    to collide with here.
+if [ -f ".githooks/pre-push" ]; then
+  echo "Skipped (exists): .githooks/pre-push"
+else
+  cp "$hooks_src/pre-push" ".githooks/pre-push"
+  echo "Copied: .githooks/pre-push"
+fi
+
+# 4. Wire the `git wt` alias + chmod everything (idempotent). core.hooksPath is
+#    deliberately not set here — see setup-hooks.sh and references/worktree.md
+#    Step 1's hand-off note.
 sh scripts/git-guard/setup-hooks.sh

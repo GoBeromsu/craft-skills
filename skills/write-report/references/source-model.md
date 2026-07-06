@@ -7,6 +7,15 @@ files, headings, and required `must` items. Source manifests explain which
 admissible material supports each section without turning the skill prompt or
 structure YAML into a source catalog.
 
+## Contents
+
+- [Concepts](#concepts)
+- [Source Statuses](#source-statuses)
+- [Source Fields](#source-fields)
+- [Sensitivity Rules](#sensitivity-rules)
+- [Coverage Keys](#coverage-keys)
+- [Example Manifest](#example-manifest)
+
 ## Concepts
 
 - `source_of_truth`: current, authoritative project material that may support

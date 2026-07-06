@@ -2,6 +2,20 @@
 
 Every handler is a trust boundary — parse and authorize before touching a request's data, whether it came from a browser, another internal service, or a queue message.
 
+## Contents
+
+- [Hard rules](#hard-rules)
+- [Injection family](#injection-family)
+  - [SQL injection](#sql-injection)
+  - [Command injection](#command-injection)
+  - [Path traversal](#path-traversal)
+- [Authentication vs. authorization](#authentication-vs-authorization)
+  - [IDOR (Insecure Direct Object Reference)](#idor-insecure-direct-object-reference)
+- [Rate limiting placement](#rate-limiting-placement)
+- [Server-Side Request Forgery (SSRF)](#server-side-request-forgery-ssrf)
+- [File upload rules](#file-upload-rules)
+- [Unsafe deserialization](#unsafe-deserialization)
+
 ## Hard rules
 
 | Concern | Do / Use | Never |

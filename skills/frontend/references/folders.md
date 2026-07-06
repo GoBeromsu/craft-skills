@@ -2,6 +2,17 @@
 
 A folder convention is a contract about import direction: which directories may import from which others. Pick one convention per app and enforce its import direction — a folder tree with no enforced direction accumulates cycles silently.
 
+## Contents
+
+- [Hard rules](#hard-rules)
+- [Decision table (MECE)](#decision-table-mece)
+- [Type-based](#type-based)
+- [Feature-based](#feature-based)
+- [Layered feature-sliced](#layered-feature-sliced)
+- [Monorepo / repo-topology rule](#monorepo--repo-topology-rule)
+- [Incumbent-respect clause](#incumbent-respect-clause)
+- [Hand-offs](#hand-offs)
+
 ## Hard rules
 
 | Concern | Do | Never |

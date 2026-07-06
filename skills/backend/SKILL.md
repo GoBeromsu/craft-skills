@@ -1,33 +1,19 @@
 ---
 name: backend
-description: '"build an API endpoint", "백엔드 구조 잡아줘", "should this be layered or hexagonal", "set up a new backend service" — architecture-gated backend engineering. Routes through a PHASE 0 gate that detects layered / vertical-slice / hexagonal from folder shape, then loads the matching reference (references/layered.md, vertical-slice.md, hexagonal.md) plus always-on API design and folder-convention references.'
-version: 1.0.0
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
-compatibility: claude-code, codex
+description: Routes backend service engineering through an architecture-detection gate — layered, vertical-slice, or hexagonal — then applies dependency-direction rules, an API design contract, and per-framework folder conventions. Use when building an API endpoint, setting up a new backend service, deciding whether a service should be layered or hexagonal, adding a repository or use case to an existing service, or reviewing folder structure for architecture drift (e.g. "백엔드 구조 잡아줘"). Not for UI rendering work — use the frontend skill instead.
+metadata:
+  version: 2.0.0
 ---
 
 # backend
 
-Engineer backend services under one discipline: **one architecture per service, one dependency direction, contract before code.**
-
-## Overview
-
-This skill is an index. Shared rules live here; the per-architecture iron list lives in `references/`. Load the matching reference before writing a line of service code.
-
-## When to Use
-
-- Building or reviewing a backend service, API, or persistence layer, in any language.
-- Deciding how to structure a new service (layered vs vertical-slice vs hexagonal).
-- Adding an endpoint, use case, or repository to an existing service.
-- Reviewing folder structure or dependency direction for architecture drift.
-
-Do not use for: per-file type/style discipline or parse-don't-validate input handling at the boundary (the `programming` skill owns that), test suite design (`testing` skill), authz/injection/rate-limiting hardening (`security` skill), frontend rendering architecture (`frontend` skill).
+Engineer backend services under one discipline: one architecture per service, one dependency direction, contract before code. Done means the incumbent architecture is respected, the loaded reference's dependency-direction greps return no unexplained hits, and any API surface follows the contract-first and observed-behavior rules in `references/api-design.md`.
 
 ## PHASE 0 — architecture gate (run first, every time)
 
 Do not write or edit service code before this gate.
 
-1. Detect the existing architecture from folder shape. Run every command below from the service's own root — the directory holding that service's `pyproject.toml` or `package.json` — never from a monorepo root. Running from a monorepo root mixes multiple services' folders into one reading and manufactures false mixed-pattern-drift flags; different services in the same monorepo may legitimately use different architectures.
+1. Detect the existing architecture from folder shape. Run every command below from the service's own root — the directory holding that service's `pyproject.toml` or `package.json` — never from a monorepo root, which mixes multiple services' folders into one reading and manufactures false mixed-pattern-drift flags.
 
 ```bash
 # Layered signal — controller/service/repository triad
@@ -42,9 +28,9 @@ find . -type d \( -iname domain -o -iname ports -o -iname adapters \) \
   -not -path '*/node_modules/*' | sed 's|.*/||' | sort -u
 ```
 
-Read: the two triad commands each print their distinct matched folder names (`sort -u` collapses repeats, so 0–3 lines out). A triad needs **≥2 of its 3 names present** to classify the incumbent architecture — layered needs 2 of {`controllers`, `services`, `repositories`}; hexagonal needs 2 of {`domain`, `ports`, `adapters`}. Exactly one name present (a lone `services/` with no `controllers/` or `repositories/` anywhere) does not clear the threshold: grey zone — judge by import/dependency direction instead (does that lone folder's code reach straight into an ORM/session, layered-style, or does it sit behind a port/interface, hexagonal-style?). Both triads clearing the ≥2 threshold at once means mixed-pattern drift already exists (see `folders.md`) — flag it; do not layer a third pattern on top.
+A triad needs **≥2 of its 3 names present** to classify the incumbent architecture — layered needs 2 of {`controllers`, `services`, `repositories`}; hexagonal needs 2 of {`domain`, `ports`, `adapters`}. Exactly one name present is a grey zone: judge by import direction instead (does that lone folder reach straight into an ORM/session, layered-style, or sit behind a port/interface, hexagonal-style?). Both triads clearing the threshold at once means mixed-pattern drift already exists (see `references/folders.md`) — flag it; do not layer a third pattern on top.
 
-2. **Respect the incumbent — the #1 absolute rule.** An existing service keeps its detected architecture for every edit. Never mix patterns in one service: a controller calling a repository directly in an otherwise-layered service, or a use-case importing framework code in an otherwise-hexagonal service, are both violations. Migrating a whole service's architecture is a separate, explicitly-scoped change — never a side effect of a feature edit.
+2. Respect the incumbent. An existing service keeps its detected architecture for every edit — a controller calling a repository directly in an otherwise-layered service, or a use-case importing framework code in an otherwise-hexagonal service, are both violations. Migrating a whole service's architecture is a separate, explicitly-scoped change, never a side effect of a feature edit.
 
 3. No incumbent detected (greenfield service) → choose from the table, then load the matching reference:
 
@@ -68,10 +54,13 @@ Grey zone — genuinely ambiguous (mid-size team, moderate complexity, no clear 
 
 ## Requirements
 
-- `grep`, `find`: POSIX; used for every detection command in this skill and its references.
-- Python services: FastAPI + Pydantic v2 + `uv` (see the `programming` skill for per-file discipline).
-- TypeScript services: Express or Nest + zod + strict `tsc` (see the `programming` skill for per-file discipline).
-- Any other language: the two stacks above are anchors for Python and TypeScript work only. The architecture and dependency-direction rules in this skill apply regardless of language; stack conventions (framework, validation library, package manager) come from the incumbent codebase, not from this list.
+- `grep`, `find`: POSIX; used by every detection command in this skill and its references.
+- Python services: FastAPI + Pydantic v2 + `uv`. TypeScript services: Express or Nest + zod + strict `tsc` — the `programming` skill owns per-file discipline for both.
+- Any other language: the architecture and dependency-direction rules apply regardless of language; stack conventions (framework, validation library, package manager) come from the incumbent codebase, not from this list.
+
+## Boundaries
+
+Not for: per-file type/style discipline or parse-don't-validate input handling at the boundary (`programming` skill), test suite design (`testing` skill), authz/injection/rate-limiting hardening (`security` skill), frontend rendering architecture (`frontend` skill).
 
 ## Common Rationalizations
 
@@ -100,5 +89,5 @@ Grey zone — genuinely ambiguous (mid-size team, moderate complexity, no clear 
 - [ ] The matching reference file was read in full before structural changes.
 - [ ] No dependency-direction violation — the grep commands in the loaded reference return no unexplained hits.
 - [ ] No architecture mixing — exactly one pattern's folder shape is present per service, confirmed by running PHASE 0 detection from that service's own root (never a monorepo root).
-- [ ] New API surface followed the contract-first and observed-behavior rules in `api-design.md`.
-- [ ] Folder shape matches `folders.md` for the chosen architecture and framework.
+- [ ] New API surface followed the contract-first and observed-behavior rules in `references/api-design.md`.
+- [ ] Folder shape matches `references/folders.md` for the chosen architecture and framework.

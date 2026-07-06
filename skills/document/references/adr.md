@@ -1,8 +1,3 @@
----
-name: adr
-description: '"write an ADR", "record this decision", "architecture decision record", "why did we choose X" — author or update one self-complete Architecture Decision Record under docs/decisions/. Loaded on demand by the documents waypoint.'
----
-
 # adr
 
 Author or update one Architecture Decision Record: a self-complete, MECE record of a single expensive-to-reverse, cross-cutting decision and the rationale behind it. Template: `../templates/adr.md`. Canonical location: `docs/decisions/ADR-NNN-{topic}.md`.

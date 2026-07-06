@@ -2,6 +2,20 @@
 
 The domain is a framework-agnostic core; a port is an interface the domain defines for something it needs from the outside world, and an adapter is the concrete implementation plugged in at the edge — every import points inward, never out.
 
+## Contents
+
+- [Hard rules](#hard-rules)
+  - [Domain core has zero framework imports](#domain-core-has-zero-framework-imports)
+  - [Ports are defined by the domain; adapters implement them at the edge](#ports-are-defined-by-the-domain-adapters-implement-them-at-the-edge)
+  - [Dependency rule — imports point inward only](#dependency-rule--imports-point-inward-only)
+  - [Use-case layer orchestrates ports](#use-case-layer-orchestrates-ports)
+  - [Composition root](#composition-root)
+  - [When hexagonal is over-engineering](#when-hexagonal-is-over-engineering)
+- [Testing benefit (why the ceremony pays off when it's earned)](#testing-benefit-why-the-ceremony-pays-off-when-its-earned)
+- [Incumbent-respect clause](#incumbent-respect-clause)
+- [Grey zones](#grey-zones)
+- [Folder shape (see `folders.md` for full framework-specific trees)](#folder-shape-see-foldersmd-for-full-framework-specific-trees)
+
 ## Hard rules
 
 ### Domain core has zero framework imports

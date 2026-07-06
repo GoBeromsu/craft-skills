@@ -1,18 +1,18 @@
 # Phase 1 — Discovery + Analysis
 
-> **Ported from init-deep §"Phase 1: Discovery + Analysis (Concurrent)".**
-> Port-completeness checklist (all must remain present):
-> - [x] Concurrent explore fan-out — the six standing explore agent roles (structure, entry points, conventions, anti-patterns, build/CI, test patterns).
-> - [x] **Dynamic-agent scaling table** with the exact thresholds (files >100 → +1/100; lines >10k → +1/10k; depth ≥4 → +2; large files >10 → +1; monorepo → +1/workspace; languages >1 → +1/language).
-> - [x] Bash structural-analysis commands (depth histogram, files-per-dir, code concentration, existing AGENTS.md/CLAUDE.md scan).
-> - [x] Read-existing-AGENTS.md step + `--create-new` read-before-delete rule.
-> - [x] LSP **and** codegraph code-map drive, with explore + `ast-grep` fallback and **centrality marked "unmeasured"** when neither exists.
-> - [x] Merge step (bash + LSP/codegraph + existing + explore).
-
 This is the **cartography** engine's first phase. It builds the raw material — structure, code
 map, existing knowledge, project-specific conventions — that Phase 2 scores. Phase 0 (the docs/
 ontology graft) runs before this; on a mature repo Phase 0 mostly skips and the run is dominated
 by Phases 1–4.
+
+## Table of Contents
+
+- [Runtime branch: how discovery fans out](#runtime-branch-how-discovery-fans-out)
+- [Concurrent explore fan-out](#concurrent-explore-fan-out-agent-spawn-runtimes)
+- [Main-session analysis](#main-session-analysis-always-runs-both-branches)
+- [Collect + merge](#collect--merge)
+
+---
 
 ## Runtime branch: how discovery fans out
 
@@ -26,7 +26,7 @@ SKILL.md has already classified the runtime. Honor that classification here:
   present). Cover every explore role's question yourself, in order. This path is slower but
   produces the same merged findings.
 
-The report (see phase-4) MUST state which path was taken.
+The report (see phase-4) must state which path was taken.
 
 ## Concurrent explore fan-out (agent-spawn runtimes)
 
@@ -108,7 +108,7 @@ and anti-patterns into an `EXISTING_AGENTS` map. This feeds the update-vs-create
 If `--create-new`: **read all existing first** (preserve their context), *then* delete them, *then*
 regenerate from scratch. Never delete before reading.
 
-### 3. Code map — drive LSP AND codegraph (do NOT skip)
+### 3. Code map — drive LSP and codegraph (do not skip)
 
 This is the highest-signal source for the CODE MAP and for the Symbol/Export/Reference rows in the
 Phase 2 scoring matrix. LSP and codegraph are **complementary peers**, not alternatives — run both

@@ -2,6 +2,16 @@
 
 The browser will execute or render whatever you hand it as HTML, JS, or a URL — treat every rendering sink, storage location, and cross-origin request as adversarial by default.
 
+## Contents
+
+- [Hard rules](#hard-rules)
+- [Cross-site scripting (XSS)](#cross-site-scripting-xss)
+- [Content-Security-Policy (CSP) baseline](#content-security-policy-csp-baseline)
+- [Token storage law](#token-storage-law)
+- [Cross-site request forgery (CSRF)](#cross-site-request-forgery-csrf)
+- [Clickjacking](#clickjacking)
+- [Subresource Integrity (SRI)](#subresource-integrity-sri)
+
 ## Hard rules
 
 | Concern | Do / Use | Never |

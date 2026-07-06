@@ -1,20 +1,21 @@
 ---
 name: document
-description: '"write an ADR", "set up docs/", "where does this spec go", "write a README", "write the changelog", "how should I comment this", "write a design.md", "set up a design system", "define UI tokens", "/documents" — author and route project documentation: research/references/spec/plan/decision/rule artifacts plus README, changelog, code comments, and design system tokens.'
-version: 2.0.0
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
-compatibility: claude-code, codex
+description: Routes any documentation task into a six-type docs/ ontology (research, references, spec, plan, decision, rule) and authors repo-level artifacts against their canonical templates. Use when writing an ADR ("record this decision"), setting up docs/, deciding where a spec or plan belongs ("where does this spec go"), writing or updating the README, drafting the project CHANGELOG, deciding how to comment-the-why in code, or writing a design.md ("문서화해줘"). Not for conducting the research itself (use research), scaffolding a full technical-report deliverable (use write-report), or authoring JSDoc/docstring/OpenAPI API-surface comments (a code-domain concern, not part of this ontology).
+metadata:
+  version: 3.0.0
 ---
 
-# documents
+# document
 
-Owns the full project documentation system: the `docs/` folder ontology, the lifecycle of every artifact type, and the routing rules that place each artifact in the right location with the right template.
+Author and file project documentation so every artifact lands at exactly one canonical location with the right template. Success: a reader or agent can always answer "where does this go?" without guessing.
 
-This skill is a **waypoint**. It carries the ontology, routing, and docs/ layout at decision depth; deep per-format recipes live in nested sub-recipes that you load on demand (see **Children** below).
+## Requirements
+
+- POSIX `find`, `sed`, `grep` (BSD or GNU) — the root-doc-sprawl check below.
 
 ## Artifact types (MECE)
 
-Every documentation artifact answers exactly one question. Never let one artifact try to answer two.
+Every documentation artifact answers exactly one question; never let one artifact try to answer two.
 
 | Artifact | Question answered | Lifespan | Template | Canonical location |
 |----------|------------------|----------|----------|--------------------|
@@ -22,30 +23,38 @@ Every documentation artifact answers exactly one question. Never let one artifac
 | **references** | *What does this external source say* — verbatim static archive of a third-party document | Permanent snapshot; never edited after capture | `templates/references.md` | `docs/research/references/{slug}.md` |
 | **spec** | *What* is this work and are the requirements clear? | Work-scoped, one-shot | `templates/spec.md` | `docs/exec-plan/active/{slug}/spec.md` |
 | **plan** | *How* to implement (steps, files, order) | Work-scoped; body immutable after finalize | `templates/plan.md` | `docs/exec-plan/active/{slug}/plan.md` |
-| **decision** | One expensive-to-reverse *cross-cutting* decision | Permanent topic anchor; body edited in place; each change logged as one line in the ADR's ## Changelog | `templates/adr.md` | `docs/decisions/ADR-NNN-{topic}.md` |
+| **decision** | One expensive-to-reverse *cross-cutting* decision | Permanent topic anchor; edited in place, each change logged in the ADR's `## Changelog` | `templates/adr.md` | `docs/decisions/ADR-NNN-{topic}.md` |
 | **rule** | A standing convention (ongoing constraint, not work-scoped) | Alive as long as the convention holds | `templates/rule.md` | `docs/rules/{topic}.md` |
-
-## Children — load on demand
-
-For a sub-task below, **Read the named sub-recipe before authoring** — it carries the deep format, the steps, and the colocated template. The sub-recipes are progressive-disclosure reference files this waypoint loads on demand; they are not separately discovered commands.
-
-| Sub-task / trigger | Load |
-|---|---|
-| Write or update an ADR / record a cross-cutting decision | `references/adr.md` (+ `templates/adr.md`) |
-| Write or update the repository README | `references/readme.md` (+ `templates/readme.md`) |
-| Write the project-level CHANGELOG / release notes | `references/changelog.md` (+ `templates/changelog.md`) |
-| Decide how to comment code (comment-the-why) | `references/inline-comments.md` |
-| Write or update a project's design system source of truth (design.md) | `references/design.md` (+ `templates/design.md`) |
-
-The remaining ontology artifacts (research, references, spec, plan, rule) are authored directly from `templates/` using the routing below — they have no sub-recipe yet.
 
 ## Routing
 
-When an artifact arrives for filing, ask exactly one question — "which question does this answer?" — and route to the matching template and location above. If the answer spans two questions, split into two artifacts.
+Pick the primary question a task answers and route by that row — the ontology table above for the six ontology artifacts, or the table below for repo-level artifacts and standing conventions. A task that genuinely spans two questions (a spec that also locks in a cross-cutting choice) is two artifacts: split it into one artifact per question instead of forcing one file to answer both.
 
-**References vs research:** A references file is a verbatim static copy of an external document (e.g. a spec page, RFC, or third-party doc converted to markdown). A research file is your own synthesis — findings, comparisons, and options drawn from one or more sources. Never merge them.
+| Task | Read | Author with |
+|------|------|--------------|
+| Record a cross-cutting decision / write an ADR | `references/adr.md` | `templates/adr.md` |
+| Write or update the repository README | `references/readme.md` | `templates/readme.md` |
+| Write the project-level CHANGELOG / release notes | `references/changelog.md` | `templates/changelog.md` |
+| Decide how to comment code (comment-the-why) | `references/inline-comments.md` | — |
+| Write or update `design.md` / design tokens | `references/design.md` | `templates/design.md` |
+| Map the system (`architecture.md`) | see architecture.md section below | `templates/architecture.md` |
+| File research, a spec, a plan, a rule, or an archived source | ontology table above | matching `templates/*.md` |
 
-**Rule vs ADR:** If a convention encodes a cross-cutting decision, the *why* goes in a decision (ADR) and the *what to do* goes in a rule. The ADR is the frozen choice; the rule is the live operational guide. For ADR depth, load `references/adr.md`.
+No documentation task should dead-end here — every repo-level artifact and every ontology artifact has an exit row.
+
+**References vs research:** a references file is a verbatim static copy of an external document; a research file is your own synthesis. Never merge them.
+
+**Rule vs ADR:** the *why* behind a cross-cutting decision goes in an ADR; the *what to do* goes in a rule. Load `references/adr.md` for ADR depth.
+
+### Root-doc-sprawl check
+
+Loose `.md` files accumulate at the repo root instead of filing into the ontology above. Count them, excluding the conventional set:
+
+```bash
+find . -maxdepth 1 -name '*.md' | sed 's|^\./||' | grep -viE '^(readme|agents|claude|changelog|contributing|license|code_of_conduct)\.md$' | wc -l
+```
+
+More than 3 → route the existing loose docs into `docs/` (research/spec/plan/decision/rule) before adding any more.
 
 ## Decision pipeline
 
@@ -53,79 +62,54 @@ When an artifact arrives for filing, ask exactly one question — "which questio
 research (facts found)  →  decision/ADR (choice made)  →  plan (implementation built)
 ```
 
-- Research collects evidence and presents options. It does **not** decide.
-- A decision distilled from research is an ADR (load `references/adr.md`).
-- How to build that decision is a plan.
+Research collects evidence and presents options; it does not decide. A decision distilled from research is an ADR (`references/adr.md`). How to build that decision is a plan. When routing is unclear, ask which stage the work is at: still gathering facts, committing to a choice, or sequencing work?
 
-When something is hard to route, ask which stage it is at: *Am I still gathering facts (research), committing to a choice (ADR), or sequencing work (plan)?*
-
-## Canonical `docs/` layout
+## `docs/` layout
 
 ```
 docs/
 ├── research/                     # Fact collection — sources, comparisons (pre-decision)
-│   ├── {slug}.md                 #   research artifact
+│   ├── {slug}.md
 │   └── references/               #   verbatim static archives of external documents
 │       └── {slug}.md
-├── exec-plan/                    # All work-scoped specs + plans
-│   ├── active/{slug}/            #   spec.md + plan.md while work is in progress
-│   └── archive/{slug}/           #   same folder, moved here when done/discarded/superseded
-├── decisions/                    # Cross-cutting ADRs (ADR-001..N) — permanent, never deleted
-│   ├── README.md                 #   ADR index + lifecycle reference
+├── exec-plan/
+│   ├── active/{slug}/             #   spec.md + plan.md while work is in progress
+│   └── archive/{slug}/            #   same folder, moved here when done/discarded/superseded
+├── decisions/                     # Cross-cutting ADRs — permanent, never deleted
+│   ├── README.md                  #   ADR index + lifecycle reference
 │   └── ADR-NNN-{topic}.md
-├── rules/                        # Standing conventions (ongoing constraints, not work-scoped)
+├── rules/
 │   └── {topic}.md
-└── architecture.md               # Living system map — annotated directory tree, component
-                                  # boundaries, cross-cutting decisions index, key data/control
-                                  # flows. Points to ADRs and rules; does not restate them.
+└── architecture.md                # Living system map — see architecture.md section below
 ```
 
-Scratch drafts from planning or research passes live **outside** `docs/` (tool-specific scratch workspace) and are not git-canonical. The first act of finalizing a draft is to **move** it into `docs/` under the correct path, then delete the scratch source.
+Scratch drafts live outside `docs/` and are not git-canonical. Finalizing a draft means **moving** it into `docs/` at the correct path, then deleting the scratch source.
 
-## Lifecycle — spec and plan (exec-plan)
+## Lifecycle — spec and plan
 
 ```
-spec drafted (scratch)
-     │  [first act of planning]  MOVE ──►  docs/exec-plan/active/{slug}/spec.md
-     ▼
-plan drafted (scratch)
-     │  MOVE ──►  docs/exec-plan/active/{slug}/plan.md
-     │            FINALIZED on first git commit that includes plan.md
-     │            body is immutable from that point
-     ▼
-work complete / discarded / superseded?
-     │  add frontmatter status line(s) to plan.md (or spec.md if no plan was written):
-     │    status: done | discarded | superseded-by
-     │    superseded-by: {new-slug}     # required when status: superseded-by
-     ▼
-MOVE entire folder:  active/{slug}/  ──►  archive/{slug}/
-
-     │  plan contained a cross-cutting / expensive-to-reverse decision?
-     ▼
-DISTILL ──►  docs/decisions/ADR-NNN-{topic}.md   (load references/adr.md)
+spec drafted (scratch) → MOVE → docs/exec-plan/active/{slug}/spec.md
+plan drafted (scratch) → MOVE → docs/exec-plan/active/{slug}/plan.md
+                                  FINALIZED on first git commit that includes plan.md — body immutable from then
+work done / discarded / superseded → add status: done|discarded|superseded-by (+ superseded-by: {slug}) → MOVE active/{slug}/ → archive/{slug}/
+plan held a cross-cutting decision → DISTILL into docs/decisions/ADR-NNN-{topic}.md (references/adr.md)
 ```
 
-**Lifecycle = folder position.** A plan is active or archived by where its folder lives, not by a status field alone. Move the whole `{slug}/` folder — never split spec and plan.
+**Lifecycle = folder position.** A plan is active or archived by where its folder lives, never by a status field alone; move the whole `{slug}/` folder, never split spec and plan.
 
-**Supersede timing:** When creating a superseding plan (plan-B), archive the superseded plan (plan-A) in the same action before beginning execution of plan-B.
+**Supersede timing:** when creating a superseding plan-B, archive plan-A in the same action, before beginning plan-B's execution.
 
-**Plan immutability.** A plan is finalized on the first git commit that includes its `plan.md`. From that point the body is immutable. If scope changes, create a new slug and set the old plan's frontmatter to `status: superseded-by` + `superseded-by: {new-slug}`. Only the `status` / `superseded-by` frontmatter lines are mutable post-finalize.
-
-ADR lifecycle, the plan-vs-ADR boundary, the distill rule, and why there is no "supersede" all live in `references/adr.md` — load it when working on a decision.
+**Plan immutability:** a plan is finalized on the first git commit that includes its `plan.md`; from then the body is immutable. A scope change gets a new slug, with the old plan's frontmatter set to `status: superseded-by` + `superseded-by: {new-slug}` — the only mutable lines post-finalize.
 
 ## Slug naming
 
-Format: `{kebab-description}` — lowercase, hyphens only, no date prefix, no issue numbers. Date and author live in frontmatter, not the folder name.
+Format: `{kebab-description}` — lowercase, hyphens only, no date prefix, no issue number. The folder (or filename) is the authoritative slug; a frontmatter `slug` that disagrees with it is an error.
 
-The folder name is the authoritative slug. A frontmatter `slug` field that disagrees with its folder name is an error.
+## `architecture.md`
 
-## `architecture.md` — the system map
+Answers "how is this system put together?" for someone who just opened the repo: an annotated directory tree, component boundaries, a cross-cutting-decisions index (links to ADRs, not restatements), and the one or two data/control flows that matter most.
 
-`architecture.md` answers "how is this system put together?" for someone who just opened the repo. It is a living map updated as the system changes — not frozen like an ADR.
-
-Include: annotated directory tree (each top-level folder with a one-line purpose and pointer to the governing ADR/rule), component boundaries (what each module owns and how they communicate), cross-cutting decisions index (links to ADRs — do not restate them), and the one or two data/control flows that matter most.
-
-Keep it a map, not a manual. If it starts duplicating an ADR body, replace the duplication with a link.
+Update it whenever a change moves a component boundary or a new cross-cutting decision lands — not on every commit. Staleness signal: its directory tree or ADR index no longer matches reality. Keep it a map: if a section starts duplicating an ADR body, replace the duplication with a link.
 
 ## Trivial exemptions — no spec/plan required
 
@@ -134,21 +118,12 @@ Keep it a map, not a manual. If it starts duplicating an ADR body, replace the d
 - Dependency patch-version bumps (`x.y.Z`)
 - Behavior-preserving renames
 
-## Red flags
-
-- A research doc that asserts a decision (research presents; it does not decide)
-- Scratch drafts treated as canonical (never moved into `docs/`)
-- `architecture.md` that restates ADR bodies instead of linking them
-- Completed or discarded work still sitting in `active/` with no `status` frontmatter
-- A references file containing your own synthesis (that belongs in research)
-- Authoring an ADR, README, or changelog without first loading its sub-recipe
-
 ## Verification
 
-- [ ] Each artifact answers exactly one of the six questions (research/references/spec/plan/decision/rule)
+- [ ] Each artifact answers exactly one question (an ontology row or a routing-table row) — none dead-ended
 - [ ] Cross-cutting decisions are distilled into ADRs, not buried in plans
-- [ ] Completed/discarded work moved from `active/` to `archive/` with a `status` line
-- [ ] `architecture.md` is a map that links out, not a manual that duplicates
-- [ ] References files contain verbatim source content, not your synthesis
-- [ ] Slug frontmatter field matches the folder name exactly
-- [ ] Deep-format work (ADR, README, changelog, comments) was authored from its sub-recipe
+- [ ] Completed/discarded work moved `active/` → `archive/` with a `status` line
+- [ ] `architecture.md` reflects the latest component boundaries and decisions, or was flagged stale
+- [ ] References files hold verbatim source content, not synthesis
+- [ ] Slug matches its folder/filename exactly
+- [ ] Root-doc-sprawl check run before filing a new artifact when loose root docs are suspected

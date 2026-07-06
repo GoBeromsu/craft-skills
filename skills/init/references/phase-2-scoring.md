@@ -1,12 +1,5 @@
 # Phase 2 — Scoring & Location Decision
 
-> **Ported from init-deep §"Phase 2: Scoring & Location Decision".**
-> Port-completeness checklist (all must remain present):
-> - [x] **Full weighted scoring matrix** — all 8 rows with their exact column weights, high
->       thresholds, and sources.
-> - [x] **Decision rules** — Root always; >15 create; 8–15 create-if-distinct; <8 skip.
-> - [x] `AGENTS_LOCATIONS` output shape.
-
 Phase 2 turns the merged project model from Phase 1 into a concrete list of directories that
 warrant their own `AGENTS.md`. It is pure decision logic — no files are written here.
 
@@ -35,7 +28,7 @@ that the score was computed on the degraded path so the report can flag it.
 
 | Score | Action |
 |-------|--------|
-| **Root (`.`)** | **ALWAYS create** |
+| **Root (`.`)** | **Always create** |
 | **>15** | Create `AGENTS.md` |
 | **8–15** | Create **if** it is a distinct domain (own conventions/boundary the parent does not cover) |
 | **<8** | Skip — the parent `AGENTS.md` covers it |

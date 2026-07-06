@@ -1,8 +1,3 @@
----
-name: design
-description: '"design.md", "design system doc", "design tokens", "디자인 시스템 문서" — author or update a project design.md: the single source of truth for a design system''s principles, tokens, typography, primitive interaction states, motion, responsive rules, and accepted debt. Loaded on demand by the documents waypoint.'
----
-
 # design
 
 Author or update `design.md`: the single, self-complete source of truth for a project's design system. Template: `../templates/design.md`. Canonical location: `docs/design.md` (per-app in a monorepo — see Placement).

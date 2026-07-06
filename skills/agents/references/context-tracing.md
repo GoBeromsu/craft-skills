@@ -2,6 +2,18 @@
 
 Every run leaves a trail long enough to replay it — context that entered the model has a known origin, and consumption that could run away has a known ceiling.
 
+## Contents
+
+- [Hard rules](#hard-rules)
+  - [Context discipline](#context-discipline)
+  - [Tracing law](#tracing-law)
+  - [Unbounded-consumption guards — what to log](#unbounded-consumption-guards--what-to-log)
+  - [Memory hygiene](#memory-hygiene)
+- [Debugging with a trace record](#debugging-with-a-trace-record)
+- [Worked example — one turn end to end](#worked-example--one-turn-end-to-end)
+- [Grey zones](#grey-zones)
+- [Framework notes](#framework-notes)
+
 ## Hard rules
 
 ### Context discipline

@@ -1,23 +1,15 @@
 # Changelog
 
-## [2.1.0] - 2026-06-30
-
-- 2026-06-30 — nothing stopped agents from absorbing off-topic discoveries into the active change, and no git hook can detect scope creep → the Development Flow managed block's convention list now carries an out-of-scope routing rail: keep each change scoped to its issue and open a new GitHub issue (one Type label) when planning, a requirements interview, or implementation surfaces a problem beyond the current issue (#21).
-
-## [2.0.0] - 2026-06-30
-
-- 2026-06-30 — init was a docs-scaffold-only bootstrap and duplicated heavy GitHub-governance/audit machinery the project deemed overkill → **BREAKING full rewrite**: init is now a dual-entry skill built on `init-deep`'s complexity-scored hierarchical `AGENTS.md` cartography engine (base) with the original docs/ ontology + ADR scaffold grafted on as Phase 0. Bootstrap path ("init this repo") seeds docs/ rails; cartography path ("deep init", "generate AGENTS.md", "map this codebase") generates the AGENTS.md knowledge base.
-- 2026-06-30 — the 4-phase engine would have violated this repo's §4 triage-depth rule if inlined → ported it into `references/phase-1..4.md` (discovery + dynamic agent scaling; weighted scoring matrix with root-always / >15 create / 8–15 if-distinct / <8 skip; root + subdir generation with provenance stamp; review pass with line budgets root 50–150 / subdir 30–80 + dedup-vs-parent). SKILL.md stays at triage depth and routes to the phase files.
-- 2026-06-30 — the kept graft needed the thick [documents](../document/SKILL.md) skill's new layout → `references/phase-0-ontology.md` seeds the docs/ ontology + ADR index idempotently, reading templates from the sub-recipes (`adr/template.md`, `readme/template.md`, `templates/architecture.md`).
-- 2026-06-30 — the ported engine assumed agent fan-out (Codex/Claude Code only) → added an explicit single-agent **sequential fallback** for Hermes/generic, `compatibility` now includes `hermes`, LSP/codegraph made optional in both branches with centrality marked "unmeasured" on fallback, and `allowed-tools` expanded to `[Bash, Read, Write, Edit, Grep, Glob, Task]`.
-- 2026-06-30 — degraded/fallback runs could pass silently → every run now ends with a hard observability report (path taken concurrent-vs-sequential, centrality measured-vs-unmeasured, files created/updated, managed-block action); generated root AGENTS.md gains a `## DOCS & DECISIONS` section cross-linking the code map to the docs/ ontology + ADR index.
-- 2026-06-30 — **REMOVED (tombstone)** the entire GitHub-governance/audit machinery as overkill → deleted the init `scripts/` config-resolver + installer + verifier scripts and the `tests/` suite (incl. the unreleased S7a fixture proof). Consumers recover these from git history (the `skills/init/scripts/` and `skills/init/tests/` trees in any pre-2.0.0 commit, e.g. tag/commit `96d0265`-era). Dropped git-guard-by-default from init — git-guard is now owned solely by [worktree](../git/references/worktree.md) (self-installs on first use); init only emits a one-line `core.hooksPath` diagnostic. The Development Flow managed block is trimmed to convention-only, and init 2.0 replaces-and-logs any 1.x hard-rail block.
-
-## [1.1.0] - 2026-06-17
-
-- 2026-06-17 — init's issue-driven governance lacked a shared config resolution point → added shared governance-config resolver and GitHub label installer/verifier scripts.
-- 2026-06-17 — issue triage lacked a Type label template and auto-labelling enforcement → added issue Type template and fail-closed auto-label workflow install/verify wired from the shared governance config.
-- 2026-06-17 — PR size gate was absent from the governance scaffold → added S3 PR size-check workflow install with churn thresholds, base guards, non-logic exclusions, and verifier drift checks.
-- 2026-06-17 — Development Flow had no managed recipe or Core Process wiring for GitHub governance → added S6 Development Flow scaffold and wired init's Core Process into the GitHub governance installer/verifier rails.
-
-- 2026-06-13 — v1.0.0: no standard bootstrap sequence existed for project docs/ scaffolding and convention wiring → initial authoring scaffolds docs/ ontology (research, exec-plan/active, exec-plan/archive, decisions, rules), seeds docs/decisions/README.md, delegates architecture.md/README.md to [documents](../document/SKILL.md) templates, wires [worktree](../git/references/worktree.md) git-guard via detect-then-invoke; includes idempotency rules, verification checklist, red flags, and init/[documents](../document/SKILL.md)/[worktree](../git/references/worktree.md) scope boundary table.
+- 2026-06-13 — v1.0.0: no docs/ bootstrap existed → scaffolds docs/ ontology + ADR index, delegates architecture/README to document, wires git-guard.
+- 2026-06-17 — v1.1.0: governance lacked shared config resolution → added a governance-config resolver + GitHub label installer/verifier scripts.
+- 2026-06-17 — v1.1.0: issue triage lacked a Type label + auto-label enforcement → added an issue Type template + fail-closed auto-label workflow.
+- 2026-06-17 — v1.1.0: no PR size gate existed → added an S3 PR size-check workflow with churn thresholds, base guards, verifier drift checks.
+- 2026-06-17 — v1.1.0: Development Flow had no GitHub-governance wiring → added an S6 scaffold wired into the governance installer/verifier rails.
+- 2026-06-30 — v2.0.0: governance/audit machinery was overkill → rebuilt init as dual-entry: docs/ ontology graft + AGENTS.md cartography engine. BREAKING.
+- 2026-06-30 — v2.0.0: a 4-phase engine would break triage-depth if inlined → split into references/phase-0..4.md; SKILL.md stays triage-only.
+- 2026-06-30 — v2.0.0: the graft needed document's new layout → phase-0-ontology.md seeds docs/ + ADR index from document/templates/*.md.
+- 2026-06-30 — v2.0.0: the engine assumed agent fan-out only → added a sequential single-agent fallback for Hermes/generic; centrality now optional/unmeasured.
+- 2026-06-30 — v2.0.0: degraded runs could pass silently → every run ends with an observability report; root AGENTS.md gains a DOCS & DECISIONS section.
+- 2026-06-30 — v2.0.0: governance/audit machinery was tombstoned → removed scripts/ + tests/ trees; git-guard moved to git; block now convention-only.
+- 2026-06-30 — v2.1.0: no rail caught scope creep mid-change → Development Flow block gained an out-of-scope routing convention: open a new issue instead (#21).
+- 2026-07-06 — v3.0.0: realign to vendor-official authoring contract → spec-minimal frontmatter, what+when description, naming fixed, phase refs gain ToCs.

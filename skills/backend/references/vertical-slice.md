@@ -2,6 +2,19 @@
 
 One feature is one slice, and a slice carries its own handler, validation, and persistence calls end to end — nothing reaches into a sibling slice's internals.
 
+## Contents
+
+- [Hard rules](#hard-rules)
+  - [Slice definition](#slice-definition)
+  - [Cross-slice import ban](#cross-slice-import-ban)
+  - [Shared kernel — minimal and explicit](#shared-kernel--minimal-and-explicit)
+  - [Mixed-pattern drift back into layered](#mixed-pattern-drift-back-into-layered)
+  - [Testing stays inside the slice](#testing-stays-inside-the-slice)
+  - [`shared/` junk-drawer detection](#shared-junk-drawer-detection)
+- [Incumbent-respect clause](#incumbent-respect-clause)
+- [Grey zones](#grey-zones)
+- [Folder shape (see `folders.md` for full framework-specific trees)](#folder-shape-see-foldersmd-for-full-framework-specific-trees)
+
 ## Hard rules
 
 ### Slice definition

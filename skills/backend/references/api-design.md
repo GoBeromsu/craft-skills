@@ -2,6 +2,24 @@
 
 Design the contract before the handler; once an API is observed by a caller, every field and status code it returns is a promise, and breaking a promise is a break whether it was documented or not.
 
+## Contents
+
+- [Hard rules](#hard-rules)
+  - [Contract-first](#contract-first)
+  - [The observed-behavior law](#the-observed-behavior-law)
+  - [One-version rule](#one-version-rule)
+  - [When a version bump is unavoidable](#when-a-version-bump-is-unavoidable)
+  - [Additive vs breaking — the quick checklist](#additive-vs-breaking--the-quick-checklist)
+  - [Resource naming](#resource-naming)
+  - [Error model](#error-model)
+  - [Pagination — cursor over offset](#pagination--cursor-over-offset)
+  - [Idempotency keys for unsafe retries](#idempotency-keys-for-unsafe-retries)
+  - [Timeouts and retries are part of the contract](#timeouts-and-retries-are-part-of-the-contract)
+  - [Idempotency key storage](#idempotency-key-storage)
+  - [Rate limiting is a security boundary, not a design contract (hand-off)](#rate-limiting-is-a-security-boundary-not-a-design-contract-hand-off)
+- [Grey zones](#grey-zones)
+- [Incumbent-respect clause](#incumbent-respect-clause)
+
 ## Hard rules
 
 ### Contract-first

@@ -2,6 +2,12 @@
 
 An e2e test earns its cost only by driving the real, user-visible path the way a user actually would — a slow or flaky one loses that trust immediately.
 
+## Contents
+
+- [Hard rules](#hard-rules)
+- [Worked examples](#worked-examples)
+- [Grey zones](#grey-zones)
+
 ## Hard rules
 
 ### Selector law
@@ -94,7 +100,7 @@ Run the full e2e suite, on every commit, against one primary browser — the one
 
 ### Navigation helpers are the one DAMP exception
 
-The suite-level DAMP-over-DRY rule (see the main skill's naming/DAMP section) discourages extracting assertions or setup logic into shared helpers — but a *navigation* sequence (log in, reach a specific page) may be extracted even so. Extracting navigation centralizes the one-time cost of a UI-path change across every test that depends on it, while each test's own assertions stay inline and readable. The distinction: a navigation helper gets you *to* the starting state; it never decides what the test checks once there.
+The suite-level DAMP-over-DRY rule (see `conventions.md`'s DAMP-over-DRY section) discourages extracting assertions or setup logic into shared helpers — but a *navigation* sequence (log in, reach a specific page) may be extracted even so. Extracting navigation centralizes the one-time cost of a UI-path change across every test that depends on it, while each test's own assertions stay inline and readable. The distinction: a navigation helper gets you *to* the starting state; it never decides what the test checks once there.
 
 ## Worked examples
 

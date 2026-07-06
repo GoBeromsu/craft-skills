@@ -4,6 +4,19 @@ Modern Python: strictly typed, built on the project's canonical libraries and to
 
 Load this file in full before writing or editing Python. The rules below are deliberate project choices — violations are wrong, not stylistic.
 
+## Contents
+
+- [Tooling](#tooling)
+- [The iron list](#the-iron-list)
+- [Data modeling — which container, when](#data-modeling--which-container-when)
+- [Exhaustive match — the canonical shape](#exhaustive-match--the-canonical-shape)
+- [Error handling — catch what you expect](#error-handling--catch-what-you-expect)
+- [Async](#async)
+- [Scripts (PEP 723)](#scripts-pep-723)
+- [No-excuse audit (run before declaring done)](#no-excuse-audit-run-before-declaring-done)
+- [In tests](#in-tests)
+- [Editing an existing file](#editing-an-existing-file)
+
 ## Tooling
 
 | Category | Use | Never |

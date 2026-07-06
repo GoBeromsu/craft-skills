@@ -1,8 +1,3 @@
----
-name: inline-comments
-description: '"how should I comment this code", "write a code comment", "comment the why", "should I add a comment here" — apply the comment-the-why convention for inline code comments. Loaded on demand by the documents waypoint.'
----
-
 # inline-comments
 
 Apply the inline-comment convention: comment the **why**, not the what. This is a standing convention, not an artifact — there is no template, only the rule and its boundaries.

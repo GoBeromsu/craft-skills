@@ -2,6 +2,13 @@
 
 A training run is a claim about what the model can do; the ladder below is the evidence that makes the claim believable before it makes the run fast, large, or novel.
 
+## Table of Contents
+
+- [Hard rules](#hard-rules) — the discipline ladder, the experiment tracking table, when to relax the ladder, the uncommitted-changes-at-launch guard
+- [Hand-offs](#hand-offs)
+
+---
+
 ## Hard rules
 
 ### The discipline ladder (apply in order, every new modeling effort)

@@ -2,6 +2,15 @@
 
 A component earns reuse by its position in a strict dependency hierarchy, not by how many props it accepts. Dependencies point downward only — a lower layer never imports from a higher one.
 
+## Contents
+
+- [Hard rules](#hard-rules)
+- [The 3-layer hierarchy](#the-3-layer-hierarchy)
+- [Props-API rules](#props-api-rules)
+- [Colocation rule](#colocation-rule)
+- [Incumbent-respect clause](#incumbent-respect-clause)
+- [Hand-offs](#hand-offs)
+
 ## Hard rules
 
 | Concern | Do | Never |
@@ -119,4 +128,4 @@ Note the drift in the work notes or final report rather than silently reorganizi
 - Per-file TypeScript discipline (prop typing, exhaustiveness) → `programming`.
 - Component-level test structure and coverage → `testing`.
 - Rendering untrusted content inside a component (raw HTML injection, XSS escape hatches) → `security`.
-- New token, primitive, or pattern introduced by a component change → update `design.md` in the same commit (gate + detection command owned by `documents/design`, stated in this skill's `SKILL.md`).
+- New token, primitive, or pattern introduced by a component change → update `design.md` in the same commit (gate + detection command owned by `document`, stated in this skill's `SKILL.md`).

@@ -2,18 +2,29 @@
 
 A commit-message, scope, or merge-strategy convention only has authority when it matches what the repo's own history already does — detect before conforming.
 
+## Contents
+
+- [Hard rules](#hard-rules)
+- [Conventional-commit type reference](#conventional-commit-type-reference)
+- [Type-vocabulary drift](#type-vocabulary-drift)
+- [Scopes from repo directories](#scopes-from-repo-directories)
+- [Breaking-change footer](#breaking-change-footer)
+- [Worked example — a full breaking-change commit message](#worked-example--a-full-breaking-change-commit-message)
+- [Changelog-generation compatibility](#changelog-generation-compatibility)
+- [Merge strategy table](#merge-strategy-table)
+
 ## Hard rules
 
 | Concern | Do / Use | Never |
 |---|---|---|
-| Choosing a commit-message convention | Detect the repo's actual prefix ratio first (see `SKILL.md` PHASE 0) | Import conventional commits into a repo that doesn't already use them because "it's the standard" |
+| Choosing a commit-message convention | Detect the repo's actual prefix ratio first (see `SKILL.md`'s Repo-style detection section) | Import conventional commits into a repo that doesn't already use them because "it's the standard" |
 | Choosing a merge strategy for a new PR | Detect the repo's merge-commit ratio, match it | Introduce a different merge strategy mid-project without team agreement |
 | Naming a scope in a commit subject | Derive it from the directories/packages actually touched | Invent a scope name that doesn't correspond to any real path in the repo |
 | A repo's prefix word isn't in the canonical type list | Match it if it appears with meaningful frequency (see Type-vocabulary drift) | Silently normalize a repeated non-canonical word to the nearest canonical type |
 
 ## Conventional-commit type reference
 
-Use this table only after PHASE 0's prefix-ratio check confirms the repo already uses conventional commits.
+Use this table only after the repo-style-detection prefix-ratio check confirms the repo already uses conventional commits.
 
 | Type | When |
 |---|---|
@@ -33,7 +44,7 @@ A breaking change adds `!` after the type/scope (`feat(auth)!: ...`) in addition
 
 ## Type-vocabulary drift
 
-A repo can pass the PHASE 0 prefix-ratio check (≥ 2/3 prefixed) while using a type vocabulary that diverges from the canonical 11 types above. Surface the repo's actual words before assuming the canonical list applies verbatim:
+A repo can pass the repo-style-detection prefix-ratio check (≥ 2/3 prefixed) while using a type vocabulary that diverges from the canonical 11 types above. Surface the repo's actual words before assuming the canonical list applies verbatim:
 
 ```bash
 git log --format=%s -30 | grep -oE '^[a-z]+' | sort | uniq -c | sort -rn
@@ -94,7 +105,7 @@ Reading, rule by rule: `feat` + `(auth)` come from the type table and the scope-
 
 ## Changelog-generation compatibility
 
-Conventional-commit prefixes are machine-readable: `feat:` implies a minor version bump, `fix:` a patch, any `BREAKING CHANGE:` footer (or `!`) a major bump. A changelog generator or release-automation tool derives both the version number and the release notes text directly from this prefix stream — which is the practical reason to adopt the convention at all, and why PHASE 0's ratio check gates it: a repo that hasn't adopted it gets no benefit from a few prefixed commits mixed into free-form ones, only inconsistency.
+Conventional-commit prefixes are machine-readable: `feat:` implies a minor version bump, `fix:` a patch, any `BREAKING CHANGE:` footer (or `!`) a major bump. A changelog generator or release-automation tool derives both the version number and the release notes text directly from this prefix stream — which is the practical reason to adopt the convention at all, and why the repo-style-detection ratio check gates it: a repo that hasn't adopted it gets no benefit from a few prefixed commits mixed into free-form ones, only inconsistency.
 
 ## Merge strategy table
 

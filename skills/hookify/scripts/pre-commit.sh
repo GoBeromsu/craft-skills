@@ -1,43 +1,40 @@
 #!/usr/bin/env sh
-# Starter pre-commit hook (tier 3: local commit gate).
+# hookify pre-commit dispatcher (tier 3: local commit gate).
 #
-# Install: keep committed guards under <repo>/scripts/guards/ and point git at a
-# committed hooks dir so every actor (human, Claude Code, Codex) enforces by
-# construction:
+# hookify owns core.hooksPath / .githooks as the repo's single pre-commit
+# install point. Every other skill or hand-authored check registers a guard
+# by dropping an executable script into .githooks/guards.d/ — never by
+# pointing core.hooksPath elsewhere or shipping a competing pre-commit file.
+# This dispatcher carries no rule logic of its own; every check lives in
+# guards.d so there is exactly one place installs can collide.
+#
+# Install once:
+#   mkdir -p .githooks/guards.d
+#   cp scripts/pre-commit.sh .githooks/pre-commit && chmod +x .githooks/pre-commit
 #   git config core.hooksPath .githooks
-#   cp this file to .githooks/pre-commit && chmod +x .githooks/pre-commit
 #
-# Tier-3 rule: ONLY put irreversible-at-commit checks here (secrets, protected
-# branch, large blobs). Reversible/structural rules belong in lint (tier 2) or a
-# runtime hook (tier 1) — an earlier, cheaper signal. A guard that needs its own
-# test suite is application code in the wrong tier; move it down the ladder.
+# Register a guard:
+#   cp your-guard.sh .githooks/guards.d/10-your-guard.sh && chmod +x "$_"
+#   (numeric prefixes are a convention for ordering; ties break alphabetically)
+#
+# Tier-3 rule: only put irreversible-at-commit checks in a guard (secrets,
+# protected-branch commits, large blobs). Reversible/structural rules belong
+# in lint (tier 2) or a runtime hook (tier 1) — an earlier, cheaper signal.
+# A guard that needs its own test suite is application code in the wrong
+# tier; move it down the ladder (see references/surface-and-tier.md).
 set -eu
 
 root="$(git rev-parse --show-toplevel)"
-guards="$root/scripts/guards"
+guards_dir="$root/.githooks/guards.d"
 
-# Each guard is a small executable that exits non-zero with a legible reason.
-# Add one line per guard. Keep the set small — every guard spends trust budget.
-run() {
-	if [ -x "$1" ]; then
-		"$@"
+[ -d "$guards_dir" ] || exit 0
+
+status=0
+for guard in "$guards_dir"/*; do
+	[ -e "$guard" ] || continue # empty dir: glob did not expand
+	if [ -x "$guard" ]; then
+		"$guard" || status=1
 	fi
-}
+done
 
-# --- irreversible-at-commit guards (examples; replace with your real ones) ---
-
-# Refuse commits on a protected branch.
-branch="$(git rev-parse --abbrev-ref HEAD)"
-case "$branch" in
-	main | master)
-		echo "pre-commit: direct commits to '$branch' are blocked — branch first." >&2
-		exit 1
-		;;
-esac
-
-# Block staged secrets / large blobs via dedicated guards (you author these).
-run "$guards/deny-secrets.sh" staged
-run "$guards/deny-large-blobs.sh" staged
-
-# Reminder, not a gate: a hook fires AFTER the work is done. The earliest signal
-# for agent behavior is a tier-1 runtime hook — see scripts/ for those starters.
+exit "$status"

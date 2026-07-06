@@ -2,6 +2,19 @@
 
 The folder tree is the architecture made visible — pick the tree that matches the chosen pattern (see `layered.md`, `vertical-slice.md`, `hexagonal.md`) and keep tests, migrations, and config in the place that tree implies.
 
+## Contents
+
+- [Layered — FastAPI](#layered--fastapi)
+- [Layered — Express/Nest](#layered--expressnest)
+- [Vertical-slice — FastAPI](#vertical-slice--fastapi)
+- [Vertical-slice — Express/Nest](#vertical-slice--expressnest)
+- [Hexagonal — FastAPI](#hexagonal--fastapi)
+- [Hexagonal — Express/Nest](#hexagonal--expressnest)
+- [Where tests, migrations, and config live](#where-tests-migrations-and-config-live)
+- [Mixed-pattern drift — detect across all three at once](#mixed-pattern-drift--detect-across-all-three-at-once)
+- [Repo topology in a GitOps split](#repo-topology-in-a-gitops-split)
+- [Incumbent-respect clause](#incumbent-respect-clause)
+
 ## Layered — FastAPI
 
 ```

@@ -1,16 +1,14 @@
 # Phase 3 — Generate AGENTS.md
 
-> **Ported from init-deep §"Phase 3: Generate AGENTS.md".**
-> Port-completeness checklist (all must remain present):
-> - [x] **Existence rule** — `Edit` an existing file, `Write` a new one; never `Write` over an existing file.
-> - [x] **Root template** with the full section set (OVERVIEW / STRUCTURE / WHERE TO LOOK / CODE
->       MAP / CONVENTIONS / ANTI-PATTERNS / UNIQUE STYLES / COMMANDS / NOTES).
-> - [x] **Provenance stamp** format (`Generated` / `Commit` / `Branch`).
-> - [x] Subdir template + the parallel/sequential generation rule with the 30–80 line budget.
-> - [x] Root quality gate (50–150 lines, no generic advice).
-> - [x] **GRAFT addition:** the `## DOCS & DECISIONS` section cross-linking the docs/ ontology + ADR index.
-
 Phase 3 writes the files. Root first (full treatment), then the scored subdirs.
+
+## Table of Contents
+
+- [File-writing rule](#file-writing-rule-critical)
+- [Root AGENTS.md (full treatment)](#root-agentsmd-full-treatment)
+- [Subdirectory AGENTS.md](#subdirectory-agentsmd)
+
+---
 
 ## File-writing rule (critical)
 
@@ -101,7 +99,7 @@ runtimes launch these as parallel writing tasks; on single-agent runtimes write 
 Each child uses a **self-contained** generation brief:
 
 - **30–80 lines max.**
-- **NEVER repeat parent content** (dedup-vs-parent is enforced again in phase-4).
+- **Never repeat parent content** (dedup-vs-parent is enforced again in phase-4).
 - Sections: OVERVIEW (1 line), STRUCTURE (only if >5 subdirs), WHERE TO LOOK, CONVENTIONS (only if
   different from parent), ANTI-PATTERNS.
 

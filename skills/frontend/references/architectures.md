@@ -2,12 +2,23 @@
 
 A rendering model is a contract about *when* and *where* markup is produced: at build time, at request time on a server, or at runtime in the browser. Each model below is a closed set of absolute rules. Bolting a **second rendering runtime/framework** — a distinct framework or hand-rolled pipeline not native to the incumbent one — onto an app breaks the contract silently, usually as a hydration mismatch or a leaked secret. This does not forbid mixed rendering *modes* that are the detected framework's own native architecture: Next.js's `app/` router natively renders some routes as SSR, some as SSG via `generateStaticParams`, and some leaf components as pure client; Astro natively mixes SSG pages with islands and on-demand SSR. That mixing is the framework's contract, not a violation of it — as long as each mode choice is recorded in `design.md` rather than drifting unrecorded.
 
+## Contents
+
+- [Hard rules](#hard-rules)
+- [Decision table — new project](#decision-table--new-project)
+- [SSR / RSC (React Server Components, Next.js `app/` router and equivalents)](#ssr--rsc-react-server-components-nextjs-app-router-and-equivalents)
+- [SPA (client-rendered, e.g. Vite + React Router with no server entry)](#spa-client-rendered-eg-vite--react-router-with-no-server-entry)
+- [SSG (build-time-only, e.g. Gatsby, Astro without islands, static export mode)](#ssg-build-time-only-eg-gatsby-astro-without-islands-static-export-mode)
+- [Islands (Astro, and equivalent partial-hydration frameworks)](#islands-astro-and-equivalent-partial-hydration-frameworks)
+- [Incumbent-respect clause](#incumbent-respect-clause)
+- [Hand-offs](#hand-offs)
+
 ## Hard rules
 
 | Concern | Do | Never |
 |---|---|---|
 | Rendering model per app | Pick exactly one framework/runtime (SPA / SSR-RSC / SSG / islands, or the multi-mode architecture native to the detected framework) and apply its rules everywhere | Introduce a second rendering runtime/framework into the app (e.g. an SSR/Next.js app with a hand-rolled client router bypassing the framework's routing) |
-| Existing project | Detect the incumbent framework (PHASE 0 in `SKILL.md`) and follow its rules — including whatever rendering-mode mixing is native to it — for every edit | Let a rendering-mode drift (SSR ↔ SSG ↔ client) inside the incumbent framework go unrecorded in `design.md`, or bolt on a second framework "just for this one page" without a stated migration plan |
+| Existing project | Detect the incumbent framework (Phase 0 in `SKILL.md`) and follow its rules — including whatever rendering-mode mixing is native to it — for every edit | Let a rendering-mode drift (SSR ↔ SSG ↔ client) inside the incumbent framework go unrecorded in `design.md`, or bolt on a second framework "just for this one page" without a stated migration plan |
 | New project | Choose from the decision table below before scaffolding | Default to the model you personally know best regardless of the project's needs |
 
 ## Decision table — new project
@@ -128,7 +139,7 @@ Grey zone — judge by whether components with obvious interactivity (forms, dro
 
 ## Incumbent-respect clause
 
-Detect the project's existing rendering model with the PHASE 0 commands in `SKILL.md` before writing any code. Follow the incumbent model's rules for every edit inside that project. Apply the decision table above only to a genuinely new project or a new, separately-routed app inside a monorepo — never mid-feature convert an existing app from one rendering model to another; propose that migration as its own separately-scoped change.
+Detect the project's existing rendering model with the Phase 0 commands in `SKILL.md` before writing any code. Follow the incumbent model's rules for every edit inside that project. Apply the decision table above only to a genuinely new project or a new, separately-routed app inside a monorepo — never mid-feature convert an existing app from one rendering model to another; propose that migration as its own separately-scoped change.
 
 ## Hand-offs
 

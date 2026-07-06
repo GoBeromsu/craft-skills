@@ -2,6 +2,18 @@
 
 Every piece of frontend state belongs to exactly one of five kinds. Classify a piece of state before deciding where it lives — placing it correctly the first time is cheaper than migrating it once a component tree has grown around the wrong choice.
 
+## Contents
+
+- [Hard rules](#hard-rules)
+- [The taxonomy (MECE)](#the-taxonomy-mece)
+- [Classification flow](#classification-flow)
+- [The iron rule: server data is never copied into a global store](#the-iron-rule-server-data-is-never-copied-into-a-global-store)
+- [URL state — the shareability test](#url-state--the-shareability-test)
+- [Form state](#form-state)
+- [Global-store scope check](#global-store-scope-check)
+- [Incumbent-respect clause](#incumbent-respect-clause)
+- [Hand-offs](#hand-offs)
+
 ## Hard rules
 
 | Concern | Do | Never |

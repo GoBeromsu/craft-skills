@@ -2,6 +2,13 @@
 
 A dataset is a claim about the world; every rule below exists to keep that claim honest — validated at ingest, split before anything learns from it, and versioned so a number can always be traced back to the exact rows that produced it.
 
+## Table of Contents
+
+- [Hard rules](#hard-rules) — schema/stats validation at ingest, the split-before-fitting law, the three leakage classes, labeling QA, dataset versioning, datasheet-lite
+- [Hand-offs](#hand-offs)
+
+---
+
 ## Hard rules
 
 ### Schema and stats validation at ingest

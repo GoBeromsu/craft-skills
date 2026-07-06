@@ -1,3 +1,4 @@
 # Changelog
 
-- 2026-07-05 — v1.0.0: ML/DL projects drifted across `requirements.txt`-only packaging, splits fit after data leaked across train/test, and training runs shipped with no baseline, no seed, or no reproducibility receipt → provides an absolute `pyproject.toml` + `src/`-layout + locked-dependency (`uv`) packaging rule, a split-before-fitting law with three leakage-class detection commands, a training discipline ladder (single-batch smoke test, baseline-before-novelty, one-variable-per-experiment, seed-and-variance, checkpoint-resume, eval discipline), and vision-specific input-pipeline/augmentation/error-analysis rules. Provenance: training-discipline ladder adapted from "A Recipe for Training Neural Networks" (A. Karpathy, karpathy.github.io/2019/04/25/recipe); layout/dataset rules original synthesis.
+- 2026-07-05 — v1.0.0: packaging/leakage/repro drift → uv+src layout, split-before-fit law, training ladder, vision rules. Provenance: Karpathy recipe.
+- 2026-07-06 — v2.0.0: realign to vendor-official authoring contract → spec-minimal frontmatter, what+when description, body compressed.

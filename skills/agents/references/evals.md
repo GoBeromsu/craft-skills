@@ -2,6 +2,18 @@
 
 Prove every agent-behavior change against a versioned eval set before it ships — an eval that only exists in someone's head is not an eval.
 
+## Contents
+
+- [Hard rules](#hard-rules)
+  - [Golden-set construction](#golden-set-construction)
+  - [Pass-criteria taxonomy](#pass-criteria-taxonomy)
+  - [Regression protocol — every incident becomes an eval case](#regression-protocol--every-incident-becomes-an-eval-case)
+  - [Eval-vs-test boundary](#eval-vs-test-boundary)
+- [Worked example — building a golden set for a new behavior](#worked-example--building-a-golden-set-for-a-new-behavior)
+- [Grey zones](#grey-zones)
+- [Case-file hygiene](#case-file-hygiene)
+- [Framework notes](#framework-notes)
+
 ## Hard rules
 
 ### Golden-set construction

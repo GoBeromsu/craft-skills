@@ -1,47 +1,34 @@
 ---
 name: security
-description: '"security review", "보안 점검", "is this safe", "check for vulnerabilities" — defensive security triage across web, API, and LLM surfaces: trust-boundary mapping, vulnerability-class detection commands, severity triage, and secrets/dependency hygiene. Finds and fixes vulnerabilities in code the user owns; does not perform offensive or exploit work.'
-version: 1.0.0
-allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
-compatibility: claude-code, codex
+description: Finds and fixes vulnerabilities in code the user owns across web, API, and LLM surfaces, mapping every trust boundary first and triaging by production reachability and severity second. Use when asked for a security review, "is this safe to ship," "check for vulnerabilities," or "보안 점검," when auditing secrets hygiene or dependency risk, or when reviewing a PR or feature for security regressions before release. Not for building or changing LLM-agent systems themselves (use `agents`) or for installing the enforcement hook, lint, or pre-commit that closes a finding permanently (use `hookify`); this skill finds and fixes, it never attacks.
+metadata:
+  version: 2.0.0
 ---
 
 # security
 
-Find and fix vulnerabilities in your own systems under one discipline: **map every trust boundary first, triage by real-world reachability and severity second, fix at the source third.**
-
-## Overview
-
-This skill is an index for defensive security work: locating and closing vulnerabilities in code you own, hardening secrets and dependency hygiene, and triaging findings by actual production risk. Shared judgment — trust-boundary mapping, the action boundary, the severity tree — lives here; the per-surface vulnerability classes and their detection commands live in `references/`. Load the matching reference before proposing a fix.
-
-## When to Use
-
-- A user asks for a security review, "is this safe to ship," or "check for vulnerabilities" — in any phrasing, including "보안 점검."
-- Auditing secrets hygiene, dependency risk, or a specific vulnerability class (unsafe rendering, injection, unchecked outbound fetches, prompt injection) in the user's own codebase.
-- Reviewing a PR, a new feature, or an existing service for security regressions before release.
-
-**Not for:** offensive tooling, exploit development, penetration-testing infrastructure, or probing systems the user does not own or hold written authorization to test. This skill finds and fixes; it does not attack.
+Find and fix vulnerabilities in your own systems under one discipline: **map every trust boundary first, triage by real-world reachability and severity second, fix at the source third.** A review is done when every ingress channel has a parse/validate/limit decision, every finding carries a reachability-and-severity verdict backed by `file:line` evidence, and every applied fix is proven closed by a test or a re-run of the detection command that surfaced it.
 
 ## PHASE 0 — trust-boundary mapping (run first, every time)
 
 Do not propose a fix before this gate.
 
-1. **Enumerate every ingress channel** the feature or codebase under review exposes: user input (forms, query params, headers), webhooks, file uploads, LLM output (tool-call arguments, model completions, retrieved documents), and third-party API responses.
-2. **Give each ingress point a parse / validate / limit decision** — parse it into a typed value at the boundary, validate it against a schema, and cap its size/rate. An ingress point with none of the three is a gap.
-3. **Name the assets at risk**: credentials, personal data, payment data, availability, another tenant's data.
-4. **Write a one-line abuse case for each top flow** — "attacker submits X through channel Y to achieve Z." This is what turns severity triage into something concrete instead of abstract.
-5. **Route to the surface-specific reference(s)** and read the matching file in full before acting:
+1. Enumerate every ingress channel the feature or codebase under review exposes: user input (forms, query params, headers), webhooks, file uploads, LLM output (tool-call arguments, model completions, retrieved documents), and third-party API responses.
+2. Give each ingress point a parse / validate / limit decision — parse it into a typed value at the boundary, validate it against a schema, and cap its size/rate. An ingress point with none of the three is a gap.
+3. Name the assets at risk: credentials, personal data, payment data, availability, another tenant's data.
+4. Write a one-line abuse case for each top flow — "attacker submits X through channel Y to achieve Z." This turns severity triage into something concrete instead of abstract.
+5. Route to the surface-specific reference(s) and read the matching file in full before acting:
 
    | Surface | Read |
    |---|---|
    | Web UI / frontend rendering | `references/web.md` |
    | API / server-side handler | `references/api.md` |
    | LLM-powered feature (agent, prompt, retrieval-augmented generation (RAG), tool use) | `references/llm.md` |
-   | **Always — every review, regardless of which surfaces above apply** | `references/secrets-supply-chain.md` |
+   | Always — every review, regardless of which surfaces above apply | `references/secrets-supply-chain.md` |
 
    A single review often routes to more than one reference — a web app with an LLM feature reads `web.md`, `api.md`, and `llm.md`. `secrets-supply-chain.md` is not surface-gated like the rows above it: read it on every review, even one that hits none of the other three rows.
 
-Quick surface-identification heuristics — approximate, confirm by reading the code, not by the grep alone:
+Quick surface-identification heuristics — approximate, confirm by reading the code, not the grep alone:
 
 ```bash
 # web rendering surface present
@@ -62,9 +49,9 @@ grep -rnE "anthropic|openai|langchain" --include="*.py" --include="*.ts" --inclu
 
 | Tier | Actions |
 |---|---|
-| **Always do** | Read code and configs; run detection commands and dependency audits; report every finding with `file:line` evidence and the command that surfaced it; fix a vulnerability at its source in code the user owns, and add or update a test that proves it stays closed — apply both directly, with no separate go-ahead needed. |
-| **Ask first** | Propose the change and apply it only once explicitly accepted: authentication/session/authorization model changes; rotating or revoking a live credential; a major-version dependency bump taken as the fix; modifying a CI/CD security gate; deleting or overwriting data discovered during the audit; disclosing a finding to anyone outside the immediate team. |
-| **Never do** | Write or run exploit code beyond the minimal local proof needed to confirm a fix works; probe, access, or scan any system, account, or endpoint outside what the user explicitly owns or authorized; paste, log, or otherwise expose a real secret found during the audit — redact it in every report; leave a known exploitable path live "to see if it gets hit." |
+| Always do | Read code and configs; run detection commands and dependency audits; report every finding with `file:line` evidence and the command that surfaced it; fix a vulnerability at its source in code the user owns, and add or update a test that proves it stays closed — apply both directly, with no separate go-ahead needed. |
+| Ask first | Propose the change and apply it only once explicitly accepted: authentication/session/authorization model changes; rotating or revoking a live credential; a major-version dependency bump taken as the fix; modifying a CI/CD security gate; deleting or overwriting data discovered during the audit; disclosing a finding to anyone outside the immediate team. |
+| Never do | Write or run exploit code beyond the minimal local proof needed to confirm a fix works; probe, access, or scan any system, account, or endpoint outside what the user explicitly owns or authorized; paste, log, or otherwise expose a real secret found during the audit — redact it in every report; leave a known exploitable path live "to see if it gets hit." |
 
 ## Severity triage
 
@@ -93,8 +80,10 @@ Reachability, not a demonstrated exploit, drives the tree — a finding with cle
 
 ## Hand-offs
 
-- Turning a finding into enforced prevention — a pre-commit hook, a CI lint gate, a runtime guard — is owned by the `hookify` skill.
-- The parse-don't-validate typed-boundary idiom referenced in PHASE 0 step 2 is owned by the `programming` skill; this skill states the security requirement, `programming` owns the implementation pattern.
+- Building or changing an LLM-agent system itself — a new agent, prompt authoring, eval sets — is owned by `agents`; this skill finds and fixes vulnerabilities in what's already built, including prompt injection, tool-permission scope, and consumption guards in agent/LLM code (`references/llm.md`).
+- Turning a finding into enforced prevention — a pre-commit hook, a CI lint gate, a runtime guard — is owned by `hookify`.
+- The parse-don't-validate typed-boundary idiom referenced in PHASE 0 step 2 is owned by `programming`; this skill states the security requirement, `programming` owns the implementation pattern.
+- Offensive tooling, exploit development, penetration-testing infrastructure, and probing systems the user does not own or hold written authorization to test are out of scope entirely — this skill finds and fixes, it never attacks.
 
 ## Requirements
 

@@ -1,8 +1,3 @@
----
-name: readme
-description: '"write a README", "update the readme", "project entry point doc", "how do I document the repo root" — author the repository README as a one-minute entry point that links out to docs/. Loaded on demand by the documents waypoint.'
----
-
 # readme
 
 Author the repository `README.md`: the entry point that answers "what is this and how do I start?" in under a minute. Template: `../templates/readme.md`. Canonical location: repo root `README.md`.

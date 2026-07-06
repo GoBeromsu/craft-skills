@@ -2,6 +2,17 @@
 
 A prompt is a contract the model reads; a tool is a contract the model calls — both need the same rigor as any other API handed to a caller you don't fully trust.
 
+## Contents
+
+- [Hard rules](#hard-rules)
+  - [Prompt structure contract](#prompt-structure-contract)
+  - [Tool design rules](#tool-design-rules)
+  - [Tool-permission scoping — design half](#tool-permission-scoping--design-half)
+- [Worked example — a complete system prompt](#worked-example--a-complete-system-prompt)
+- [Grey zones](#grey-zones)
+- [Prompt versioning](#prompt-versioning)
+- [Framework notes](#framework-notes)
+
 ## Hard rules
 
 ### Prompt structure contract

@@ -1,55 +1,55 @@
-# 강제 표면 선택과 티어 판별
+# Enforcement Surface Selection and Tier Grading
 
-강제의 목적은 영구 피해 방지가 아니라 **에이전트(와 사람)에게 "틀렸다"는 교정 신호를 결정론적으로 주는 것**이다. 그래서 표면을 고르는 축은 "되돌릴 수 있나"가 아니라 **신호 지연 × 명료성 × 신뢰도**다. 같은 규칙이면 가장 이른 로컬 표면에 둔다.
+The point of enforcement is not preventing permanent harm — it's giving an agent (or a human) a deterministic "you are wrong" signal. So the axis for picking a surface is signal delay × clarity × confidence, not reversibility. For the same rule, use the earliest local surface available.
 
-## 강제 표면 사다리 (local-first, 이른 순)
+## Enforcement Surface Ladder (local-first, earliest first)
 
-| 티어 | 표면 | 발동 시점 | 강제 대상 | 적합한 규칙 |
+| Tier | Surface | Fires | Enforces | Fits |
 |---|---|---|---|---|
-| 0 | 산문 (`AGENTS.md`/`CLAUDE.md`) | 작업 전 에이전트가 컨텍스트로 읽음 | 없음 — 예방 | 모든 규칙은 먼저 여기 진술된다 |
-| 1 | **에이전트 런타임 훅** (Claude Code PreToolUse/PostToolUse, Codex hook) | 도구 호출 직전/직후, in-loop | 행동 자체를 즉시 차단 | 금지 경로 편집, 위험 명령, read-only 영역 mutation |
-| 2 | **lint** (에디터·로컬, 상시) | 언제든, 연속적 | 빠른 피드백(advisory→자동수정) | 에이전트가 계속 돌리는 스타일·품질 |
-| 3 | **pre-commit 훅** (로컬) | 커밋 시점 | 커밋을 차단 | 비가역: 시크릿, 보호 브랜치 직접 커밋, 대형 blob |
-| (백스톱) | CI | push 후 | 머지를 차단 | 로컬을 건너뛴 경우 — hookify의 초점이 아니다 |
+| 0 | Prose (`AGENTS.md` / `CLAUDE.md`) | Read as context before work | Nothing — prevention only | Every rule is stated here first |
+| 1 | **Agent runtime hook** (Claude Code PreToolUse/PostToolUse, Codex hook) | Immediately before/after a tool call, in-loop | Blocks the behavior itself | Forbidden-path edits, dangerous commands, read-only mutation |
+| 2 | **lint** (editor/local, continuous) | Any time, continuously | Fast feedback (advisory → autofix) | Style/quality the agent runs repeatedly |
+| 3 | **pre-commit hook** (local) | At commit time | Blocks the commit | Irreversible: secrets, direct commits to a protected branch, large blobs |
+| (backstop) | CI | After push | Blocks the merge | Whoever skipped local — not hookify's focus |
 
-티어 1이 가장 빠른 결정론적 신호다 — pre-commit보다 이르게, 에이전트가 *아직 그 행동을 하기 전에* 차단한다. 로컬 강제의 끝.
+Tier 1 is the fastest deterministic signal — earlier than pre-commit, before the agent has *done* the thing. It's the end of local enforcement.
 
-## 표면 선택 절차
+## Surface Selection Procedure
 
-규칙 하나를 받으면 순서대로:
+Given one rule, in order:
 
-1. **산문에 먼저 진술한다.** 강제 없이 규범부터 컨텍스트에 둔다(티어 0). 강제는 산문이 실패한 자리의 백스톱이다.
-2. **결정론적으로 잡을 수 있는 가장 이른 로컬 표면을 고른다.** 에이전트의 도구 행위(편집 경로·명령)로 표현되는 위반이면 티어 1. 파일 내용 품질이면 티어 2(lint). 커밋되어야만 드러나는 비가역이면 티어 3.
-3. **스타터 스크립트를 저작·설치한다.** 메시지가 위반 규칙과 고치는 법을 *명료하게* 말하도록 한다.
-4. **실제로 차단되는지 red 증명한다.** 위반 입력 → 차단, 정상 입력 → 통과를 직접 실행해 확인한다. 설치만 하고 발동을 안 본 가드는 미완이다.
+1. **State it in prose first.** Put the norm in context without enforcement (tier 0). Enforcement is the backstop for where prose failed.
+2. **Pick the earliest local surface that catches it deterministically.** A violation expressed in the agent's tool behavior (edited path, command) → tier 1. File-content quality → tier 2 (lint). Irreversible only once committed → tier 3.
+3. **Author and install a starter guard.** Make sure the message states the violated rule and the fix *clearly*.
+4. **Prove it blocks, for real.** Run a violating input → blocked, a clean input → passes, and watch both happen directly. An installed guard nobody has seen fire is unfinished.
 
-## 3-gate 졸업 판별 — 차단 훅에 올릴 자격이 있나
+## 3-Gate Graduation Check — does this rule earn a blocking hook?
 
-훅은 **증폭기**다. 안에 넣는 체크의 품질을 결정론적으로 증폭할 뿐, 개념 자체엔 품질이 없다. 좋은 규칙은 불가피하게 만들고, 나쁜 규칙은 매 발동마다 세금으로 만든다. 차단 훅(티어 1·3)은 **졸업장이지 시작점이 아니다.** 세 게이트를 모두 통과할 때만 올린다:
+A hook is an **amplifier**. It only amplifies the quality of whatever check runs inside it — the concept itself carries no quality. A good rule becomes inevitable; a bad one becomes a tax on every firing. A blocking hook (tier 1 or 3) is a **graduation, not a starting point.** Put a rule behind one only once it passes all three gates:
 
-- **G1 — 싸다:** 체크가 빠르고 외부 상태에 의존하지 않는다(네트워크·라이브 백엔드 없음).
-- **G2 — 정확하다:** 오탐이 거의 없다. **가드 자신이 테스트 스위트를 필요로 하면 이미 애플리케이션 코드가 된 것** — 잘못된 티어다. 더 무른 표면으로 내린다.
-- **G3 — 안정적이다:** 강제하는 구조가 더 이상 표류하지 않는다. 규칙이 진화 중이면 lint 경고(비차단)나 산문에 두고 관찰한다.
+- **G1 — Cheap:** the check is fast and doesn't depend on external state (network, live backend).
+- **G2 — Accurate:** near-zero false positives. **If the guard itself needs a test suite, it has already become application code** — the wrong tier. Drop it to a softer surface.
+- **G3 — Stable:** the structure being enforced has stopped drifting. If the rule is still evolving, keep it as a non-blocking lint warning or in prose, and observe.
 
-하나라도 실패하면 차단 훅이 아니다. 더 이른/무른 표면에서 *관찰*하다가, 싸고·정확하고·안정적임이 증명되면 그때 졸업시킨다.
+Any single failure disqualifies it from a blocking hook. *Observe* it on an earlier/softer surface until it's proven cheap, accurate, and stable — then graduate it.
 
 ```
-산문(진술) → lint 경고/비차단(관찰·튜닝) → 차단 훅(증명된 뒤에만)
+prose (stated) → lint warning / non-blocking (observe, tune) → blocking hook (only once proven)
 ```
 
-## 신뢰 예산
+## Trust Budget
 
-차단 훅에는 유한한 **신뢰 예산**이 있다. 정당한 작업을 오탐으로 한 번 막으면 사람은 `--no-verify`로, 에이전트는 우회로 손이 간다 — 그 순간 그 훅뿐 아니라 모든 훅의 신뢰가 깎인다. 훅의 힘은 *절대 우회되지 않는다*는 데서 온다.
+A blocking hook spends from a finite **trust budget**. One false positive on legitimate work and a human reaches for `--no-verify`, an agent reaches for a workaround — and that erodes trust in every hook, not just the one that misfired. A hook's power comes from never being bypassed.
 
-따라서:
+So:
 
-- **적고 날카롭게.** 가드를 커버리지로 늘리지 않는다. 추가할 때마다 예산에서 깎인다.
-- **비가역에 아껴 쓴다.** 늦지만 영구화 직전이 옳은 타이밍인 곳(시크릿·보호 브랜치)이 티어 3의 정당한 자리다.
-- **메시지가 신뢰를 만든다.** 차단 사유가 모호하면 우회로 학습된다. 위반 규칙 + 정확한 수정 방법을 한 줄로 준다.
+- **Few and sharp.** Don't grow a guard's coverage for its own sake — every addition spends from the budget.
+- **Spend it on irreversibles.** Late-but-before-permanent is the right timing for tier 3 (secrets, protected branches) — that's its legitimate slot.
+- **The message builds the trust.** A vague block reason gets bypassed. State the violated rule and the exact fix, in one line.
 
-## 표면별 강제 메커니즘 요약
+## Enforcement Mechanism per Surface
 
-- **Claude Code 런타임 훅:** `settings.json`의 `hooks`에 이벤트별(PreToolUse 등) matcher + command 등록. command는 stdin으로 도구 호출 JSON을 받아 위반이면 차단한다. 상세·예시: `references/claude-code-hooks.md`, 스타터: `scripts/`.
-- **Codex 런타임 훅:** Codex CLI 설정의 훅/notify 메커니즘. 상세: `references/codex-hooks.md`.
-- **lint:** 프로젝트 lint(ruff/eslint 등)에 규칙을 추가하거나, 도메인 규칙은 가드 스크립트로. 에이전트가 작업 중 직접 돌리도록 명령을 산문/도구에 노출한다.
-- **pre-commit:** `core.hooksPath`로 커밋된 훅 디렉터리를 가리키고, 훅이 가드 스크립트들을 디스패치한다. 스타터: `scripts/pre-commit.sh`.
+- **Claude Code runtime hook:** register a matcher + command per event (`PreToolUse`, etc.) under `hooks` in `settings.json`. The command receives the tool-call JSON on stdin and blocks on violation. Detail and examples: `references/claude-code-hooks.md`; starters: `scripts/`.
+- **Codex runtime hook:** Codex CLI's hook/notify mechanism. Detail: `references/codex-hooks.md`.
+- **lint:** add the rule to the project's linter (ruff/eslint, …), or wrap a domain rule in a guard script exposed as a command the agent runs during work.
+- **pre-commit:** hookify owns `core.hooksPath` as the single install point — `scripts/pre-commit.sh` is the committed dispatcher. It runs every executable file in `.githooks/guards.d/` in lexical order and carries no rule logic itself; a guard registers by dropping an executable script there, never by setting `core.hooksPath` itself.

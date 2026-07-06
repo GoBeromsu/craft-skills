@@ -2,6 +2,12 @@
 
 An integration test earns trust by touching something real — the ladder below picks the cheapest real thing that still catches the bugs that live at the boundary.
 
+## Contents
+
+- [Hard rules](#hard-rules)
+- [Fakes and mocks — a worked example](#fakes-and-mocks--a-worked-example)
+- [Grey zones](#grey-zones)
+
 ## Hard rules
 
 ### Real-dependency ladder

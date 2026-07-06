@@ -29,7 +29,7 @@ TEXT_EXTENSIONS = {
 }
 
 SKIP_PARTS = {".git", ".claude-plugin", "node_modules", "__pycache__"}
-DOC_EXAMPLE_ALLOWLIST = {"skills/skillify/references/secret-env-history-rewrite.md"}
+DOC_EXAMPLE_ALLOWLIST = {"skills/skillify/references/runtime-hygiene.md"}
 PLACEHOLDER_MARKERS = ("<", ">", "YOUR_", "REDACTED", "PLACEHOLDER", "EXAMPLE", "DUMMY", "XXXX")
 
 
@@ -90,7 +90,7 @@ def is_text_candidate(path: Path, root: Path) -> bool:
     rel = path.relative_to(root)
     if any(part in SKIP_PARTS for part in rel.parts):
         return False
-    return path.suffix in TEXT_EXTENSIONS or path.name in {"SKILL.md", "RESOLVER.md", ".gitignore"}
+    return path.suffix in TEXT_EXTENSIONS or path.name in {"SKILL.md", ".gitignore"}
 
 
 def is_placeholder(text: str) -> bool:

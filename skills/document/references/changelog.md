@@ -1,8 +1,3 @@
----
-name: changelog
-description: '"write a changelog", "update the changelog", "release notes", "what changed in this version", "keep a changelog" — author the project-level CHANGELOG.md grouped by Added/Changed/Fixed per release. Loaded on demand by the documents waypoint.'
----
-
 # changelog
 
 Author the project-level `CHANGELOG.md`: a human-facing record of notable changes per release, written for the people who **use** the project. Template: `../templates/changelog.md`. Canonical location: repo root `CHANGELOG.md`.

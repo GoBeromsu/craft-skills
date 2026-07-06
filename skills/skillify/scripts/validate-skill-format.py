@@ -1,35 +1,36 @@
 #!/usr/bin/env python3
-"""Validate craft-skills skill-package format.
+"""Validate craft-skills skill-package format against the v4 authoring contract
+(`skills/skillify/references/contract.md`).
 
-Each skill package (`skills/<area>/<skill>/`) must be well-formed per the canonical
-schema (`skills/skillify/references/schemas.md`):
+Each skill package is a single directory `skills/<skill-name>/` containing at
+least `SKILL.md` + `CHANGELOG.md`. This validator enforces, per package:
 
-  1. SKILL.md frontmatter has `name`, `description`, `version`, `allowed-tools`,
-     and `compatibility` (5-key shape).
-  2. `name` equals the package directory name.
-  3. `description` is non-empty and <= 1024 characters.
-  4. `version` is semver `MAJOR.MINOR.PATCH`.
-  5. `allowed-tools` is present and is a YAML list (sequence).
-  6. `compatibility` is present, non-empty, and <= 500 characters.
+  1. SKILL.md frontmatter has exactly `name`, `description`, `metadata` — no
+     other top-level keys (`version`, `allowed-tools`, `compatibility` are
+     explicitly forbidden holdovers from the old 5-key shape).
+  2. `name` equals the package directory name and is kebab-case.
+  3. `description` is 1..1024 characters (hard bounds); a shape warning
+     (non-blocking) fires under 200 or over 700 characters.
+  4. `metadata.version` is present and is semver `MAJOR.MINOR.PATCH`.
+  5. SKILL.md body (everything after the frontmatter block) is <= 500 lines.
+  6. No SKILL.md is nested anywhere inside the package below the top-level one
+     (every skill is one flat directory).
   7. SKILL.md body contains no `## Change Log` (history lives in CHANGELOG.md).
   8. CHANGELOG.md exists beside SKILL.md with >= 1 dated bullet `- YYYY-MM-DD ...`.
   9. No tracked real `.env` file in the package (only `.env.example` may be committed).
 
 Modes:
-  (default)       full scan; reports every violation; exit 1 if any are found.
+  (default)       full scan; reports every violation; exit 1 if any hard error found.
   --diff-base REF only enforce packages whose own SKILL.md or CHANGELOG.md changed
-                  vs REF (PR mode).  Diff-base scope rule: a package is "changed"
-                  ONLY when its own ``<pkgdir>/SKILL.md`` or ``<pkgdir>/CHANGELOG.md``
-                  appears in the git diff name-list.  Changes to sibling files
-                  (RESOLVER.md, references/*, scripts/*, etc.) do NOT pull the
-                  package into enforcement scope — routing changes are covered by
-                  validate-routing.py.  A parent area's SKILL.md does not match a
-                  child leaf, and a child's change does not match the parent area —
-                  each file is matched against its own immediate parent directory.
-                  Legacy packages stay green until their own SKILL.md/CHANGELOG.md
-                  is next touched.
+                  vs REF (PR mode). A package is "changed" ONLY when its own
+                  ``skills/<skill>/SKILL.md`` or ``skills/<skill>/CHANGELOG.md``
+                  appears in the git diff name-list. Changes to sibling files
+                  (references/*, scripts/*, etc.) do NOT pull the package into
+                  enforcement scope. Legacy packages stay green until their own
+                  SKILL.md/CHANGELOG.md is next touched.
   --advisory      print violations but always exit 0 (use for a non-blocking report).
 
+Warnings (description-length shape) never affect the exit code, in any mode.
 This validator owns FORMAT only. Secret/real-path leakage is owned by
 validate-runtime-hygiene.py — keep the two concerns separate.
 """
@@ -46,9 +47,16 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 SKILLS_DIR = REPO_ROOT / "skills"
 
 SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
+KEBAB_CASE_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 CHANGELOG_BULLET_RE = re.compile(r"^- \d{4}-\d{2}-\d{2}\b")
 CHANGE_LOG_HEADING_RE = re.compile(r"^## +Change Log\b", re.MULTILINE)
 REAL_ENV_RE = re.compile(r"(^|/)\.env(\.[A-Za-z0-9_-]+)?$")
+
+ALLOWED_TOP_KEYS = {"name", "description", "metadata"}
+BODY_LINE_LIMIT = 500
+DESCRIPTION_MIN_WARN = 200
+DESCRIPTION_MAX_WARN = 700
+DESCRIPTION_HARD_MAX = 1024
 
 
 @dataclass
@@ -56,17 +64,15 @@ class Finding:
     skill: str
     code: str
     detail: str
+    severity: str = "error"  # "error" | "warning"
 
 
-def parse_frontmatter(text: str) -> "dict[str, str | list[str]] | None":
-    """Minimal YAML-frontmatter reader (no external deps). Scalar keys and list values.
+def parse_frontmatter(text: str) -> "dict[str, object] | None":
+    """Minimal YAML-frontmatter reader (no external deps).
 
-    Supports inline list syntax: ``key: [a, b, c]``
-    Supports block list syntax::
-
-        key:
-          - a
-          - b
+    Supports scalar values, inline lists (``key: [a, b]``), block lists
+    (``key:`` then ``  - item``), and one level of nested mapping
+    (``metadata:`` then ``  version: 1.0.0``).
     """
     if not text.startswith("---"):
         return None
@@ -74,7 +80,7 @@ def parse_frontmatter(text: str) -> "dict[str, str | list[str]] | None":
     if end == -1:
         return None
     block = text[3:end].strip("\n")
-    fields: "dict[str, str | list[str]]" = {}
+    fields: "dict[str, object]" = {}
     lines = block.splitlines()
     i = 0
     while i < len(lines):
@@ -88,34 +94,39 @@ def parse_frontmatter(text: str) -> "dict[str, str | list[str]] | None":
         key, _, val = line.partition(":")
         key = key.strip()
         val = val.strip().strip("'\"")
-        # Inline list: key: [item1, item2, ...]
         if val.startswith("[") and val.endswith("]"):
             inner = val[1:-1]
             fields[key] = [v.strip().strip("'\"") for v in inner.split(",") if v.strip()]
             i += 1
-        # Block list: key:<newline>  - item
-        elif val == "":
-            items: list[str] = []
-            j = i + 1
-            while j < len(lines):
-                next_line = lines[j]
-                stripped = next_line.lstrip()
-                if stripped.startswith("- "):
-                    items.append(stripped[2:].strip().strip("'\""))
-                    j += 1
-                elif next_line and next_line[0] not in " \t":
-                    break
-                else:
-                    break
-            if items:
-                fields[key] = items
-                i = j
-            else:
-                fields[key] = val
-                i += 1
-        else:
+            continue
+        if val != "":
             fields[key] = val
             i += 1
+            continue
+        # Empty scalar: look ahead for an indented block (list or mapping).
+        block_lines: list[str] = []
+        j = i + 1
+        while j < len(lines):
+            nxt = lines[j]
+            if nxt and nxt[0] not in " \t":
+                break
+            block_lines.append(nxt)
+            j += 1
+        list_items = [ln.lstrip()[2:].strip().strip("'\"") for ln in block_lines if ln.lstrip().startswith("- ")]
+        if list_items and len(list_items) == len([b for b in block_lines if b.strip()]):
+            fields[key] = list_items
+        elif block_lines:
+            nested: dict[str, str] = {}
+            for ln in block_lines:
+                stripped = ln.strip()
+                if not stripped or ":" not in stripped:
+                    continue
+                nkey, _, nval = stripped.partition(":")
+                nested[nkey.strip()] = nval.strip().strip("'\"")
+            fields[key] = nested
+        else:
+            fields[key] = val
+        i = j
     return fields
 
 
@@ -139,13 +150,8 @@ def tracked_env_files(skill_dir: Path) -> list[str]:
 
 
 def changed_skill_dirs(diff_base: str) -> set[Path] | None:
-    """Return skill-package directories whose own SKILL.md or CHANGELOG.md changed.
-
-    Diff-base scope rule: a package is "changed" ONLY when its own
-    ``<pkgdir>/SKILL.md`` or ``<pkgdir>/CHANGELOG.md`` appears in the diff
-    name-list.  Changes to sibling files (RESOLVER.md, references/*, scripts/*)
-    do NOT trigger enforcement — those are owned by validate-routing.py.
-    """
+    """Return top-level skill-package directories whose own SKILL.md or
+    CHANGELOG.md changed vs diff_base."""
     try:
         out = subprocess.run(
             ["git", "diff", "--name-only", diff_base],
@@ -157,38 +163,17 @@ def changed_skill_dirs(diff_base: str) -> set[Path] | None:
     dirs: set[Path] = set()
     for rel in out.splitlines():
         p = REPO_ROOT / rel
-        # Only the package whose *own* SKILL.md or CHANGELOG.md changed is in scope.
-        # Any other sibling file change (RESOLVER.md, references/*, …) is ignored.
         if p.name not in ("SKILL.md", "CHANGELOG.md"):
             continue
         pkg_dir = p.parent
-        # Must be under skills/ (not the skills/ root itself).
-        if SKILLS_DIR not in pkg_dir.parents:
+        if pkg_dir.parent != SKILLS_DIR:
             continue
         if (pkg_dir / "SKILL.md").exists():
             dirs.add(pkg_dir)
     return dirs
 
 
-def is_subrecipe(skill_dir: Path) -> bool:
-    """A nested SKILL.md owned by a parent skill is a sub-recipe, not a standalone package.
-
-    True when any ancestor directory up to (but excluding) ``skills/`` has its own
-    SKILL.md. A sub-recipe shares its parent package's version and CHANGELOG.md and is
-    loaded by the parent via progressive disclosure, not discovered as its own command;
-    it carries only ``name`` + ``description`` frontmatter (agentskills.io minimum).
-    An area folder (which has no SKILL.md of its own) does NOT make its leaves sub-recipes —
-    those stay full packages.
-    """
-    p = skill_dir.parent
-    while p != SKILLS_DIR and SKILLS_DIR in p.parents:
-        if (p / "SKILL.md").exists():
-            return True
-        p = p.parent
-    return False
-
-
-def check_skill(skill_dir: Path, subrecipe: bool = False) -> list[Finding]:
+def check_skill(skill_dir: Path) -> list[Finding]:
     name = skill_dir.name
     findings: list[Finding] = []
     skill_md = skill_dir / "SKILL.md"
@@ -198,52 +183,62 @@ def check_skill(skill_dir: Path, subrecipe: bool = False) -> list[Finding]:
     if fm is None:
         return [Finding(name, "NO_FRONTMATTER", "SKILL.md has no YAML frontmatter")]
 
-    # --- Checks shared by full packages and sub-recipes ---
-    if fm.get("name") != name:
+    extra_keys = set(fm.keys()) - ALLOWED_TOP_KEYS
+    for key in sorted(extra_keys):
+        findings.append(Finding(name, "FORBIDDEN_KEY",
+                                f"frontmatter key {key!r} is not allowed; only "
+                                f"name/description/metadata are"))
+
+    fm_name = fm.get("name")
+    if fm_name != name:
         findings.append(Finding(name, "NAME_MISMATCH",
-                                f"frontmatter name {fm.get('name')!r} != dir {name!r}"))
+                                f"frontmatter name {fm_name!r} != dir {name!r}"))
+    elif not KEBAB_CASE_RE.match(str(fm_name)):
+        findings.append(Finding(name, "NAME_NOT_KEBAB_CASE",
+                                f"{fm_name!r} is not kebab-case"))
+
     desc = fm.get("description", "")
     if not desc:
         findings.append(Finding(name, "NO_DESCRIPTION", "missing description"))
-    elif len(desc) > 1024:
-        findings.append(Finding(name, "DESCRIPTION_TOO_LONG", f"{len(desc)} > 1024 chars"))
+    elif len(str(desc)) > DESCRIPTION_HARD_MAX:
+        findings.append(Finding(name, "DESCRIPTION_TOO_LONG",
+                                f"{len(str(desc))} > {DESCRIPTION_HARD_MAX} chars"))
+    elif len(str(desc)) < DESCRIPTION_MIN_WARN:
+        findings.append(Finding(name, "DESCRIPTION_SHORT",
+                                f"{len(str(desc))} < {DESCRIPTION_MIN_WARN} chars (shape warning)",
+                                severity="warning"))
+    elif len(str(desc)) > DESCRIPTION_MAX_WARN:
+        findings.append(Finding(name, "DESCRIPTION_LONG",
+                                f"{len(str(desc))} > {DESCRIPTION_MAX_WARN} chars (shape warning)",
+                                severity="warning"))
+
+    metadata = fm.get("metadata")
+    if not isinstance(metadata, dict):
+        findings.append(Finding(name, "NO_METADATA", "missing metadata.version block"))
+    else:
+        version = metadata.get("version", "")
+        if not version:
+            findings.append(Finding(name, "NO_VERSION", "missing metadata.version"))
+        elif not SEMVER_RE.match(str(version)):
+            findings.append(Finding(name, "BAD_VERSION", f"{version!r} is not MAJOR.MINOR.PATCH"))
 
     if CHANGE_LOG_HEADING_RE.search(text):
         findings.append(Finding(name, "CHANGELOG_IN_SKILL",
                                 "## Change Log belongs in CHANGELOG.md, not SKILL.md"))
 
+    body = text[text.find("\n---", 3) + 4:]
+    body_lines = len(body.splitlines())
+    if body_lines > BODY_LINE_LIMIT:
+        findings.append(Finding(name, "BODY_TOO_LONG",
+                                f"body is {body_lines} lines > {BODY_LINE_LIMIT} hard ceiling"))
+
+    for nested in sorted(skill_dir.rglob("SKILL.md")):
+        if nested != skill_md:
+            findings.append(Finding(name, "NESTED_SKILL_MD",
+                                    f"nested SKILL.md not allowed: {nested.relative_to(skill_dir)}"))
+
     for env in tracked_env_files(skill_dir):
         findings.append(Finding(name, "TRACKED_ENV", f"committed real env file: {env}"))
-
-    # A sub-recipe inherits its parent package's version and CHANGELOG.md, so the
-    # full-package-only checks below (version, allowed-tools, compatibility, CHANGELOG)
-    # do not apply to it.
-    if subrecipe:
-        return findings
-
-    # --- Full-package-only checks ---
-    version = fm.get("version", "")
-    if not version:
-        findings.append(Finding(name, "NO_VERSION", "missing version"))
-    elif not isinstance(version, str) or not SEMVER_RE.match(version):
-        findings.append(Finding(name, "BAD_VERSION", f"{version!r} is not MAJOR.MINOR.PATCH"))
-
-    allowed_tools = fm.get("allowed-tools")
-    if allowed_tools is None:
-        findings.append(Finding(name, "NO_ALLOWED_TOOLS", "missing allowed-tools"))
-    elif not isinstance(allowed_tools, list):
-        findings.append(Finding(name, "BAD_ALLOWED_TOOLS",
-                                "allowed-tools must be a YAML list (sequence), "
-                                f"got {allowed_tools!r}"))
-
-    compat = fm.get("compatibility")
-    if not compat:
-        findings.append(Finding(name, "NO_COMPATIBILITY", "missing compatibility"))
-    else:
-        compat_str = ", ".join(compat) if isinstance(compat, list) else str(compat)
-        if len(compat_str) > 500:
-            findings.append(Finding(name, "BAD_COMPATIBILITY",
-                                    f"compatibility is {len(compat_str)} chars, max 500"))
 
     changelog = skill_dir / "CHANGELOG.md"
     if not changelog.exists():
@@ -269,7 +264,9 @@ def main() -> int:
         REPO_ROOT = Path(args.root).resolve()
         SKILLS_DIR = REPO_ROOT / "skills"
 
-    all_skill_dirs = sorted({p.parent for p in SKILLS_DIR.rglob("SKILL.md")})
+    all_skill_dirs = sorted(
+        p for p in SKILLS_DIR.iterdir() if p.is_dir() and (p / "SKILL.md").exists()
+    ) if SKILLS_DIR.exists() else []
 
     if args.diff_base:
         scope = changed_skill_dirs(args.diff_base)
@@ -284,16 +281,23 @@ def main() -> int:
 
     findings: list[Finding] = []
     for d in targets:
-        findings.extend(check_skill(d, subrecipe=is_subrecipe(d)))
+        findings.extend(check_skill(d))
+
+    errors = [f for f in findings if f.severity == "error"]
+    warnings = [f for f in findings if f.severity == "warning"]
+
+    for f in warnings:
+        print(f"  [{f.code}] {f.skill}: {f.detail}")
+    for f in errors:
+        print(f"  [{f.code}] {f.skill}: {f.detail}")
 
     if not findings:
         print(f"skill-format: OK — {len(targets)} package(s) validated.")
         return 0
 
-    for f in findings:
-        print(f"  [{f.code}] {f.skill}: {f.detail}")
-    print(f"skill-format: {len(findings)} violation(s) across {len(targets)} package(s).")
-    return 0 if args.advisory else 1
+    print(f"skill-format: {len(errors)} error(s), {len(warnings)} warning(s) "
+          f"across {len(targets)} package(s).")
+    return 0 if (args.advisory or not errors) else 1
 
 
 if __name__ == "__main__":

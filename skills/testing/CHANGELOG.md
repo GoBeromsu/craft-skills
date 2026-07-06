@@ -1,3 +1,4 @@
 # Changelog
 
-- 2026-07-05 — v1.0.0: suite-level test architecture had no counterpart to programming's in-file discipline, leaving test placement, sizing, and flakiness to ad hoc habit → provides a test taxonomy with resource-based sizing, a placement decision tree, the prove-it bug-fix law, DAMP-over-DRY naming/fixture rules, and structure/integration/e2e conventions each with a detection command. Provenance: resource-based test sizes, prove-it bug-fix law, and DAMP-over-DRY adapted from addyosmani/agent-skills @ github.com/addyosmani/agent-skills.
+- 2026-07-05 — v1.0.0: no suite-level test discipline existed → taxonomy, sizing, placement tree, prove-it law, DAMP rules. Provenance: addyosmani/agent-skills.
+- 2026-07-06 — v2.0.0: realign to authoring contract → minimal frontmatter, what+when description, body to 68 lines, detail moved to references/conventions.md.
