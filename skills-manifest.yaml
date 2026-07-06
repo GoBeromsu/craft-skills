@@ -59,8 +59,8 @@
     },
     {
       "schema_version": 1,
-      "id": "craft-skills/documents",
-      "name": "documents",
+      "id": "craft-skills/document",
+      "name": "document",
       "kind": "thick",
       "lifecycle": "active",
       "version": "1.1.0",
@@ -80,11 +80,11 @@
       "replacement_for": [],
       "replaced_by": null,
       "children": [
-        "craft-skills/documents/adr",
-        "craft-skills/documents/api-docs",
-        "craft-skills/documents/changelog",
-        "craft-skills/documents/inline-comments",
-        "craft-skills/documents/readme"
+        "craft-skills/document/adr",
+        "craft-skills/document/api-docs",
+        "craft-skills/document/changelog",
+        "craft-skills/document/inline-comments",
+        "craft-skills/document/readme"
       ],
       "adapters": [
         {
@@ -378,8 +378,8 @@
     },
     {
       "schema_version": 1,
-      "id": "craft-skills/technical-report",
-      "name": "technical-report",
+      "id": "craft-skills/write-report",
+      "name": "write-report",
       "kind": "leaf",
       "lifecycle": "active",
       "version": "0.1.1",

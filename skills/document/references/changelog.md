@@ -5,7 +5,7 @@ description: '"write a changelog", "update the changelog", "release notes", "wha
 
 # changelog
 
-Author the project-level `CHANGELOG.md`: a human-facing record of notable changes per release, written for the people who **use** the project. Template: `template.md` (beside this file). Canonical location: repo root `CHANGELOG.md`.
+Author the project-level `CHANGELOG.md`: a human-facing record of notable changes per release, written for the people who **use** the project. Template: `../templates/changelog.md`. Canonical location: repo root `CHANGELOG.md`.
 
 This is the user-facing project changelog, distinct from a per-skill or per-package internal changelog. It answers "what changed for me between versions?" — group entries by change type, newest release on top.
 

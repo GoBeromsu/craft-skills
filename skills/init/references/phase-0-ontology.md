@@ -88,28 +88,28 @@ PROPOSED → ACCEPTED → (SUPERSEDED | DEPRECATED)
 | (none yet) | | | |
 ```
 
-### docs/architecture.md and README.md — owned by the `documents` skill
+### docs/architecture.md and README.md — owned by the `document` skill
 
-These templates live as standalone files inside the thick `documents` skill's sub-recipes. Do **not**
+These templates live as standalone files inside the thick `document` skill's sub-recipes. Do **not**
 duplicate them here — read the template **files** directly (no prose-section extraction):
 
-1. Locate the documents skill's root directory with Glob. Try each pattern; use the first that resolves:
+1. Locate the document skill's root directory with Glob. Try each pattern; use the first that resolves:
    ```
-   ~/.claude/skills/*/skills/documents/
-   ~/.claude/plugins/*/*/skills/documents/
-   ~/.claude/plugins/*/skills/documents/
-   ~/.claude/plugins/cache/*/*/*/skills/documents/
+   ~/.claude/skills/*/skills/document/
+   ~/.claude/plugins/*/*/skills/document/
+   ~/.claude/plugins/*/skills/document/
+   ~/.claude/plugins/cache/*/*/*/skills/document/
    ```
 2. For `docs/architecture.md` (only if absent): read **`templates/architecture.md`** from the located
    directory and write its contents verbatim.
-3. For `README.md` at repo root (only if absent): read **`readme/template.md`** from the located
+3. For `README.md` at repo root (only if absent): read **`templates/readme.md`** from the located
    directory and write its contents verbatim.
 4. The ADR body template (when the operator later authors an actual decision) lives at
-   **`adr/template.md`** in the same directory — point them there; init does not seed individual ADRs.
+   **`templates/adr.md`** in the same directory — point them there; init does not seed individual ADRs.
 
-If the documents skill's directory cannot be located, write a one-line placeholder (`# Architecture`
+If the document skill's directory cannot be located, write a one-line placeholder (`# Architecture`
 or `# Project Name`) and record this warning:
-`"documents templates not found — placeholder written; run documents to fill in templates."`
+`"document templates not found — placeholder written; run document to fill in templates."`
 
 ## 4. Development Flow managed block (convention-only)
 
@@ -156,8 +156,8 @@ SKILL.md).
 - [ ] `docs/research/`, `docs/exec-plan/active/`, `docs/exec-plan/archive/`, `docs/decisions/`,
       `docs/rules/` all exist.
 - [ ] `docs/decisions/README.md` present with the ADR index template.
-- [ ] `docs/architecture.md` present (seeded from documents skill or placeholder + warning).
-- [ ] `README.md` present at repo root (pre-existing or seeded; warning if documents skill not found).
+- [ ] `docs/architecture.md` present (seeded from document skill or placeholder + warning).
+- [ ] `README.md` present at repo root (pre-existing or seeded; warning if document skill not found).
 - [ ] Development Flow managed block present in `AGENTS.md` / chosen guide; surrounding content
       preserved; any 1.x block replaced-and-logged.
 - [ ] No existing file overwritten — confirmed via the "Skipped (exists)" notices.

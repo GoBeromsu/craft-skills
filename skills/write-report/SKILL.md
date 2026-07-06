@@ -1,5 +1,5 @@
 ---
-name: technical-report
+name: write-report
 description: '"technical-report", "기술 문서 써줘", "정본 문서", "TOC 강제", "기술 보고서 골격", "scaffold a technical report", "/technical-report" — build and enforce a project''s canonical technical report. Scaffold mode interviews you depth-by-depth (sections → ## headings → required content) to fill a per-project technical-report.yaml frame; Author/Validate mode writes or reviews section markdown against that YAML as the single source of truth and gates structure + source coverage with two validators.'
 version: 0.1.1
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]

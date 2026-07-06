@@ -36,7 +36,7 @@ ls scripts/git-guard/setup-hooks.sh # must exist
 If any check fails, propose the install to the user in one line before running it — state what it does: copies the guard scripts to `scripts/git-guard/`, copies the `pre-commit`/`pre-push` hooks to `.githooks/`, and wires `core.hooksPath` + the `git wt` alias. Only after the user accepts, run the bundled installer from the target repo root:
 
 ```bash
-sh skills/git/worktree/scripts/install.sh
+sh skills/git/scripts/install.sh
 ```
 
 `install.sh` is the single entry point. It never clobbers existing files:
@@ -153,7 +153,7 @@ Never auto-detect completion and never tear down without explicit user confirmat
 | `WORKTREE_ROOT` | Where worktrees are created | No — defaults to `<repo-parent>/<repo>-worktrees` |
 | `CRAFT_WT_REMOTE_HOST` | Tailscale hostname or `user@host` for remote execution | No — omit to use local-only mode |
 
-Set in `.env` (gitignored). See `.env.example` for the placeholder.
+Set in `.env` (gitignored). See `../.env.example` for the placeholder.
 
 Dependencies:
 - `git` >= 2.5 (worktree support).
@@ -165,15 +165,15 @@ Dependencies:
 
 | Script | Role |
 |---|---|
-| `scripts/install.sh` | Bundled first-run installer: copies guard scripts + hooks into the repo, then runs `setup-hooks.sh`. The single entry point `worktree`/`init` delegate to |
-| `githooks/pre-commit` | Shipped hook: assert-not-main + deny-assets (staged) + check-freshness (warn) |
-| `githooks/pre-push` | Shipped hook: assert-not-main + check-freshness (warn) + deny-assets (push) |
-| `scripts/lib.sh` | Shared helpers: `gg_warn`, `gg_die`, protected-branch list |
-| `scripts/assert-not-main.sh` | Exits 1 when HEAD is on a protected branch |
-| `scripts/check-freshness.sh` | Compares HEAD to upstream; `block` (exit 1) or `warn` mode |
-| `scripts/wt.sh` | Simple worktree maker/manager (`<name>`, `rm`, `ls`) |
-| `scripts/setup-hooks.sh` | Idempotent post-clone setup: `core.hooksPath`, `alias.wt`, `chmod +x` |
-| `scripts/deny-assets.sh` | Blocks model weights, media files, and blobs > 5 MB at commit/push |
+| `../scripts/install.sh` | Bundled first-run installer: copies guard scripts + hooks into the repo, then runs `setup-hooks.sh`. The single entry point `worktree`/`init` delegate to |
+| `../githooks/pre-commit` | Shipped hook: assert-not-main + deny-assets (staged) + check-freshness (warn) |
+| `../githooks/pre-push` | Shipped hook: assert-not-main + check-freshness (warn) + deny-assets (push) |
+| `../scripts/lib.sh` | Shared helpers: `gg_warn`, `gg_die`, protected-branch list |
+| `../scripts/assert-not-main.sh` | Exits 1 when HEAD is on a protected branch |
+| `../scripts/check-freshness.sh` | Compares HEAD to upstream; `block` (exit 1) or `warn` mode |
+| `../scripts/wt.sh` | Simple worktree maker/manager (`<name>`, `rm`, `ls`) |
+| `../scripts/setup-hooks.sh` | Idempotent post-clone setup: `core.hooksPath`, `alias.wt`, `chmod +x` |
+| `../scripts/deny-assets.sh` | Blocks model weights, media files, and blobs > 5 MB at commit/push |
 
 ---
 

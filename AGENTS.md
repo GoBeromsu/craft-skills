@@ -20,14 +20,10 @@ craft-skills/
 ├── .hermes/
 │   └── README.md                # Hermes mount instructions (skills.external_dirs)
 ├── skills/                      ← Claude Code plugin mount + Hermes external_dirs target
-│   ├── documents/               # Documentation waypoint — docs/ ontology, routing, nested sub-recipes
+│   ├── document/                # Documentation waypoint — docs/ ontology, routing, nested sub-recipes
 │   │   ├── SKILL.md             #   waypoint: ontology + routing + docs/ layout + Children index
-│   │   ├── adr/                 #   sub-recipe: Architecture Decision Records (+ template.md)
-│   │   ├── readme/              #   sub-recipe: repository README (+ template.md)
-│   │   ├── changelog/           #   sub-recipe: project CHANGELOG (+ template.md)
-│   │   ├── inline-comments/     #   sub-recipe: comment-the-why convention (no template)
-│   │   ├── design/              #   sub-recipe: project design.md — design-system source of truth (+ template.md)
-│   │   └── templates/           #   research/references/spec/plan/rule/architecture skeletons
+│   │   ├── references/          #   flattened sub-recipes: adr.md, readme.md, changelog.md, inline-comments.md, design.md
+│   │   └── templates/           #   research/references/spec/plan/rule/architecture + adr/readme/changelog/design skeletons
 │   ├── init/                    # Dual-entry: docs/ ontology bootstrap + hierarchical AGENTS.md cartography
 │   │   ├── SKILL.md             #   triage: classify runtime → Phase 0 graft → orchestrate phases 1-4
 │   │   ├── references/          #   phase-0-ontology (graft) + phase-1..4 (init-deep cartography engine)
@@ -52,10 +48,10 @@ craft-skills/
 │   │   └── SKILL.md
 │   ├── git/                     # Version-control craft — atomic commits, conventions, history surgery
 │   │   ├── SKILL.md
-│   │   └── worktree/            #   sub-recipe: git wt workflow + git-guard rails (propose-first install)
+│   │   └── references/worktree.md  #   sub-recipe: git wt workflow + git-guard rails (propose-first install)
 │   ├── security/                # Defensive security triage — web/API/LLM/secrets detection references
 │   │   └── SKILL.md
-│   ├── technical-report/        # Canonical technical-report engine — YAML-frame TOC + structure/source validators
+│   ├── write-report/            # Canonical technical-report engine — YAML-frame TOC + structure/source validators
 │   │   └── SKILL.md
 │   └── PROVENANCE.md            # Cross-skill lineage registry — source skill per skill
 ├── install.sh                   # POSIX-sh multi-runtime convenience installer
@@ -71,7 +67,7 @@ One imperative sentence per skill. Load the skill's `SKILL.md` for the full reci
 
 | Skill | What it does |
 |-------|-------------|
-| `documents` | Waypoint that routes project documentation through the `docs/` ontology (research→ADR→plan pipeline) and loads nested sub-recipes on demand for ADRs, README, the project changelog, the comment-the-why convention, and the project design.md. |
+| `document` | Waypoint that routes project documentation through the `docs/` ontology (research→ADR→plan pipeline) and loads nested sub-recipes on demand for ADRs, README, the project changelog, the comment-the-why convention, and the project design.md. |
 | `init` | Dual-entry: bootstrap a project's `docs/` ontology + ADR rails (Phase 0 graft), then generate a complexity-scored hierarchical `AGENTS.md` knowledge base (Phases 1–4, init-deep cartography engine in `references/`), with a single-agent fallback for non-fan-out runtimes. |
 | `skillify` | Create, update, move, or promote a craft-skills skill through the vendored two-layer promotion gate. |
 | `hookify` | Turn a convention or SE best-practice into local deterministic enforcement (Claude Code / Codex runtime hook → lint → pre-commit), shipping a starter guard and red-proving it fires. |
@@ -84,7 +80,7 @@ One imperative sentence per skill. Load the skill's `SKILL.md` for the full reci
 | `refactor` | Restructure code behavior-preservingly — when-to-refactor triggers, a characterization-test protocol for legacy code, a 17-smell detection catalog, a 12-move catalog, and `scripts/detect-smells.sh`. |
 | `git` | Commit and rewrite history safely — atomic-commit split protocol, incumbent repo-style detection, commit/branch/PR conventions, and non-interactive-safe history surgery; the `worktree` sub-recipe runs the `git wt` worktree workflow with git-guard rails. |
 | `security` | Triage defensive security across web, API, and LLM surfaces — trust-boundary mapping, per-class detection commands, reachability × severity triage, and secrets/dependency hygiene. |
-| `technical-report` | Scaffold a per-project `technical-report.yaml` frame through a depth-ordered interview, then author/review canonical section markdown against it under code-enforced structure and source-coverage gates. |
+| `write-report` | Scaffold a per-project `technical-report.yaml` frame through a depth-ordered interview, then author/review canonical section markdown against it under code-enforced structure and source-coverage gates. |
 
 ---
 

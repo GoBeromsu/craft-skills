@@ -62,14 +62,14 @@ Do not write UI component code — not a button, not a page shell — before the
    test -f docs/design.md && echo "design.md present" || echo "MISSING — scaffold before writing UI code"
    ```
 
-2. Missing on a greenfield project → STOP, load the `documents` skill's `design/SKILL.md` sub-recipe and scaffold `docs/design.md` from its `template.md` before the first component is written. This skill does not own `design.md`'s 7-section structure, its lifecycle rules, or its staleness/anti-generic detection commands — `documents/design` owns all of that; read it there rather than re-deriving it here.
-3. Missing on an existing project with no design system yet → same hand-off: scaffold via `documents/design` before adding new UI surface, rather than inventing an ad hoc one-off style per component.
-4. Every commit that adds or changes a token, primitive, or pattern updates `design.md` in that same commit — see `documents/design` for the update law and its detection command; do not duplicate the check here.
+2. Missing on a greenfield project → STOP, load the `document` skill's `references/design.md` sub-recipe and scaffold `docs/design.md` from its `templates/design.md` before the first component is written. This skill does not own `design.md`'s 7-section structure, its lifecycle rules, or its staleness/anti-generic detection commands — `document/design` owns all of that; read it there rather than re-deriving it here.
+3. Missing on an existing project with no design system yet → same hand-off: scaffold via `document/design` before adding new UI surface, rather than inventing an ad hoc one-off style per component.
+4. Every commit that adds or changes a token, primitive, or pattern updates `design.md` in that same commit — see `document/design` for the update law and its detection command; do not duplicate the check here.
 
 ## Requirements
 
 - A project-local package manager and dev server (`npm`/`pnpm`/`bun` + the framework's dev command) to run detection commands and any build-output checks named in `references/architectures.md`.
-- `git` for the same-commit design.md check delegated to `documents/design`.
+- `git` for the same-commit design.md check delegated to `document/design`.
 - `grep`, `find`, `comm` (POSIX) for the detection commands in this file and in `references/`.
 
 ## Common Rationalizations
@@ -93,7 +93,7 @@ Do not write UI component code — not a button, not a page shell — before the
 ## Verification
 
 - [ ] PHASE 0 rendering-architecture detection ran and its output is stated in the work notes or final report.
-- [ ] `docs/design.md` exists (or its scaffolding via `documents/design` was completed first) before any UI component code was written.
+- [ ] `docs/design.md` exists (or its scaffolding via `document/design` was completed first) before any UI component code was written.
 - [ ] The matching reference file(s) were read before code was written: `architectures.md` always; `components.md` / `state.md` / `folders.md` as the task touched them.
 - [ ] No second rendering runtime/framework was introduced into an app with an existing incumbent architecture, and any rendering-mode drift (SSR ↔ SSG ↔ client) within that framework is recorded in `design.md`.
 - [ ] Every piece of new or moved state was classified against the taxonomy in `references/state.md`.

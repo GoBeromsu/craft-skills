@@ -5,7 +5,7 @@ description: '"write an ADR", "record this decision", "architecture decision rec
 
 # adr
 
-Author or update one Architecture Decision Record: a self-complete, MECE record of a single expensive-to-reverse, cross-cutting decision and the rationale behind it. Template: `template.md` (beside this file). Canonical location: `docs/decisions/ADR-NNN-{topic}.md`.
+Author or update one Architecture Decision Record: a self-complete, MECE record of a single expensive-to-reverse, cross-cutting decision and the rationale behind it. Template: `../templates/adr.md`. Canonical location: `docs/decisions/ADR-NNN-{topic}.md`.
 
 Document the **why**, not the what. Code and rules show what the system does; an ADR preserves the context, constraints, trade-offs, and rejected alternatives that explain why the system is shaped this way.
 
@@ -29,7 +29,7 @@ Document the **why**, not the what. Code and rules show what the system does; an
 ## Authoring steps
 
 1. Find the next ADR number — scan `docs/decisions/` for the highest `ADR-NNN` and add one. The number is a stable topic anchor, never reused or renumbered.
-2. Copy `template.md` to `docs/decisions/ADR-NNN-{topic}.md`. The `{topic}` slug is kebab-case, lowercase, hyphens only, no date prefix, no issue number. The filename slug is authoritative; a frontmatter `slug` that disagrees with the filename is an error.
+2. Copy `../templates/adr.md` to `docs/decisions/ADR-NNN-{topic}.md`. The `{topic}` slug is kebab-case, lowercase, hyphens only, no date prefix, no issue number. The filename slug is authoritative; a frontmatter `slug` that disagrees with the filename is an error.
 3. Fill every section: frontmatter (`slug`/`date`/`author`/`status`/`references`/`refines`), Status, Date, Context (state requirements and pressures as facts, not preferences), Decision (one choice, specific and unambiguous), Alternatives considered (each option with pros, cons, and the specific reason it was **rejected**), Consequences (Enables / Costs–trade-offs / New constraints).
 4. Seed `## Changelog` with `- YYYY-MM-DD: initial decision`.
 5. Set `status: Accepted` once the decision is committed (`Proposed` only while still under deliberation).

@@ -1,5 +1,5 @@
 ---
-name: documents
+name: document
 description: '"write an ADR", "set up docs/", "where does this spec go", "write a README", "write the changelog", "how should I comment this", "write a design.md", "set up a design system", "define UI tokens", "/documents" — author and route project documentation: research/references/spec/plan/decision/rule artifacts plus README, changelog, code comments, and design system tokens.'
 version: 2.0.0
 allowed-tools: [Read, Write, Edit, Bash, Grep, Glob]
@@ -22,7 +22,7 @@ Every documentation artifact answers exactly one question. Never let one artifac
 | **references** | *What does this external source say* — verbatim static archive of a third-party document | Permanent snapshot; never edited after capture | `templates/references.md` | `docs/research/references/{slug}.md` |
 | **spec** | *What* is this work and are the requirements clear? | Work-scoped, one-shot | `templates/spec.md` | `docs/exec-plan/active/{slug}/spec.md` |
 | **plan** | *How* to implement (steps, files, order) | Work-scoped; body immutable after finalize | `templates/plan.md` | `docs/exec-plan/active/{slug}/plan.md` |
-| **decision** | One expensive-to-reverse *cross-cutting* decision | Permanent topic anchor; body edited in place; each change logged as one line in the ADR's ## Changelog | `adr/template.md` | `docs/decisions/ADR-NNN-{topic}.md` |
+| **decision** | One expensive-to-reverse *cross-cutting* decision | Permanent topic anchor; body edited in place; each change logged as one line in the ADR's ## Changelog | `templates/adr.md` | `docs/decisions/ADR-NNN-{topic}.md` |
 | **rule** | A standing convention (ongoing constraint, not work-scoped) | Alive as long as the convention holds | `templates/rule.md` | `docs/rules/{topic}.md` |
 
 ## Children — load on demand
@@ -31,11 +31,11 @@ For a sub-task below, **Read the named sub-recipe before authoring** — it carr
 
 | Sub-task / trigger | Load |
 |---|---|
-| Write or update an ADR / record a cross-cutting decision | `adr/SKILL.md` (+ `adr/template.md`) |
-| Write or update the repository README | `readme/SKILL.md` (+ `readme/template.md`) |
-| Write the project-level CHANGELOG / release notes | `changelog/SKILL.md` (+ `changelog/template.md`) |
-| Decide how to comment code (comment-the-why) | `inline-comments/SKILL.md` |
-| Write or update a project's design system source of truth (design.md) | `design/SKILL.md` (+ `design/template.md`) |
+| Write or update an ADR / record a cross-cutting decision | `references/adr.md` (+ `templates/adr.md`) |
+| Write or update the repository README | `references/readme.md` (+ `templates/readme.md`) |
+| Write the project-level CHANGELOG / release notes | `references/changelog.md` (+ `templates/changelog.md`) |
+| Decide how to comment code (comment-the-why) | `references/inline-comments.md` |
+| Write or update a project's design system source of truth (design.md) | `references/design.md` (+ `templates/design.md`) |
 
 The remaining ontology artifacts (research, references, spec, plan, rule) are authored directly from `templates/` using the routing below — they have no sub-recipe yet.
 
@@ -45,7 +45,7 @@ When an artifact arrives for filing, ask exactly one question — "which questio
 
 **References vs research:** A references file is a verbatim static copy of an external document (e.g. a spec page, RFC, or third-party doc converted to markdown). A research file is your own synthesis — findings, comparisons, and options drawn from one or more sources. Never merge them.
 
-**Rule vs ADR:** If a convention encodes a cross-cutting decision, the *why* goes in a decision (ADR) and the *what to do* goes in a rule. The ADR is the frozen choice; the rule is the live operational guide. For ADR depth, load `adr/SKILL.md`.
+**Rule vs ADR:** If a convention encodes a cross-cutting decision, the *why* goes in a decision (ADR) and the *what to do* goes in a rule. The ADR is the frozen choice; the rule is the live operational guide. For ADR depth, load `references/adr.md`.
 
 ## Decision pipeline
 
@@ -54,7 +54,7 @@ research (facts found)  →  decision/ADR (choice made)  →  plan (implementati
 ```
 
 - Research collects evidence and presents options. It does **not** decide.
-- A decision distilled from research is an ADR (load `adr/SKILL.md`).
+- A decision distilled from research is an ADR (load `references/adr.md`).
 - How to build that decision is a plan.
 
 When something is hard to route, ask which stage it is at: *Am I still gathering facts (research), committing to a choice (ADR), or sequencing work (plan)?*
@@ -102,7 +102,7 @@ MOVE entire folder:  active/{slug}/  ──►  archive/{slug}/
 
      │  plan contained a cross-cutting / expensive-to-reverse decision?
      ▼
-DISTILL ──►  docs/decisions/ADR-NNN-{topic}.md   (load adr/SKILL.md)
+DISTILL ──►  docs/decisions/ADR-NNN-{topic}.md   (load references/adr.md)
 ```
 
 **Lifecycle = folder position.** A plan is active or archived by where its folder lives, not by a status field alone. Move the whole `{slug}/` folder — never split spec and plan.
@@ -111,7 +111,7 @@ DISTILL ──►  docs/decisions/ADR-NNN-{topic}.md   (load adr/SKILL.md)
 
 **Plan immutability.** A plan is finalized on the first git commit that includes its `plan.md`. From that point the body is immutable. If scope changes, create a new slug and set the old plan's frontmatter to `status: superseded-by` + `superseded-by: {new-slug}`. Only the `status` / `superseded-by` frontmatter lines are mutable post-finalize.
 
-ADR lifecycle, the plan-vs-ADR boundary, the distill rule, and why there is no "supersede" all live in `adr/SKILL.md` — load it when working on a decision.
+ADR lifecycle, the plan-vs-ADR boundary, the distill rule, and why there is no "supersede" all live in `references/adr.md` — load it when working on a decision.
 
 ## Slug naming
 

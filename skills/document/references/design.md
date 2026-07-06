@@ -5,7 +5,7 @@ description: '"design.md", "design system doc", "design tokens", "디자인 시�
 
 # design
 
-Author or update `design.md`: the single, self-complete source of truth for a project's design system. Template: `template.md` (beside this file). Canonical location: `docs/design.md` (per-app in a monorepo — see Placement).
+Author or update `design.md`: the single, self-complete source of truth for a project's design system. Template: `../templates/design.md`. Canonical location: `docs/design.md` (per-app in a monorepo — see Placement).
 
 A **token** is a named, literal design value — a color hex, a spacing unit, a type-scale step — referenced by name instead of a raw literal repeated ad hoc across components. A **primitive** is the smallest reusable UI building block a design system ships (button, input, checkbox) that composed components and features are built from.
 
@@ -33,7 +33,7 @@ Every primitive's entry is a state table covering, at minimum: `default`, `hover
 
 ## Authoring steps
 
-1. Copy `template.md` to `docs/design.md` (or the per-app path in a monorepo).
+1. Copy `../templates/design.md` to `docs/design.md` (or the per-app path in a monorepo).
 2. Fill Principles and Tokens first — every later section references token names, so tokens must exist before typography, primitives, motion, or responsive rules are written.
 3. For each primitive the project ships, write its state table before any component code exists for it.
 4. Seed Accepted debt with any known gap the team is knowingly shipping without (for example, a primitive with no dark-mode value yet) — date it and name the upgrade path.

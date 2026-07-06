@@ -5,7 +5,7 @@ description: '"write a README", "update the readme", "project entry point doc", 
 
 # readme
 
-Author the repository `README.md`: the entry point that answers "what is this and how do I start?" in under a minute. Template: `template.md` (beside this file). Canonical location: repo root `README.md`.
+Author the repository `README.md`: the entry point that answers "what is this and how do I start?" in under a minute. Template: `../templates/readme.md`. Canonical location: repo root `README.md`.
 
 The README is a **map, not a manual**. It orients a newcomer and links out to `docs/` for depth. It never duplicates an ADR body, the architecture map, or rule text — it points at them.
 
@@ -24,7 +24,7 @@ The README is a **map, not a manual**. It orients a newcomer and links out to `d
 
 ## Authoring steps
 
-1. Copy `template.md` to the repo-root `README.md`.
+1. Copy `../templates/readme.md` to the repo-root `README.md`.
 2. Fill the one-liner and Overview first — if you cannot state the project in one sentence, the README is not ready.
 3. Make Quick start **runnable**: real clone/install/run commands a newcomer can paste, not prose.
 4. In Architecture, write 2–3 orienting sentences, then **link** to `docs/architecture.md` and the relevant `docs/decisions/ADR-NNN-*.md` files. Do not restate their bodies.

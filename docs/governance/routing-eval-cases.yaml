@@ -4,12 +4,12 @@
     {
       "trigger": "skill 만들어줘",
       "expected_package": "craft-skills/skillify",
-      "forbidden_neighbors": ["bstack/skillify", "craft-skills/documents", "craft-skills/init"]
+      "forbidden_neighbors": ["bstack/skillify", "craft-skills/document", "craft-skills/init"]
     },
     {
       "trigger": "make a skill",
       "expected_package": "craft-skills/skillify",
-      "forbidden_neighbors": ["bstack/skillify", "craft-skills/hookify", "craft-skills/documents"]
+      "forbidden_neighbors": ["bstack/skillify", "craft-skills/hookify", "craft-skills/document"]
     },
     {
       "trigger": "vault retrieve",
@@ -34,12 +34,12 @@
     {
       "trigger": "blog publish",
       "expected_package": "bstack/publish",
-      "forbidden_neighbors": ["bstack/rss", "craft-skills/documents", "oh-my-secondbrain/core/wiki"]
+      "forbidden_neighbors": ["bstack/rss", "craft-skills/document", "oh-my-secondbrain/core/wiki"]
     },
     {
       "trigger": "YouTube upload",
       "expected_package": "bstack/publish",
-      "forbidden_neighbors": ["bstack/rss", "bstack/comms-draft", "craft-skills/documents"]
+      "forbidden_neighbors": ["bstack/rss", "bstack/comms-draft", "craft-skills/document"]
     },
     {
       "trigger": "RSS feed digest",
@@ -48,13 +48,13 @@
     },
     {
       "trigger": "write an ADR",
-      "expected_package": "craft-skills/documents",
-      "forbidden_neighbors": ["craft-skills/init", "craft-skills/technical-report", "oh-my-secondbrain/core/vault-decision-record"]
+      "expected_package": "craft-skills/document",
+      "forbidden_neighbors": ["craft-skills/init", "craft-skills/write-report", "oh-my-secondbrain/core/vault-decision-record"]
     },
     {
       "trigger": "generate AGENTS.md",
       "expected_package": "craft-skills/init",
-      "forbidden_neighbors": ["craft-skills/documents", "craft-skills/programming", "craft-skills/worktree"]
+      "forbidden_neighbors": ["craft-skills/document", "craft-skills/programming", "craft-skills/worktree"]
     },
     {
       "trigger": "git worktree",
@@ -68,8 +68,8 @@
     },
     {
       "trigger": "technical report scaffold",
-      "expected_package": "craft-skills/technical-report",
-      "forbidden_neighbors": ["craft-skills/documents", "craft-skills/init", "oh-my-secondbrain/core/wiki"]
+      "expected_package": "craft-skills/write-report",
+      "forbidden_neighbors": ["craft-skills/document", "craft-skills/init", "oh-my-secondbrain/core/wiki"]
     }
   ]
 }

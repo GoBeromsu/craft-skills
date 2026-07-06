@@ -20,7 +20,7 @@ This skill is an index. Shared rules live here; the deep recipe catalogs live in
 - Rebasing, squashing, or otherwise rewriting local or remote-tracked history.
 - Naming a branch, sizing a PR, or deciding a merge strategy.
 - Recovering from a rebase gone wrong or undoing a commit.
-- "git wt", "make/new worktree", or a missing guard-rail install — load `worktree/SKILL.md` (nested sub-recipe).
+- "git wt", "make/new worktree", or a missing guard-rail install — load `references/worktree.md` (nested sub-recipe).
 
 Not for: PR review process or issue routing (the repo's own `AGENTS.md` development-flow section owns that).
 
