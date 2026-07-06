@@ -100,6 +100,11 @@
       "trigger": "absorb this external skill into our library",
       "expected_package": "craft-skills/distil",
       "forbidden_neighbors": ["craft-skills/skillify", "craft-skills/research", "craft-skills/init"]
+    },
+    {
+      "trigger": "review this diff for code smells",
+      "expected_package": "craft-skills/programming",
+      "forbidden_neighbors": ["craft-skills/testing", "craft-skills/security", "craft-skills/debug"]
     }
   ]
 }

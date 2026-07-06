@@ -9,7 +9,9 @@ One entry per smell: a one-line definition, a **Detect** command with its thresh
 - [Coupling](#coupling) — Feature Envy, Shotgun Surgery, Inappropriate Intimacy, Message Chain
 - [Abstraction](#abstraction) — Data Clumps, Primitive Obsession, Speculative Generality, Dead Code, Magic Literal
 - [Change Smells](#change-smells) — Divergent Change
-- [Comments](#comments) — Comments as Deodorant
+- [Function](#function) — Boolean Flag Parameter, Negative Conditional, Output Argument, Side Effect in a Helper, Mixed Abstraction Levels
+- [Naming](#naming) — Mental Mapping, Inconsistent Vocabulary, Redundant Context
+- [Comments](#comments) — Comments as Deodorant, Commented-Out Code, Journal Comment, TODO-as-Feature
 
 ---
 
@@ -294,6 +296,120 @@ Grey zone: a file that changes often *for the same reason* (a router registering
 
 ---
 
+## Function
+
+### Boolean Flag Parameter
+
+A boolean parameter that switches the function's body between two unrelated code paths — the caller can't tell what actually happens without opening the definition.
+
+**Detect** (approximate — flags any bool-typed parameter, not confirming it forks the body; false positives from flags that only toggle a minor detail):
+
+```bash
+# Python — bool-typed parameters
+grep -rnE 'def [A-Za-z_]+\([^)]*:[[:space:]]*bool' --include='*.py' <dir>
+
+# TypeScript — boolean-typed parameters
+grep -rnE '\([^)]*:[[:space:]]*boolean' --include='*.ts' --include='*.tsx' <dir>
+```
+
+**Fix:** [Extract Function](catalog.md#1-extract-function) — split into two named functions, one per branch, and delete the flag.
+
+Grey zone: a flag that only toggles a minor detail within one shared path (`includeMeta: boolean` appending one extra field) is a configuration option, not two functions wearing one name — the smell is a flag that sends execution down genuinely different logic.
+
+### Negative Conditional
+
+A predicate named or phrased as a negative (`isNotValid`, `!isNotReady`) that forces the reader to resolve a double negation before knowing the actual state.
+
+**Detect** (approximate — matches `!` applied to an already-negative name, or a `not`-prefixed predicate definition; misses other double-negative phrasings):
+
+```bash
+grep -rnE '!\s*(is_?[Nn]ot|has_?[Nn]ot)[A-Za-z_]*' --include='*.py' --include='*.ts' <dir>
+grep -rnE '\b(is_?[Nn]ot|has_?[Nn]ot)[A-Za-z_]*\s*\(' --include='*.py' --include='*.ts' <dir>
+```
+
+**Fix:** [Rename](catalog.md#4-rename-via-idelsp-not-sed) the predicate to its positive form; [Extract Variable](catalog.md#3-extract-variable) to name the resulting positive condition at the call site.
+
+Grey zone: a single, isolated `!isX` at one call site reads fine — the smell is a predicate *defined* in the negative, forcing every caller to double-negate to reason about it.
+
+### Output Argument
+
+A function that mutates a parameter passed in — a collection, object, or array — instead of returning a new value, hiding a side effect behind what looks like a normal argument.
+
+**Detect:** no cheap command — greppable candidates (a parameter reassigned or mutated in the body) drown in false positives from legitimate in-place APIs; read the flagged function's parameter list against its body.
+
+**Fix:** [Extract Variable](catalog.md#3-extract-variable) at the call site to hold the return value, and change the function to return the new value instead of mutating the input.
+
+Grey zone: a documented in-place API (`list.sort()`, a builder's `.add()`) is fine when mutation is the stated contract — the smell is an *undocumented* mutation the caller didn't expect from the name or the type.
+
+### Side Effect in a Helper
+
+A function named and shaped like a pure query (`get`/`is`/`calculate`) that also writes state or calls out over the network — its name promises no effect and its body delivers one.
+
+**Detect:** no cheap command — read the flagged lines; a `get`/`is`-prefixed function whose body assigns to something outside its own locals, writes, or calls the network is the tell.
+
+**Fix:** [Extract Function](catalog.md#1-extract-function) to split the query from the effect, or [Rename](catalog.md#4-rename-via-idelsp-not-sed) so the name discloses the effect.
+
+Grey zone: lazy-loading and memoizing a value inside a getter (compute once, cache, return) is an accepted exception — the smell is an effect that other callers depend on, not private memoization.
+
+### Mixed Abstraction Levels
+
+One function interleaves high-level orchestration ("do step A, then step B") with low-level detail (byte offsets, regex, index math) in the same body, forcing the reader to switch levels line by line.
+
+**Detect:** no cheap command — read the flagged function; the tell is a call to a well-named helper sitting directly next to a line of raw loop/index/regex manipulation.
+
+**Fix:** [Extract Function](catalog.md#1-extract-function) to pull the low-level detail into its own named step, so the outer function reads as a flat list of verbs.
+
+Grey zone: a short, genuinely single-purpose function (one loop with one obvious index calculation) isn't mixing levels — the smell needs enough length to have more than one level in the first place.
+
+---
+
+## Naming
+
+### Mental Mapping
+
+A variable or parameter named with a single letter or an abbreviation cryptic enough that the reader must hold its meaning in their head rather than read it off the name.
+
+**Detect** (approximate — single-letter identifiers outside the conventional loop-counter/index exception):
+
+```bash
+# Python — single-letter assignment outside common loop counters
+grep -rnE '^\s*[a-hl-z]\s*=' --include='*.py' <dir>
+
+# TypeScript — single-letter const/let outside common loop counters
+grep -rnE '\b(const|let)\s+[a-hl-z]\s*[:=]' --include='*.ts' --include='*.tsx' <dir>
+```
+
+**Fix:** [Rename](catalog.md#4-rename-via-idelsp-not-sed) to the concept the value holds.
+
+Grey zone: `i`/`j`/`k` as loop counters, `x`/`y` as coordinate pairs, and `_` as a deliberately-unused binding are conventional, not mental mapping — the smell is a name that forces a lookup of its definition to know what it holds.
+
+### Inconsistent Vocabulary
+
+The same concept goes by several names across the codebase (`fetchUser`, `getUser`, `retrieveUser`), so a reader can never be sure two similarly-named functions aren't secretly different.
+
+**Detect** (approximate — clusters near-synonym verb prefixes on the same noun; still needs a read to confirm they return the same shape):
+
+```bash
+grep -rnoE '\b(get|fetch|retrieve|load)[A-Z][A-Za-z0-9_]*' --include='*.py' --include='*.ts' <dir> \
+  | sed -E 's/^[^:]+:[^:]+://; s/^(get|fetch|retrieve|load)//' | sort | uniq -c | sort -rn | awk '$1>=2'
+```
+
+**Fix:** [Rename](catalog.md#4-rename-via-idelsp-not-sed) every variant to the one term the team has picked for that concept.
+
+Grey zone: `get` (cheap, in-memory) versus `fetch` (network I/O) can be a deliberate, documented distinction — the smell is unexplained variation on functions that do the identical thing.
+
+### Redundant Context
+
+A field or variable repeats the name of its own container (`car.carColor`, `user.userId` inside `class User`), adding characters without adding information.
+
+**Detect:** no cheap command — greppable candidates (a member name sharing its container's name) need the container name confirmed by eye; scan a flagged type's member list for its own name repeated as a prefix.
+
+**Fix:** [Rename](catalog.md#4-rename-via-idelsp-not-sed) to drop the redundant prefix; the container already supplies that context.
+
+Grey zone: a field name that happens to share a word with its type for a good reason (`Order.orderedAt`, distinct from a hypothetical `Order.createdAt`) is fine — the smell is pure repetition that adds zero disambiguating information.
+
+---
+
 ## Comments
 
 ### Comments as Deodorant
@@ -311,4 +427,38 @@ Threshold: ratio > 0.3 in a file with 20+ non-blank lines.
 **Fix:** [Extract Variable](catalog.md#3-extract-variable) or [Extract Function](catalog.md#1-extract-function) to name the thing instead of describing it; [Rename](catalog.md#4-rename-via-idelsp-not-sed) often removes the need for the comment entirely.
 
 Grey zone: a comment stating *why* — a non-obvious constraint, a trade-off, a `craft:` ceiling — is documentation, never this smell. The smell is specifically a comment narrating *what* the very next line already says.
+
+### Commented-Out Code
+
+Dead code left behind a comment marker instead of deleted, so the reader has to decide whether it's meaningful or forgotten.
+
+**Detect:** the Dead Code entry's cheap first pass (`ABSTR-DEADCODE`) already flags commented-out blocks as one of its false-positive sources — treat any such hit that turns out to be a comment, not live code, as this smell instead of Dead Code.
+
+**Fix:** no catalog move applies — delete it outright; version control already holds the history.
+
+Grey zone: a one-line comment documenting *why* an approach was rejected is a design note, not this smell — the smell is a code block left behind, not a sentence.
+
+### Journal Comment
+
+A comment block logging dates, authors, or an edit history inline in the source, duplicating what version control already tracks.
+
+**Detect** (approximate — comment lines containing a date or an attribution phrase):
+
+```bash
+grep -rnE '^\s*(//|#).*(\b[0-9]{4}-[0-9]{2}-[0-9]{2}\b|changed by|modified by)' --include='*.py' --include='*.ts' <dir>
+```
+
+**Fix:** no catalog move applies — delete it; `git log`/`git blame` already carries that history.
+
+Grey zone: none — a journal comment is never load-bearing information the code itself needs; delete on sight.
+
+### TODO-as-Feature
+
+A `TODO` comment standing in for behavior the current task actually requires, shipped as if leaving a note were the same as finishing the work.
+
+**Detect:** no cheap command — a `TODO`/`FIXME` grep mostly finds legitimate deferred work; confirm by reading whether the surrounding function sits on a path the current change is supposed to make work.
+
+**Fix:** implement the behavior now, or file a tracked issue and say so explicitly in the commit or PR — never let the comment substitute for either.
+
+Grey zone: a `TODO` marking a genuinely out-of-scope follow-up (a documented future optimization, not required for correctness now) is fine — the smell is a `TODO` covering for missing behavior the task was supposed to deliver.
 

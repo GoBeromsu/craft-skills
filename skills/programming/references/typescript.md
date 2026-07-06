@@ -2,7 +2,7 @@
 
 Modern TypeScript: strictly typed, built on the project's canonical libraries and toolchain, and correct under async. The compiler is your first line of defense — encode invariants as types, parse untrusted input at boundaries, and give every function a contract the types enforce.
 
-Load this file in full before writing or editing TypeScript. The rules below are deliberate project choices — violations are wrong, not stylistic.
+Load this file in full before writing or editing TypeScript. The rules below are deliberate project choices — violations are wrong, not stylistic. Naming, function shape, and structural craft live in `typescript/clean-code.md` — load it alongside this file for green-field code and reviews.
 
 ## Contents
 

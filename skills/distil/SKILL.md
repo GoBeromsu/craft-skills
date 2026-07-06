@@ -2,7 +2,7 @@
 name: distil
 description: Distils transferable rules and conventions from an external source — a well-crafted repo, an engineering article, an AGENTS.md, or a third-party skill — and lands them in this library under the authoring contract with provenance recorded. Use when the user says "파쿠리", "distil the rules from this repo", "absorb this skill", or "pull the conventions out of this article", or hands over a link worth mining. Not for authoring a skill from your own workflow or shipping the final package — the landing routes through skillify; not for open-ended investigation of a question — use research; not for summarizing a source with no intent to land rules in the library.
 metadata:
-  version: 1.0.0
+  version: 1.0.1
 ---
 
 # distil
@@ -79,7 +79,7 @@ Route the approved mapping through `skillify` (create or update). distil prepare
 distillate; skillify owns packaging, validation, and branch → PR. Two provenance duties
 travel with every landing:
 
-- The CHANGELOG bullet carries `Provenance: <source URL or path>`.
+- The CHANGELOG bullet carries a `Provenance:` clause naming what was taken, with a public source as a markdown link — e.g. `Provenance: reuse rung from [ponytail](https://github.com/DietrichGebert/ponytail)`; a local source uses its plain path.
 - A substantive excerpt worth re-consulting lands as `references/*.md` — never left in
   chat history.
 

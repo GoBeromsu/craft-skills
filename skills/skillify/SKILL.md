@@ -2,7 +2,7 @@
 name: skillify
 description: Owns the full lifecycle of craft-skills skill packages — creating, updating, moving/renaming, and retiring them — through an eval-first authoring loop and deterministic format validation. Use when a user says things like "make a skill", "skillify this workflow", "turn this into a skill", "update this skill", "move this skill", or "스킬 만들자", or when a recurring workflow correction needs to be encoded into a governing skill instead of staying in chat memory. Not for one-off project scripts or prompts with no reuse intent — those stay local to the originating project.
 metadata:
-  version: 4.1.0
+  version: 4.1.1
 ---
 
 # skillify

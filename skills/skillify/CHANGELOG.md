@@ -29,3 +29,4 @@
 - 2026-06-30 — v3.5.0: CHANGELOGs had grown multi-line → adopted a one-line `why → what` convention; migrated every CHANGELOG in one pass.
 - 2026-07-06 — v4.0.0: realign to vendor-official contract → spec-minimal frontmatter, eval-first loop, refs trimmed to contract/lifecycle/hygiene. MAJOR.
 - 2026-07-06 — v4.1.0: operator corrections stayed in chat memory → per-skill ## Anti-patterns registry + record-a-correction flow + CHANGELOG provenance rule.
+- 2026-07-06 — v4.1.1: provenance clauses named sources without links → contract §6 now requires what-was-taken + [name](url) form.
