@@ -2,7 +2,7 @@
 name: skillify
 description: Owns the full lifecycle of craft-skills skill packages — creating, updating, moving/renaming, and retiring them — through an eval-first authoring loop and deterministic format validation. Use when a user says things like "make a skill", "skillify this workflow", "turn this into a skill", "update this skill", "move this skill", or "스킬 만들자", or when a recurring workflow correction needs to be encoded into a governing skill instead of staying in chat memory. Not for one-off project scripts or prompts with no reuse intent — those stay local to the originating project.
 metadata:
-  version: 4.0.0
+  version: 4.1.0
 ---
 
 # skillify
@@ -59,7 +59,9 @@ when a sibling overlaps. Body targets 150 lines, hard-caps at 500; move depth to
 
 - **Create:** clear the admission check, draft evals, author the package, validate, PR.
 - **Update:** patch `SKILL.md`/references, bump `metadata.version`, append one `CHANGELOG.md`
-  bullet, validate, PR.
+  bullet, validate, PR. When the operator corrects unwanted behavior mid-session, record it
+  via the three-way split — workflow step + `## Anti-patterns` entry + CHANGELOG bullet
+  (`references/lifecycle.md §3`).
 - **Move/rename:** `git mv` the whole directory, fix every path reference across the repo,
   verify by loading. `references/lifecycle.md §4`.
 - **Retire:** add a `## Deprecated` section at the top of the body pointing at the
@@ -94,24 +96,18 @@ local-only. A patched file with no PR is not done. Mechanics: `references/lifecy
 - `python3` — both Layer-1 validators
 - `gh` — PR creation and branch flow
 
-## Common Rationalizations
+## Anti-patterns
 
-| Rationalization | Reality |
-|---|---|
-| "It's a small edit, skip the branch/PR." | The deliverable is reviewable repo state, not a patched file. |
-| "I'll add the CHANGELOG bullet later." | Layer-1 CI fails a changed package with no dated bullet — add it in the same commit. |
-| "I'll write tests before drafting evals." | Evals judge behavior and trigger-fit first; tests lock in behavior only once it's proven. |
-| "A longer, descriptive name is clearer." | The name is a compact handle; discoverability lives in the description's trigger phrases. |
-| "I'll put the API key inline for now." | Secrets live in the per-skill `.env`; a committed secret means history rewrite + rotation. |
-
-## Red Flags
-
-- A `## Change Log` section inside `SKILL.md` (history belongs in `CHANGELOG.md`)
-- A description that reads as an abstract capability blurb, not a user trigger phrase
-- A nested `SKILL.md` anywhere inside a package
-- A real path/secret/`.env` value committed into any package file
-- Stopping at "I patched the file" without branch + PR
-- Authoring before `evals/evals.json` + `evals/triggers.json` exist
+- Skipping branch → PR because "it's a small edit" → the deliverable is reviewable repo state; open the PR.
+- Deferring the CHANGELOG bullet to "later" → Layer-1 CI fails a changed package with no dated bullet; add it in the same commit.
+- Authoring before `evals/evals.json` + `evals/triggers.json` exist → evals judge behavior and trigger-fit first; tests lock in behavior only once proven.
+- A longer, descriptive skill name "for clarity" → the name is a compact handle; discoverability lives in the description's trigger phrases.
+- An API key or real path inline "for now" → secrets live in the per-skill `.env`; a committed secret means history rewrite + rotation.
+- A `## Change Log` section inside `SKILL.md` → history lives only in `CHANGELOG.md`.
+- A description written as an abstract capability blurb → weave in real user trigger phrases.
+- A nested `SKILL.md` anywhere inside a package → every skill is one flat directory.
+- An operator correction left in chat memory → record it via the three-way split before the session ends (`references/lifecycle.md §3`).
+- Operator-supplied source material left in chat history → land the excerpt as `references/*.md` and add a `Provenance:` clause to the CHANGELOG bullet.
 
 ## Verification
 

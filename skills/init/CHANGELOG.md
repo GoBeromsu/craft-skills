@@ -13,3 +13,4 @@
 - 2026-06-30 — v2.0.0: governance/audit machinery was tombstoned → removed scripts/ + tests/ trees; git-guard moved to git; block now convention-only.
 - 2026-06-30 — v2.1.0: no rail caught scope creep mid-change → Development Flow block gained an out-of-scope routing convention: open a new issue instead (#21).
 - 2026-07-06 — v3.0.0: realign to vendor-official authoring contract → spec-minimal frontmatter, what+when description, naming fixed, phase refs gain ToCs.
+- 2026-07-06 — v3.0.1: contract adopted a single anti-patterns registry → Red Flags reshaped into ## Anti-patterns with behavior → fix entries.

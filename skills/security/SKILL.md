@@ -2,7 +2,7 @@
 name: security
 description: Finds and fixes vulnerabilities in code the user owns across web, API, and LLM surfaces, mapping every trust boundary first and triaging by production reachability and severity second. Use when asked for a security review, "is this safe to ship," "check for vulnerabilities," or "보안 점검," when auditing secrets hygiene or dependency risk, or when reviewing a PR or feature for security regressions before release. Not for building or changing LLM-agent systems themselves (use `agents`) or for installing the enforcement hook, lint, or pre-commit that closes a finding permanently (use `hookify`); this skill finds and fixes, it never attacks.
 metadata:
-  version: 2.0.0
+  version: 2.0.1
 ---
 
 # security
@@ -92,27 +92,22 @@ Reachability, not a demonstrated exploit, drives the tree — a finding with cle
 - `npm audit` / `pnpm audit` (Node) or `pip-audit` / the uv-native audit command (Python/uv) for dependency audits — see `references/secrets-supply-chain.md` for the exact commands.
 - Optional: `ast-grep` for structural matches where a plain regex produces too many false positives — an optional extra, not a substitute for the commands shipped in the references.
 
-## Common Rationalizations
+## Anti-patterns
 
-| Rationalization | Reality |
-|---|---|
-| "It's an internal tool, nobody external can reach it." | Internal tools get exposed by a VPN misconfiguration, a compromised laptop, or a partner integration — network position is not a stable trust boundary. |
-| "We'll fix it after launch." | Ship dates slip and the flaw goes live with exactly the reachability the severity tree flags as fix-now. Ship a mitigation now; track the real fix, don't defer the whole thing. |
-| "The model would never actually generate that." | Model output is untrusted input by definition — a jailbreak or one poisoned retrieved document is the only precondition. Validate the output, never the model's good behavior. |
-| "It's just a prototype." | Prototype code and demo credentials both get copy-pasted into production. Apply the same input-validation and secrets discipline regardless of the label. |
-| "Nobody will find this endpoint, it's not linked anywhere." | Obscurity fails against scanners, `robots.txt` leaks, and bundled JS inspection. Any endpoint a request can reach, an attacker can eventually find. |
-| "The framework already handles that by default." | Confirm with the detection command; a config flag left off, or a default changed between versions, silently reopens the exact hole the framework claims to close. |
-| "There's no working exploit shown, so it's not real yet." | Reachability plus severity is sufficient to triage — demanding a proof-of-concept before acting is how known, reachable bugs sit unfixed. |
-
-## Red Flags
-
-- A user-controlled or model-generated string reaching `exec`/`eval`/a shell call/a raw SQL string/an HTML-rendering sink with no parse step in between.
-- A secret-shaped string (`AKIA…`, `ghp_…`, `sk-…`, `BEGIN PRIVATE KEY`) present in a tracked file or anywhere in `git log -p`.
-- A `.env` file tracked by git with no `.env.example` sibling.
-- No dependency lockfile committed while the audit command reports unresolved high/critical findings.
-- Authorization implemented as "is authenticated" instead of "is authenticated AND permitted for this specific object."
-- A finding reported with the real secret value pasted in instead of redacted.
-- A known exploitable path left live "to see what happens" instead of mitigated immediately.
+- Skipping trust-boundary mapping because "it's an internal tool, nobody external can reach it" → map every ingress channel regardless of network position; VPN misconfigurations, compromised laptops, and partner integrations all expose "internal" tools.
+- Deferring a fix-now finding with "we'll fix it after launch" → ship a mitigation immediately and track the real fix as the next release's first item; ship dates slip and the flaw goes live with fix-now reachability.
+- Trusting "the model would never actually generate that" → validate model output like any other untrusted input; a jailbreak or one poisoned retrieved document is the only precondition needed.
+- Skipping input-validation and secrets discipline because "it's just a prototype" → apply the same discipline regardless of label; prototype code and demo credentials both get copy-pasted into production.
+- Relying on "nobody will find this endpoint, it's not linked anywhere" → treat every reachable endpoint as discoverable; obscurity fails against scanners, `robots.txt` leaks, and bundled JS inspection.
+- Assuming "the framework already handles that by default" without confirming → confirm with the detection command; a config flag left off or a default changed between versions silently reopens the hole.
+- Waiting for a proof-of-concept before acting because "there's no working exploit shown, so it's not real yet" → triage on reachability plus severity alone; demanding a PoC first is how known, reachable bugs sit unfixed.
+- Letting a user-controlled or model-generated string reach `exec`/`eval`/a shell call/a raw SQL string/an HTML-rendering sink with no parse step in between → add a parse/validate step at the boundary before the value reaches the sink.
+- Leaving a secret-shaped string (`AKIA…`, `ghp_…`, `sk-…`, `BEGIN PRIVATE KEY`) in a tracked file or anywhere in `git log -p` → rotate the credential immediately and scrub it from history.
+- Tracking a `.env` file in git with no `.env.example` sibling → untrack the `.env` file, add it to `.gitignore`, and commit a `.env.example` template instead.
+- Leaving no dependency lockfile committed while the audit command reports unresolved high/critical findings → commit the lockfile and resolve the reported high/critical findings before shipping.
+- Implementing authorization as "is authenticated" instead of "is authenticated AND permitted for this specific object" → check both authentication and object-level permission on every access.
+- Reporting a finding with the real secret value pasted in instead of redacted → redact every secret value before it appears in a report.
+- Leaving a known exploitable path live "to see what happens" instead of mitigating it immediately → mitigate the path immediately (disable the route, rotate the secret, add a gateway rule).
 
 ## Verification
 

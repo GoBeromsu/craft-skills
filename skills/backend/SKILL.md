@@ -2,7 +2,7 @@
 name: backend
 description: Routes backend service engineering through an architecture-detection gate — layered, vertical-slice, or hexagonal — then applies dependency-direction rules, an API design contract, and per-framework folder conventions. Use when building an API endpoint, setting up a new backend service, deciding whether a service should be layered or hexagonal, adding a repository or use case to an existing service, or reviewing folder structure for architecture drift (e.g. "백엔드 구조 잡아줘"). Not for UI rendering work — use the frontend skill instead.
 metadata:
-  version: 2.0.0
+  version: 2.0.1
 ---
 
 # backend
@@ -62,26 +62,21 @@ Grey zone — genuinely ambiguous (mid-size team, moderate complexity, no clear 
 
 Not for: per-file type/style discipline or parse-don't-validate input handling at the boundary (`programming` skill), test suite design (`testing` skill), authz/injection/rate-limiting hardening (`security` skill), frontend rendering architecture (`frontend` skill).
 
-## Common Rationalizations
+## Anti-patterns
 
-| Rationalization | Reality |
-|---|---|
-| "It's one small endpoint, I'll just call the repository from the controller this once." | One skip normalizes the next; the dependency-direction rule has zero exceptions inside a layered service. |
-| "This service is CRUD-only but hexagonal looks more professional." | Ports/adapters ceremony earns its cost only with a real second delivery mechanism or a domain that must outlive the framework. A CRUD app pays the cost with no return — use layered. |
-| "I'll just add a `shared/` helper for this one slice, it's convenient." | `shared/` is admitted only after a rule of three (identical logic in ≥3 slices). One occurrence is coincidence, not a pattern. |
-| "The API field's meaning changed slightly, docs will explain it." | Every observed behavior is a contract whether documented or not. A silent field-meaning change breaks whoever already parses it the old way. |
-| "I'll add a v2 API alongside v1 and migrate later." | Long-lived parallel versions rarely get retired. Evolve v1 additively; version only when a break is unavoidable, and set a deprecation date immediately. |
-| "This project already mixes patterns, adding one more won't matter." | Existing drift is a bug to flag, not a precedent to extend. Report it; do not add a third pattern on top. |
-
-## Red Flags
-
-- A controller importing a repository or ORM session directly.
-- A service function taking or returning an HTTP framework type (`Request`, `Response`).
-- Domain code (`domain/`) importing a web framework or ORM.
-- A feature slice importing another slice's internals outside `shared/`.
-- Two or more architecture-triad folders (`controllers/`+`services/`+`repositories/` alongside `domain/`+`ports/`+`adapters/`) coexisting in one service.
-- An API response reusing a repurposed field's old name for a new meaning.
-- More than one API version directory alive with no deprecation date set on the older one.
+- Calling the repository directly from the controller as a one-off shortcut → keep the dependency-direction rule with zero exceptions in a layered service; one skip normalizes the next.
+- Picking hexagonal for a CRUD-only service because it looks more professional → use layered; ports/adapters ceremony only pays off with a real second delivery mechanism or a domain that must outlive the framework.
+- Adding a `shared/` helper for a single slice because it's convenient → wait for a rule of three (identical logic in ≥3 slices) before admitting `shared/`; one occurrence is coincidence, not a pattern.
+- Letting docs explain a silently changed API field's meaning → treat every observed behavior as a contract whether documented or not; a silent field-meaning change breaks whoever already parses it the old way.
+- Adding a v2 API alongside v1 to migrate later → evolve v1 additively, version only when a break is unavoidable, and set a deprecation date immediately.
+- Adding a third architecture pattern because the project already mixes patterns → report existing drift as a bug to flag, not a precedent to extend.
+- A controller importing a repository or ORM session directly → route data access through the service layer instead.
+- A service function taking or returning an HTTP framework type (`Request`, `Response`) → keep HTTP types confined to controllers; pass plain domain types to services.
+- Domain code (`domain/`) importing a web framework or ORM → keep domain code framework-agnostic; put such calls behind a port/adapter.
+- A feature slice importing another slice's internals outside `shared/` → import only through `shared/` or a public interface, never another slice's internals.
+- Two or more architecture-triad folders (`controllers/`+`services/`+`repositories/` alongside `domain/`+`ports/`+`adapters/`) coexisting in one service → keep exactly one pattern per service; flag mixed-pattern drift instead of layering a third pattern on top.
+- An API response reusing a repurposed field's old name for a new meaning → rename the field or version deliberately instead of repurposing it silently.
+- More than one API version directory alive with no deprecation date set on the older one → set a deprecation date on the older version as soon as the new one ships.
 
 ## Verification
 

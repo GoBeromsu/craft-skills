@@ -28,3 +28,4 @@
 - 2026-06-30 — v3.4.0: thick skills had no validator support → blessed the waypoint + sub-recipe layout and taught the validator to detect it.
 - 2026-06-30 — v3.5.0: CHANGELOGs had grown multi-line → adopted a one-line `why → what` convention; migrated every CHANGELOG in one pass.
 - 2026-07-06 — v4.0.0: realign to vendor-official contract → spec-minimal frontmatter, eval-first loop, refs trimmed to contract/lifecycle/hygiene. MAJOR.
+- 2026-07-06 — v4.1.0: operator corrections stayed in chat memory → per-skill ## Anti-patterns registry + record-a-correction flow + CHANGELOG provenance rule.
