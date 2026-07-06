@@ -108,7 +108,7 @@ install_hermes() {
   printf '\n'
   step "Verify skills are visible:"
   printf '\n'
-  printf '    hermes skills list | grep -E '"'"'document|worktree|init|skillify'"'"'\n'
+  printf '    hermes skills list | grep -E '"'"'document|git|init|skillify'"'"'\n'
   printf '\n'
   ok "Hermes config snippet printed — paste it into config.yaml and restart."
 }

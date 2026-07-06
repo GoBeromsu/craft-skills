@@ -4,11 +4,66 @@
   "packages": [
     {
       "schema_version": 1,
+      "id": "craft-skills/agents",
+      "name": "agents",
+      "kind": "leaf",
+      "lifecycle": "active",
+      "version": "2.0.0",
+      "owner_repo": "craft-skills",
+      "owner_domain": "research-development",
+      "visibility": "public",
+      "compatibility": [
+        "claude-code",
+        "codex",
+        "hermes"
+      ],
+      "provenance": {
+        "upstream": null,
+        "commit": null,
+        "license": null,
+        "absorbed_from": []
+      },
+      "replacement_for": [],
+      "replaced_by": null,
+      "children": [],
+      "adapters": [
+        {
+          "runtime": "claude-code",
+          "surface": "plugin-skill",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        }
+      ],
+      "validation_profile": {
+        "discovery_parity": "strict",
+        "adapter_parity": "strict",
+        "provenance_license": "strict",
+        "private_data_hygiene": "strict",
+        "deprecation": "strict",
+        "routing_eval": "smoke",
+        "install_doctor": "package",
+        "topology": "leaf"
+      }
+    },
+    {
+      "schema_version": 1,
       "id": "craft-skills/backend",
       "name": "backend",
       "kind": "leaf",
       "lifecycle": "active",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
@@ -21,6 +76,61 @@
         "upstream": "code-yeongyu/lazycodex",
         "commit": "dac44057c70eedbdbca5afaeb1d16502e518fbdc",
         "license": "MIT",
+        "absorbed_from": []
+      },
+      "replacement_for": [],
+      "replaced_by": null,
+      "children": [],
+      "adapters": [
+        {
+          "runtime": "claude-code",
+          "surface": "plugin-skill",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        }
+      ],
+      "validation_profile": {
+        "discovery_parity": "strict",
+        "adapter_parity": "strict",
+        "provenance_license": "strict",
+        "private_data_hygiene": "strict",
+        "deprecation": "strict",
+        "routing_eval": "smoke",
+        "install_doctor": "package",
+        "topology": "leaf"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "craft-skills/debug",
+      "name": "debug",
+      "kind": "leaf",
+      "lifecycle": "active",
+      "version": "1.0.0",
+      "owner_repo": "craft-skills",
+      "owner_domain": "research-development",
+      "visibility": "public",
+      "compatibility": [
+        "claude-code",
+        "codex",
+        "hermes"
+      ],
+      "provenance": {
+        "upstream": null,
+        "commit": null,
+        "license": null,
         "absorbed_from": []
       },
       "replacement_for": [],
@@ -61,15 +171,16 @@
       "schema_version": 1,
       "id": "craft-skills/document",
       "name": "document",
-      "kind": "thick",
+      "kind": "leaf",
       "lifecycle": "active",
-      "version": "1.1.0",
+      "version": "3.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
       "compatibility": [
         "claude-code",
-        "codex"
+        "codex",
+        "hermes"
       ],
       "provenance": {
         "upstream": null,
@@ -77,15 +188,11 @@
         "license": null,
         "absorbed_from": []
       },
-      "replacement_for": [],
-      "replaced_by": null,
-      "children": [
-        "craft-skills/document/adr",
-        "craft-skills/document/api-docs",
-        "craft-skills/document/changelog",
-        "craft-skills/document/inline-comments",
-        "craft-skills/document/readme"
+      "replacement_for": [
+        "craft-skills/documents"
       ],
+      "replaced_by": null,
+      "children": [],
       "adapters": [
         {
           "runtime": "claude-code",
@@ -95,6 +202,12 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -108,7 +221,7 @@
         "deprecation": "strict",
         "routing_eval": "smoke",
         "install_doctor": "package",
-        "topology": "thick"
+        "topology": "leaf"
       }
     },
     {
@@ -117,7 +230,7 @@
       "name": "frontend",
       "kind": "leaf",
       "lifecycle": "active",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
@@ -168,11 +281,68 @@
     },
     {
       "schema_version": 1,
+      "id": "craft-skills/git",
+      "name": "git",
+      "kind": "leaf",
+      "lifecycle": "active",
+      "version": "2.0.0",
+      "owner_repo": "craft-skills",
+      "owner_domain": "research-development",
+      "visibility": "public",
+      "compatibility": [
+        "claude-code",
+        "codex",
+        "hermes"
+      ],
+      "provenance": {
+        "upstream": null,
+        "commit": null,
+        "license": null,
+        "absorbed_from": []
+      },
+      "replacement_for": [
+        "craft-skills/worktree"
+      ],
+      "replaced_by": null,
+      "children": [],
+      "adapters": [
+        {
+          "runtime": "claude-code",
+          "surface": "plugin-skill",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        }
+      ],
+      "validation_profile": {
+        "discovery_parity": "strict",
+        "adapter_parity": "strict",
+        "provenance_license": "strict",
+        "private_data_hygiene": "strict",
+        "deprecation": "strict",
+        "routing_eval": "smoke",
+        "install_doctor": "package",
+        "topology": "leaf"
+      }
+    },
+    {
+      "schema_version": 1,
       "id": "craft-skills/hookify",
       "name": "hookify",
       "kind": "leaf",
       "lifecycle": "active",
-      "version": "0.1.0",
+      "version": "1.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
@@ -227,7 +397,62 @@
       "name": "init",
       "kind": "leaf",
       "lifecycle": "active",
-      "version": "2.1.0",
+      "version": "3.0.0",
+      "owner_repo": "craft-skills",
+      "owner_domain": "research-development",
+      "visibility": "public",
+      "compatibility": [
+        "claude-code",
+        "codex",
+        "hermes"
+      ],
+      "provenance": {
+        "upstream": null,
+        "commit": null,
+        "license": null,
+        "absorbed_from": []
+      },
+      "replacement_for": [],
+      "replaced_by": null,
+      "children": [],
+      "adapters": [
+        {
+          "runtime": "claude-code",
+          "surface": "plugin-skill",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        }
+      ],
+      "validation_profile": {
+        "discovery_parity": "strict",
+        "adapter_parity": "strict",
+        "provenance_license": "strict",
+        "private_data_hygiene": "strict",
+        "deprecation": "strict",
+        "routing_eval": "smoke",
+        "install_doctor": "package",
+        "topology": "leaf"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "craft-skills/ml",
+      "name": "ml",
+      "kind": "leaf",
+      "lifecycle": "active",
+      "version": "2.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
@@ -282,13 +507,14 @@
       "name": "programming",
       "kind": "leaf",
       "lifecycle": "active",
-      "version": "1.2.0",
+      "version": "2.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
       "compatibility": [
         "claude-code",
-        "codex"
+        "codex",
+        "hermes"
       ],
       "provenance": {
         "upstream": "code-yeongyu/lazycodex",
@@ -311,6 +537,177 @@
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        }
+      ],
+      "validation_profile": {
+        "discovery_parity": "strict",
+        "adapter_parity": "strict",
+        "provenance_license": "strict",
+        "private_data_hygiene": "strict",
+        "deprecation": "strict",
+        "routing_eval": "smoke",
+        "install_doctor": "package",
+        "topology": "leaf"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "craft-skills/refactor",
+      "name": "refactor",
+      "kind": "leaf",
+      "lifecycle": "active",
+      "version": "2.0.0",
+      "owner_repo": "craft-skills",
+      "owner_domain": "research-development",
+      "visibility": "public",
+      "compatibility": [
+        "claude-code",
+        "codex",
+        "hermes"
+      ],
+      "provenance": {
+        "upstream": null,
+        "commit": null,
+        "license": null,
+        "absorbed_from": []
+      },
+      "replacement_for": [],
+      "replaced_by": null,
+      "children": [],
+      "adapters": [
+        {
+          "runtime": "claude-code",
+          "surface": "plugin-skill",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        }
+      ],
+      "validation_profile": {
+        "discovery_parity": "strict",
+        "adapter_parity": "strict",
+        "provenance_license": "strict",
+        "private_data_hygiene": "strict",
+        "deprecation": "strict",
+        "routing_eval": "smoke",
+        "install_doctor": "package",
+        "topology": "leaf"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "craft-skills/research",
+      "name": "research",
+      "kind": "leaf",
+      "lifecycle": "active",
+      "version": "1.0.0",
+      "owner_repo": "craft-skills",
+      "owner_domain": "research-development",
+      "visibility": "public",
+      "compatibility": [
+        "claude-code",
+        "codex",
+        "hermes"
+      ],
+      "provenance": {
+        "upstream": null,
+        "commit": null,
+        "license": null,
+        "absorbed_from": []
+      },
+      "replacement_for": [],
+      "replaced_by": null,
+      "children": [],
+      "adapters": [
+        {
+          "runtime": "claude-code",
+          "surface": "plugin-skill",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        }
+      ],
+      "validation_profile": {
+        "discovery_parity": "strict",
+        "adapter_parity": "strict",
+        "provenance_license": "strict",
+        "private_data_hygiene": "strict",
+        "deprecation": "strict",
+        "routing_eval": "smoke",
+        "install_doctor": "package",
+        "topology": "leaf"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "craft-skills/security",
+      "name": "security",
+      "kind": "leaf",
+      "lifecycle": "active",
+      "version": "2.0.0",
+      "owner_repo": "craft-skills",
+      "owner_domain": "research-development",
+      "visibility": "public",
+      "compatibility": [
+        "claude-code",
+        "codex",
+        "hermes"
+      ],
+      "provenance": {
+        "upstream": null,
+        "commit": null,
+        "license": null,
+        "absorbed_from": []
+      },
+      "replacement_for": [],
+      "replaced_by": null,
+      "children": [],
+      "adapters": [
+        {
+          "runtime": "claude-code",
+          "surface": "plugin-skill",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
         }
       ],
       "validation_profile": {
@@ -330,13 +727,14 @@
       "name": "skillify",
       "kind": "leaf",
       "lifecycle": "active",
-      "version": "3.5.0",
+      "version": "4.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
       "compatibility": [
         "claude-code",
-        "codex"
+        "codex",
+        "hermes"
       ],
       "provenance": {
         "upstream": "bstack:skills/skillify",
@@ -346,9 +744,7 @@
           "bstack/skillify"
         ]
       },
-      "replacement_for": [
-        "bstack/skillify"
-      ],
+      "replacement_for": [],
       "replaced_by": null,
       "children": [],
       "adapters": [
@@ -360,6 +756,67 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        }
+      ],
+      "validation_profile": {
+        "discovery_parity": "strict",
+        "adapter_parity": "strict",
+        "provenance_license": "strict",
+        "private_data_hygiene": "strict",
+        "deprecation": "strict",
+        "routing_eval": "smoke",
+        "install_doctor": "package",
+        "topology": "leaf"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "craft-skills/testing",
+      "name": "testing",
+      "kind": "leaf",
+      "lifecycle": "active",
+      "version": "2.0.0",
+      "owner_repo": "craft-skills",
+      "owner_domain": "research-development",
+      "visibility": "public",
+      "compatibility": [
+        "claude-code",
+        "codex",
+        "hermes"
+      ],
+      "provenance": {
+        "upstream": null,
+        "commit": null,
+        "license": null,
+        "absorbed_from": []
+      },
+      "replacement_for": [],
+      "replaced_by": null,
+      "children": [],
+      "adapters": [
+        {
+          "runtime": "claude-code",
+          "surface": "plugin-skill",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -382,13 +839,14 @@
       "name": "write-report",
       "kind": "leaf",
       "lifecycle": "active",
-      "version": "0.1.1",
+      "version": "1.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
       "compatibility": [
         "claude-code",
-        "codex"
+        "codex",
+        "hermes"
       ],
       "provenance": {
         "upstream": null,
@@ -396,7 +854,9 @@
         "license": null,
         "absorbed_from": []
       },
-      "replacement_for": [],
+      "replacement_for": [
+        "craft-skills/technical-report"
+      ],
       "replaced_by": null,
       "children": [],
       "adapters": [
@@ -411,51 +871,9 @@
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
-        }
-      ],
-      "validation_profile": {
-        "discovery_parity": "strict",
-        "adapter_parity": "strict",
-        "provenance_license": "strict",
-        "private_data_hygiene": "strict",
-        "deprecation": "strict",
-        "routing_eval": "smoke",
-        "install_doctor": "package",
-        "topology": "leaf"
-      }
-    },
-    {
-      "schema_version": 1,
-      "id": "craft-skills/worktree",
-      "name": "worktree",
-      "kind": "leaf",
-      "lifecycle": "active",
-      "version": "2.0.0",
-      "owner_repo": "craft-skills",
-      "owner_domain": "research-development",
-      "visibility": "public",
-      "compatibility": [
-        "claude-code",
-        "codex"
-      ],
-      "provenance": {
-        "upstream": null,
-        "commit": null,
-        "license": null,
-        "absorbed_from": []
-      },
-      "replacement_for": [],
-      "replaced_by": null,
-      "children": [],
-      "adapters": [
-        {
-          "runtime": "claude-code",
-          "surface": "plugin-skill",
-          "status": "generated",
-          "reason": null
         },
         {
-          "runtime": "codex",
+          "runtime": "hermes",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null

@@ -2,9 +2,12 @@
 
 Work-craft Claude Code skills (research + engineering) by Beomsu Koh.
 
-A personal marketplace of task-oriented skills for software and research work — kept separate from
-[`bstack`](https://github.com/GoBeromsu/bstack) (personal / life / second-brain automation) so the
-two domains never bleed into each other's context.
+Own your craft, vendor-agnostic: every skill here is a plain Markdown recipe with no lock-in
+to one tool's plugin format, so the same file works across Claude Code, Codex, Hermes, or any
+other instruction-following agent. A personal marketplace of task-oriented skills for software
+and research work — kept separate from [`bstack`](https://github.com/GoBeromsu/bstack)
+(personal / life / second-brain automation) so the two domains never bleed into each other's
+context.
 
 ---
 
@@ -12,20 +15,22 @@ two domains never bleed into each other's context.
 
 | Skill | Purpose |
 |-------|---------|
-| `document` | Project documentation system — `docs/` folder ontology (research / spec / plan / ADR / rule), the research→ADR→plan decision pipeline, routing for what belongs where, and sub-recipes for ADRs, README, changelog, comments, and the project design.md. |
-| `init` | Dual-entry bootstrap + cartography — scaffolds the `docs/` ontology + ADR rails (Phase 0), then generates a complexity-scored hierarchical `AGENTS.md` knowledge base (Phases 1–4, ported from init-deep) in one pass. |
-| `skillify` | Vendored skill-authoring promotion gate — create, update, move, or promote craft-skills skills through a two-layer review gate. |
-| `hookify` | Turn a convention or engineering best-practice into local deterministic enforcement — choose the earliest reliable hook/lint/pre-commit surface, ship a starter guard, and red-prove it fires. |
-| `programming` | Correctness-first Python and TypeScript engineering discipline — routes code edits through shared workflow rules plus language-specific references before writing. |
-| `frontend` | Rendering-architecture-gated frontend engineering — SPA / SSR-RSC / SSG / islands absolute rules, component-reuse layers, state placement, and folder conventions, gated on the project's design.md. |
-| `backend` | Architecture-gated backend engineering — layered / vertical-slice / hexagonal detection gate, dependency-direction rules, API design contract law, and per-framework folder conventions. |
-| `ml` | ML/DL research engineering — reproducible `pyproject` + `src/` layout, leakage-safe dataset construction, the training-discipline ladder, and vision-specific practice. |
-| `agents` | LLM-agent engineering — eval-first shipping law, prompts-as-code, tool design, and context/tracing discipline for building and changing agent behavior. |
-| `testing` | Suite-level test architecture — taxonomy with resource-based sizing, placement decision tree, prove-it bug-fix law, and structure/integration/e2e conventions with detection commands. |
-| `refactor` | Behavior-preserving restructuring — when-to-refactor triggers, characterization-test protocol for legacy code, 17-smell + 12-move catalogs, and a one-pass `detect-smells.sh`. |
-| `git` | Version-control craft — atomic-commit split protocol, incumbent repo-style detection, commit/branch/PR conventions, and non-interactive-safe history surgery; includes the `git wt` worktree-workflow sub-recipe with git-guard rails. |
-| `security` | Defensive security triage across web, API, and LLM surfaces — trust-boundary mapping, per-class detection commands, severity triage, and secrets/dependency hygiene. |
-| `write-report` | Build and enforce a project's canonical technical report — Scaffold mode interviews depth-by-depth to fill a per-project `technical-report.yaml` frame; Author/Validate mode writes/reviews section markdown against it and gates structure + source coverage with two validators. |
+| `agents` | Build and change LLM-agent systems — prompts, tool schemas, context/tracing wiring — under an eval-first discipline that proves a behavior change against a versioned eval set before shipping. |
+| `backend` | Route backend engineering through an architecture-detection gate (layered / vertical-slice / hexagonal), then apply dependency-direction rules, an API design contract, and per-framework folder conventions. |
+| `debug` | Diagnose a failing program under a hypothesis-driven loop — reproduce before theorizing, log fact separately from inference, and confirm the mechanism with instrumentation before any fix lands. |
+| `document` | Route any documentation task into a six-type `docs/` ontology (research, references, spec, plan, decision, rule) and author repo-level artifacts against their canonical templates. |
+| `frontend` | Gate frontend engineering on a rendering-architecture decision (SPA / SSR-RSC / SSG / islands) before UI code is written, then apply component-reuse, state-placement, and folder rules. |
+| `git` | Guide version-control craft — ground-truth and incumbent-style detection, the atomic-commit split protocol, commit/branch/PR conventions, and non-interactive-safe history surgery, including the `git wt` worktree workflow. |
+| `hookify` | Turn a convention or best practice into local, deterministic enforcement so a violation is blocked before it happens, not corrected after. |
+| `init` | Bootstrap a repo's `docs/` ontology and ADR rails on a fresh repo, then generate a complexity-scored hierarchical `AGENTS.md` knowledge base on a mature one, in one triaged run. |
+| `ml` | Apply ML/DL research-engineering discipline — reproducible project layout, leakage-safe dataset construction, and a training-discipline ladder — to classical ML, deep learning, fine-tuning, and vision work. |
+| `programming` | Apply correctness-first, type-strict engineering discipline when writing or editing Python or TypeScript. |
+| `refactor` | Restructure code without changing what it does, each move backed by a detection command and threshold, gated behind a characterization-test protocol for untested legacy code. |
+| `research` | Run a decision-depth research workflow ending in a `docs/research/{slug}.md` artifact — sweep primary sources, synthesize with a citation on every claim, and state gaps and confidence, never the decision itself. |
+| `security` | Find and fix vulnerabilities across web, API, and LLM surfaces, mapping every trust boundary first and triaging by production reachability and severity second. |
+| `skillify` | Own the full lifecycle of craft-skills packages — create, update, move, retire — through an eval-first authoring loop and deterministic format validation. |
+| `testing` | Architect and audit the test suite — classify each test by taxonomy and resource-based size, place it via a decision tree, and enforce the prove-it law that every bug fix ships with a failing-then-passing test. |
+| `write-report` | Scaffold and author a project's one-off canonical technical report against a single YAML frame whose depth is the enforced table of contents. |
 
 ---
 
@@ -40,29 +45,21 @@ Install via the marketplace (interactive, inside Claude Code):
 /plugin install craft-skills@craft-skills
 ```
 
-Then invoke any skill by name, e.g. `document`, `init`, `skillify`, `programming`, `frontend`, `backend`, `ml`, `agents`, `testing`, `refactor`, `git`, `security`, `hookify`, `write-report`.
+Then invoke any of the 16 skills above by name, e.g. `document`, `init`, `skillify`,
+`programming`, `research`, `debug`.
 
 ---
 
 ### Codex
 
-Install via the Codex plugin marketplace:
+Codex reads `AGENTS.md` natively — no plugin install step is required. Skills are also
+discoverable by cloning this repo into `.agents/skills`:
 
 ```bash
-codex plugin marketplace add GoBeromsu/craft-skills
-codex plugin add craft-skills@craft-skills
+git clone https://github.com/GoBeromsu/craft-skills.git .agents/skills/craft-skills
 ```
 
-For local validation while developing this repository:
-
-```bash
-codex plugin marketplace add ./
-codex plugin list --marketplace craft-skills --available --json
-codex plugin add craft-skills@craft-skills --json
-```
-
-The Codex plugin root is the repository root, so the tracked `skills/` tree is
-packaged directly.
+Reference `AGENTS.md` from your own project's `AGENTS.md` to pull in the skill context.
 
 ---
 
@@ -87,10 +84,10 @@ Mount `skills/` via `skills.external_dirs` in your Hermes config:
    ```
 4. Verify:
    ```bash
-   hermes skills list | grep -E 'document|init|skillify|programming|frontend|backend|ml|agents|testing|refactor|git|security|hookify|write-report'
+   hermes skills list | grep -E 'agents|backend|debug|document|frontend|git|hookify|init|ml|programming|refactor|research|security|skillify|testing|write-report'
    ```
 
-See `.hermes/README.md` for full deployment details and the future skillify protection hook.
+See `.hermes/README.md` for full deployment details.
 
 ---
 
@@ -100,19 +97,21 @@ Skills are plain Markdown — any agent that can ingest instruction files can us
 Point the agent's instruction-file import at the skill you want:
 
 ```
-skills/document/SKILL.md
-skills/init/SKILL.md
-skills/skillify/SKILL.md
-skills/programming/SKILL.md
-skills/frontend/SKILL.md
-skills/backend/SKILL.md
-skills/ml/SKILL.md
 skills/agents/SKILL.md
-skills/testing/SKILL.md
-skills/refactor/SKILL.md
+skills/backend/SKILL.md
+skills/debug/SKILL.md
+skills/document/SKILL.md
+skills/frontend/SKILL.md
 skills/git/SKILL.md
-skills/security/SKILL.md
 skills/hookify/SKILL.md
+skills/init/SKILL.md
+skills/ml/SKILL.md
+skills/programming/SKILL.md
+skills/refactor/SKILL.md
+skills/research/SKILL.md
+skills/security/SKILL.md
+skills/skillify/SKILL.md
+skills/testing/SKILL.md
 skills/write-report/SKILL.md
 ```
 
@@ -139,10 +138,11 @@ The script is idempotent and safe to re-run.
 
 ```bash
 claude plugin validate .
-codex plugin marketplace add ./
-codex plugin list --marketplace craft-skills --available --json
-codex plugin add craft-skills@craft-skills --json
+python3 skills/skillify/scripts/validate-skill-format.py
 ```
+
+Codex and Hermes need no separate validation step — both read `AGENTS.md` / `SKILL.md`
+directly from the tracked tree.
 
 ## License
 

@@ -1,7 +1,7 @@
 {
   "name": "craft-skills",
-  "version": "0.2.0",
-  "description": "Work-craft Codex skills for research, engineering documentation, worktree workflow, bootstrap, hooks, and skill-authoring gates.",
+  "version": "0.3.0",
+  "description": "Work-craft Codex skills across 16 packages — research, debugging, documentation, git craft, frontend/backend/ML/agent engineering, testing, refactoring, security triage, and skill authoring.",
   "author": {
     "name": "Beomsu Koh"
   },
@@ -11,15 +11,15 @@
   "keywords": [
     "engineering",
     "documentation",
-    "worktree",
-    "hooks",
+    "research",
+    "debugging",
     "codex-skills"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "craft-skills",
     "shortDescription": "Work-craft skills for Codex",
-    "longDescription": "craft-skills packages reusable Codex skills for engineering documentation, project bootstrap, worktree workflow, hook authoring, technical reports, and skill-authoring governance.",
+    "longDescription": "craft-skills packages 16 reusable Codex skills for engineering and research craft: documentation, deep research, debugging, git workflow, project bootstrap, hook authoring, technical reports, frontend/backend/ML/agent engineering, testing, refactoring, security triage, and skill-authoring governance.",
     "developerName": "Beomsu Koh",
     "category": "Engineering",
     "capabilities": [
@@ -28,8 +28,8 @@
     ],
     "websiteURL": "https://github.com/GoBeromsu/craft-skills",
     "defaultPrompt": [
-      "Use craft-skills documents to structure project docs",
-      "Use craft-skills worktree to set up an issue branch"
+      "Use craft-skills document to structure project docs",
+      "Use craft-skills research to investigate before deciding"
     ],
     "brandColor": "#0F766E",
     "screenshots": []

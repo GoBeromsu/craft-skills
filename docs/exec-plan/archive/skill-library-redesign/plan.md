@@ -1,3 +1,7 @@
+---
+status: done
+---
+
 # Plan — skill-library redesign to vendor-official authoring standards
 
 Date: 2026-07-06

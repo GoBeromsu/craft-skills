@@ -21,12 +21,14 @@ only, and naming a source there fails skillify's attribution gate.
 | `agents` | — (hardening hand-off boundaries align with OWASP Top 10 for LLM Applications) | — | original |
 | `testing` | resource-based test sizes; prove-it bug-fix law; DAMP-over-DRY | addyosmani/agent-skills | adapted |
 | `refactor` | smell-detection catalog format; 12-move refactoring catalog | code-yeongyu/lazycodex (MIT); Martin Fowler, *Refactoring* (2nd ed.) | adapted |
-| `git` | ground-truth command block; repo-style detection; `worktree/` sub-recipe git-guard scripts (6) | code-yeongyu/lazycodex (MIT) `git-master`; eldercare-fall-ai | adapted (scripts vendored) |
+| `git` | ground-truth command block; repo-style detection; `references/worktree.md` git-guard scripts (6) | code-yeongyu/lazycodex (MIT) `git-master`; eldercare-fall-ai | adapted (scripts vendored) |
 | `security` | threat-model-first workflow; dependency-audit triage; LLM hardening rules | addyosmani/agent-skills; OWASP Top 10 for LLM Applications | adapted |
 | `skillify` | two-layer discipline; skill-anatomy format SSOT; compact-name style | gstack (Garry Tan), addyosmani/agent-skills, code-yeongyu/lazycodex | adapted |
 | `hookify` | hook patterns/philosophy; Claude Code hooks model; git `core.hooksPath` convention | Yeachan-Heo/oh-my-claudecode, Claude Code hooks docs | adapted |
 | `init` | — | — | original |
 | `write-report` | — | — | original (promoted from a project-local skill) |
+| `research` | — | — | original (skill-library redesign) |
+| `debug` | — | — | original (skill-library redesign) |
 
 ## Relationship vocabulary
 

@@ -1,6 +1,6 @@
 {
   "name": "craft-skills",
-  "description": "Work-craft skills for research + engineering: docs ontology, worktree workflow, project bootstrap, and a self-governing skill-authoring gate.",
+  "description": "Work-craft skills for research + engineering: documentation, version control, ML, agents, security, and a self-governing skill-authoring gate across 16 packages.",
   "owner": {
     "name": "GoBeromsu"
   },

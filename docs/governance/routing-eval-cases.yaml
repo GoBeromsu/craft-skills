@@ -54,22 +54,42 @@
     {
       "trigger": "generate AGENTS.md",
       "expected_package": "craft-skills/init",
-      "forbidden_neighbors": ["craft-skills/document", "craft-skills/programming", "craft-skills/worktree"]
+      "forbidden_neighbors": ["craft-skills/document", "craft-skills/programming", "craft-skills/git"]
     },
     {
       "trigger": "git worktree",
-      "expected_package": "craft-skills/worktree",
+      "expected_package": "craft-skills/git",
       "forbidden_neighbors": ["craft-skills/init", "craft-skills/programming", "bstack/task"]
     },
     {
       "trigger": "pre-commit hook guard",
       "expected_package": "craft-skills/hookify",
-      "forbidden_neighbors": ["craft-skills/programming", "craft-skills/init", "craft-skills/worktree"]
+      "forbidden_neighbors": ["craft-skills/programming", "craft-skills/init", "craft-skills/git"]
     },
     {
       "trigger": "technical report scaffold",
       "expected_package": "craft-skills/write-report",
       "forbidden_neighbors": ["craft-skills/document", "craft-skills/init", "oh-my-secondbrain/core/wiki"]
+    },
+    {
+      "trigger": "do a deep dive on X before we decide",
+      "expected_package": "craft-skills/research",
+      "forbidden_neighbors": ["craft-skills/document", "craft-skills/write-report", "craft-skills/debug"]
+    },
+    {
+      "trigger": "조사해줘 and compare these options",
+      "expected_package": "craft-skills/research",
+      "forbidden_neighbors": ["craft-skills/document", "craft-skills/init", "craft-skills/write-report"]
+    },
+    {
+      "trigger": "이거 왜 안 되는지 찾아줘",
+      "expected_package": "craft-skills/debug",
+      "forbidden_neighbors": ["craft-skills/refactor", "craft-skills/testing", "craft-skills/programming"]
+    },
+    {
+      "trigger": "bisect this bug to the commit that caused it",
+      "expected_package": "craft-skills/debug",
+      "forbidden_neighbors": ["craft-skills/refactor", "craft-skills/testing", "craft-skills/security"]
     }
   ]
 }
