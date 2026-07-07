@@ -1,8 +1,8 @@
 ---
 name: document
-description: Routes any documentation task into a six-type docs/ ontology (research, references, spec, plan, decision, rule) and authors repo-level artifacts against their canonical templates. Use when writing an ADR ("record this decision"), setting up docs/, deciding where a spec or plan belongs ("where does this spec go"), writing or updating the README, drafting the project CHANGELOG, deciding how to comment-the-why in code, or writing a design.md ("문서화해줘"). Not for conducting the research itself (use research), scaffolding a full technical-report deliverable (use write-report), or authoring JSDoc/docstring/OpenAPI API-surface comments (a code-domain concern, not part of this ontology).
+description: Routes any documentation task into a six-type docs/ ontology (research, references, spec, plan, decision, rule) and authors repo-level artifacts against their canonical templates. Use when explicitly writing an ADR ("record this decision"), setting up docs/, deciding where a spec or plan belongs ("where does this spec go"), updating the README, drafting the project CHANGELOG, deciding how to comment-the-why in code, or writing a design.md ("문서화해줘"). Not for conducting the research itself (use research), scaffolding a full technical-report deliverable (use write-report), or authoring JSDoc/docstring/OpenAPI API-surface comments (a code-domain concern, not part of this ontology).
 metadata:
-  version: 3.0.0
+  version: 3.0.1
 ---
 
 # document
@@ -28,7 +28,7 @@ Every documentation artifact answers exactly one question; never let one artifac
 
 ## Routing
 
-Pick the primary question a task answers and route by that row — the ontology table above for the six ontology artifacts, or the table below for repo-level artifacts and standing conventions. A task that genuinely spans two questions (a spec that also locks in a cross-cutting choice) is two artifacts: split it into one artifact per question instead of forcing one file to answer both.
+Pick the primary question a task answers and route by that row — the ontology table above for the six ontology artifacts, or the table below for repo-level artifacts and standing conventions. Create a `decision` artifact only when the user explicitly asks to record a decision or write an ADR; otherwise keep research, specs, plans, and rules in their own lanes and note decision candidates inside that artifact.
 
 | Task | Read | Author with |
 |------|------|--------------|
@@ -44,7 +44,7 @@ No documentation task should dead-end here — every repo-level artifact and eve
 
 **References vs research:** a references file is a verbatim static copy of an external document; a research file is your own synthesis. Never merge them.
 
-**Rule vs ADR:** the *why* behind a cross-cutting decision goes in an ADR; the *what to do* goes in a rule. Load `references/adr.md` for ADR depth.
+**Rule vs ADR:** the *what to do* goes in a rule. Load `references/adr.md` only when the user explicitly asks for an ADR or decision record.
 
 ### Root-doc-sprawl check
 
@@ -56,13 +56,13 @@ find . -maxdepth 1 -name '*.md' | sed 's|^\./||' | grep -viE '^(readme|agents|cl
 
 More than 3 → route the existing loose docs into `docs/` (research/spec/plan/decision/rule) before adding any more.
 
-## Decision pipeline
+## Decision boundaries
 
 ```
-research (facts found)  →  decision/ADR (choice made)  →  plan (implementation built)
+research (facts found)  |  decision/ADR (explicit record request)  |  plan (implementation built)
 ```
 
-Research collects evidence and presents options; it does not decide. A decision distilled from research is an ADR (`references/adr.md`). How to build that decision is a plan. When routing is unclear, ask which stage the work is at: still gathering facts, committing to a choice, or sequencing work?
+Research collects evidence and presents options; it does not decide. A plan sequences implementation; it may mention trade-offs without spawning a decision record. An ADR is an explicit destination, not an automatic distillation step. When routing is unclear, ask which artifact the user wants: evidence, a recorded decision, or implementation sequencing.
 
 ## `docs/` layout
 
@@ -92,7 +92,7 @@ spec drafted (scratch) → MOVE → docs/exec-plan/active/{slug}/spec.md
 plan drafted (scratch) → MOVE → docs/exec-plan/active/{slug}/plan.md
                                   FINALIZED on first git commit that includes plan.md — body immutable from then
 work done / discarded / superseded → add status: done|discarded|superseded-by (+ superseded-by: {slug}) → MOVE active/{slug}/ → archive/{slug}/
-plan held a cross-cutting decision → DISTILL into docs/decisions/ADR-NNN-{topic}.md (references/adr.md)
+user explicitly requested a decision record → create/update docs/decisions/ADR-NNN-{topic}.md (references/adr.md)
 ```
 
 **Lifecycle = folder position.** A plan is active or archived by where its folder lives, never by a status field alone; move the whole `{slug}/` folder, never split spec and plan.
@@ -118,10 +118,14 @@ Update it whenever a change moves a component boundary or a new cross-cutting de
 - Dependency patch-version bumps (`x.y.Z`)
 - Behavior-preserving renames
 
+## Anti-patterns
+
+- Implicitly creating or scheduling an ADR because research, a plan, or a durable choice mentions a decision → keep the original artifact in its lane and create an ADR only when the user explicitly asks to record one.
+
 ## Verification
 
 - [ ] Each artifact answers exactly one question (an ontology row or a routing-table row) — none dead-ended
-- [ ] Cross-cutting decisions are distilled into ADRs, not buried in plans
+- [ ] Any ADR was created only from an explicit ADR / decision-record request
 - [ ] Completed/discarded work moved `active/` → `archive/` with a `status` line
 - [ ] `architecture.md` reflects the latest component boundaries and decisions, or was flagged stale
 - [ ] References files hold verbatim source content, not synthesis

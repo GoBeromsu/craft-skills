@@ -12,7 +12,8 @@ superseded-by:                     # fill only when status: superseded-by
 <!--
 PURPOSE: Sequence the implementation — HOW to build what the spec requires.
 This file answers "how?" — concrete steps, files to change, and order.
-Cross-cutting decisions belong in an ADR (docs/decisions/), not here.
+Do not create a separate ADR from this plan unless the user explicitly asks to
+record a decision.
 
 IMMUTABILITY: This file is finalized on the first git commit that includes it.
 From that point the body below is immutable. Only the frontmatter `status` and
@@ -55,12 +56,12 @@ From that point the body below is immutable. Only the frontmatter `status` and
 - [ ]
 - [ ]
 
-## Cross-cutting decisions to distill
+## Decision notes
 
 <!--
-Before archiving this plan, identify any expensive-to-reverse choices made during
-implementation and distill them into ADRs in docs/decisions/.
-List candidates here as a checklist.
+Optional: note implementation trade-offs that matter while executing this plan.
+If the user explicitly asked to record a decision, link the ADR here; otherwise
+keep trade-offs in this plan.
 -->
 
-- [ ] {Decision candidate — distill to ADR if cross-cutting}
+- {Decision note or ADR link, if explicitly requested}

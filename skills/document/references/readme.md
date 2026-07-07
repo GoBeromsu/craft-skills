@@ -12,9 +12,9 @@ The README is a **map, not a manual**. It orients a newcomer and links out to `d
 | Overview | 2–4 sentences: the problem solved and the high-level approach. |
 | Quick start | The shortest path to a working state — clone, install, run, as runnable commands. |
 | Commands | A small table of the handful of commands a contributor actually runs daily. |
-| Architecture | A few sentences on how the system fits together, then links to `docs/architecture.md` and the key ADRs in `docs/decisions/`. |
+| Architecture | A few sentences on how the system fits together, then links to `docs/architecture.md` and any explicitly recorded ADRs in `docs/decisions/`. |
 | Layout | The `docs/` ontology and the few top-level dirs that matter. |
-| Contributing | The shortest path from "I want to change this" to a reviewable PR, including the ADR rule for cross-cutting decisions. |
+| Contributing | The shortest path from "I want to change this" to a reviewable PR, including how to link explicitly requested ADRs. |
 | License | The license name / link. |
 
 ## Authoring steps
@@ -22,7 +22,7 @@ The README is a **map, not a manual**. It orients a newcomer and links out to `d
 1. Copy `../templates/readme.md` to the repo-root `README.md`.
 2. Fill the one-liner and Overview first — if you cannot state the project in one sentence, the README is not ready.
 3. Make Quick start **runnable**: real clone/install/run commands a newcomer can paste, not prose.
-4. In Architecture, write 2–3 orienting sentences, then **link** to `docs/architecture.md` and the relevant `docs/decisions/ADR-NNN-*.md` files. Do not restate their bodies.
+4. In Architecture, write 2–3 orienting sentences, then **link** to `docs/architecture.md` and any relevant explicitly requested `docs/decisions/ADR-NNN-*.md` files. Do not restate their bodies.
 5. Keep the Commands table to the commands that are actually used; delete the rest.
 
 ## Common rationalizations
@@ -46,4 +46,4 @@ The README is a **map, not a manual**. It orients a newcomer and links out to `d
 - [ ] Quick start is runnable commands, not prose
 - [ ] Architecture links to `docs/architecture.md` and ADRs rather than restating them
 - [ ] Commands table holds only the commands actually used
-- [ ] Contributing names the ADR rule for cross-cutting decisions
+- [ ] Contributing links ADRs only when they were explicitly requested

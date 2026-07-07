@@ -2,7 +2,7 @@
 slug: {kebab-description}         # must match the filename (without .md)
 date: YYYY-MM-DD
 author: {name or agent}
-governing-adr: ADR-NNN            # the ADR whose decision this rule operationalizes, or "none"
+governing-adr: ADR-NNN            # explicit ADR link if requested, otherwise "none"
 status: active                     # active | deprecated
 ---
 
@@ -13,8 +13,8 @@ PURPOSE: Specify a standing convention — an ongoing constraint that applies to
 work in this area, not scoped to a single feature or decision event.
 
 A rule answers "what must we always do?" — the operational guidance.
-The WHY behind the rule belongs in the governing ADR (see frontmatter).
-If no ADR exists for a non-trivial rule, consider writing one.
+If the user explicitly asked for a decision record, link the governing ADR in
+frontmatter. Otherwise, keep the local rationale here.
 
 This file is alive as long as the convention holds. Deprecate (do not delete)
 when the convention is retired.

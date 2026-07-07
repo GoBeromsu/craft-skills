@@ -74,18 +74,18 @@ unmeasured, say so here.}
 
 **Root quality gate:** 50–150 lines, no generic advice, no obvious info.
 
-### The `## DOCS & DECISIONS` section (graft — links code map ↔ ontology)
+### The `## DOCS & DECISIONS` section (graft — links code map ↔ scaffold)
 
 This is the one additive section that bonds the ported cartography engine to the kept docs/ ontology
 graft (Phase 0). Emit it in the **root** AGENTS.md only, and only when a `docs/` ontology exists in
-the repo (Phase 0 seeded it, or it was already present). Keep it to links — never restate ADR or
-architecture bodies:
+the repo (Phase 0 seeded it, or it was already present). Keep it to links — never restate decision
+records or architecture bodies:
 
 ```markdown
 ## DOCS & DECISIONS
 
 - Architecture map: [`docs/architecture.md`](docs/architecture.md)
-- Decisions (ADRs): [`docs/decisions/`](docs/decisions/) — index in [`docs/decisions/README.md`](docs/decisions/README.md)
+- Decision records (explicit-only): [`docs/decisions/`](docs/decisions/) — index in [`docs/decisions/README.md`](docs/decisions/README.md)
 - Active plans: [`docs/exec-plan/active/`](docs/exec-plan/active/) · Research: [`docs/research/`](docs/research/) · Rules: [`docs/rules/`](docs/rules/)
 ```
 

@@ -35,7 +35,7 @@ cd {project}
 <!-- A few sentences on how the system is put together, then LINK out.
      Do not restate ADR or architecture.md bodies — point at them. -->
 
-See [`docs/architecture.md`](docs/architecture.md) for the system map. Key cross-cutting decisions live in [`docs/decisions/`](docs/decisions/) as ADRs:
+See [`docs/architecture.md`](docs/architecture.md) for the system map. Explicitly recorded decisions, if any, live in [`docs/decisions/`](docs/decisions/) as ADRs:
 
 - [ADR-NNN — {decision title}](docs/decisions/ADR-NNN-{topic}.md)
 
@@ -52,7 +52,7 @@ See [`docs/architecture.md`](docs/architecture.md) for the system map. Key cross
 
 1. Branch from `main`.
 2. {Test / lint command} must pass.
-3. Cross-cutting decisions get an ADR in `docs/decisions/` (see [`docs/decisions/README.md`](docs/decisions/README.md)).
+3. If this change includes an explicitly requested ADR, add it under `docs/decisions/` (see [`docs/decisions/README.md`](docs/decisions/README.md)).
 4. Open a PR.
 
 ## License
