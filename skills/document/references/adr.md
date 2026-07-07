@@ -6,6 +6,10 @@ Document the **why**, not the what. Code and rules show what the system does; an
 
 ## When to write an ADR
 
+Use this reference only after the user explicitly asks to record a decision or
+write an ADR. The examples below are eligibility checks, not a mandate to create
+an ADR from nearby research, plans, rules, or architecture notes.
+
 - Choosing a framework, library, or major dependency
 - Designing a data model or schema
 - Selecting an auth strategy
@@ -60,9 +64,9 @@ This is the most common filing error. They answer different questions.
 | Body | Immutable after finalize; scope change → new slug | Updated in place; each change is one line in the ADR's `## Changelog` |
 | Location | `active/{slug}/plan.md` → `archive/{slug}/` | `docs/decisions/ADR-NNN-*.md` |
 
-### Distill rule
+### Explicit ADR request rule
 
-When a plan contains an expensive-to-reverse, cross-cutting choice (framework selection, data model, auth strategy, API shape, infrastructure), distill that choice into a new ADR before or at the time the plan is archived. The plan entry is **not** replaced — the ADR lives alongside it in `docs/decisions/`.
+Create or update an ADR when the user asks to "record this decision", "write an ADR", or otherwise names `docs/decisions/` as the destination. A plan or research artifact may mention an expensive-to-reverse choice without requiring an ADR; leave it in that artifact unless the user requested the separate decision record.
 
 ## Common rationalizations
 

@@ -1,17 +1,17 @@
 ---
 name: init
-description: Bootstraps a repository's docs/ ontology and ADR rails on a fresh repo, then generates a complexity-scored, hierarchical AGENTS.md knowledge base on a mature one, in a single triaged run. Use when initializing a repo's docs/ ontology and ADR rails ("init this repo", "bootstrap craft conventions"), deep-initing a mature codebase ("deep init", "generate AGENTS.md", "map this codebase"), or setting up the docs structure; falls back to a sequential single-agent path on runtimes without agent fan-out. Not for authoring the content inside docs/ (ADRs, README, architecture; use the `document` skill) or installing git-guard hooks (use the `git` skill).
+description: Bootstraps a repository's craft docs scaffold on a fresh repo, then generates a complexity-scored, hierarchical AGENTS.md knowledge base on a mature one, in a single triaged run. Use when initializing repo docs folders ("init this repo", "bootstrap craft conventions"), deep-initing a mature codebase ("deep init", "generate AGENTS.md", "map this codebase"), or setting up the docs structure; falls back to a sequential single-agent path on runtimes without agent fan-out. Not for authoring docs content, ADRs, README, or architecture decisions (use the `document` skill) or installing git-guard hooks (use the `git` skill).
 metadata:
-  version: 3.0.1
+  version: 3.0.2
 ---
 
 # init
 
-`init` is a **dual-entry** skill: a docs/ ontology + ADR scaffold (Phase 0) grafted onto a
+`init` is a **dual-entry** skill: a craft docs scaffold (Phase 0) grafted onto a
 complexity-scored hierarchical AGENTS.md cartography engine (Phases 1-4).
 
 - **Bootstrap path** — "init this repo", fresh/shallow repo: Phase 0 does the substantive work,
-  seeding the `docs/` ontology + ADR rails; Phases 1-4 scale to the (shallow) codebase and degrade
+  seeding the `docs/` folder/file scaffold; Phases 1-4 scale to the (shallow) codebase and degrade
   to a root-only map.
 - **Cartography path** — "deep init", "generate AGENTS.md", "map this codebase", mature repo:
   Phase 0 mostly skips (already present); Phases 1-4 do the heavy hierarchical AGENTS.md generation.
@@ -68,7 +68,7 @@ strictly in order — each phase's output feeds the next:
 
 | Phase | File | What it does |
 |-------|------|--------------|
-| **0 — Ontology graft** | `references/phase-0-ontology.md` | Scaffold `docs/` ontology + ADR index + architecture/README seeds (idempotent, non-destructive). Replace-and-log any legacy hard-rail managed block. |
+| **0 — Ontology graft** | `references/phase-0-ontology.md` | Scaffold craft-owned `docs/` folders plus `docs/decisions/README.md` and `docs/architecture.md` anchors (idempotent, non-destructive). Replace-and-log any legacy hard-rail managed block. |
 | **1 — Discovery** | `references/phase-1-discovery.md` | Concurrent (or sequential) explore + bash structure + LSP/codegraph code map + read existing; dynamic agent scaling. |
 | **2 — Scoring** | `references/phase-2-scoring.md` | Weighted complexity matrix → `AGENTS_LOCATIONS` (root always; >15 create; 8-15 if distinct; <8 skip). |
 | **3 — Generate** | `references/phase-3-generate.md` | Root AGENTS.md (full treatment + provenance stamp + `## DOCS & DECISIONS` graft link), then scored subdirs. Existence rule: `Edit` if present, `Write` if new. |
@@ -83,8 +83,8 @@ map the documentation scaffold back onto itself.
 
 | Responsibility | Owner |
 |---|---|
-| Scaffold `docs/` ontology + ADR rails (Phase 0) and generate the hierarchical AGENTS.md map (Phases 1-4) | **init** (this skill) |
-| Author and maintain content inside `docs/` (ADRs, README, architecture, …) | `document` skill |
+| Scaffold craft-owned `docs/` folders/files (Phase 0) and generate the hierarchical AGENTS.md map (Phases 1-4) | **init** (this skill) |
+| Author root README content or substantive content inside `docs/` (ADRs, architecture decisions, …) | `document` skill |
 | Install and manage git-hook enforcement (git-guard) | `git` skill — init only emits the diagnostic notice |
 | Scaffold consumer plugin manifests (`.claude-plugin`, etc.) | out of scope for init |
 
@@ -101,7 +101,7 @@ map the documentation scaffold back onto itself.
 
 - Inlining the scoring matrix, generation templates, or phase procedures into this file → keep
   them in `references/`; this file stays at triage depth.
-- Overwriting an existing file (`docs/`, `README.md`, or an `AGENTS.md`) with a template →
+- Overwriting an existing docs anchor or `AGENTS.md` with a template →
   `Edit` existing files, `Write` only new ones.
 - Assuming `Task`/fan-out on a single-agent runtime → run the sequential single-agent path
   (`Bash` + `Grep` + `Glob`, one file at a time) instead.
@@ -111,6 +111,9 @@ map the documentation scaffold back onto itself.
   only existing content init may overwrite.
 - Claiming init installs governance/enforcement → git-guard installation belongs to the `git`
   skill; init only emits the diagnostic notice.
+- Creating or requiring ADRs when the user did not explicitly ask for ADRs → keep
+  `docs/decisions/README.md` as an empty destination/index and hand off decision-record authoring
+  to `document`.
 - Skipping the final report, or finishing without stating the path taken and managed-block
   action → every run ends with the Phase 4 observability report naming the path, centrality
   measured/unmeasured, files created/updated, and managed-block action.

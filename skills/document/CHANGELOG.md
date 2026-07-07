@@ -9,3 +9,4 @@
 - 2026-07-05 — v1.2.1: design/'s staleness command used a GNU-only sed BRE → switched to POSIX extended regex for BSD/macOS portability.
 - 2026-07-05 — v2.0.0: API-surface docs are a code-domain concern, not the docs/ ontology's job → removed the api-docs sub-recipe. BREAKING.
 - 2026-07-06 — v3.0.0: realign to vendor-official authoring contract → spec-minimal frontmatter, flat routing table, fold sprawl + routing gaps (#27, #31).
+- 2026-07-07 — v3.0.1: implicit research/plan/rule-to-ADR pressure caused unwanted decision records → made ADR authoring explicit-request only while keeping ADR templates available. Provenance: docs-wipe-reinit skill-document delegation.

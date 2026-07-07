@@ -1,13 +1,13 @@
-# Phase 0 — docs/ Ontology + ADR Graft
+# Phase 0 — docs/ Ontology Scaffold
 
-> **Graft.** This is the one layer carried onto the cartography base engine: the `docs/` ontology
-> scaffold + ADR index, non-destructive and idempotent. GitHub-governance / audit machinery is
-> intentionally **not** part of this graft.
+> **Graft.** This is the one layer carried onto the cartography base engine: the craft-owned
+> `docs/` folder/file scaffold, non-destructive and idempotent. GitHub-governance / audit machinery
+> and ADR authoring requirements are intentionally **not** part of this graft.
 
-Phase 0 lays the documentation rails. On the **bootstrap path** (fresh repo) this is the substantive
-work; on the **cartography path** (mature repo) it mostly reports "already present" and skips. It
-runs **before** Phases 1–4, and the `docs/` scaffold it seeds is **excluded** from the Phase 2
-cartography scope (no self-mapping).
+Phase 0 lays the documentation scaffold. On the **bootstrap path** (fresh repo) this is the
+substantive work; on the **cartography path** (mature repo) it mostly reports "already present" and
+skips. It runs **before** Phases 1–4, and the `docs/` scaffold it seeds is **excluded** from the
+Phase 2 cartography scope (no self-mapping).
 
 ## Table of Contents
 
@@ -48,7 +48,6 @@ ANCHOR_FILES=(
   docs/decisions/README.md
   docs/architecture.md
 )
-# README.md at repo root is treated separately — see step 3.
 ```
 
 Also detect whether the repo has an `AGENTS.md` operating guide (preferred managed-block target) or
@@ -75,55 +74,32 @@ done
 
 Seed each anchor only when absent.
 
-### docs/decisions/README.md — owned by init, written verbatim when missing
+### docs/decisions/README.md — explicit-only index, written verbatim when missing
 
 ```markdown
-# ADR Index
+# Decision Index
 
-Architecture Decision Records capture significant, expensive-to-reverse technical decisions.
+This directory is the destination for decision records only when the user explicitly asks for ADRs
+or durable decision documentation. `init` creates no ADR files and requires no ADR lifecycle.
 
-## Lifecycle
-
-\`\`\`
-PROPOSED → ACCEPTED → (SUPERSEDED | DEPRECATED)
-\`\`\`
-
-- Never delete an ADR. Write a new ADR that references and supersedes the old one.
-- One decision per ADR — non-overlapping, with no gaps across the set.
-- Sequential numbering: ADR-001, ADR-002, …
-
-## Index
+## Explicit Records
 
 | ADR | Title | Status | Date |
 |-----|-------|--------|------|
 | (none yet) | | | |
 ```
 
-### docs/architecture.md and README.md — owned by the `document` skill
+### docs/architecture.md — scaffold anchor, written verbatim when missing
 
-These templates live as standalone files in the `document` skill's `templates/` directory. Do
-**not** duplicate them here — read the template **files** directly (no prose-section extraction):
+```markdown
+# Architecture
 
-1. Locate the document skill's root directory. Try each in order; use the first that resolves:
-   - `${CRAFT_SKILLS_REPO_PATH}/skills/document/` (repo checkout — Codex, Hermes; see the repo's
-     `.hermes/README.md` for how `CRAFT_SKILLS_REPO_PATH` is set).
-   - Glob, on Claude Code's plugin cache:
-     ```
-     ~/.claude/skills/*/skills/document/
-     ~/.claude/plugins/*/*/skills/document/
-     ~/.claude/plugins/*/skills/document/
-     ~/.claude/plugins/cache/*/*/*/skills/document/
-     ```
-2. For `docs/architecture.md` (only if absent): read **`templates/architecture.md`** from the located
-   directory and write its contents verbatim.
-3. For `README.md` at repo root (only if absent): read **`templates/readme.md`** from the located
-   directory and write its contents verbatim.
-4. The ADR body template (when the operator later authors an actual decision) lives at
-   **`templates/adr.md`** in the same directory — point them there; init does not seed individual ADRs.
+Project architecture notes live here when explicitly authored.
+```
 
-If the document skill's directory cannot be located, write a one-line placeholder (`# Architecture`
-or `# Project Name`) and record this warning:
-`"document templates not found — placeholder written; run document to fill in templates."`
+Do not create or modify root `README.md`. Do not create ADR files, ADR templates, ADR lifecycle
+rules, or decision-record prose. If the operator explicitly asks to author an ADR or a substantive
+architecture document, hand off to the `document` skill and use these paths only as destinations.
 
 ## 4. Development Flow managed block (convention-only)
 
@@ -145,8 +121,8 @@ Use an issue-driven loop for all repository work:
 2. Never commit directly on `main`. Use a worktree when you need isolation: `git wt <name>` creates (or reuses) a named worktree off the default branch. Reuse a small fixed pool (e.g. `lane-1`~`lane-3`) rather than making a new one per issue.
 3. Plan first for non-trivial work: write the intended change, affected files, verification, and rollback note before editing.
 4. Fan out into small PRs when a change spans unrelated domains, mixes assets with logic, or needs independent review lanes.
-5. Attach review evidence to each PR: tests or checks run, screenshots/transcripts for user-facing behavior, and the issue/ADR links that justify the change.
-6. Merge only after review. After merge, distill durable decisions into ADRs: PR note → ADR candidate → accepted ADR → superseding ADR when the decision changes.
+5. Attach review evidence to each PR: tests or checks run, screenshots/transcripts for user-facing behavior, and the issue or planning links that justify the change.
+6. Merge only after review. If the user explicitly asks to record a durable decision, hand off to the `document` skill and use `docs/decisions/` as the destination.
 
 Conventions agents must follow:
 
@@ -155,22 +131,22 @@ Conventions agents must follow:
 - Prefer fan-out PRs over broad mixed-purpose PRs.
 - Include review evidence before requesting/performing review.
 - Do not merge before review.
-- Distill lasting architecture or process decisions into ADRs.
+- Do not create or require ADRs unless the user explicitly asks for ADRs.
 <!-- END CRAFT-SKILLS INIT DEVELOPMENT FLOW -->
 ```
 
 The block is an agent recipe, not an orchestrator — it tells agents how to run the loop. It must
 **not** claim that init opens issues, creates worktrees, fans out PRs, performs reviews, merges, or
-writes ADRs automatically. init ships **no** hard-rail enforcement of its own; git-guard is the
-`git` skill's concern and self-installs there on first use (see the diagnostic notice in SKILL.md).
+writes ADRs automatically or requires ADRs as a default artifact. init ships **no** hard-rail
+enforcement of its own; git-guard is the `git` skill's concern and self-installs there on first use
+(see the diagnostic notice in SKILL.md).
 
 ## Phase 0 verification
 
 - [ ] `docs/research/`, `docs/exec-plan/active/`, `docs/exec-plan/archive/`, `docs/decisions/`,
       `docs/rules/` all exist.
-- [ ] `docs/decisions/README.md` present with the ADR index template.
-- [ ] `docs/architecture.md` present (seeded from document skill or placeholder + warning).
-- [ ] `README.md` present at repo root (pre-existing or seeded; warning if document skill not found).
+- [ ] `docs/decisions/README.md` present as an explicit-only decision index.
+- [ ] `docs/architecture.md` present as a scaffold anchor.
 - [ ] Development Flow managed block present in `AGENTS.md` / chosen guide; surrounding content
       preserved; any legacy hard-rail block replaced-and-logged.
 - [ ] No existing file overwritten — confirmed via the "Skipped (exists)" notices.

@@ -11,7 +11,8 @@ status: active                     # active | superseded-by: {new-slug}
 <!--
 PURPOSE: Collect facts, sources, and comparisons that inform a decision.
 This file presents options and findings — it does NOT assert a decision.
-A decision distilled from this research belongs in a separate ADR (docs/decisions/).
+Do not create a separate ADR from this research unless the user explicitly asks
+to record a decision.
 -->
 
 ## Summary
@@ -51,7 +52,7 @@ A decision distilled from this research belongs in a separate ADR (docs/decision
 
 ## Open questions
 
-<!-- Questions this research does not resolve — hand these to the decision stage. -->
+<!-- Questions this research does not resolve — leave them open or hand back to the user. -->
 
 -
 
