@@ -28,6 +28,7 @@ only, and naming a source there fails skillify's attribution gate.
 | `hookify` | hook patterns/philosophy; Claude Code hooks model; git `core.hooksPath` convention | Yeachan-Heo/oh-my-claudecode, Claude Code hooks docs | adapted |
 | `init` | — | — | original |
 | `write-report` | — | — | original (promoted from a project-local skill) |
+| `write-prd` | operator-supplied PRD template | — | original (template supplied by operator) |
 | `research` | — | — | original (skill-library redesign) |
 | `debug` | — | — | original (skill-library redesign) |
 
