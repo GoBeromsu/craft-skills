@@ -2,7 +2,7 @@
 name: write-prd
 description: Authors product requirements documents by filling a provided or packaged PRD template from product context, with One Pager, scope, metrics, rollout, open issues, and history kept coherent. Use when asked to "write a PRD", "fill this PRD template", "turn this product idea into a PRD", "complete the product requirements document", or "PRD 작성해줘". Not for ADRs, READMEs, changelogs, or docs-ontology artifacts (use `document`), or one-off technical reports (use `write-report`).
 metadata:
-  version: 1.0.0
+  version: 1.0.1
 ---
 
 # write-prd
@@ -56,13 +56,31 @@ so unclear that any PRD would be misleading.
    provides a different version.
 8. **Checklist** — mark only sections that have concrete PRD content as done.
 
+## Authoring Principles
+
+Use the packaged template as the artifact frame, not as reader-facing instruction. Internal
+authoring guidance belongs in this skill:
+
+- Start with Overview, then Problem, then Objectives, Constraints, Persona, and Use Cases;
+  feature details wait until the problem and users are clear.
+- Keep Objectives to three or fewer unless the user supplies a broader approved scope.
+- Treat a PRD as a decision document, not a feature list: it must explain why the work
+  matters, who uses it, what success means, and what will not be built.
+- Write Features Out every time. Exclusions prevent MVP scope creep and should include the
+  reason plus a review point.
+- Write Success Metrics with numbers wherever possible: time, ratio, count, usage,
+  conversion, error rate, pilot threshold, or an explicit baseline-capture method.
+- Move unknowns to Open Issues with an owner role and due date or review point instead of
+  inventing answers.
+
 ## Output Rules
 
 - Keep the template's section order and table shapes unless the user explicitly supplies a
   different template.
-- In the final PRD, remove instructional text such as "what to fill" prompts and example
-  blocks unless the user asks for a teaching template. The deliverable is the filled PRD,
-  not the blank template.
+- In the final PRD, remove instructional text such as "what to fill" prompts, example
+  blocks, writing-order guides, and beginner principles unless the user asks for a teaching
+  template. The deliverable is the filled PRD, not the blank template or the skill's
+  authoring notes.
 - Write in the language of the selected template or the user's request. For a Korean PRD
   template, write Korean prose while preserving product, metric, and system names that are
   normally English.
@@ -85,6 +103,11 @@ Before finishing, verify:
 - Design and technical unknowns are not buried in prose.
 - Open Issues have an owner role, due date or review point, and status.
 - Change History and Decision Log are present when the PRD is meant to be shared or reviewed.
+
+## Anti-patterns
+
+- Leaving authoring guidance as PRD template sections → encode the guidance in this skill
+  and keep the template to the artifact sections a reader should see.
 
 ## Files
 
