@@ -14,6 +14,7 @@ reviewers check a package against.
 6. [CHANGELOG](#6-changelog)
 7. [Eval-first authoring loop](#7-eval-first-authoring-loop)
 8. [Version-bump rubric](#8-version-bump-rubric)
+9. [MECE ownership](#9-mece-ownership)
 
 ---
 
@@ -164,3 +165,13 @@ PATCH  A bug fix, prose correction, or dependency bump with no interface change.
 Ask: "does a caller already using this skill need to change anything?" → MAJOR or MINOR.
 "Does the caller gain a new opt-in capability?" → MINOR. "Fix or clarification with no
 interface effect?" → PATCH.
+
+## 9. MECE ownership
+
+Inside one skill package, each rule has exactly one owner: the body for always-read routing
+or gates, a reference for deep topic rules, a script for deterministic checks, and
+`CHANGELOG.md` for history. If another section needs the same rule, link to the owner
+instead of restating it. Overlapping warning sections (`Red Flags`, `Common
+Rationalizations`, repeated anti-pattern tables) are an anti-pattern; keep one `##
+Anti-patterns` registry in `SKILL.md` and let references link back or add topic-specific
+rules only when they do not duplicate the package-level entry.
