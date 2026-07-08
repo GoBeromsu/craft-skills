@@ -2,7 +2,7 @@
 name: frontend
 description: 'Gates frontend engineering on a rendering-architecture decision before UI code is written, then applies component-reuse layering, state-placement rules, and folder conventions. Use when building a React/Vue/Svelte page or component ("프론트엔드 구조 잡아줘"), asking "should this be a client or server component", choosing SPA vs SSR/RSC vs SSG vs islands for a new or existing app, deciding where a piece of state should live, or picking a folder convention (type-based, feature-based, layered feature-sliced) for a codebase. Not for API/server design — use backend; not for authoring design.md itself — use document.'
 metadata:
-  version: 2.0.0
+  version: 2.1.0
 ---
 
 # frontend
@@ -52,22 +52,20 @@ Missing → load the `document` skill's `references/design.md` and scaffold `doc
 
 A project-local package manager and dev server (`npm`/`pnpm`/`bun` + the framework's dev command) for the detection commands above and any build-output checks in `references/architectures.md`; `git`, `grep`, `find` (POSIX) for the detection commands throughout this skill and its references.
 
-## Common rationalizations
+## API boundary
 
-| Rationalization | Reality |
-|---|---|
-| "It's one small component, I'll skip the design.md gate." | The gate is binary: `docs/design.md` exists or it does not — no small-enough exception. |
-| "I'll pick SPA/SSR/SSG later once the app grows." | The rendering model shapes data-fetching, auth, and bundling from the first route; retrofitting is a rewrite. |
-| "I copied this pattern from a project on a different rendering model." | A pattern's safety (e.g. reading `window` at module scope) is model-specific — re-verify against `references/architectures.md`. |
-| "The state works, I don't need to name which kind it is." | Untyped placement is how server data ends up duplicated in a global store — classify against `references/state.md`. |
+Centralize the common API base, path prefix, version prefix, proxy, and BFF boundary once per app. React-only/Vite apps use env (`VITE_*`) plus one API client module; components and feature hooks call that client, not hardcoded host/base strings. Next.js apps use the incumbent boundary: `rewrites` for proxying, Route Handlers for a BFF, or server-component/server-action fetch for server-only calls. Detect the incumbent style; do not prescribe `/api/v1` universally.
 
-## Red flags
+## Anti-patterns
 
-- A UI component landing in a commit with no `docs/design.md` in the repository at all.
-- A second rendering runtime/framework bolted onto an app with an incumbent one, or an unrecorded rendering-mode drift inside it.
-- A component in a primitives/design-system layer importing from a feature directory (see `references/components.md`).
-- Server-fetched data copied into a global UI store via `useEffect` + `setState` (see `references/state.md`).
-- A folder tree mixing type-based and feature-based conventions with no stated migration.
+- Skipping the `docs/design.md` gate because the component is small → scaffold or update design.md first.
+- Deferring SPA/SSR/SSG/islands choice until the app grows → choose the rendering model before the first route.
+- Copying a pattern from a different rendering model → re-check it against `references/architectures.md`.
+- Leaving state unclassified because it works → classify it against `references/state.md`.
+- A component in a primitives/design-system layer importing from a feature directory → keep dependencies downward only (see `references/components.md`).
+- Server-fetched data copied into a global UI store via `useEffect` + `setState` → keep server data in the server-data layer (see `references/state.md`).
+- Mixing type-based and feature-based folders with no stated migration → follow one incumbent convention or plan a migration.
+- Repeating API base URLs, path/version prefixes, proxies, or BFF routing in components/features → use the API boundary above instead of restating transport rules in feature code.
 
 ## Verification
 
@@ -77,3 +75,4 @@ A project-local package manager and dev server (`npm`/`pnpm`/`bun` + the framewo
 - [ ] No second rendering runtime was introduced; any rendering-mode drift is recorded in `design.md`.
 - [ ] Every new or moved piece of state was classified against `references/state.md`.
 - [ ] Component-dependency direction stayed downward only (primitives → composed → feature-bound).
+- [ ] API base/prefix/version/proxy/BFF routing was centralized once and not repeated in components/features.

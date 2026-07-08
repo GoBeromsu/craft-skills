@@ -30,3 +30,4 @@
 - 2026-07-06 — v4.0.0: realign to vendor-official contract → spec-minimal frontmatter, eval-first loop, refs trimmed to contract/lifecycle/hygiene. MAJOR.
 - 2026-07-06 — v4.1.0: operator corrections stayed in chat memory → per-skill ## Anti-patterns registry + record-a-correction flow + CHANGELOG provenance rule.
 - 2026-07-06 — v4.1.1: provenance clauses named sources without links → contract §6 now requires what-was-taken + [name](url) form.
+- 2026-07-08 — v4.2.0: skill packages could duplicate overlapping rules across sections → added MECE ownership and link-instead-of-restating guidance. Provenance: MECE rule from [mece-correction](references/mece-correction.md).

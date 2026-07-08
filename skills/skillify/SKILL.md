@@ -2,7 +2,7 @@
 name: skillify
 description: Owns the full lifecycle of craft-skills skill packages — creating, updating, moving/renaming, and retiring them — through an eval-first authoring loop and deterministic format validation. Use when a user says things like "make a skill", "skillify this workflow", "turn this into a skill", "update this skill", "move this skill", or "스킬 만들자", or when a recurring workflow correction needs to be encoded into a governing skill instead of staying in chat memory. Not for one-off project scripts or prompts with no reuse intent — those stay local to the originating project.
 metadata:
-  version: 4.1.1
+  version: 4.2.0
 ---
 
 # skillify
@@ -53,7 +53,9 @@ kebab-case and equals the directory: verb-first for a skill the user explicitly 
 a plain noun for a skill that supplies ambient domain context. Description is third
 person, states what + when, weaves in 3–6 real trigger phrases, and adds a "Not for X" line
 when a sibling overlaps. Body targets 150 lines, hard-caps at 500; move depth to
-`references/*.md`. Full rules: `references/contract.md`.
+`references/*.md`. Keep package content MECE: each rule has one owning section or
+reference, and nearby locations link to it instead of restating it. Full rules:
+`references/contract.md`.
 
 ## Lifecycle
 
@@ -108,6 +110,7 @@ local-only. A patched file with no PR is not done. Mechanics: `references/lifecy
 - A nested `SKILL.md` anywhere inside a package → every skill is one flat directory.
 - An operator correction left in chat memory → record it via the three-way split before the session ends (`references/lifecycle.md §3`).
 - Operator-supplied source material left in chat history → land the excerpt as `references/*.md` and add a `Provenance:` clause to the CHANGELOG bullet.
+- Duplicated overlapping guidance inside one package → apply `references/contract.md` §9; link to the owner instead of restating the rule.
 
 ## Verification
 

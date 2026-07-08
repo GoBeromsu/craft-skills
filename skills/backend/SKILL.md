@@ -2,7 +2,7 @@
 name: backend
 description: Routes backend service engineering through an architecture-detection gate — layered, vertical-slice, or hexagonal — then applies dependency-direction rules, an API design contract, and per-framework folder conventions. Use when building an API endpoint, setting up a new backend service, deciding whether a service should be layered or hexagonal, adding a repository or use case to an existing service, or reviewing folder structure for architecture drift (e.g. "백엔드 구조 잡아줘"). Not for UI rendering work — use the frontend skill instead.
 metadata:
-  version: 2.0.1
+  version: 2.1.0
 ---
 
 # backend
@@ -77,6 +77,7 @@ Not for: per-file type/style discipline or parse-don't-validate input handling a
 - Two or more architecture-triad folders (`controllers/`+`services/`+`repositories/` alongside `domain/`+`ports/`+`adapters/`) coexisting in one service → keep exactly one pattern per service; flag mixed-pattern drift instead of layering a third pattern on top.
 - An API response reusing a repurposed field's old name for a new meaning → rename the field or version deliberately instead of repurposing it silently.
 - More than one API version directory alive with no deprecation date set on the older one → set a deprecation date on the older version as soon as the new one ships.
+- Repeating a common API base, prefix, or version in every controller/router → use `references/api-design.md`'s API base boundary; handlers own only resource-local paths.
 
 ## Verification
 

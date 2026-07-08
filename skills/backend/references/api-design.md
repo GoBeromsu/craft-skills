@@ -8,6 +8,7 @@ Design the contract before the handler; once an API is observed by a caller, eve
   - [Contract-first](#contract-first)
   - [The observed-behavior law](#the-observed-behavior-law)
   - [One-version rule](#one-version-rule)
+  - [API base and prefix boundary](#api-base-and-prefix-boundary)
   - [When a version bump is unavoidable](#when-a-version-bump-is-unavoidable)
   - [Additive vs breaking — the quick checklist](#additive-vs-breaking--the-quick-checklist)
   - [Resource naming](#resource-naming)
@@ -49,6 +50,10 @@ find . -maxdepth 3 -type d -iregex '.*/v[0-9]+$' -not -path '*/node_modules/*'
 ```
 
 Two or more results means two versions are live at once. Read: is there a tracked deprecation date for the older one? If not, that is drift — either commit to a sunset date or fold the divergence back into additive changes on the single live version.
+
+### API base and prefix boundary
+
+The common API base, proxy mount, and version prefix belong in one app/bootstrap/router composition layer, not in every controller or feature router. Do not prescribe `/api/v1` universally; detect the incumbent mount style and extend it in the one place the framework composes routes. Handlers and child routers own resource-local paths only (`/orders`, `/{order_id}`), so a future base-path or version change is one composition edit.
 
 ### When a version bump is unavoidable
 
