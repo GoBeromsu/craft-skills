@@ -13,9 +13,9 @@ A package is one flat directory: `skills/<name>/SKILL.md` plus whichever of `ref
 every skill is one level deep. `evals/` directories are local, gitignored scratch for the
 eval-first authoring loop; they are never committed.
 
-The 19 packages (alphabetical): `agents`, `api`, `backend`, `cicd`, `debug`, `distil`,
+The 20 packages (alphabetical): `agents`, `api`, `backend`, `cicd`, `debug`, `distil`,
 `document`, `frontend`, `git`, `hookify`, `init`, `ml`, `programming`, `refactor`,
-`research`, `security`, `skillify`, `testing`, `write-report`.
+`research`, `security`, `skillify`, `testing`, `write-prd`, `write-report`.
 
 The authoring contract — frontmatter shape, naming, description rules, body limits, CHANGELOG
 format, and the eval-first loop — lives at `skills/skillify/references/contract.md`. All skill

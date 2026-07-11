@@ -33,6 +33,7 @@ context.
 | `security` | Find and fix vulnerabilities across web, API, and LLM surfaces, mapping every trust boundary first and triaging by production reachability and severity second. |
 | `skillify` | Own the full lifecycle of craft-skills packages — create, update, move, retire — through an eval-first authoring loop and deterministic format validation. |
 | `testing` | Architect and audit the test suite — classify each test by taxonomy and resource-based size, place it via a decision tree, and enforce the prove-it law that every bug fix ships with a failing-then-passing test. |
+| `write-prd` | Author decision-ready product requirements documents from a provided or packaged template, keeping scope, metrics, rollout, and open issues coherent. |
 | `write-report` | Scaffold and author a project's one-off canonical technical report against a single YAML frame whose depth is the enforced table of contents. |
 
 ---
@@ -48,8 +49,8 @@ Install via the marketplace (interactive, inside Claude Code):
 /plugin install craft-skills@craft-skills
 ```
 
-Then invoke any of the 19 skills above by name, e.g. `api`, `cicd`, `document`, `init`,
-`skillify`, `programming`, `research`, `debug`.
+Then invoke any of the 20 skills above by name, e.g. `api`, `cicd`, `document`, `init`,
+`skillify`, `programming`, `research`, `write-prd`, `debug`.
 
 ---
 
@@ -87,7 +88,7 @@ Mount `skills/` via `skills.external_dirs` in your Hermes config:
    ```
 4. Verify:
    ```bash
-   hermes skills list | grep -E 'agents|api|backend|cicd|debug|distil|document|frontend|git|hookify|init|ml|programming|refactor|research|security|skillify|testing|write-report'
+   hermes skills list | grep -E 'agents|api|backend|cicd|debug|distil|document|frontend|git|hookify|init|ml|programming|refactor|research|security|skillify|testing|write-prd|write-report'
    ```
 
 See `.hermes/README.md` for full deployment details.
@@ -118,6 +119,7 @@ skills/research/SKILL.md
 skills/security/SKILL.md
 skills/skillify/SKILL.md
 skills/testing/SKILL.md
+skills/write-prd/SKILL.md
 skills/write-report/SKILL.md
 ```
 
