@@ -16,14 +16,14 @@ Treat deployment as a state transition, not a sequence of independent shell comm
 |---|---|---|
 | Checkout | `checkout scm` at `main` | Workspace commit is known |
 | Capture | Read the running application container image tag into optional `PREV_TAG` before build | Missing tag is a greenfield state; an inconsistent running tag stops the job |
-| Build | Set `IMAGE_TAG` to the checked-out commit SHA and build once | The resulting digest is recorded for every subsequent service |
+| Build | Set `IMAGE_TAG` to the checked-out commit SHA and build each application image once | Every application image has the same SHA tag and its digest is recorded |
 | Database ready | Start only database dependencies with `--wait --wait-timeout` | Health checks report ready |
-| Migrate | Run the migration deploy service using the built digest | Migration exits successfully |
-| Roll out | `up -d --no-build --wait` for application services | Compose health checks report ready |
+| Migrate | Run the migration deploy service with the recorded backend image digest | Migration exits successfully |
+| Roll out | `up -d --no-build --wait` for the full application stack | Compose health checks report ready |
 | Smoke | Exercise the deployed service through its intended smoke endpoint | Expected response succeeds |
 | Complete | Mark the release successful | All prior states passed |
 
-Do not rebuild after migration or before application startup. Rebuilding turns a commit identifier into multiple possible images and makes rollback evidence unreliable.
+Do not rebuild any application image after its SHA build, after migration, or before application startup. Build each application image exactly once per SHA, tag every image with that SHA, and preserve the recorded backend digest for migrations; rebuilding turns a commit identifier into multiple possible images and makes rollback evidence unreliable.
 
 ## Failure and recovery
 
@@ -33,4 +33,4 @@ When `PREV_TAG` exists, switch the application services back to that tag and wai
 
 ## Compose shape
 
-Pass `IMAGE_TAG` to every service that uses the application image, including the migration deploy service. Keep database startup separate from application rollout so migrations never race a database that has not become healthy. `--no-build` on rollout enforces use of the image already built for the captured SHA.
+Pass the shared `IMAGE_TAG` to every application image and configure the migration deploy service to reuse the backend image by its recorded digest. Keep database startup separate from the full application rollout so migrations never race a database that has not become healthy. `--no-build` on the full rollout enforces use of the images already built for the captured SHA.

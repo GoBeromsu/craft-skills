@@ -16,7 +16,9 @@ context.
 | Skill | Purpose |
 |-------|---------|
 | `agents` | Build and change LLM-agent systems — prompts, tool schemas, context/tracing wiring — under an eval-first discipline that proves a behavior change against a versioned eval set before shipping. |
-| `backend` | Route backend engineering through an architecture-detection gate (layered / vertical-slice / hexagonal), then apply dependency-direction rules, an API design contract, and per-framework folder conventions. |
+| `api` | Define contract-first public HTTP APIs with stable resource URLs, DTO-only success payloads, pagination, and diagnosable sanitized failures. |
+| `backend` | Route backend engineering through an architecture-detection gate (layered / vertical-slice / hexagonal), then apply dependency-direction rules, persistence choices, and per-framework folder conventions. |
+| `cicd` | Design inexpensive, reliable PR validation and reversible Jenkins Compose deployment pipelines with deployment-server-owned image builds. |
 | `debug` | Diagnose a failing program under a hypothesis-driven loop — reproduce before theorizing, log fact separately from inference, and confirm the mechanism with instrumentation before any fix lands. |
 | `distil` | Distil transferable rules and conventions from an external source — a repo, an article, an AGENTS.md, or a third-party skill — into the library under the authoring contract, with provenance recorded. |
 | `document` | Route documentation into the `docs/` ontology while keeping ADR authoring explicit-only unless the user asks to record a decision. |
@@ -46,8 +48,8 @@ Install via the marketplace (interactive, inside Claude Code):
 /plugin install craft-skills@craft-skills
 ```
 
-Then invoke any of the 17 skills above by name, e.g. `document`, `init`, `skillify`,
-`programming`, `research`, `debug`.
+Then invoke any of the 19 skills above by name, e.g. `api`, `cicd`, `document`, `init`,
+`skillify`, `programming`, `research`, `debug`.
 
 ---
 
@@ -85,7 +87,7 @@ Mount `skills/` via `skills.external_dirs` in your Hermes config:
    ```
 4. Verify:
    ```bash
-   hermes skills list | grep -E 'agents|backend|debug|distil|document|frontend|git|hookify|init|ml|programming|refactor|research|security|skillify|testing|write-report'
+   hermes skills list | grep -E 'agents|api|backend|cicd|debug|distil|document|frontend|git|hookify|init|ml|programming|refactor|research|security|skillify|testing|write-report'
    ```
 
 See `.hermes/README.md` for full deployment details.
@@ -98,8 +100,10 @@ Skills are plain Markdown — any agent that can ingest instruction files can us
 Point the agent's instruction-file import at the skill you want:
 
 ```
+skills/api/SKILL.md
 skills/agents/SKILL.md
 skills/backend/SKILL.md
+skills/cicd/SKILL.md
 skills/debug/SKILL.md
 skills/distil/SKILL.md
 skills/document/SKILL.md

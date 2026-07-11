@@ -1,6 +1,6 @@
 ---
 name: api
-description: "Defines contract-first HTTP APIs with stable resource URLs, DTO-only success payloads, and diagnosable sanitized failures. Use when doing API 설계, setting REST 규격, asking to design the API, defining REST conventions, documenting an endpoint contract, or standardizing pagination and errors. Not for service architecture, ORM choice, or persistence implementation — use backend; not for client rendering or component state — use frontend; not for version-control history or PR mechanics — use git; not for transport-level test-suite design — use testing."
+description: "Defines contract-first HTTP APIs with stable resource URLs, DTO-only success payloads, and diagnosable sanitized failures. Use when doing API 설계, setting REST 규격, API 설계·REST 규격 결정 시, asking to design the API, defining REST conventions, documenting an endpoint contract, or standardizing pagination and errors. Not for service architecture, ORM choice, or persistence implementation — use backend; not for client rendering or component state — use frontend; not for version-control history or PR mechanics — use git; not for transport-level test-suite design — use testing."
 metadata:
   version: 1.0.0
 ---
@@ -43,8 +43,3 @@ Log diagnostics for unknown exceptions and 5xx failures, then return a sanitized
 ## Boundaries
 
 Route backend service structure, database migration strategy, ORM selection, and persistence implementation to `backend`. Route UI data fetching, rendering, and client state to `frontend`. Route test taxonomy and fixture strategy to `testing`; this skill owns the contract that those tests exercise.
-
-## References
-
-- [Pullit API Design Guide](https://pullit-docs-server.vercel.app/index.html#02-api-design)
-- [addyosmani/agent-skills API and interface design](https://github.com/addyosmani/agent-skills/tree/main/skills/api-and-interface-design)
