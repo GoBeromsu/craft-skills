@@ -37,7 +37,7 @@ skills:
    ```
 5. Verify skills are visible:
    ```bash
-   hermes skills list | grep -E 'document|git|init|skillify'
+   hermes skills list | grep -E 'document|git|init|skillify|write-prd'
    ```
 
 **ASSUMPTION NOTE:** The `skills.external_dirs` key name and config.yaml merge behaviour

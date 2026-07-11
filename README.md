@@ -16,7 +16,9 @@ context.
 | Skill | Purpose |
 |-------|---------|
 | `agents` | Build and change LLM-agent systems — prompts, tool schemas, context/tracing wiring — under an eval-first discipline that proves a behavior change against a versioned eval set before shipping. |
-| `backend` | Route backend engineering through an architecture-detection gate (layered / vertical-slice / hexagonal), then apply dependency-direction rules, an API design contract, and per-framework folder conventions. |
+| `api` | Define contract-first public HTTP APIs with stable resource URLs, DTO-only success payloads, pagination, and diagnosable sanitized failures. |
+| `backend` | Route backend engineering through an architecture-detection gate (layered / vertical-slice / hexagonal), then apply dependency-direction rules, persistence choices, and per-framework folder conventions. |
+| `cicd` | Design inexpensive, reliable PR validation and reversible Jenkins Compose deployment pipelines with deployment-server-owned image builds. |
 | `debug` | Diagnose a failing program under a hypothesis-driven loop — reproduce before theorizing, log fact separately from inference, and confirm the mechanism with instrumentation before any fix lands. |
 | `distil` | Distil transferable rules and conventions from an external source — a repo, an article, an AGENTS.md, or a third-party skill — into the library under the authoring contract, with provenance recorded. |
 | `document` | Route documentation into the `docs/` ontology while keeping ADR authoring explicit-only unless the user asks to record a decision. |
@@ -31,6 +33,7 @@ context.
 | `security` | Find and fix vulnerabilities across web, API, and LLM surfaces, mapping every trust boundary first and triaging by production reachability and severity second. |
 | `skillify` | Own the full lifecycle of craft-skills packages — create, update, move, retire — through an eval-first authoring loop and deterministic format validation. |
 | `testing` | Architect and audit the test suite — classify each test by taxonomy and resource-based size, place it via a decision tree, and enforce the prove-it law that every bug fix ships with a failing-then-passing test. |
+| `write-prd` | Author decision-ready product requirements documents from a provided or packaged template, keeping scope, metrics, rollout, and open issues coherent. |
 | `write-report` | Scaffold and author a project's one-off canonical technical report against a single YAML frame whose depth is the enforced table of contents. |
 
 ---
@@ -46,8 +49,8 @@ Install via the marketplace (interactive, inside Claude Code):
 /plugin install craft-skills@craft-skills
 ```
 
-Then invoke any of the 17 skills above by name, e.g. `document`, `init`, `skillify`,
-`programming`, `research`, `debug`.
+Then invoke any of the 20 skills above by name, e.g. `api`, `cicd`, `document`, `init`,
+`skillify`, `programming`, `research`, `write-prd`, `debug`.
 
 ---
 
@@ -85,7 +88,7 @@ Mount `skills/` via `skills.external_dirs` in your Hermes config:
    ```
 4. Verify:
    ```bash
-   hermes skills list | grep -E 'agents|backend|debug|distil|document|frontend|git|hookify|init|ml|programming|refactor|research|security|skillify|testing|write-report'
+   hermes skills list | grep -E 'agents|api|backend|cicd|debug|distil|document|frontend|git|hookify|init|ml|programming|refactor|research|security|skillify|testing|write-prd|write-report'
    ```
 
 See `.hermes/README.md` for full deployment details.
@@ -98,8 +101,10 @@ Skills are plain Markdown — any agent that can ingest instruction files can us
 Point the agent's instruction-file import at the skill you want:
 
 ```
+skills/api/SKILL.md
 skills/agents/SKILL.md
 skills/backend/SKILL.md
+skills/cicd/SKILL.md
 skills/debug/SKILL.md
 skills/distil/SKILL.md
 skills/document/SKILL.md
@@ -114,6 +119,7 @@ skills/research/SKILL.md
 skills/security/SKILL.md
 skills/skillify/SKILL.md
 skills/testing/SKILL.md
+skills/write-prd/SKILL.md
 skills/write-report/SKILL.md
 ```
 

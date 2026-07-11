@@ -1,13 +1,13 @@
 ---
 name: backend
-description: Routes backend service engineering through an architecture-detection gate — layered, vertical-slice, or hexagonal — then applies dependency-direction rules, an API design contract, and per-framework folder conventions. Use when building an API endpoint, setting up a new backend service, deciding whether a service should be layered or hexagonal, adding a repository or use case to an existing service, or reviewing folder structure for architecture drift (e.g. "백엔드 구조 잡아줘"). Not for UI rendering work — use the frontend skill instead.
+description: Routes backend service engineering through an architecture-detection gate — layered, vertical-slice, or hexagonal — then applies dependency-direction rules, persistence choices, and per-framework folder conventions. Use when building a backend service, setting up production-fidelity local database development, deciding whether a service should be layered or hexagonal, choosing Prisma or preserving an incumbent ORM, adding a repository or use case to an existing service, or reviewing folder structure for architecture drift (e.g. "백엔드 구조 잡아줘"). Not for public HTTP API contracts — use api; not for UI rendering work — use frontend.
 metadata:
-  version: 2.1.0
+  version: 3.0.0
 ---
 
 # backend
 
-Engineer backend services under one discipline: one architecture per service, one dependency direction, contract before code. Done means the incumbent architecture is respected, the loaded reference's dependency-direction greps return no unexplained hits, and any API surface follows the contract-first and observed-behavior rules in `references/api-design.md`.
+Engineer backend services under one discipline: one architecture per service, one dependency direction, and production-fidelity persistence. Done means the incumbent architecture is respected, the loaded reference's dependency-direction greps return no unexplained hits, and database engine plus ORM choices are explicit before persistence code is written.
 
 ## PHASE 0 — architecture gate (run first, every time)
 
@@ -49,7 +49,7 @@ Grey zone — genuinely ambiguous (mid-size team, moderate complexity, no clear 
 | Layered service (detected or chosen) | `references/layered.md` |
 | Vertical-slice service | `references/vertical-slice.md` |
 | Hexagonal service | `references/hexagonal.md` |
-| Any service exposing an API (always) | `references/api-design.md` |
+| Any service choosing a database engine or ORM | `references/persistence.md` |
 | Any service, before creating folders | `references/folders.md` |
 
 ## Requirements
@@ -60,24 +60,19 @@ Grey zone — genuinely ambiguous (mid-size team, moderate complexity, no clear 
 
 ## Boundaries
 
-Not for: per-file type/style discipline or parse-don't-validate input handling at the boundary (`programming` skill), test suite design (`testing` skill), authz/injection/rate-limiting hardening (`security` skill), frontend rendering architecture (`frontend` skill).
+Not for: public HTTP API contracts, response shapes, or REST conventions (`api` skill); per-file type/style discipline or parse-don't-validate input handling at the boundary (`programming` skill); test suite design (`testing` skill); authz/injection/rate-limiting hardening (`security` skill); frontend rendering architecture (`frontend` skill).
 
 ## Anti-patterns
 
 - Calling the repository directly from the controller as a one-off shortcut → keep the dependency-direction rule with zero exceptions in a layered service; one skip normalizes the next.
 - Picking hexagonal for a CRUD-only service because it looks more professional → use layered; ports/adapters ceremony only pays off with a real second delivery mechanism or a domain that must outlive the framework.
 - Adding a `shared/` helper for a single slice because it's convenient → wait for a rule of three (identical logic in ≥3 slices) before admitting `shared/`; one occurrence is coincidence, not a pattern.
-- Letting docs explain a silently changed API field's meaning → treat every observed behavior as a contract whether documented or not; a silent field-meaning change breaks whoever already parses it the old way.
-- Adding a v2 API alongside v1 to migrate later → evolve v1 additively, version only when a break is unavoidable, and set a deprecation date immediately.
 - Adding a third architecture pattern because the project already mixes patterns → report existing drift as a bug to flag, not a precedent to extend.
 - A controller importing a repository or ORM session directly → route data access through the service layer instead.
 - A service function taking or returning an HTTP framework type (`Request`, `Response`) → keep HTTP types confined to controllers; pass plain domain types to services.
 - Domain code (`domain/`) importing a web framework or ORM → keep domain code framework-agnostic; put such calls behind a port/adapter.
 - A feature slice importing another slice's internals outside `shared/` → import only through `shared/` or a public interface, never another slice's internals.
 - Two or more architecture-triad folders (`controllers/`+`services/`+`repositories/` alongside `domain/`+`ports/`+`adapters/`) coexisting in one service → keep exactly one pattern per service; flag mixed-pattern drift instead of layering a third pattern on top.
-- An API response reusing a repurposed field's old name for a new meaning → rename the field or version deliberately instead of repurposing it silently.
-- More than one API version directory alive with no deprecation date set on the older one → set a deprecation date on the older version as soon as the new one ships.
-- Repeating a common API base, prefix, or version in every controller/router → use `references/api-design.md`'s API base boundary; handlers own only resource-local paths.
 
 ## Verification
 
@@ -85,5 +80,5 @@ Not for: per-file type/style discipline or parse-don't-validate input handling a
 - [ ] The matching reference file was read in full before structural changes.
 - [ ] No dependency-direction violation — the grep commands in the loaded reference return no unexplained hits.
 - [ ] No architecture mixing — exactly one pattern's folder shape is present per service, confirmed by running PHASE 0 detection from that service's own root (never a monorepo root).
-- [ ] New API surface followed the contract-first and observed-behavior rules in `references/api-design.md`.
+- [ ] Database engine and ORM decisions follow `references/persistence.md`; public API contracts were defined through the `api` skill.
 - [ ] Folder shape matches `references/folders.md` for the chosen architecture and framework.

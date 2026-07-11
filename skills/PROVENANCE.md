@@ -17,7 +17,9 @@ only, and naming a source there fails skillify's attribution gate.
 | `distil` | operator's own WIP draft (absorbed 2026-07-06) | — | original |
 | `programming` | `programming` skill; ponytail ladder + never-cut list + root-cause rule; gajae-code agent discipline; TS clean-code + smell catalog | [code-yeongyu/lazycodex](https://github.com/code-yeongyu/lazycodex), [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) (MIT), [labs42io/clean-code-typescript](https://github.com/labs42io/clean-code-typescript) (MIT) | adapted |
 | `frontend` | design-first gate and router shape; rendering-architecture/state/folder rules original synthesis | code-yeongyu/lazycodex (MIT; pattern-only) | adapted |
-| `backend` | API observed-behavior + one-version rules; architecture-detection rules original synthesis | addyosmani/agent-skills | adapted |
+| `backend` | architecture-detection rules and persistence rationale | [JNU-SWCU/oss-hub](https://github.com/JNU-SWCU/oss-hub) (ADR-001; operator-supplied) | adapted |
+| `api` | contract-first resource, error, and interface conventions | [Pullit API Design Guide](https://pullit-docs-server.vercel.app/index.html#02-api-design); [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills/tree/main/skills/api-and-interface-design) | adapted |
+| `cicd` | CI/CD automation and deployment state-transition rules | [addyosmani/agent-skills ci-cd-and-automation](https://github.com/addyosmani/agent-skills/tree/main/skills/ci-cd-and-automation); operator-approved JNU-SWCU/oss-hub init deployment plan (operator-supplied, 2026-07-11) | distilled |
 | `ml` | training-discipline ladder; layout/dataset rules original synthesis | "A Recipe for Training Neural Networks" (A. Karpathy) | adapted |
 | `agents` | — (hardening hand-off boundaries align with OWASP Top 10 for LLM Applications) | — | original |
 | `testing` | resource-based test sizes; prove-it bug-fix law; DAMP-over-DRY | addyosmani/agent-skills | adapted |
