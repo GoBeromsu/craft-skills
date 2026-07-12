@@ -148,6 +148,22 @@ def check(aggregate: dict[str, Any], repos: dict[str, Any]) -> list[dict[str, An
         absorbed_from = provenance.get("absorbed_from")
         if isinstance(absorbed_from, list):
             unknown_refs = [ref for ref in absorbed_from if isinstance(ref, str) and ref not in valid_absorbed_refs]
+            external_refs = [
+                ref
+                for ref in unknown_refs
+                if repos.get("profile") == "portable" and ref.partition("/")[0] not in repo_paths
+            ]
+            if external_refs:
+                findings.append(
+                    _finding(
+                        "provenance.absorbed_from_unresolved",
+                        package,
+                        "advisory",
+                        "provenance.absorbed_from references an unavailable external repository in the portable profile.",
+                        {"unknown_refs": sorted(external_refs), "migration_sources": migration_sources},
+                    )
+                )
+            unknown_refs = [ref for ref in unknown_refs if ref not in external_refs]
             if unknown_refs:
                 findings.append(
                     _finding(

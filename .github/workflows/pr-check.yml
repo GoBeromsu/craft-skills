@@ -1,4 +1,4 @@
-name: PR size check
+name: pr-check
 
 on:
   pull_request:
@@ -121,3 +121,27 @@ jobs:
               core.info(`Logic churn ${logicChurn} classified as ${bucket}.`);
             }
             // === SIZE-CHECK-LOGIC-END ===
+  layer1-format:
+    name: layer1-format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: python3 skills/skillify/scripts/validate-skill-format.py --diff-base origin/main...HEAD
+
+  layer1-hygiene:
+    name: layer1-hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: python3 skills/skillify/scripts/validate-runtime-hygiene.py --diff-base origin/main...HEAD
+
+  harness-portable:
+    name: harness-portable
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/governance/harness.py --profile portable --config scripts/governance/fixtures/repos.portable.json --json-out build/governance/report.json --text-out build/governance/report.txt

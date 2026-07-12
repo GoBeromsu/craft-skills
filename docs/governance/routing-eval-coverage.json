@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "expected_craft_packages": [
+    "debug",
+    "distil",
+    "document",
+    "git",
+    "hookify",
+    "init",
+    "programming",
+    "research",
+    "skillify",
+    "write-report"
+  ]
+}
