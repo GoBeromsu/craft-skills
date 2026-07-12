@@ -3,15 +3,14 @@
 #
 # Usage:
 #   ./install.sh claude    Print the Claude Code marketplace install commands
-#   ./install.sh codex     Clone craft-skills for Codex skill context
+#   ./install.sh codex     Install the Codex plugin and optionally clone skills for project context
 #   ./install.sh hermes    Print the Hermes skills.external_dirs config snippet
 #   ./install.sh all       Run all three targets
 #
 # Idempotent — safe to re-run. Never hardcodes secrets or user paths beyond $HOME.
 # Does not write git commits or push to remotes.
 #
-# NOTE: Hermes and Codex install paths are documented assumptions. Verify with your
-# local setup. See AGENTS.md §3 (Multi-Runtime Model) for the authoritative matrix.
+# NOTE: Runtime install channels and paths are kept in the install matrix in AGENTS.md.
 
 set -e
 
@@ -42,30 +41,28 @@ install_claude() {
 install_codex() {
   header "Codex"
 
-  # ASSUMPTION: craft-skills is cloned under ~/dev/GoBeromsu/ to match the
-  # convention used in the Hermes hook config. Adjust CLONE_DIR if your layout differs.
-  CLONE_DIR="${HOME}/dev/GoBeromsu/craft-skills"
-  REPO_URL="https://github.com/GoBeromsu/craft-skills.git"
+  # Codex canonical channel: .codex-plugin/plugin.json.
+  note "Canonical channel: install the plugin defined by ${REPO_DIR}/.codex-plugin/plugin.json."
+  printf '\n'
+  printf '    codex plugin marketplace add %s\n' "${REPO_DIR}"
+  printf '    codex plugin add craft-skills@craft-skills --json\n'
+  printf '\n'
 
-  note "ASSUMPTION: clone target is ${CLONE_DIR}. Edit CLONE_DIR in this script if your dev layout differs."
+  # Codex auxiliary clone path: .agents/skills/craft-skills.
+  CLONE_DIR="${PWD}/.agents/skills/craft-skills"
+  REPO_URL="https://github.com/GoBeromsu/craft-skills.git"
+  note "Optional discovery clone target: ${CLONE_DIR}."
 
   if [ -d "${CLONE_DIR}/.git" ]; then
     ok "Already cloned at ${CLONE_DIR} — skipping clone."
   else
     step "Cloning ${REPO_URL} → ${CLONE_DIR}"
-    mkdir -p "${HOME}/dev/GoBeromsu"
+    mkdir -p "${PWD}/.agents/skills"
     git clone "${REPO_URL}" "${CLONE_DIR}"
     ok "Cloned to ${CLONE_DIR}"
   fi
 
-  printf '\n'
-  note "Codex reads AGENTS.md natively — no extra import required for skill context."
-  note "To activate skills in a Codex project, reference AGENTS.md from your project's own AGENTS.md:"
-  printf '\n'
-  printf '    # In your project AGENTS.md:\n'
-  printf '    # See %s/AGENTS.md for craft-skills\n' "${CLONE_DIR}"
-  printf '\n'
-  note "Optional: copy .codex/config.yaml into your project root to register per-project hooks."
+  note "The auxiliary clone has a nested layout: skills live at ${CLONE_DIR}/skills/<name>/SKILL.md."
   ok "Codex setup complete."
 }
 
@@ -74,9 +71,8 @@ install_codex() {
 install_hermes() {
   header "Hermes"
 
-  # Determine the skills path — prefer the actual running script's repo dir,
-  # but fall back to the conventional clone path.
-  SKILLS_PATH="${REPO_DIR}/skills"
+  # Hermes mount path: ~/dev/GoBeromsu/craft-skills/skills.
+  SKILLS_PATH="${HOME}/dev/GoBeromsu/craft-skills/skills"
 
   note "ASSUMPTION: Hermes config.yaml uses 'skills.external_dirs'. Verify with: hermes --help | grep -i external"
   note "Automatic config.yaml editing is NOT performed — paste the snippet below manually."

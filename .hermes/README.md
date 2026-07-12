@@ -8,6 +8,8 @@ No hook scripts live here yet; a `hooks/` subdirectory will be added once
 
 ## Mount via skills.external_dirs
 
+**Hermes mount path:** `~/dev/GoBeromsu/craft-skills/skills`.
+
 Hermes loads skills from an external directory by adding an entry to
 `${HERMES_HOME}/config.yaml`. Add the block below, then restart the gateway.
 
@@ -16,10 +18,9 @@ Hermes loads skills from an external directory by adding an entry to
 # or add the full block if none exists yet.
 skills:
   external_dirs:
-    - /path/to/craft-skills/skills   # replace with your actual clone path
-                                     # or use ${CRAFT_SKILLS_REPO_PATH}/skills
-                                     # NOTE: Hermes expands ~ but NOT ${VARS} in
-                                     # config.yaml paths — use a literal absolute path.
+    - ~/dev/GoBeromsu/craft-skills/skills
+                                     # Hermes expands ~ but NOT ${VARS} in
+                                     # config.yaml paths — use the stable literal path.
 ```
 
 **Steps:**

@@ -42,7 +42,7 @@ context.
 
 ### Claude Code
 
-Install via the marketplace (interactive, inside Claude Code):
+Claude marketplace commands:
 
 ```
 /plugin marketplace add GoBeromsu/craft-skills
@@ -56,20 +56,27 @@ Then invoke any of the 20 skills above by name, e.g. `api`, `cicd`, `document`, 
 
 ### Codex
 
-Codex reads `AGENTS.md` natively — no plugin install step is required. Skills are also
-discoverable by cloning this repo into `.agents/skills`:
+**Codex canonical channel:** install the plugin defined by `.codex-plugin/plugin.json`:
+
+```bash
+codex plugin marketplace add ./
+codex plugin add craft-skills@craft-skills --json
+```
+
+**Codex auxiliary clone path:** `.agents/skills/craft-skills` from the user project's root:
 
 ```bash
 git clone https://github.com/GoBeromsu/craft-skills.git .agents/skills/craft-skills
 ```
 
-Reference `AGENTS.md` from your own project's `AGENTS.md` to pull in the skill context.
+The clone is optional discovery context; its skills have the nested layout
+`.agents/skills/craft-skills/skills/<name>/SKILL.md`.
 
 ---
 
 ### Hermes
 
-Mount `skills/` via `skills.external_dirs` in your Hermes config:
+**Hermes mount path:** `~/dev/GoBeromsu/craft-skills/skills`, via `skills.external_dirs` in your Hermes config:
 
 1. Clone the repo:
    ```bash
@@ -79,7 +86,7 @@ Mount `skills/` via `skills.external_dirs` in your Hermes config:
    ```yaml
    skills:
      external_dirs:
-       - /Users/<you>/dev/GoBeromsu/craft-skills/skills
+       - ~/dev/GoBeromsu/craft-skills/skills
    ```
    Use a literal absolute path — Hermes expands `~` but not `${VARS}` in config paths.
 3. Restart the gateway:
@@ -132,7 +139,7 @@ No runtime-specific config required.
 For Codex and Hermes, a POSIX-sh installer is provided:
 
 ```bash
-./install.sh codex    # clone the repo to ~/dev/GoBeromsu/craft-skills
+./install.sh codex    # print the Codex plugin commands and clone auxiliary discovery context
 ./install.sh hermes   # print the config snippet to paste into ${HERMES_HOME}/config.yaml
 ./install.sh claude   # print the Claude Code marketplace commands
 ./install.sh all      # run all three
