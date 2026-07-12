@@ -26,16 +26,16 @@ that contract.
 
 | Runtime | How skills are loaded |
 |---------|------------------------|
-| **Claude Code** | Marketplace plugin — `/plugin marketplace add GoBeromsu/craft-skills` then `/plugin install craft-skills@craft-skills`. |
-| **Codex** | Reads `AGENTS.md` natively; skills are also discoverable by cloning this repo into `.agents/skills`. |
-| **Hermes** | Mount `skills/` via `skills.external_dirs` — see `.hermes/README.md`. |
+| **Claude Code** | Claude marketplace commands: `/plugin marketplace add GoBeromsu/craft-skills` then `/plugin install craft-skills@craft-skills`. |
+| **Codex** | Canonical channel: plugin install from `.codex-plugin/plugin.json` with `codex plugin marketplace add ./` then `codex plugin add craft-skills@craft-skills --json`. Codex auxiliary clone path: `.agents/skills/craft-skills` from the user project's root; skills are nested at `.agents/skills/craft-skills/skills/<name>/SKILL.md`. |
+| **Hermes** | Hermes mount path: `~/dev/GoBeromsu/craft-skills/skills` via `skills.external_dirs` — see `.hermes/README.md`. |
 | **Generic agents** (Cursor, Gemini, Copilot, etc.) | Point the instruction-file import at `skills/<name>/SKILL.md`; each file is self-contained. |
 
 ## Environment variables
 
 | Variable | Meaning |
 |----------|---------|
-| `CRAFT_SKILLS_REPO_PATH` | Absolute path to this repo root — used by Hermes's `external_dirs` mount. |
+| `CRAFT_SKILLS_REPO_PATH` | Optional shell variable for the stable Hermes clone root `~/dev/GoBeromsu/craft-skills`; config.yaml itself uses the literal mount path. |
 | `CRAFT_WT_REMOTE_HOST` | Tailscale hostname for remote worktree exec (the worktree recipe now lives in the `git` skill's `references/worktree.md`; optional). |
 
 ## Rails
