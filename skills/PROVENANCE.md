@@ -34,6 +34,7 @@ only, and naming a source there fails skillify's attribution gate.
 | `write-prd` | operator-supplied PRD template | — | original (template supplied by operator) |
 | `research` | — | — | original (skill-library redesign) |
 | `debug` | — | — | original (skill-library redesign) |
+| `aside` | — | — | original (grounded in Aside developer docs, https://docs.aside.com/help/developers) |
 
 ## Relationship vocabulary
 

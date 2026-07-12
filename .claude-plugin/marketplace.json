@@ -1,6 +1,6 @@
 {
   "name": "craft-skills",
-  "description": "Work-craft skills for research + engineering: documentation, version control, structural AST search, write-prd product requirements, ML, agents, security, and a self-governing skill-authoring gate across 29 packages.",
+  "description": "Work-craft skills for research + engineering: documentation, version control, structural AST search, write-prd product requirements, ML, agents, security, and a self-governing skill-authoring gate across 30 packages.",
   "owner": {
     "name": "GoBeromsu"
   },
@@ -11,7 +11,7 @@
         "source": "github",
         "repo": "GoBeromsu/craft-skills"
       },
-      "description": "Work-craft Claude Code skills across 29 packages for research, engineering, structural AST search, and write-prd product requirements by Beomsu Koh"
+      "description": "Work-craft Claude Code skills across 30 packages for research, engineering, structural AST search, and write-prd product requirements by Beomsu Koh"
     }
   ]
 }

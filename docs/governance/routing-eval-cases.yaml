@@ -165,6 +165,11 @@
       "trigger": "render a Mermaid sequence diagram in an Obsidian note",
       "expected_package": "craft-skills/obsidian-mermaid",
       "forbidden_neighbors": ["craft-skills/obsidian-canvas", "craft-skills/document", "craft-skills/obsidian-markdown"]
+    },
+    {
+      "trigger": "drive the Aside browser to log into a dashboard and grab a screenshot",
+      "expected_package": "craft-skills/aside",
+      "forbidden_neighbors": ["craft-skills/defuddle", "craft-skills/obsidian-clipper", "craft-skills/research"]
     }
   ]
 }
