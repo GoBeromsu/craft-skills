@@ -105,6 +105,21 @@
       "trigger": "audit this repo for security vulnerabilities",
       "expected_package": "craft-skills/security",
       "forbidden_neighbors": ["craft-skills/debug", "craft-skills/testing", "craft-skills/programming"]
+    },
+    {
+      "trigger": "design the public REST contract for this resource",
+      "expected_package": "craft-skills/api",
+      "forbidden_neighbors": ["craft-skills/backend", "craft-skills/frontend", "craft-skills/document"]
+    },
+    {
+      "trigger": "set up the PR pipeline and deployment for this repo",
+      "expected_package": "craft-skills/cicd",
+      "forbidden_neighbors": ["craft-skills/git", "craft-skills/hookify", "craft-skills/backend"]
+    },
+    {
+      "trigger": "write a PRD for this feature",
+      "expected_package": "craft-skills/write-prd",
+      "forbidden_neighbors": ["craft-skills/document", "craft-skills/research", "craft-skills/write-report"]
     }
   ]
 }

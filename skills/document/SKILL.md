@@ -1,8 +1,8 @@
 ---
 name: document
-description: Routes any documentation task into a six-type docs/ ontology (research, references, spec, plan, decision, rule) and authors repo-level artifacts against their canonical templates. Use when explicitly writing an ADR ("record this decision"), setting up docs/, deciding where a spec or plan belongs ("where does this spec go"), updating the README, drafting the project CHANGELOG, deciding how to comment-the-why in code, or writing a design.md ("문서화해줘"). Not for conducting the research itself (use research), scaffolding a full technical-report deliverable (use write-report), or authoring JSDoc/docstring/OpenAPI API-surface comments (a code-domain concern, not part of this ontology).
+description: Routes repository documentation into a six-type ontology and authors canonical artifacts. Use when asked to "record this decision", "where does this spec go", "update the README", "draft the project CHANGELOG", "comment-the-why", or "write a design.md". Not for repository docs scaffolding (use init), conducting research (use research), technical reports (use write-report), or API-surface comments.
 metadata:
-  version: 3.0.1
+  version: 3.1.0
 ---
 
 # document
@@ -22,7 +22,7 @@ Every documentation artifact answers exactly one question; never let one artifac
 | **research** | *What did I find* — facts, sources, comparisons (pre-decision) | Topic-scoped; superseded as evidence evolves | `templates/research.md` | `docs/research/{slug}.md` |
 | **references** | *What does this external source say* — verbatim static archive of a third-party document | Permanent snapshot; never edited after capture | `templates/references.md` | `docs/research/references/{slug}.md` |
 | **spec** | *What* is this work and are the requirements clear? | Work-scoped, one-shot | `templates/spec.md` | `docs/exec-plan/active/{slug}/spec.md` |
-| **plan** | *How* to implement (steps, files, order) | Work-scoped; body immutable after finalize | `templates/plan.md` | `docs/exec-plan/active/{slug}/plan.md` |
+| **plan** | *How* to implement (steps, files, order) | Work-scoped; body immutable only after explicit finalization | `templates/plan.md` | `docs/exec-plan/active/{slug}/plan.md` |
 | **decision** | One expensive-to-reverse *cross-cutting* decision | Permanent topic anchor; edited in place, each change logged in the ADR's `## Changelog` | `templates/adr.md` | `docs/decisions/ADR-NNN-{topic}.md` |
 | **rule** | A standing convention (ongoing constraint, not work-scoped) | Alive as long as the convention holds | `templates/rule.md` | `docs/rules/{topic}.md` |
 
@@ -54,7 +54,7 @@ Loose `.md` files accumulate at the repo root instead of filing into the ontolog
 find . -maxdepth 1 -name '*.md' | sed 's|^\./||' | grep -viE '^(readme|agents|claude|changelog|contributing|license|code_of_conduct)\.md$' | wc -l
 ```
 
-More than 3 → route the existing loose docs into `docs/` (research/spec/plan/decision/rule) before adding any more.
+More than 3 is a signal to investigate the loose documents and propose their canonical `docs/` paths before adding more. Do not move existing documents without an explicit request.
 
 ## Decision boundaries
 
@@ -90,8 +90,8 @@ Scratch drafts live outside `docs/` and are not git-canonical. Finalizing a draf
 ```
 spec drafted (scratch) → MOVE → docs/exec-plan/active/{slug}/spec.md
 plan drafted (scratch) → MOVE → docs/exec-plan/active/{slug}/plan.md
-                                  FINALIZED on first git commit that includes plan.md — body immutable from then
-work done / discarded / superseded → add status: done|discarded|superseded-by (+ superseded-by: {slug}) → MOVE active/{slug}/ → archive/{slug}/
+                                  FINALIZE only when the user explicitly adopts the immutable-plan contract
+work done / discarded / superseded → add status: done|discarded|superseded (+ superseded-by: {slug} when applicable) → MOVE active/{slug}/ → archive/{slug}/
 user explicitly requested a decision record → create/update docs/decisions/ADR-NNN-{topic}.md (references/adr.md)
 ```
 
@@ -99,7 +99,7 @@ user explicitly requested a decision record → create/update docs/decisions/ADR
 
 **Supersede timing:** when creating a superseding plan-B, archive plan-A in the same action, before beginning plan-B's execution.
 
-**Plan immutability:** a plan is finalized on the first git commit that includes its `plan.md`; from then the body is immutable. A scope change gets a new slug, with the old plan's frontmatter set to `status: superseded-by` + `superseded-by: {new-slug}` — the only mutable lines post-finalize.
+**Finalized-plan contract:** a working plan remains editable after commits. Set `finalized: true` only when the user explicitly adopts its body as immutable; from then, a scope change gets a new slug and the old plan's frontmatter is updated to `status: superseded` + `superseded-by: {new-slug}`. Only the finalization and lifecycle frontmatter changes after finalization.
 
 ## Slug naming
 
@@ -130,4 +130,4 @@ Update it whenever a change moves a component boundary or a new cross-cutting de
 - [ ] `architecture.md` reflects the latest component boundaries and decisions, or was flagged stale
 - [ ] References files hold verbatim source content, not synthesis
 - [ ] Slug matches its folder/filename exactly
-- [ ] Root-doc-sprawl check run before filing a new artifact when loose root docs are suspected
+- [ ] Root-doc-sprawl check run when loose root docs are suspected; any relocation was proposed and explicitly requested before moving files

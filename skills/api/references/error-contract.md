@@ -1,50 +1,35 @@
 # Error contract
 
-Expose business and application failures as stable, machine-readable problem documents. Keep protocol failures that occur before application handling outside this contract.
+## Incumbent contract gate
+
+Inspect the published error responses before changing an existing API. Preserve its error shape, codes, and client-visible semantics unless an explicit version or migration scope names client compatibility and rollout behavior. Do not introduce a new error envelope as a cleanup.
+
+Use the following defaults only for a greenfield API or an explicitly new API version. Keep transport failures that occur before application handling outside the application contract.
 
 ## Problem document
 
-Return RFC 7807 `ProblemDetail` fields plus one application code:
+Expose business and application failures as RFC 7807 `ProblemDetail` with one application `code`.
 
 | Field | Purpose |
 |---|---|
-| `type` | Stable URI that identifies the problem category |
-| `title` | Short, human-readable category title |
+| `type` | Stable URI identifying the problem category |
+| `title` | Short human-readable category title |
 | `status` | HTTP status code |
-| `detail` | Safe, request-specific explanation |
-| `instance` | Request or resource instance identifier when safe to expose |
-| `code` | Stable domain or system error code for client behavior |
+| `detail` | Safe request-specific explanation |
+| `instance` | Request or resource instance identifier when safe |
+| `code` | Stable domain or system code for client behavior |
 
-Do not wrap this object in a success-style envelope. `detail` explains the current request but clients branch on `code` and `status`, not prose.
+Return the problem document directly. Clients branch on `code` and `status`, not `detail`.
 
-## Code ownership
+## Code ownership and mapping
 
-Each domain defines its own `ErrorCode` enum. Use three uppercase letters, an underscore, and three digits: `MEM_001`, `ORD_014`, or `PAY_021`. Reserve `SYS_xxx` for cross-cutting system conditions, such as unexpected persistence availability or an uncategorized application failure. Allocate codes deliberately; do not recycle a retired code for a new meaning.
-
-Keep the mapping adjacent to the domain failure definition, not spread through controllers. The exception mapper or error middleware converts the typed failure once at the HTTP boundary.
-
-## Mapping rules
+Each domain owns an `ErrorCode` enum using three uppercase letters, an underscore, and three digits, such as `MEM_001`; reserve `SYS_xxx` for cross-cutting system conditions. Allocate codes deliberately and never recycle a retired code. Keep the mapping beside the domain failure definition; exception middleware converts the typed failure once at the HTTP boundary.
 
 | Failure source | Response | Logging |
 |---|---|---|
 | Expected validation or domain failure | Problem document with its owned code | Contextual event at appropriate severity |
-| Authentication or authorization failure handled by the application | Problem document with owned code when the API exposes one | Security-relevant context without credentials |
+| Application authentication or authorization failure | Problem document with an owned code when exposed | Security-relevant context without credentials |
 | Unknown exception or any 5xx | Sanitized system problem with `SYS_xxx` | Diagnostic error log with request correlation |
-| Transport/server rejection before application handling, such as 431 | Server/framework behavior | Do not document as an application error contract |
+| Transport/server rejection before application handling, such as 431 | Server/framework behavior | Outside the application contract |
 
-Never include a stack trace, SQL query, secret, file path, or implementation-specific class name in `detail`. Attach those only to server-side diagnostics with request correlation.
-
-## Contract example
-
-```json
-{
-  "type": "https://api.example.com/problems/member-not-found",
-  "title": "Member not found",
-  "status": 404,
-  "detail": "No member exists for the supplied identifier.",
-  "instance": "/api/v1/members/123",
-  "code": "MEM_001"
-}
-```
-
-The URI is illustrative: choose the public API host from deployment configuration, not a hard-coded environment value.
+Never include a stack trace, SQL query, secret, file path, or implementation-specific class name in `detail`; retain those only in correlated server diagnostics.
