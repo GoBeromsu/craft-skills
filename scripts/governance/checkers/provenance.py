@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from ._repo_ns import is_known_external_reference
 CHECKER_NAME = "provenance"
 CHECKER_VERSION = "1"
 
@@ -151,7 +152,8 @@ def check(aggregate: dict[str, Any], repos: dict[str, Any]) -> list[dict[str, An
             external_refs = [
                 ref
                 for ref in unknown_refs
-                if repos.get("profile") == "portable" and ref.partition("/")[0] not in repo_paths
+                if repos.get("profile") == "portable"
+                and is_known_external_reference(ref, repos, set(repo_paths))
             ]
             if external_refs:
                 findings.append(

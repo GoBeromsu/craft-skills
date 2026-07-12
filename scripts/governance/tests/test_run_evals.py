@@ -26,11 +26,24 @@ class RunEvalsTest(unittest.TestCase):
         evals = self.root / "skills" / "demo" / "evals"
         evals.mkdir(parents=True)
         (evals / "evals.json").write_text(
-            json.dumps([{"case_id": f"behavior-{index}", "expected": f"behavior {index}"} for index in range(3)]),
+            json.dumps(
+                {
+                    "skill": "demo",
+                    "cases": [
+                        {"prompt": f"behavior prompt {index}", "expected_behavior": f"behavior {index}"}
+                        for index in range(3)
+                    ],
+                }
+            ),
             encoding="utf-8",
         )
         (evals / "triggers.json").write_text(
-            json.dumps([{"case_id": f"trigger-{index}", "expected": "demo"} for index in range(16)]),
+            json.dumps(
+                {
+                    "should": [f"should trigger {index}" for index in range(8)],
+                    "should_not": [f"near miss {index}" for index in range(8)],
+                }
+            ),
             encoding="utf-8",
         )
         subprocess.run(["git", "init"], cwd=self.root, check=True, capture_output=True, text=True)
@@ -39,6 +52,8 @@ class RunEvalsTest(unittest.TestCase):
         (self.root / "README.md").write_text("fixture\n", encoding="utf-8")
         subprocess.run(["git", "add", "README.md"], cwd=self.root, check=True)
         subprocess.run(["git", "commit", "-m", "fixture"], cwd=self.root, check=True, capture_output=True, text=True)
+        subprocess.run(["git", "branch", "baseline"], cwd=self.root, check=True, capture_output=True, text=True)
+        subprocess.run(["git", "branch", "without-demo"], cwd=self.root, check=True, capture_output=True, text=True)
         self.receipt_path = self.root / "receipt.json"
 
     def tearDown(self) -> None:
@@ -61,7 +76,7 @@ class RunEvalsTest(unittest.TestCase):
             "--pr",
             "123",
             "--baseline-ref",
-            "main",
+            "baseline",
             "--candidate-ref",
             "HEAD",
             "--no-skill-ref",
@@ -93,12 +108,18 @@ class RunEvalsTest(unittest.TestCase):
         self.assertEqual(receipt["protocol_version"], 1)
         self.assertEqual(receipt["skill"], "demo")
         self.assertEqual(receipt["pr"], "123")
-        self.assertEqual(receipt["inputs"], {"baseline_ref": "main", "candidate_ref": "HEAD", "no_skill_ref": "without-demo"})
+        self.assertEqual(receipt["inputs"], {"baseline_ref": "baseline", "candidate_ref": "HEAD", "no_skill_ref": "without-demo"})
         self.assertEqual([runtime["runtime"] for runtime in receipt["runtimes"]], ["Claude Code", "Codex", "Hermes", "generic"])
         for runtime in receipt["runtimes"]:
             self.assertEqual(len(runtime["cases"]), 19)
             self.assertTrue(all(case["result"] == "pending" for case in runtime["cases"]))
             self.assertEqual(runtime["raw_result_hash"], _hash(runtime["cases"]))
+        self.assertEqual(
+            [case["case_id"] for case in receipt["runtimes"][0]["cases"]],
+            [f"trigger-should-{index:02d}" for index in range(1, 9)]
+            + [f"trigger-nomiss-{index:02d}" for index in range(1, 9)]
+            + [f"behavior-{index:02d}" for index in range(1, 4)],
+        )
 
     def test_validate_rejects_pending_and_accepts_completed_receipt(self) -> None:
         receipt = self._emit()
@@ -117,6 +138,46 @@ class RunEvalsTest(unittest.TestCase):
         result = self._run("--validate", str(self.receipt_path))
         self.assertEqual(result.returncode, 1)
         self.assertIn("raw_result_hash", result.stdout)
+    def test_validate_rejects_mismatched_tree_protocol_and_missing_evals(self) -> None:
+        receipt = self._emit()
+        self._complete(receipt)
+
+        receipt["tested_tree_sha"] = "bad"
+        self.receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+        tree_result = self._run("--validate", str(self.receipt_path))
+        self.assertEqual(tree_result.returncode, 1)
+        self.assertIn("tested_tree_sha", tree_result.stdout)
+
+        receipt = self._emit()
+        self._complete(receipt)
+        evals_path = self.root / "skills" / "demo" / "evals" / "evals.json"
+        source = json.loads(evals_path.read_text(encoding="utf-8"))
+        source["cases"][0]["expected_behavior"] = "changed"
+        evals_path.write_text(json.dumps(source), encoding="utf-8")
+        protocol_result = self._run("--validate", str(self.receipt_path))
+        self.assertEqual(protocol_result.returncode, 1)
+        self.assertIn("protocol_hash", protocol_result.stdout)
+
+        evals_path.unlink()
+        absent_result = self._run("--validate", str(self.receipt_path))
+        self.assertEqual(absent_result.returncode, 1)
+        self.assertIn("cannot read JSON input", absent_result.stdout)
+
+    def test_validate_rejects_unresolvable_input_ref(self) -> None:
+        receipt = self._emit()
+        self._complete(receipt)
+        receipt["inputs"]["baseline_ref"] = "missing-ref"
+        self.receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+        result = self._run("--validate", str(self.receipt_path))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("inputs.baseline_ref", result.stdout)
+    def test_validate_accepts_explicit_tree(self) -> None:
+        receipt = self._emit()
+        self._complete(receipt)
+        receipt["tested_tree_sha"] = "expected-tree"
+        self.receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+        result = self._run("--validate", str(self.receipt_path), "--tree", "expected-tree")
+        self.assertEqual(result.returncode, 0, result.stdout)
 
 
 if __name__ == "__main__":

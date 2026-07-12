@@ -7,10 +7,12 @@ import re
 from pathlib import Path
 from typing import Any
 
+from ._repo_ns import is_known_external_reference
 CHECKER_NAME = "routing_eval"
 CHECKER_VERSION = "1"
 _CASESETS_CONFIG_KEY = "routing_eval_casesets"
 _COVERAGE_CONFIG_KEY = "routing_eval_coverage_path"
+_CASESET_SCHEMA_VERSION = 1
 _DEFAULT_CASESETS = ["docs/governance/routing-eval-cases.yaml"]
 _DEFAULT_COVERAGE_PATH = "docs/governance/routing-eval-coverage.json"
 _TOKEN_RE = re.compile(r"[0-9A-Za-z가-힣]+")
@@ -90,7 +92,9 @@ def _load_cases(craft_repo: Path, casesets: list[Any]) -> tuple[list[tuple[Any, 
             data = json.loads(_strip_comment_lines(cases_path.read_text(encoding="utf-8")))
         except json.JSONDecodeError:
             return [], cases_path, "invalid_json_compatible_yaml"
-        cases = data.get("cases") if isinstance(data, dict) else None
+        if not isinstance(data, dict) or data.get("schema_version") != _CASESET_SCHEMA_VERSION:
+            return [], cases_path, "invalid_schema_version"
+        cases = data.get("cases")
         if not isinstance(cases, list):
             return [], cases_path, "invalid_cases"
         loaded_cases.extend((case, cases_path) for case in cases)
@@ -109,8 +113,12 @@ def _load_coverage(craft_repo: Path, config: dict[str, Any]) -> tuple[set[str] |
     except json.JSONDecodeError:
         return None, coverage_path, "invalid_json"
     declared = data.get("expected_craft_packages") if isinstance(data, dict) and data.get("schemaVersion") == 1 else None
-    if not isinstance(declared, list) or not all(isinstance(name, str) and name for name in declared):
+    if not isinstance(declared, list):
         return None, coverage_path, "invalid_schema"
+    if not all(isinstance(name, str) and name for name in declared):
+        return None, coverage_path, "invalid_entries"
+    if len(declared) != len(set(declared)):
+        return None, coverage_path, "duplicate_entries"
     return set(declared), coverage_path, None
 
 
@@ -300,24 +308,27 @@ def check(aggregate: dict[str, Any], config: dict[str, Any]) -> list[dict[str, A
                     {"case_index": index, "trigger": trigger, **expected_score},
                 )
             )
-            continue
 
         for neighbor_id in forbidden_neighbors:
-            neighbor_owner, _, _ = neighbor_id.partition("/")
-            if config.get("profile", "portable") == "portable" and neighbor_owner not in active_repos:
+            if (
+                config.get("profile", "portable") == "portable"
+                and is_known_external_reference(neighbor_id, config, active_repos)
+            ):
                 continue
             neighbor_package = packages.get(neighbor_id)
             if not isinstance(neighbor_package, dict) or neighbor_package.get("owner_repo") not in active_repos:
                 findings.append(
                     _finding(
                         "routing_eval.forbidden_neighbor_missing",
-                        "advisory",
+                        "blocking",
                         "Forbidden neighbor id from routing-eval case is absent from active repositories' aggregate.",
                         expected_id,
                         source_path,
                         {"case_index": index, "trigger": trigger, "neighbor": neighbor_id},
                     )
                 )
+                continue
+            if expected_score["score"] == 0:
                 continue
             neighbor_dir = _package_dir(neighbor_package, repos)
             neighbor_skill = neighbor_dir / "SKILL.md" if neighbor_dir is not None else None

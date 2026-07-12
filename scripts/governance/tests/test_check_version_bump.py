@@ -86,6 +86,27 @@ class CheckVersionBumpTest(unittest.TestCase):
         result = self._run()
         self.assertEqual(result.returncode, 0, result.stdout)
         self.assertIn("new package", result.stdout)
+    def test_rejects_new_package_with_invalid_version(self) -> None:
+        package = self.root / "skills" / "new-demo"
+        package.mkdir()
+        (package / "SKILL.md").write_text(_skill("invalid", "new guidance"), encoding="utf-8")
+        (package / "CHANGELOG.md").write_text("- 2026-07-12 — initial release\n", encoding="utf-8")
+        subprocess.run(["git", "add", "skills"], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-m", "new package"], cwd=self.root, check=True, capture_output=True, text=True)
+        result = self._run()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("new-demo: metadata.version is not valid semver", result.stdout)
+
+    def test_rejects_new_package_without_dated_changelog(self) -> None:
+        package = self.root / "skills" / "new-demo"
+        package.mkdir()
+        (package / "SKILL.md").write_text(_skill("1.0.0", "new guidance"), encoding="utf-8")
+        (package / "CHANGELOG.md").write_text("initial release\n", encoding="utf-8")
+        subprocess.run(["git", "add", "skills"], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-m", "new package"], cwd=self.root, check=True, capture_output=True, text=True)
+        result = self._run()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("new-demo: CHANGELOG.md must gain a dated bullet", result.stdout)
 
 
 if __name__ == "__main__":

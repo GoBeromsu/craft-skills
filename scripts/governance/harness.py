@@ -84,6 +84,30 @@ def _blocking_finding(code: str, message: str, details: dict[str, Any] | None = 
     }
 
 
+def _aggregate_failure_report(
+    aggregate_path: Path | None,
+    profile: str,
+    error: SystemExit,
+) -> dict[str, Any]:
+    findings = [
+        _blocking_finding(
+            "harness.unresolved_repo",
+            "Aggregate build could not resolve every configured repository.",
+            {"error": str(error)},
+        )
+    ]
+    return {
+        "schema_version": 1,
+        "aggregate": str(aggregate_path) if aggregate_path is not None else "manifest-regenerated in memory",
+        "aggregate_source": "manifest-regenerated in memory",
+        "profile": profile,
+        "casesets": PROFILE_CASESETS[profile],
+        "checkers": ["schema"],
+        "summary": _summarize(findings),
+        "findings": findings,
+    }
+
+
 def _stale_aggregate_findings(builder: Any, aggregate: dict[str, Any], aggregate_path: Path | None) -> list[dict[str, Any]]:
     if aggregate_path is None:
         return []
@@ -160,7 +184,10 @@ def run(config_path: Path, aggregate_path: Path | None, profile: str = "portable
         "profile": profile,
         "routing_eval_casesets": PROFILE_CASESETS[profile],
     }
-    aggregate = builder.build(config_path, visibility="all")
+    try:
+        aggregate = builder.build(config_path, visibility="all")
+    except SystemExit as error:
+        return _aggregate_failure_report(aggregate_path, profile, error)
     findings: list[dict[str, Any]] = []
     checker_names: list[str] = ["schema"]
 

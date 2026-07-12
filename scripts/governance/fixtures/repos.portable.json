@@ -1,5 +1,6 @@
 {
   "repos": [
     {"name": "craft-skills", "path": "."}
-  ]
+  ],
+  "external_repos": ["bstack", "oh-my-secondbrain"]
 }

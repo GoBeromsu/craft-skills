@@ -31,55 +31,74 @@ def _load_json(path: Path) -> Any:
         raise ValueError(f"cannot read JSON input {path}: {error}") from error
 
 
-def _case_list(value: Any, label: str) -> list[dict[str, Any]]:
-    if isinstance(value, list):
-        cases = value
-    elif isinstance(value, dict):
-        for key in ("cases", "scenarios", "triggers"):
-            if isinstance(value.get(key), list):
-                cases = value[key]
-                break
-        else:
-            raise ValueError(f"{label} must be a JSON array or object with a cases array")
-    else:
-        raise ValueError(f"{label} must be a JSON array or object with a cases array")
+def _behavior_cases(value: Any) -> list[dict[str, Any]]:
+    cases = value.get("cases") if isinstance(value, dict) else None
+    if not isinstance(cases, list) or len(cases) != BEHAVIOR_COUNT:
+        raise ValueError(f"evals/evals.json must contain exactly {BEHAVIOR_COUNT} behavior scenarios")
+    receipts: list[dict[str, Any]] = []
+    for index, case in enumerate(cases, 1):
+        if not isinstance(case, dict) or not isinstance(case.get("prompt"), str) or not case["prompt"]:
+            raise ValueError(f"behavior case {index} must contain a non-empty prompt")
+        expected = case.get("expected_behavior")
+        if not isinstance(expected, str) or not expected:
+            raise ValueError(f"behavior case {index} must contain non-empty expected_behavior")
+        receipts.append(
+            {
+                "case_id": f"behavior-{index:02d}",
+                "kind": "behavior",
+                "expected": expected,
+                "actual": None,
+                "result": "pending",
+            }
+        )
+    return receipts
 
-    if not all(isinstance(case, dict) for case in cases):
-        raise ValueError(f"{label} cases must be objects")
-    return cases
+
+def _trigger_lists(value: Any) -> tuple[list[Any], list[Any]]:
+    if not isinstance(value, dict):
+        raise ValueError("evals/triggers.json must be an object with should and should_not prompt lists")
+    should = value.get("should")
+    should_not = value.get("should_not")
+    if should is None and should_not is None:
+        should = value.get("should_trigger")
+        should_not = value.get("should_not_trigger")
+    if not isinstance(should, list) or not isinstance(should_not, list):
+        raise ValueError("evals/triggers.json must contain should and should_not prompt lists")
+    return should, should_not
+
+
+def _trigger_cases(value: Any) -> list[dict[str, Any]]:
+    should, should_not = _trigger_lists(value)
+    if len(should) != TRIGGER_COUNT // 2 or len(should_not) != TRIGGER_COUNT // 2:
+        raise ValueError("evals/triggers.json must contain exactly 8 should and 8 should_not prompts")
+    receipts: list[dict[str, Any]] = []
+    for prefix, expected, prompts in (
+        ("trigger-should", "should_trigger", should),
+        ("trigger-nomiss", "should_not_trigger", should_not),
+    ):
+        for index, prompt in enumerate(prompts, 1):
+            if not isinstance(prompt, str) or not prompt:
+                raise ValueError(f"{prefix} prompt {index} must be a non-empty string")
+            receipts.append(
+                {
+                    "case_id": f"{prefix}-{index:02d}",
+                    "kind": "trigger",
+                    "expected": expected,
+                    "actual": None,
+                    "result": "pending",
+                }
+            )
+    return receipts
 
 
 def _source_cases(skill: str, root: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any]], Any, Any]:
     evals_dir = root / "skills" / skill / "evals"
     behavior_input = _load_json(evals_dir / "evals.json")
     trigger_input = _load_json(evals_dir / "triggers.json")
-    behaviors = _case_list(behavior_input, "evals/evals.json")
-    triggers = _case_list(trigger_input, "evals/triggers.json")
-
-    if len(triggers) != TRIGGER_COUNT:
-        raise ValueError(f"evals/triggers.json must contain exactly {TRIGGER_COUNT} prompts")
-    if len(behaviors) != BEHAVIOR_COUNT:
-        raise ValueError(f"evals/evals.json must contain exactly {BEHAVIOR_COUNT} behavior scenarios")
-
-    def receipt_case(source: dict[str, Any], kind: str, index: int) -> dict[str, Any]:
-        case_id = source.get("case_id", source.get("id"))
-        if not isinstance(case_id, str) or not case_id:
-            raise ValueError(f"{kind} case {index} is missing a non-empty case_id")
-        if "expected" not in source:
-            raise ValueError(f"{kind} case {case_id!r} is missing expected")
-        return {
-            "case_id": case_id,
-            "kind": kind,
-            "expected": source["expected"],
-            "actual": None,
-            "result": "pending",
-        }
-
-    behavior_cases = [receipt_case(case, "behavior", index) for index, case in enumerate(behaviors, 1)]
-    trigger_cases = [receipt_case(case, "trigger", index) for index, case in enumerate(triggers, 1)]
-    case_ids = [case["case_id"] for case in behavior_cases + trigger_cases]
-    if len(case_ids) != len(set(case_ids)):
-        raise ValueError("eval input case_id values must be unique")
+    if not isinstance(behavior_input, dict) or behavior_input.get("skill") != skill:
+        raise ValueError(f"evals/evals.json skill must be {skill!r}")
+    behavior_cases = _behavior_cases(behavior_input)
+    trigger_cases = _trigger_cases(trigger_input)
     return behavior_cases, trigger_cases, behavior_input, trigger_input
 
 
@@ -94,6 +113,28 @@ def _tree_sha(root: Path) -> str:
     if process.returncode:
         raise ValueError(process.stderr.strip() or "unable to resolve HEAD tree")
     return process.stdout.strip()
+def _is_git_repo(root: Path) -> bool:
+    process = subprocess.run(
+        ["git", "rev-parse", "--is-inside-work-tree"],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    return process.returncode == 0 and process.stdout.strip() == "true"
+
+
+def _ref_resolves(root: Path, reference: str) -> bool:
+    process = subprocess.run(
+        ["git", "rev-parse", "--verify", reference],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    return process.returncode == 0
+
+
 
 
 def emit_receipt(args: argparse.Namespace, root: Path) -> dict[str, Any]:
@@ -131,7 +172,12 @@ def _rate(cases: list[dict[str, Any]]) -> float:
     return sum(case["result"] == "passed" for case in cases) / len(cases)
 
 
-def validate_receipt(receipt: Any, root: Path, supplied_skill: str | None) -> list[str]:
+def validate_receipt(
+    receipt: Any,
+    root: Path,
+    supplied_skill: str | None,
+    supplied_tree: str | None = None,
+) -> list[str]:
     errors: list[str] = []
     if not isinstance(receipt, dict):
         return ["receipt must be a JSON object"]
@@ -146,28 +192,41 @@ def validate_receipt(receipt: Any, root: Path, supplied_skill: str | None) -> li
         if not isinstance(receipt.get(key), str) or not receipt[key]:
             errors.append(f"{key} must be a non-empty string")
     inputs = receipt.get("inputs")
-    if not isinstance(inputs, dict) or any(
-        not isinstance(inputs.get(key), str) or not inputs[key]
+    valid_inputs = isinstance(inputs, dict) and all(
+        isinstance(inputs.get(key), str) and inputs[key]
         for key in ("baseline_ref", "candidate_ref", "no_skill_ref")
-    ):
+    )
+    if not valid_inputs:
         errors.append("inputs must contain non-empty baseline_ref, candidate_ref, and no_skill_ref strings")
+    elif _is_git_repo(root):
+        for key in ("baseline_ref", "candidate_ref", "no_skill_ref"):
+            if not _ref_resolves(root, inputs[key]):
+                errors.append(f"inputs.{key} does not resolve in the local git repository")
+
+    tested_tree = receipt.get("tested_tree_sha")
+    if isinstance(tested_tree, str) and tested_tree:
+        try:
+            expected_tree = supplied_tree if supplied_tree is not None else _tree_sha(root)
+        except ValueError as error:
+            errors.append(f"cannot determine expected tested_tree_sha: {error}")
+        else:
+            if tested_tree != expected_tree:
+                errors.append("tested_tree_sha does not match the expected tree")
 
     source_signature: list[tuple[Any, Any, Any]] | None = None
     if isinstance(skill, str) and skill:
-        evals_dir = root / "skills" / skill / "evals"
-        if evals_dir.exists():
-            try:
-                behavior_cases, trigger_cases, behavior_input, trigger_input = _source_cases(skill, root)
-            except ValueError as error:
-                errors.append(str(error))
-            else:
-                expected_hash = _sha256({"evals": behavior_input, "triggers": trigger_input})
-                if receipt.get("protocol_hash") != expected_hash:
-                    errors.append("protocol_hash does not match local eval inputs")
-                source_signature = [
-                    (case["case_id"], case["kind"], case["expected"])
-                    for case in trigger_cases + behavior_cases
-                ]
+        try:
+            behavior_cases, trigger_cases, behavior_input, trigger_input = _source_cases(skill, root)
+        except ValueError as error:
+            errors.append(str(error))
+        else:
+            expected_hash = _sha256({"evals": behavior_input, "triggers": trigger_input})
+            if receipt.get("protocol_hash") != expected_hash:
+                errors.append("protocol_hash does not match local eval inputs")
+            source_signature = [
+                (case["case_id"], case["kind"], case["expected"])
+                for case in trigger_cases + behavior_cases
+            ]
     if not isinstance(receipt.get("protocol_hash"), str) or not receipt.get("protocol_hash"):
         errors.append("protocol_hash must be a non-empty string")
 
@@ -231,6 +290,7 @@ def main() -> int:
     parser.add_argument("--baseline-ref", help="baseline ref used by the evaluation")
     parser.add_argument("--candidate-ref", help="candidate ref used by the evaluation")
     parser.add_argument("--no-skill-ref", help="reference without the skill used by the evaluation")
+    parser.add_argument("--tree", help="expected tested tree SHA for receipt validation")
     args = parser.parse_args()
     root = Path.cwd()
 
@@ -255,7 +315,7 @@ def main() -> int:
     except ValueError as error:
         print(f"run_evals: {error}")
         return 1
-    errors = validate_receipt(receipt, root, args.skill)
+    errors = validate_receipt(receipt, root, args.skill, args.tree)
     if errors:
         for error in errors:
             print(f"run_evals: {error}")

@@ -169,28 +169,31 @@ def check(root: Path, diff_base: str) -> tuple[list[str], list[str]]:
         skill_path = root / "skills" / package / "SKILL.md"
         current_skill = skill_path.read_text(encoding="utf-8") if skill_path.exists() else None
         base_skill = _git_show(root, base, f"skills/{package}/SKILL.md")
-        if base_skill is None:
-            notes.append(f"{package}: new package (no base SKILL.md)")
-            continue
         if current_skill is None:
             violations.append(f"{package}: SKILL.md is missing")
             continue
-        old_version = _version_from_skill(base_skill)
+
         new_version = _version_from_skill(current_skill)
-        old_semver = _parse_semver(old_version) if old_version else None
         new_semver = _parse_semver(new_version) if new_version else None
-        if old_semver is None:
-            violations.append(f"{package}: base metadata.version is not valid semver")
         if new_semver is None:
             violations.append(f"{package}: metadata.version is not valid semver")
-        elif old_semver is not None and not old_semver < new_semver:
-            violations.append(f"{package}: metadata.version must increase ({old_version} -> {new_version})")
 
         changelog_path = root / "skills" / package / "CHANGELOG.md"
         current_changelog = changelog_path.read_text(encoding="utf-8") if changelog_path.exists() else ""
         base_changelog = _git_show(root, base, f"skills/{package}/CHANGELOG.md") or ""
         if not _dated_bullets(current_changelog) - _dated_bullets(base_changelog):
             violations.append(f"{package}: CHANGELOG.md must gain a dated bullet")
+
+        if base_skill is None:
+            notes.append(f"{package}: new package (no base SKILL.md)")
+            continue
+
+        old_version = _version_from_skill(base_skill)
+        old_semver = _parse_semver(old_version) if old_version else None
+        if old_semver is None:
+            violations.append(f"{package}: base metadata.version is not valid semver")
+        elif new_semver is not None and not old_semver < new_semver:
+            violations.append(f"{package}: metadata.version must increase ({old_version} -> {new_version})")
         if old_semver is not None and new_semver is not None and old_semver < new_semver:
             if not _has_substantive_change(root, base, package):
                 violations.append(f"{package}: version bump has no package content change")
