@@ -1,0 +1,11 @@
+# Replace these sibling paths when the three repositories are checked out elsewhere.
+{
+  "repos": [
+    {"name": "craft-skills", "path": "."},
+    # Default sibling checkout for the shared second-brain repository.
+    {"name": "oh-my-secondbrain", "path": "../oh-my-secondbrain"},
+    # Default sibling checkout for the personal automation repository.
+    {"name": "bstack", "path": "../bstack"}
+  ],
+  "external_repos": ["bstack", "oh-my-secondbrain"]
+}

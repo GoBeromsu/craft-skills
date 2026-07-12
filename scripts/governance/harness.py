@@ -23,6 +23,25 @@ CHECKER_MODULES = [
     "checkers.routing_eval",
     "checkers.install_doctor",
 ]
+PROFILE_CHECKERS = {
+    "portable": [
+        "checkers.topology",
+        "checkers.inventory_parity",
+        "checkers.provenance",
+        "checkers.hygiene",
+        "checkers.deprecation",
+        "checkers.routing_eval",
+        "checkers.install_doctor",
+    ],
+    "cross-repo": CHECKER_MODULES,
+}
+PROFILE_CASESETS = {
+    "portable": ["docs/governance/routing-eval-cases.yaml"],
+    "cross-repo": [
+        "docs/governance/routing-eval-cases.yaml",
+        "docs/governance/routing-eval-cases.cross-repo.yaml",
+    ],
+}
 _BUILD_AGGREGATE_MODULE: Any | None = None
 
 
@@ -62,6 +81,30 @@ def _blocking_finding(code: str, message: str, details: dict[str, Any] | None = 
         "message": message,
         "path": None,
         "details": details or {},
+    }
+
+
+def _aggregate_failure_report(
+    aggregate_path: Path | None,
+    profile: str,
+    error: SystemExit,
+) -> dict[str, Any]:
+    findings = [
+        _blocking_finding(
+            "harness.unresolved_repo",
+            "Aggregate build could not resolve every configured repository.",
+            {"error": str(error)},
+        )
+    ]
+    return {
+        "schema_version": 1,
+        "aggregate": str(aggregate_path) if aggregate_path is not None else "manifest-regenerated in memory",
+        "aggregate_source": "manifest-regenerated in memory",
+        "profile": profile,
+        "casesets": PROFILE_CASESETS[profile],
+        "checkers": ["schema"],
+        "summary": _summarize(findings),
+        "findings": findings,
     }
 
 
@@ -133,10 +176,18 @@ def _text_report(report: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def run(config_path: Path, aggregate_path: Path | None) -> dict[str, Any]:
+def run(config_path: Path, aggregate_path: Path | None, profile: str = "portable") -> dict[str, Any]:
     config = _load_jsonish(config_path)
     builder = _load_build_aggregate()
-    aggregate = builder.build(config_path, visibility="all")
+    checker_config = {
+        **config,
+        "profile": profile,
+        "routing_eval_casesets": PROFILE_CASESETS[profile],
+    }
+    try:
+        aggregate = builder.build(config_path, visibility="all")
+    except SystemExit as error:
+        return _aggregate_failure_report(aggregate_path, profile, error)
     findings: list[dict[str, Any]] = []
     checker_names: list[str] = ["schema"]
 
@@ -146,11 +197,11 @@ def run(config_path: Path, aggregate_path: Path | None) -> dict[str, Any]:
     findings.extend(schema_findings)
 
     if not schema_findings:
-        for module_name in CHECKER_MODULES:
+        for module_name in PROFILE_CHECKERS[profile]:
             module = importlib.import_module(module_name)
             checker_name = getattr(module, "CHECKER_NAME", module_name)
             checker_names.append(checker_name)
-            checker_findings = module.run(aggregate, config)
+            checker_findings = module.run(aggregate, checker_config)
             if not isinstance(checker_findings, list):
                 raise SystemExit(f"{module_name}: run() must return a list")
             findings.extend(checker_findings)
@@ -160,6 +211,8 @@ def run(config_path: Path, aggregate_path: Path | None) -> dict[str, Any]:
         "schema_version": 1,
         "aggregate": str(aggregate_path) if aggregate_path is not None else "manifest-regenerated in memory",
         "aggregate_source": "manifest-regenerated in memory",
+        "profile": profile,
+        "casesets": PROFILE_CASESETS[profile],
         "checkers": checker_names,
         "summary": _summarize(findings),
         "findings": findings,
@@ -172,9 +225,10 @@ def main() -> int:
     parser.add_argument("--aggregate", type=Path, default=None, help="optional aggregate JSON path; compared against a manifest-regenerated aggregate")
     parser.add_argument("--json-out", type=Path, required=True, help="JSON report output path")
     parser.add_argument("--text-out", type=Path, required=True, help="text report output path")
+    parser.add_argument("--profile", choices=PROFILE_CHECKERS, default="portable", help="governance checker profile")
     args = parser.parse_args()
 
-    report = run(args.config, args.aggregate)
+    report = run(args.config, args.aggregate, args.profile)
     args.json_out.parent.mkdir(parents=True, exist_ok=True)
     args.text_out.parent.mkdir(parents=True, exist_ok=True)
     args.json_out.write_text(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=False) + "\n", encoding="utf-8")

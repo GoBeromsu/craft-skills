@@ -12,41 +12,6 @@
       "forbidden_neighbors": ["bstack/skillify", "craft-skills/hookify", "craft-skills/document"]
     },
     {
-      "trigger": "vault retrieve",
-      "expected_package": "oh-my-secondbrain/core/retrieve",
-      "forbidden_neighbors": ["bstack/second-brain", "oh-my-secondbrain/core/capture", "oh-my-secondbrain/core/compile"]
-    },
-    {
-      "trigger": "retrieve knowledge from vault",
-      "expected_package": "oh-my-secondbrain/core/retrieve",
-      "forbidden_neighbors": ["bstack/second-brain", "oh-my-secondbrain/core/capture", "oh-my-secondbrain/core/wiki"]
-    },
-    {
-      "trigger": "capture knowledge into vault",
-      "expected_package": "oh-my-secondbrain/core/capture",
-      "forbidden_neighbors": ["bstack/second-brain", "oh-my-secondbrain/core/retrieve", "oh-my-secondbrain/core/compile"]
-    },
-    {
-      "trigger": "wiki query",
-      "expected_package": "oh-my-secondbrain/core/wiki",
-      "forbidden_neighbors": ["oh-my-secondbrain/core/compile", "oh-my-secondbrain/core/retrieve", "bstack/publish"]
-    },
-    {
-      "trigger": "blog publish",
-      "expected_package": "bstack/publish",
-      "forbidden_neighbors": ["bstack/rss", "craft-skills/document", "oh-my-secondbrain/core/wiki"]
-    },
-    {
-      "trigger": "YouTube upload",
-      "expected_package": "bstack/publish",
-      "forbidden_neighbors": ["bstack/rss", "bstack/comms-draft", "craft-skills/document"]
-    },
-    {
-      "trigger": "RSS feed digest",
-      "expected_package": "bstack/rss",
-      "forbidden_neighbors": ["bstack/publish", "bstack/second-brain", "oh-my-secondbrain/core/retrieve"]
-    },
-    {
       "trigger": "write an ADR",
       "expected_package": "craft-skills/document",
       "forbidden_neighbors": ["craft-skills/init", "craft-skills/write-report", "oh-my-secondbrain/core/vault-decision-record"]
