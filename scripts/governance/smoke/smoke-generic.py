@@ -57,13 +57,45 @@ def frontmatter(skill_path: Path) -> dict[str, str]:
             if match and match.group(1) == "version":
                 fields["metadata.version"] = match.group(2).strip()
     return fields
+def manifest_package_names(root: Path) -> set[str]:
+    manifest = json.loads(
+        "\n".join(
+            line
+            for line in (root / "skills-manifest.yaml").read_text(encoding="utf-8").splitlines()
+            if not line.lstrip().startswith("#")
+        )
+    )
+    return {package["name"] for package in manifest["packages"]}
+
+
 
 
 def validate(root: Path) -> list[str]:
     failures: list[str] = []
+    try:
+        manifest_names = manifest_package_names(root)
+    except (OSError, json.JSONDecodeError, KeyError, TypeError) as error:
+        failures.append(f"skills-manifest.yaml: unable to read package names: {error}")
+        manifest_names = set()
+
+    tree_names = {path.name for path in root.glob("skills/*") if path.is_dir()}
+    missing_from_tree = sorted(manifest_names - tree_names)
+    missing_from_manifest = sorted(tree_names - manifest_names)
+    if missing_from_tree:
+        failures.append(
+            "skills-manifest.yaml packages missing from skills tree: "
+            + ", ".join(missing_from_tree)
+        )
+    if missing_from_manifest:
+        failures.append(
+            "skills tree packages missing from skills-manifest.yaml: "
+            + ", ".join(missing_from_manifest)
+        )
+
     skill_files = sorted(root.glob("skills/*/SKILL.md"))
     if not skill_files:
-        return ["no skills/*/SKILL.md files found"]
+        failures.append("no skills/*/SKILL.md files found")
+        return failures
 
     for skill_path in skill_files:
         package = skill_path.parent.name
@@ -92,7 +124,7 @@ def main() -> int:
         return 2
 
     failures = validate(root)
-    checks = ["frontmatter", "name_matches_directory", "self_contained"]
+    checks = ["manifest_matches_skills_tree", "frontmatter", "name_matches_directory", "self_contained"]
     if failures:
         write_artifact("failed", "; ".join(failures), checks)
         print("Generic smoke failed:", *failures, sep="\n- ")

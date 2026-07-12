@@ -55,22 +55,38 @@ if ! PLUGIN_LISTING="$(claude plugin list --json)"; then
   fail "claude plugin list failed"
 fi
 export PLUGIN_LISTING
-if ! python3 - <<'PY'
+if ! python3 - "$ROOT" <<'PY'
 import json
 import os
+import sys
 from pathlib import Path
 
+root = Path(sys.argv[1])
 plugins = json.loads(os.environ["PLUGIN_LISTING"])
 for plugin in plugins:
     if plugin.get("id") == "craft-skills@craft-skills":
         install_path = plugin.get("installPath")
-        if isinstance(install_path, str) and (Path(install_path) / "skills" / "skillify" / "SKILL.md").is_file():
-            raise SystemExit(0)
-raise SystemExit("plugin listing has no installed craft-skills skillify package")
+        if not isinstance(install_path, str):
+            raise SystemExit("plugin listing has no installed craft-skills path")
+        manifest = json.loads("\n".join(
+            line for line in (root / "skills-manifest.yaml").read_text(encoding="utf-8").splitlines()
+            if not line.lstrip().startswith("#")
+        ))
+        expected = {package["name"] for package in manifest["packages"]}
+        installed = {
+            path.parent.name for path in (Path(install_path) / "skills").glob("*/SKILL.md")
+        }
+        if installed != expected:
+            raise SystemExit(
+                "installed skills do not match skills-manifest.yaml "
+                f"(expected={sorted(expected)}, found={sorted(installed)})"
+            )
+        raise SystemExit(0)
+raise SystemExit("plugin listing has no installed craft-skills package")
 PY
 then
-  fail "plugin listing did not load skillify"
+  fail "installed skill discovery differs from skills-manifest.yaml"
 fi
 
-write_artifact "passed" "marketplace install loaded skillify"
+write_artifact "passed" "marketplace install and installed skill discovery matched"
 printf 'PASSED: Claude marketplace install and skill listing.\n'

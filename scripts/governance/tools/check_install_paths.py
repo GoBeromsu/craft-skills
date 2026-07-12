@@ -27,8 +27,30 @@ def _one(pattern: str, text: str) -> str | None:
     return match.group(1) if match else None
 
 
-def _declared_paths(text: str) -> dict[str, str]:
-    """Extract values from stable runtime markers and command forms."""
+def _normalize_assignment_path(value: str) -> str:
+    value = value.strip()
+    for prefix in ("${PWD}/", "$PWD/"):
+        if value.startswith(prefix):
+            return value[len(prefix) :]
+    for prefix in ("${HOME}/", "$HOME/"):
+        if value.startswith(prefix):
+            return "~/" + value[len(prefix) :]
+    return value
+
+
+def _assignment(name: str, text: str) -> str | None:
+    match = re.search(
+        rf"^\s*{name}=(?:\"([^\"]*)\"|'([^']*)'|([^\s#]+))\s*(?:#.*)?$",
+        text,
+        flags=re.MULTILINE,
+    )
+    if not match:
+        return None
+    return _normalize_assignment_path(next(value for value in match.groups() if value is not None))
+
+
+def _declared_paths(text: str, surface: str) -> dict[str, str]:
+    """Extract documented values, using install.sh executable assignments."""
     declarations: dict[str, str] = {}
 
     marketplace = _one(r"/plugin\s+marketplace\s+add\s+([A-Za-z0-9._/-]+)", text)
@@ -42,18 +64,21 @@ def _declared_paths(text: str) -> dict[str, str]:
     if re.search(r"\.codex-plugin/plugin\.json", text):
         declarations["codex_plugin"] = ".codex-plugin/plugin.json"
 
-    clone_path = _one(
-        r"Codex auxiliary clone path:\**\s*[`\"']?([A-Za-z0-9._/-]+)", text
-    )
+    if surface == "install.sh":
+        clone_path = _assignment("CLONE_DIR", text)
+        hermes_path = _assignment("SKILLS_PATH", text)
+    else:
+        clone_path = _one(
+            r"Codex auxiliary clone path:\**\s*[`\"']?([A-Za-z0-9._/-]+)", text
+        )
+        hermes_path = _one(
+            r"Hermes mount path:\**\s*[`\"']?([~A-Za-z0-9._/-]+)", text
+        )
+
     if clone_path:
         declarations["codex_clone"] = clone_path.rstrip(".")
-
-    hermes_path = _one(
-        r"Hermes mount path:\**\s*[`\"']?([~A-Za-z0-9._/-]+)", text
-    )
     if hermes_path:
         declarations["hermes"] = hermes_path.rstrip(".")
-
     return declarations
 
 
@@ -66,7 +91,7 @@ def check_install_paths(root: Path) -> list[str]:
         if not path.is_file():
             errors.append(f"missing install surface: {relative_path}")
             continue
-        for key, value in _declared_paths(path.read_text(encoding="utf-8")).items():
+        for key, value in _declared_paths(path.read_text(encoding="utf-8"), surface).items():
             declarations[key][surface] = value
 
     for key, required_surfaces in _REQUIRED.items():

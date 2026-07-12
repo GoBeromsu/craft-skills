@@ -139,7 +139,8 @@ No runtime-specific config required.
 For Codex and Hermes, a POSIX-sh installer is provided:
 
 ```bash
-./install.sh codex    # print the Codex plugin commands and clone auxiliary discovery context
+./install.sh codex    # print the Codex plugin commands
+./install.sh codex --clone /path/to/project  # optionally clone discovery context
 ./install.sh hermes   # print the config snippet to paste into ${HERMES_HOME}/config.yaml
 ./install.sh claude   # print the Claude Code marketplace commands
 ./install.sh all      # run all three

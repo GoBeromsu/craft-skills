@@ -28,8 +28,15 @@ class CheckInstallPathsTest(unittest.TestCase):
 Codex auxiliary clone path: `{clone_path}`
 Hermes mount path: `~/dev/GoBeromsu/craft-skills/skills`
 """
-        for name in ("README.md", "AGENTS.md", "install.sh"):
+        for name in ("README.md", "AGENTS.md"):
             (self.root / name).write_text(shared, encoding="utf-8")
+        (self.root / "install.sh").write_text(
+            shared
+            + f"""CLONE_DIR="${{PWD}}/{clone_path}"
+SKILLS_PATH="${{HOME}}/dev/GoBeromsu/craft-skills/skills"
+""",
+            encoding="utf-8",
+        )
         (self.root / ".hermes" / "README.md").write_text(
             "Hermes mount path: `~/dev/GoBeromsu/craft-skills/skills`\n", encoding="utf-8"
         )
@@ -53,6 +60,19 @@ Hermes mount path: `~/dev/GoBeromsu/craft-skills/skills`
         agents.write_text(
             agents.read_text(encoding="utf-8").replace(
                 ".agents/skills/craft-skills", ".agents/skills/other-skills"
+            ),
+            encoding="utf-8",
+        )
+        result = self._run()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("codex_clone: inconsistent declarations", result.stdout)
+    def test_rejects_stale_install_comment_when_assignment_changes(self) -> None:
+        self._write_surfaces()
+        install = self.root / "install.sh"
+        install.write_text(
+            install.read_text(encoding="utf-8").replace(
+                'CLONE_DIR="${PWD}/.agents/skills/craft-skills"',
+                'CLONE_DIR="${PWD}/.agents/skills/other-skills"',
             ),
             encoding="utf-8",
         )
