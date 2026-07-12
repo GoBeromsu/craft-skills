@@ -125,6 +125,46 @@
       "trigger": "find every call site of this function with ast-grep",
       "expected_package": "craft-skills/ast-grep",
       "forbidden_neighbors": ["craft-skills/refactor", "craft-skills/programming", "craft-skills/debug"]
+    },
+    {
+      "trigger": "extract clean markdown from this URL",
+      "expected_package": "craft-skills/defuddle",
+      "forbidden_neighbors": ["craft-skills/research", "craft-skills/document", "craft-skills/obsidian-clipper"]
+    },
+    {
+      "trigger": "add a groupBy and sort to my Obsidian base",
+      "expected_package": "craft-skills/obsidian-bases",
+      "forbidden_neighbors": ["craft-skills/obsidian-markdown", "craft-skills/obsidian-canvas", "craft-skills/document"]
+    },
+    {
+      "trigger": "lay out a .canvas mind map in Obsidian",
+      "expected_package": "craft-skills/obsidian-canvas",
+      "forbidden_neighbors": ["craft-skills/obsidian-mermaid", "craft-skills/obsidian-bases", "craft-skills/document"]
+    },
+    {
+      "trigger": "read and write vault notes with obsidian-cli",
+      "expected_package": "craft-skills/obsidian-cli",
+      "forbidden_neighbors": ["craft-skills/obsidian-markdown", "craft-skills/obsidian-doctor", "craft-skills/obsidian-bases"]
+    },
+    {
+      "trigger": "create an Obsidian Web Clipper template for this site",
+      "expected_package": "craft-skills/obsidian-clipper",
+      "forbidden_neighbors": ["craft-skills/defuddle", "craft-skills/obsidian-markdown", "craft-skills/obsidian-bases"]
+    },
+    {
+      "trigger": "my Templater template throws a ReferenceError",
+      "expected_package": "craft-skills/obsidian-doctor",
+      "forbidden_neighbors": ["craft-skills/obsidian-cli", "craft-skills/obsidian-markdown", "craft-skills/debug"]
+    },
+    {
+      "trigger": "format this note with Obsidian callouts and wikilinks",
+      "expected_package": "craft-skills/obsidian-markdown",
+      "forbidden_neighbors": ["craft-skills/obsidian-bases", "craft-skills/document", "craft-skills/write-report"]
+    },
+    {
+      "trigger": "render a Mermaid sequence diagram in an Obsidian note",
+      "expected_package": "craft-skills/obsidian-mermaid",
+      "forbidden_neighbors": ["craft-skills/obsidian-canvas", "craft-skills/document", "craft-skills/obsidian-markdown"]
     }
   ]
 }

@@ -21,6 +21,7 @@ context.
 | `backend` | Route backend engineering through an architecture-detection gate (layered / vertical-slice / hexagonal), then apply dependency-direction rules, persistence choices, and per-framework folder conventions. |
 | `cicd` | Design inexpensive, reliable PR validation and reversible Jenkins Compose deployment pipelines with deployment-server-owned image builds. |
 | `debug` | Diagnose a failing program under a hypothesis-driven loop — reproduce before theorizing, log fact separately from inference, and confirm the mechanism with instrumentation before any fix lands. |
+| `defuddle` | Extract clean Markdown or metadata JSON from web articles and docs with the Defuddle CLI — strips nav/ads/boilerplate and falls back to a headless browser for JS-heavy pages. |
 | `distil` | Distil transferable rules and conventions from an external source — a repo, an article, an AGENTS.md, or a third-party skill — into the library under the authoring contract, with provenance recorded. |
 | `document` | Route documentation into the `docs/` ontology while keeping ADR authoring explicit-only unless the user asks to record a decision. |
 | `frontend` | Gate frontend engineering on a rendering-architecture decision (SPA / SSR-RSC / SSG / islands) before UI code is written, then apply component-reuse, state-placement, and folder rules. |
@@ -28,6 +29,13 @@ context.
 | `hookify` | Turn a convention or best practice into local, deterministic enforcement so a violation is blocked before it happens, not corrected after. |
 | `init` | Bootstrap the craft-owned `docs/` scaffold on a fresh repo, then generate a complexity-scored hierarchical `AGENTS.md` knowledge base on a mature one, in one triaged run. |
 | `ml` | Apply ML/DL research-engineering discipline — reproducible project layout, leakage-safe dataset construction, and a training-discipline ladder — to classical ML, deep learning, fine-tuning, and vision work. |
+| `obsidian-bases` | Author and debug Obsidian Bases (`.base` files and `base` blocks) — filters, formulas, views, and `groupBy`/`sort` design for a readable dataset. |
+| `obsidian-canvas` | Create and edit Obsidian JSON Canvas (`.canvas`) files — nodes, edges, groups, and connections per the JSON Canvas 1.0 spec, with edge-integrity validation. |
+| `obsidian-cli` | Operate an Obsidian vault through the `obsidian-cli` binary — note reads/writes/search with write-then-readback verification and a destructive-op guard. |
+| `obsidian-clipper` | Author selector-verified Obsidian Web Clipper JSON templates that map clipped fields to vault frontmatter. |
+| `obsidian-doctor` | Diagnose and repair broken Obsidian plugins and Templater templates against an accumulating registry, driving Obsidian via obsidian-cli. |
+| `obsidian-markdown` | Write Obsidian Flavored Markdown (wikilinks, embeds, callouts, properties) following a compact note house style. |
+| `obsidian-mermaid` | Author Mermaid diagrams that render in Obsidian's pinned Mermaid 11.4.1, avoiding label-escaping and unsupported-diagram-type pitfalls. |
 | `programming` | Apply correctness-first, type-strict engineering discipline when writing or editing Python or TypeScript. |
 | `refactor` | Restructure code without changing what it does, each move backed by a detection command and threshold, gated behind a characterization-test protocol for untested legacy code. |
 | `research` | Run a decision-depth research workflow ending in a `docs/research/{slug}.md` artifact — sweep primary sources, synthesize with a citation on every claim, and state gaps and confidence, never the decision itself. |
@@ -50,7 +58,7 @@ Claude marketplace commands:
 /plugin install craft-skills@craft-skills
 ```
 
-Then invoke any of the 21 skills above by name, e.g. `api`, `ast-grep`, `cicd`, `document`,
+Then invoke any of the 29 skills above by name, e.g. `api`, `ast-grep`, `defuddle`, `obsidian-markdown`,
 `init`, `skillify`, `programming`, `research`, `write-prd`, `debug`.
 
 ---
@@ -96,7 +104,7 @@ The clone is optional discovery context; its skills have the nested layout
    ```
 4. Verify:
    ```bash
-hermes skills list | grep -E 'agents|api|ast-grep|backend|cicd|debug|distil|document|frontend|git|hookify|init|ml|programming|refactor|research|security|skillify|testing|write-prd|write-report'
+hermes skills list | grep -E 'agents|api|ast-grep|backend|cicd|debug|defuddle|distil|document|frontend|git|hookify|init|ml|obsidian-bases|obsidian-canvas|obsidian-cli|obsidian-clipper|obsidian-doctor|obsidian-markdown|obsidian-mermaid|programming|refactor|research|security|skillify|testing|write-prd|write-report'
    ```
 
 See `.hermes/README.md` for full deployment details.
@@ -115,6 +123,7 @@ skills/backend/SKILL.md
 skills/cicd/SKILL.md
 skills/ast-grep/SKILL.md
 skills/debug/SKILL.md
+skills/defuddle/SKILL.md
 skills/distil/SKILL.md
 skills/document/SKILL.md
 skills/frontend/SKILL.md
@@ -122,6 +131,13 @@ skills/git/SKILL.md
 skills/hookify/SKILL.md
 skills/init/SKILL.md
 skills/ml/SKILL.md
+skills/obsidian-bases/SKILL.md
+skills/obsidian-canvas/SKILL.md
+skills/obsidian-cli/SKILL.md
+skills/obsidian-clipper/SKILL.md
+skills/obsidian-doctor/SKILL.md
+skills/obsidian-markdown/SKILL.md
+skills/obsidian-mermaid/SKILL.md
 skills/programming/SKILL.md
 skills/refactor/SKILL.md
 skills/research/SKILL.md

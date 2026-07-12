@@ -11,3 +11,4 @@ __pycache__/
 !.env.example
 # Temporal skillify admission/eval artifacts — never committed
 skills/*/evals/
+.gjc/
