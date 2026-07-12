@@ -108,6 +108,10 @@ class AuditMatrixLintCliTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("OK", result.stdout)
 
+    def test_explicit_row_count_passes(self) -> None:
+        result = _run("audit_matrix_lint.py", "docs/governance/audit-matrix.md", "--rows", "20")
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_row_count_flag_mismatch_exits_one(self) -> None:
         result = _run("audit_matrix_lint.py", "docs/governance/audit-matrix.md", "--rows", "16")
         self.assertEqual(result.returncode, 1)
