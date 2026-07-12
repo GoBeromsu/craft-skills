@@ -1,6 +1,6 @@
-# CI required-check gating
+# GitHub Actions required-check recipe
 
-Keep branch protection observable even when a pull request does not touch application code. The required check is a stable interface: its workflow and job must exist for every PR.
+Use this recipe only when GitHub Actions is the selected CI provider and a required PR check is in scope. Keep branch protection observable even when a pull request does not touch application code.
 
 ## Pattern
 

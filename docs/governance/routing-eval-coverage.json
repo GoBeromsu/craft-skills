@@ -2,7 +2,9 @@
   "schemaVersion": 1,
   "expected_craft_packages": [
     "agents",
+    "api",
     "backend",
+    "cicd",
     "debug",
     "distil",
     "document",
@@ -17,6 +19,7 @@
     "security",
     "skillify",
     "testing",
+    "write-prd",
     "write-report"
   ]
 }

@@ -10,3 +10,4 @@
 - 2026-07-05 — v2.0.0: API-surface docs are a code-domain concern, not the docs/ ontology's job → removed the api-docs sub-recipe. BREAKING.
 - 2026-07-06 — v3.0.0: realign to vendor-official authoring contract → spec-minimal frontmatter, flat routing table, fold sprawl + routing gaps (#27, #31).
 - 2026-07-07 — v3.0.1: implicit research/plan/rule-to-ADR pressure caused unwanted decision records → made ADR authoring explicit-request only while keeping ADR templates available. Provenance: docs-wipe-reinit skill-document delegation.
+- 2026-07-12 — v3.1.0: automatic relocation and first-commit plan freezing risked changing user work → made both explicit-request contracts and added ulw-plan's concrete-path, acceptance, happy/failure QA steps.
