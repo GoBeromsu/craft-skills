@@ -106,7 +106,16 @@ class AuditMatrixLintCliTest(unittest.TestCase):
     def test_committed_matrix_exits_zero(self) -> None:
         result = _run("audit_matrix_lint.py", "docs/governance/audit-matrix.md")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("OK", result.stdout)
+        self.assertIn("OK (20 rows, 9 fields)", result.stdout)
+
+    def test_help_has_no_stale_default(self) -> None:
+        result = _run("audit_matrix_lint.py", "--help")
+        self.assertEqual(result.returncode, 0)
+        self.assertNotIn("default 17", result.stdout)
+
+    def test_explicit_row_count_passes(self) -> None:
+        result = _run("audit_matrix_lint.py", "docs/governance/audit-matrix.md", "--rows", "20")
+        self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_row_count_flag_mismatch_exits_one(self) -> None:
         result = _run("audit_matrix_lint.py", "docs/governance/audit-matrix.md", "--rows", "16")

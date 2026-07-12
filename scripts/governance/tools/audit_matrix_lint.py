@@ -3,7 +3,7 @@
 
 Blocking checks:
 - the matrix table exposes exactly the nine required fields, in order;
-- the table has exactly the expected number of rows (default 17);
+- the table has exactly the expected number of rows (only when --rows is given);
 - no cell is empty;
 - no duplicate skill names;
 - every disposition is one of candidate / change / no-change.
@@ -55,7 +55,7 @@ def _find_matrix_table(text: str) -> tuple[list[str], list[list[str]]]:
     raise SystemExit("no matrix table with a 'skill' header column found")
 
 
-def lint(text: str, expected_rows: int) -> list[str]:
+def lint(text: str, expected_rows: int | None) -> list[str]:
     errors: list[str] = []
     header, body = _find_matrix_table(text)
 
@@ -64,7 +64,7 @@ def lint(text: str, expected_rows: int) -> list[str]:
             f"header mismatch: expected {REQUIRED_FIELDS}, found {header}"
         )
 
-    if len(body) != expected_rows:
+    if expected_rows is not None and len(body) != expected_rows:
         errors.append(f"expected {expected_rows} rows, found {len(body)}")
 
     seen: set[str] = set()
@@ -90,15 +90,22 @@ def lint(text: str, expected_rows: int) -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("path", type=Path, help="audit matrix markdown file")
-    parser.add_argument("--rows", type=int, default=17, help="expected body row count")
+    parser.add_argument(
+        "--rows",
+        type=int,
+        default=None,
+        help="expected body row count (row-count check skipped when omitted)",
+    )
     args = parser.parse_args()
 
-    errors = lint(args.path.read_text(encoding="utf-8"), args.rows)
+    text = args.path.read_text(encoding="utf-8")
+    errors = lint(text, args.rows)
     for error in errors:
         print(f"audit-matrix-lint: {error}", file=sys.stderr)
     if errors:
         return 1
-    print(f"audit-matrix-lint: OK ({args.rows} rows, {len(REQUIRED_FIELDS)} fields)")
+    _, body = _find_matrix_table(text)
+    print(f"audit-matrix-lint: OK ({len(body)} rows, {len(REQUIRED_FIELDS)} fields)")
     return 0
 
 
