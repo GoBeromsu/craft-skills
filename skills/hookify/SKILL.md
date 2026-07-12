@@ -1,8 +1,8 @@
 ---
 name: hookify
-description: Turns a convention or best practice into local, deterministic enforcement so a violation is blocked before it happens, not corrected after. Use when asked to force a rule locally, hookify a convention, add a pre-commit or lint guard, block edits to a read-only path, stop a risky command in-loop, or wire a Claude Code or Codex runtime hook without relying on CI. Owns the repo's core.hooksPath / .githooks pre-commit mechanism as the sole install point — every other skill registers a guard by dropping an executable into .githooks/guards.d/, never by pointing core.hooksPath elsewhere. Not for git workflow craft itself (branching, worktrees, commit hygiene) — use git.
+description: Turns a convention or best practice into local, deterministic enforcement so a violation is blocked before it happens, not corrected after. Use when asked to force a rule locally, hookify a convention, add a pre-commit or lint guard, block edits to a read-only path, stop a risky command in-loop, or wire a Claude Code or Codex runtime hook without relying on CI. Owns the repo's core.hooksPath / .githooks pre-commit mechanism as the sole install point; git registers its git-guard there, and init routes hook-install requests to git. Not for git workflow craft itself (branching, worktrees, commit hygiene) — use git.
 metadata:
-  version: 1.0.1
+  version: 1.1.0
 ---
 
 # hookify
@@ -24,7 +24,7 @@ Not now: the rule is still drifting or noisy (fails the 3-gate check below) — 
 
 ## Ownership: core.hooksPath / .githooks
 
-hookify is the sole owner of the repo's `core.hooksPath` / `.githooks` pre-commit mechanism. It installs `.githooks/pre-commit` as a dispatcher (`scripts/pre-commit.sh`) that runs every executable file in `.githooks/guards.d/` in lexical order and carries no rule logic itself. Any other skill or hand-authored check registers by dropping an executable into `.githooks/guards.d/` — never by pointing `core.hooksPath` somewhere else or shipping a competing `pre-commit` file. Two owners for the same hooksPath is how installs collide; guards.d is the one place that changes. git workflow craft (branching, worktrees, commit conventions) stays owned by `git` — it plugs a guard into this mechanism the same way any other skill does.
+hookify is the sole owner of the repo's `core.hooksPath` / `.githooks` pre-commit mechanism. It installs `.githooks/pre-commit` as a dispatcher (`scripts/pre-commit.sh`) that runs every executable file in `.githooks/guards.d/` in lexical order and carries no rule logic itself. Any other skill or hand-authored check registers by dropping an executable into `.githooks/guards.d/` — never by pointing `core.hooksPath` elsewhere or shipping a competing `pre-commit` file. `init` routes hook-install requests to `git`; `git` registers its git-guard through this dispatcher. Two owners for the same hooksPath is how installs collide; guards.d is the one place that changes.
 
 ## Core Process
 
@@ -44,15 +44,15 @@ Follow the ladder in `references/surface-and-tier.md`. In short:
 
 Before a rule goes behind a blocking hook, it must pass all three:
 
-- **G1 Cheap** — fast, no external state (network, live backend).
-- **G2 Accurate** — near-zero false positives. If the guard needs its own test suite, it has become application code — drop it to a softer surface.
+- **G1 Local and cheap** — measured latency fits the local workflow and the check needs no external state (network, live backend).
+- **G2 Accurate and repeatable** — repeated representative inputs show acceptable false-positive rate and no meaningful nondeterminism.
 - **G3 Stable** — the structure being enforced has stopped drifting.
 
-Any failure → non-blocking lint warning while it's observed; graduate once proven.
+Any failure → non-blocking lint warning while it is observed; graduate when measured evidence supports blocking.
 
 ### Phase 3 — Author the guard
 
-Copy `scripts/guard-skeleton.py` and narrow it to exactly one rule. A guard reads its target (path or content) from stdin or args, and on violation exits non-zero with the rule and the exact fix on one stderr line — a vague reason gets bypassed. The same guard is reused unmodified across tiers 1, 2, and 3.
+Copy `scripts/guard-skeleton.py` and narrow it to exactly one rule. A guard reads its target (path or content) from stdin or args, and on violation exits non-zero with the rule and the exact fix on one stderr line — a vague reason gets bypassed. For a nontrivial parsing or content guard, add focused red/green regression tests around the decision boundary; do not broaden them into a full application suite. The same guard is reused unmodified across tiers 1, 2, and 3.
 
 ### Phase 4 — Install at the surface
 
@@ -63,12 +63,12 @@ Copy `scripts/guard-skeleton.py` and narrow it to exactly one rule. A guard read
 
 ### Phase 5 — Prove it red
 
-An installed guard that's never been watched firing is unfinished. Run a violating input → blocked, and a clean input → passes, and see both happen (`echo | guard` examples in `references/claude-code-hooks.md`). The guard itself proves red/green via `guard-skeleton.py --selfcheck`.
+An installed guard that has never been watched firing is unfinished. Run a violating input → blocked, and a clean input → passes, and see both happen; use `guard-skeleton.py --selfcheck` as smoke proof, not as a replacement for those focused regression tests.
 
 ## Anti-patterns
 
 - Relying on CI alone to catch a violation, with no local enforcement → move it to a local surface; CI is the latest possible signal, after push/merge, when the agent has already finished the bad behavior.
-- Giving a guard its own test suite to make it sturdier → treat that as a sign it's application code in the wrong tier (fails G2) and drop it to a softer surface.
+- Treating a guard test suite as proof it belongs outside enforcement → keep focused parsing/content regression tests when the guard is nontrivial; choose the surface from measured latency, external state, nondeterminism, and false-positive rate.
 - Adding more guards for broader coverage → keep guards few and sharp; blocking hooks spend a finite trust budget, and one false positive teaches `--no-verify` (human) or a workaround (agent), eroding trust in every other hook.
 - Leaving a guard's block message vague → name the rule and the exact fix in one line; a vague reason gets bypassed.
 - Installing a blocking hook without ever watching it fire on a violation → prove it red first: run a violating input and a clean input and observe both (Phase 5).

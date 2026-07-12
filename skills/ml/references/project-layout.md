@@ -4,35 +4,20 @@ A run is reproducible only when its code, its configuration, and its data are ea
 
 ## Table of Contents
 
-- [Hard rules](#hard-rules) — pyproject.toml + src/ layout, the canonical tree, artifact placement, thin scripts, immutable data/raw, notebooks never imported, one run = one config
+- [Greenfield defaults](#greenfield-defaults) — a `pyproject.toml` + locked environment + importable-package example, artifact placement, thin scripts, immutable data/raw, notebooks never imported, one run = one config
 - [Grey zones](#grey-zones)
 - [Incumbent-respect clause](#incumbent-respect-clause)
 - [Hand-offs](#hand-offs)
 
 ---
 
-## Hard rules
+## Greenfield defaults
 
-### `pyproject.toml` + `src/` layout + a locked dependency file is absolute
+For a new Python ML project, start with a `pyproject.toml`, a locked dependency resolution (for example, `uv.lock`), and importable training code (commonly a `src/<pkg>/` layout). `uv` is the default recipe here because it combines locking and execution; another installed, team-standard environment manager is equally valid when the project already uses one. These defaults make a result reproducible without requiring an unrelated incumbent project to migrate.
 
-Every ML project — new or already past its first experiment — carries all three: a `pyproject.toml` declaring the package, a `src/<pkg>/` layout instead of a flat top-level package, and a locked dependency file (`uv.lock`) pinning exact resolved versions. A `requirements.txt` with no lockfile lets two runs on "the same code" silently resolve different transitive dependency versions.
+A lockfile pins resolved versions, while an importable package keeps reusable pipeline logic out of notebooks and ad hoc entrypoints. Preserve an established project's dependency declaration, lockfile, environment manager, and package layout during feature or experiment work; propose a migration only as its own scoped change.
 
-```bash
-test -f pyproject.toml || echo "FAIL: no pyproject.toml"
-test -d src || echo "FAIL: no src/ layout — package sits flat at repo root instead"
-test -f uv.lock || echo "FAIL: no locked dependency file (uv.lock) — versions are not pinned"
-```
-
-Pass: no output. Fail: any `FAIL` line — fix the packaging baseline before adding more code; it only gets more expensive to retrofit later.
-
-```bash
-test -f requirements.txt && ! test -f pyproject.toml && \
-  echo "FAIL: requirements.txt with no pyproject.toml — migrate to pyproject.toml + uv"
-```
-
-Pass: no output, or a `requirements.txt` that coexists with a real `pyproject.toml` for a legacy install path. Fail: `requirements.txt` is the *only* dependency declaration — there is no locked, reproducible resolution behind it.
-
-### Canonical tree
+### Greenfield example tree
 
 ```
 project/
@@ -159,8 +144,7 @@ Pass: one file per meaningfully distinct run, growing over the project's life. F
 - `experiments/` output is gitignored by default, but a small number of final, reported-on run directories may be committed deliberately (e.g. under `experiments/reported/`) when the team wants those specific results version-controlled — the default stays gitignored; this is an explicit, scoped exception, not a silent one.
 
 ## Incumbent-respect clause
-
-Detect the project's existing layout before changing anything: `ls -la` at the repo root, check whether a `src/` layout or a flat top-level package is already in use, and check for an existing `configs/` or `data/` convention. Follow the incumbent shape for edits inside an already-established project. Apply the strict `pyproject.toml` + `src/` + locked-deps default to new projects, and to any project that currently has no package manager at all (a bare `requirements.txt` with no lockfile). Never restructure an existing project's layout inside an unrelated feature or experiment change — propose the migration as its own scoped change.
+Detect the project's existing layout before changing anything: inspect its dependency declaration, lockfile, environment manager, package shape, and `configs/` or `data/` convention. Follow that incumbent shape for edits inside an established project. Apply the `pyproject.toml` + locked dependencies + importable-package recipe to new projects and explicitly scoped package migrations only; never restructure an existing project's layout inside an unrelated feature or experiment change.
 
 ## Hand-offs
 

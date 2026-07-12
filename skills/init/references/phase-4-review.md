@@ -11,7 +11,7 @@ For each generated `AGENTS.md`:
 
 ## Quality anti-patterns (reject on sight)
 
-- **Static agent count** — agent count must scale with project size/depth (phase-1 table).
+- **Unjustified fan-out** — select agent coverage from unresolved high-risk questions, not repository size alone (Phase 1).
 - **Sequential when fan-out was available** — on agent-spawn runtimes, explore + LSP + codegraph run
   concurrently. (Sequential is correct *only* on single-agent runtimes.)
 - **Ignoring existing** — always read existing AGENTS.md first, even under `--create-new`.
@@ -20,34 +20,8 @@ For each generated `AGENTS.md`:
 - **Generic content** — remove anything true of all projects.
 - **Verbose style** — telegraphic or die.
 
-## Final report (observability — hard requirement)
+## Completion-report inputs
 
-Every run ends with an explicit report. A degraded or fallback run must be **visible**, never silent.
-Enumerate:
-
-```
-=== init Complete ===
-
-Mode: {bootstrap | cartography | update | create-new}
-Path taken: {concurrent fan-out | sequential single-agent}
-Centrality: {measured via LSP/codegraph | unmeasured (explore/ast-grep fallback)}
-
-Docs/ ontology (Phase 0):
-  {created | already present | n/a}  — dirs seeded: {N}, anchors seeded: {N}
-Managed block: {replaced legacy hard-rail block | none found | n/a}
-
-Cartography (Phases 1–4):
-  [OK] ./AGENTS.md (root, {N} lines)
-  [OK] ./src/hooks/AGENTS.md ({N} lines)
-
-Dirs analyzed: {N}
-AGENTS.md created: {N}   updated: {N}
-
-Hierarchy:
-  ./AGENTS.md
-  └── src/hooks/AGENTS.md
-```
-
-The report must state: files created/updated, dirs analyzed, the path taken (concurrent vs
-sequential), whether centrality was measured or unmeasured, and the managed-block action. Any run
-that cannot fill one of these lines names the gap explicitly rather than omitting it.
+Provide the cartography values required by the [completion report](../SKILL.md#completion-report):
+runtime path, centrality measurement status, directories analyzed, created/updated `AGENTS.md`
+files, and managed-block action. Name unavailable evidence explicitly.
