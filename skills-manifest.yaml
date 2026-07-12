@@ -334,6 +334,61 @@
     },
     {
       "schema_version": 1,
+      "id": "craft-skills/defuddle",
+      "name": "defuddle",
+      "kind": "leaf",
+      "lifecycle": "active",
+      "version": "1.0.0",
+      "owner_repo": "craft-skills",
+      "owner_domain": "research-development",
+      "visibility": "public",
+      "compatibility": [
+        "claude-code",
+        "codex",
+        "hermes"
+      ],
+      "provenance": {
+        "upstream": null,
+        "commit": null,
+        "license": null,
+        "absorbed_from": []
+      },
+      "replacement_for": [],
+      "replaced_by": null,
+      "children": [],
+      "adapters": [
+        {
+          "runtime": "claude-code",
+          "surface": "plugin-skill",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        }
+      ],
+      "validation_profile": {
+        "discovery_parity": "strict",
+        "adapter_parity": "strict",
+        "provenance_license": "strict",
+        "private_data_hygiene": "strict",
+        "deprecation": "strict",
+        "routing_eval": "smoke",
+        "install_doctor": "package",
+        "topology": "leaf"
+      }
+    },
+    {
+      "schema_version": 1,
       "id": "craft-skills/distil",
       "name": "distil",
       "kind": "leaf",
@@ -723,6 +778,391 @@
     },
     {
       "schema_version": 1,
+      "id": "craft-skills/obsidian-bases",
+      "name": "obsidian-bases",
+      "kind": "leaf",
+      "lifecycle": "active",
+      "version": "1.0.0",
+      "owner_repo": "craft-skills",
+      "owner_domain": "research-development",
+      "visibility": "public",
+      "compatibility": [
+        "claude-code",
+        "codex",
+        "hermes"
+      ],
+      "provenance": {
+        "upstream": null,
+        "commit": null,
+        "license": null,
+        "absorbed_from": []
+      },
+      "replacement_for": [],
+      "replaced_by": null,
+      "children": [],
+      "adapters": [
+        {
+          "runtime": "claude-code",
+          "surface": "plugin-skill",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        }
+      ],
+      "validation_profile": {
+        "discovery_parity": "strict",
+        "adapter_parity": "strict",
+        "provenance_license": "strict",
+        "private_data_hygiene": "strict",
+        "deprecation": "strict",
+        "routing_eval": "smoke",
+        "install_doctor": "package",
+        "topology": "leaf"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "craft-skills/obsidian-canvas",
+      "name": "obsidian-canvas",
+      "kind": "leaf",
+      "lifecycle": "active",
+      "version": "1.0.0",
+      "owner_repo": "craft-skills",
+      "owner_domain": "research-development",
+      "visibility": "public",
+      "compatibility": [
+        "claude-code",
+        "codex",
+        "hermes"
+      ],
+      "provenance": {
+        "upstream": null,
+        "commit": null,
+        "license": null,
+        "absorbed_from": []
+      },
+      "replacement_for": [],
+      "replaced_by": null,
+      "children": [],
+      "adapters": [
+        {
+          "runtime": "claude-code",
+          "surface": "plugin-skill",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        }
+      ],
+      "validation_profile": {
+        "discovery_parity": "strict",
+        "adapter_parity": "strict",
+        "provenance_license": "strict",
+        "private_data_hygiene": "strict",
+        "deprecation": "strict",
+        "routing_eval": "smoke",
+        "install_doctor": "package",
+        "topology": "leaf"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "craft-skills/obsidian-cli",
+      "name": "obsidian-cli",
+      "kind": "leaf",
+      "lifecycle": "active",
+      "version": "1.0.0",
+      "owner_repo": "craft-skills",
+      "owner_domain": "research-development",
+      "visibility": "public",
+      "compatibility": [
+        "claude-code",
+        "codex",
+        "hermes"
+      ],
+      "provenance": {
+        "upstream": null,
+        "commit": null,
+        "license": null,
+        "absorbed_from": []
+      },
+      "replacement_for": [],
+      "replaced_by": null,
+      "children": [],
+      "adapters": [
+        {
+          "runtime": "claude-code",
+          "surface": "plugin-skill",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        }
+      ],
+      "validation_profile": {
+        "discovery_parity": "strict",
+        "adapter_parity": "strict",
+        "provenance_license": "strict",
+        "private_data_hygiene": "strict",
+        "deprecation": "strict",
+        "routing_eval": "smoke",
+        "install_doctor": "package",
+        "topology": "leaf"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "craft-skills/obsidian-clipper",
+      "name": "obsidian-clipper",
+      "kind": "leaf",
+      "lifecycle": "active",
+      "version": "1.0.0",
+      "owner_repo": "craft-skills",
+      "owner_domain": "research-development",
+      "visibility": "public",
+      "compatibility": [
+        "claude-code",
+        "codex",
+        "hermes"
+      ],
+      "provenance": {
+        "upstream": null,
+        "commit": null,
+        "license": null,
+        "absorbed_from": []
+      },
+      "replacement_for": [],
+      "replaced_by": null,
+      "children": [],
+      "adapters": [
+        {
+          "runtime": "claude-code",
+          "surface": "plugin-skill",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        }
+      ],
+      "validation_profile": {
+        "discovery_parity": "strict",
+        "adapter_parity": "strict",
+        "provenance_license": "strict",
+        "private_data_hygiene": "strict",
+        "deprecation": "strict",
+        "routing_eval": "smoke",
+        "install_doctor": "package",
+        "topology": "leaf"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "craft-skills/obsidian-doctor",
+      "name": "obsidian-doctor",
+      "kind": "leaf",
+      "lifecycle": "active",
+      "version": "1.0.0",
+      "owner_repo": "craft-skills",
+      "owner_domain": "research-development",
+      "visibility": "public",
+      "compatibility": [
+        "claude-code",
+        "codex",
+        "hermes"
+      ],
+      "provenance": {
+        "upstream": null,
+        "commit": null,
+        "license": null,
+        "absorbed_from": []
+      },
+      "replacement_for": [],
+      "replaced_by": null,
+      "children": [],
+      "adapters": [
+        {
+          "runtime": "claude-code",
+          "surface": "plugin-skill",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        }
+      ],
+      "validation_profile": {
+        "discovery_parity": "strict",
+        "adapter_parity": "strict",
+        "provenance_license": "strict",
+        "private_data_hygiene": "strict",
+        "deprecation": "strict",
+        "routing_eval": "smoke",
+        "install_doctor": "package",
+        "topology": "leaf"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "craft-skills/obsidian-markdown",
+      "name": "obsidian-markdown",
+      "kind": "leaf",
+      "lifecycle": "active",
+      "version": "1.0.0",
+      "owner_repo": "craft-skills",
+      "owner_domain": "research-development",
+      "visibility": "public",
+      "compatibility": [
+        "claude-code",
+        "codex",
+        "hermes"
+      ],
+      "provenance": {
+        "upstream": null,
+        "commit": null,
+        "license": null,
+        "absorbed_from": []
+      },
+      "replacement_for": [],
+      "replaced_by": null,
+      "children": [],
+      "adapters": [
+        {
+          "runtime": "claude-code",
+          "surface": "plugin-skill",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        }
+      ],
+      "validation_profile": {
+        "discovery_parity": "strict",
+        "adapter_parity": "strict",
+        "provenance_license": "strict",
+        "private_data_hygiene": "strict",
+        "deprecation": "strict",
+        "routing_eval": "smoke",
+        "install_doctor": "package",
+        "topology": "leaf"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "craft-skills/obsidian-mermaid",
+      "name": "obsidian-mermaid",
+      "kind": "leaf",
+      "lifecycle": "active",
+      "version": "1.0.0",
+      "owner_repo": "craft-skills",
+      "owner_domain": "research-development",
+      "visibility": "public",
+      "compatibility": [
+        "claude-code",
+        "codex",
+        "hermes"
+      ],
+      "provenance": {
+        "upstream": null,
+        "commit": null,
+        "license": null,
+        "absorbed_from": []
+      },
+      "replacement_for": [],
+      "replaced_by": null,
+      "children": [],
+      "adapters": [
+        {
+          "runtime": "claude-code",
+          "surface": "plugin-skill",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        }
+      ],
+      "validation_profile": {
+        "discovery_parity": "strict",
+        "adapter_parity": "strict",
+        "provenance_license": "strict",
+        "private_data_hygiene": "strict",
+        "deprecation": "strict",
+        "routing_eval": "smoke",
+        "install_doctor": "package",
+        "topology": "leaf"
+      }
+    },
+    {
+      "schema_version": 1,
       "id": "craft-skills/programming",
       "name": "programming",
       "kind": "leaf",
@@ -1055,11 +1495,11 @@
     },
     {
       "schema_version": 1,
-      "id": "craft-skills/write-report",
-      "name": "write-report",
+      "id": "craft-skills/write-prd",
+      "name": "write-prd",
       "kind": "leaf",
       "lifecycle": "active",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
@@ -1074,9 +1514,7 @@
         "license": null,
         "absorbed_from": []
       },
-      "replacement_for": [
-        "craft-skills/technical-report"
-      ],
+      "replacement_for": [],
       "replaced_by": null,
       "children": [],
       "adapters": [
@@ -1112,11 +1550,11 @@
     },
     {
       "schema_version": 1,
-      "id": "craft-skills/write-prd",
-      "name": "write-prd",
+      "id": "craft-skills/write-report",
+      "name": "write-report",
       "kind": "leaf",
       "lifecycle": "active",
-      "version": "1.1.0",
+      "version": "1.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
@@ -1131,7 +1569,9 @@
         "license": null,
         "absorbed_from": []
       },
-      "replacement_for": [],
+      "replacement_for": [
+        "craft-skills/technical-report"
+      ],
       "replaced_by": null,
       "children": [],
       "adapters": [
