@@ -3,6 +3,7 @@
   "expected_craft_packages": [
     "agents",
     "api",
+    "ast-grep",
     "backend",
     "cicd",
     "debug",

@@ -19,6 +19,7 @@ only, and naming a source there fails skillify's attribution gate.
 | `frontend` | design-first gate and router shape; rendering-architecture/state/folder rules original synthesis | code-yeongyu/lazycodex (MIT; pattern-only) | adapted |
 | `backend` | architecture-detection rules and persistence rationale | [JNU-SWCU/oss-hub](https://github.com/JNU-SWCU/oss-hub) (ADR-001; operator-supplied) | adapted |
 | `api` | contract-first resource, error, and interface conventions | [Pullit API Design Guide](https://pullit-docs-server.vercel.app/index.html#02-api-design); [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills/tree/main/skills/api-and-interface-design) | adapted |
+| `ast-grep` | syntax-tree decision test, misconception models, and mutation ladder | [code-yeongyu/lazycodex](https://github.com/code-yeongyu/lazycodex) (MIT; pinned at `9b9f8e8f620e3f797567078734165350e1e46659`) | adapted |
 | `cicd` | CI/CD automation and deployment state-transition rules | [addyosmani/agent-skills ci-cd-and-automation](https://github.com/addyosmani/agent-skills/tree/main/skills/ci-cd-and-automation); operator-approved JNU-SWCU/oss-hub init deployment plan (operator-supplied, 2026-07-11) | distilled |
 | `ml` | training-discipline ladder; layout/dataset rules original synthesis | "A Recipe for Training Neural Networks" (A. Karpathy) | adapted |
 | `agents` | — (hardening hand-off boundaries align with OWASP Top 10 for LLM Applications) | — | original |
