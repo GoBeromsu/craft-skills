@@ -108,8 +108,8 @@ managed agent guide — record the path). Preserve all content outside the block
 init and may be **replaced** on re-run.
 
 **Migration rule:** if a repo carries a legacy block that claims hard git-guard/governance rails,
-**replace** it with the convention-only block below and **log the replacement** in the final report
-(phase-4 observability). Do not leave stale hard-rail claims.
+**replace** it with the convention-only block below and record the managed-block action in the
+[completion report](../SKILL.md#completion-report). Do not leave stale hard-rail claims.
 
 ```markdown
 <!-- BEGIN CRAFT-SKILLS INIT DEVELOPMENT FLOW -->

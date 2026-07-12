@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
   "expected_craft_packages": [
+    "agents",
     "backend",
     "debug",
     "distil",
@@ -9,6 +10,7 @@
     "git",
     "hookify",
     "init",
+    "ml",
     "programming",
     "refactor",
     "research",

@@ -1,28 +1,46 @@
 ---
 name: git
-description: 'Guides version-control craft: a ground-truth and incumbent-style detection gate before any commit or rebase, the atomic-commit `git add -p` split protocol, commit/branch/PR conventions matched to the repo''s own history, and non-interactive-safe history surgery (fixup, reword, split, scripted bisect, undo). Use when committing a change ("commit this", "커밋해줘"), rebasing or squashing history, sizing a PR, recovering from a broken rebase, or running "git wt" to create an isolated worktree with the git-guard rails. Not for hook-enforcement mechanics (runtime/lint/pre-commit guard authoring) — that belongs to hookify.'
+description: 'Guides version-control craft: a ground-truth and incumbent-style detection gate before the first git mutation, the atomic-commit `git add -p` split protocol, commit/branch/PR conventions matched to the repo''s own history, and non-interactive-safe history surgery (fixup, reword, split, scripted bisect, undo). Use when committing a change ("commit this", "커밋해줘"), rebasing or squashing history, sizing a PR, recovering from a broken rebase, or running "git wt" to create an isolated worktree with the git-guard rails. Not for hook-enforcement mechanics (runtime/lint/pre-commit guard authoring) — that belongs to hookify.'
 metadata:
-  version: 2.0.1
+  version: 2.1.0
 ---
 
 # git
 
 Version-control craft, in order: **truth over memory, one logical change per commit, incumbent style over personal preference.** A commit is done right when it traces to one logical change, matches the repo's own detected conventions rather than an imported standard, and never rewrites shared history without the safe path. Deep recipes live in `references/`: `conventions.md` (commit-type/scope/merge-strategy tables), `history-surgery.md` (non-interactive fixup/reword/split/bisect/undo), `worktree.md` (`git wt` isolated-worktree workflow + guard install). Detection-by-code runs throughout — every rule ships a copy-pasteable command with a threshold, because the repo's actual history always outranks a general convention.
+## Request mode
+
+For a commit, rebase, or staging request, run the ground-truth gate before the first Git mutation. For an investigation-shaped request — history, blame, why, or status — collect and report evidence without changing the worktree, index, or history. Investigation findings do not authorize a follow-on mutation.
+
 
 ## Ground truth (run first, every time)
 
 ```bash
-BASE=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null || echo origin/main)
+BASE=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null || true)
+if ! git rev-parse --verify --quiet "${BASE}^{commit}" >/dev/null; then
+  BASE=
+  for remote in $(git remote); do
+    candidate=$(git symbolic-ref --quiet --short "refs/remotes/$remote/HEAD" 2>/dev/null || true)
+    if git rev-parse --verify --quiet "${candidate}^{commit}" >/dev/null; then
+      BASE=$candidate
+      break
+    fi
+  done
+fi
 git status --short
 git diff --stat
 git diff --staged --stat
 git branch --show-current
 git log -15 --oneline
 git rev-parse --abbrev-ref @{upstream} 2>/dev/null || echo "no upstream — first push"
-git merge-base HEAD "$BASE"
+if [ -n "$BASE" ]; then
+  git merge-base HEAD "$BASE"
+else
+  echo "no comparison base — record PR size without a merge-base"
+fi
 ```
 
-`BASE` resolves the repo's actual default branch from `origin/HEAD`, falling back to `origin/main` only when nothing reports one — reuse `"$BASE"` below instead of hardcoding a branch name. The two `diff --stat` calls separate staged from unstaged; `log -15` samples local style; a missing `@{upstream}` means an unpushed branch, not a failure; `merge-base` anchors the PR-sizing diff below.
+`BASE` uses `origin/HEAD` when it resolves to a commit, then the first existing remote default branch. If neither exists, record `no comparison base` and do not call `merge-base` or a base-relative PR diff. The two `diff --stat` calls separate staged from unstaged; `log -15` samples local style; a missing `@{upstream}` means an unpushed branch, not a failure; `merge-base` anchors the PR-sizing diff below.
 
 ## Repo-style detection
 
@@ -37,7 +55,7 @@ Divide every count by `total`, not a hardcoded 30 — a young repo samples fewer
 
 ## Atomic commit law
 
-One commit = one logical change; a message needing "and" is two commits.
+One commit = one requested logical change; a message needing "and" is two commits.
 
 ```bash
 git status --short
@@ -48,7 +66,7 @@ git commit -m "<subject>"
 git status --short
 ```
 
-Repeat `add -p` → `diff --staged` → `commit` per logical change until `status --short` is empty. Detect a mixed diff:
+Repeat `add -p` → `diff --staged` → `commit` for each requested logical change. Leave unrelated staged or unstaged work untouched: stage only the user-requested files or hunks, never use `git add -A` / `git add .`, and do not require an empty `status --short` as completion. Detect a mixed diff:
 
 ```bash
 git diff --staged --name-only | sed -E 's#/[^/]+$##' | sort -u | wc -l
@@ -91,10 +109,14 @@ Ratio ≥ 2/3 → follow the exact shape observed (`feat/` and `feature/` are di
 ## PR sizing
 
 ```bash
-git diff "$BASE"...HEAD --shortstat
+if [ -n "$BASE" ]; then
+  git diff "$BASE"...HEAD --shortstat
+else
+  echo "no comparison base — PR size requires an explicit comparison target"
+fi
 ```
 
-Over ~400 insertions+deletions → split. When the work must land as one deployable unit, stack branches instead:
+Over ~400 insertions+deletions → split. When there is no comparison base, record that fact and choose an explicit comparison target before sizing. When the work must land as one deployable unit, stack branches instead:
 
 ```bash
 git checkout -b <slug>-2 <slug>-1   # second slice branches off the first, not main
@@ -133,7 +155,7 @@ One PR per slice, each targeting the previous branch; rebase the next slice when
 
 ## Verification
 
-- [ ] Ground-truth block ran before the first edit, commit, or rebase this session.
+- [ ] Ground-truth block ran before the first Git mutation (staging, commit, or rebase) this session.
 - [ ] Repo-style detection ran before the first commit.
 - [ ] Staged diff is one logical change.
 - [ ] `git diff --staged` was read in full before the commit message was written.

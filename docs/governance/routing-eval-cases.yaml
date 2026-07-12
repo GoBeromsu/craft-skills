@@ -92,6 +92,16 @@
       "forbidden_neighbors": ["craft-skills/api", "craft-skills/frontend", "craft-skills/programming"]
     },
     {
+      "trigger": "tighten this agent's tool schema",
+      "expected_package": "craft-skills/agents",
+      "forbidden_neighbors": ["craft-skills/security", "craft-skills/ml", "craft-skills/programming"]
+    },
+    {
+      "trigger": "train and evaluate a baseline model on this dataset",
+      "expected_package": "craft-skills/ml",
+      "forbidden_neighbors": ["craft-skills/agents", "craft-skills/backend", "craft-skills/programming"]
+    },
+    {
       "trigger": "audit this repo for security vulnerabilities",
       "expected_package": "craft-skills/security",
       "forbidden_neighbors": ["craft-skills/debug", "craft-skills/testing", "craft-skills/programming"]

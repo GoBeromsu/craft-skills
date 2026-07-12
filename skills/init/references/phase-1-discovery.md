@@ -1,14 +1,13 @@
 # Phase 1 — Discovery + Analysis
 
 This is the **cartography** engine's first phase. It builds the raw material — structure, code
-map, existing knowledge, project-specific conventions — that Phase 2 scores. Phase 0 (the docs/
-ontology graft) runs before this; on a mature repo Phase 0 mostly skips and the run is dominated
-by Phases 1–4.
+map, existing knowledge, project-specific conventions — that Phase 2 scores. It runs for the
+cartography outcome, after Phase 0 only when the request also included the docs scaffold.
 
 ## Table of Contents
 
 - [Runtime branch: how discovery fans out](#runtime-branch-how-discovery-fans-out)
-- [Concurrent explore fan-out](#concurrent-explore-fan-out-agent-spawn-runtimes)
+- [Risk-scaled explore selection](#risk-scaled-explore-selection-agent-spawn-runtimes)
 - [Main-session analysis](#main-session-analysis-always-runs-both-branches)
 - [Collect + merge](#collect--merge)
 
@@ -18,24 +17,30 @@ by Phases 1–4.
 
 SKILL.md has already classified the runtime. Honor that classification here:
 
-- **Agent-spawn runtimes** (Claude Code `Task`, Codex `multi_agent_v1`): fire the explore agents
-  **concurrently in the background** and do the main-session bash/LSP/codegraph analysis while they
-  run, then collect their results.
+- **Agent-spawn runtimes** (Claude Code `Task`, Codex `multi_agent_v1`): complete the structural
+  pass, then run the selected explore agents **concurrently in the background** while the
+  main-session LSP/codegraph analysis continues, then collect their results.
 - **Single-agent runtimes** (Hermes, generic): there is no fan-out. Run the same investigations
   **sequentially in the main session** using `Bash` + `Grep` + `Glob` (and `ast-grep`/`sg` if
-  present). Cover every explore role's question yourself, in order. This path is slower but
+  present). Cover the same selected investigations yourself, in order. This path is slower but
   produces the same merged findings.
 
-The report (see phase-4) must state which path was taken.
+Record the runtime path for the completion report.
 
-## Concurrent explore fan-out (agent-spawn runtimes)
+## Risk-scaled explore selection (agent-spawn runtimes)
 
-Fire these immediately — they run async while the main session works. Each agent role is a
+After the structural pass, start the selected agents concurrently while the main session continues.
+Each agent role is a
 **self-contained prompt**; do not assume any harness-specific tool name inside it. Where a code
 graph or LSP is available, instruct the agent to ground its claims in that data rather than guessing
 from directory conventions.
 
-Standing roles (fire all at once, collect later):
+Select explore roles after the structural pass from the unresolved questions with the highest
+decision impact. Give one agent a self-contained question; combine roles when existing evidence
+already answers it, and add an agent when ambiguity or blast radius would otherwise leave a claim
+weakly grounded.
+
+Useful role prompts include:
 
 1. **Project structure** — map the real layout; report deviations from standard patterns.
 2. **Entry points** — find main/index files, trace what they reach; report non-standard organization.
@@ -45,26 +50,11 @@ Standing roles (fire all at once, collect later):
 5. **Build/CI** — find `.github/workflows`, `Makefile`, task runners; report non-standard patterns.
 6. **Test patterns** — find test configs/structure and what the core modules cover; report unique conventions.
 
-### Dynamic agent spawning
-
-After the bash structural pass below, spawn **additional** explore agents scaled to project size.
-This table is load-bearing — static agent counts are an anti-pattern:
-
-| Factor | Threshold | Additional agents |
-|--------|-----------|-------------------|
-| **Total files** | >100 | +1 per 100 files |
-| **Total lines** | >10k | +1 per 10k lines |
-| **Directory depth** | ≥4 | +2 for deep exploration |
-| **Large files (>500 lines)** | >10 files | +1 for complexity hotspots |
-| **Monorepo** | detected | +1 per package/workspace |
-| **Multiple languages** | >1 | +1 per language |
-
-Example: 500 files, 50k lines, depth 6, 15 large files → +5 +5 +2 +1 = **13 additional agents**
-(large-file analysis, deep-module exploration, shared-utility scan, …).
-
-On single-agent runtimes there are no extra agents — instead, the main session spends
-**proportionally more passes** on the same hotspots the table would have fanned out to (large
-files, deep modules, each workspace, each language).
+Increase coverage for independent unknowns, cross-package boundaries, unfamiliar languages or
+generated code, security or migration-sensitive paths, and high-centrality modules. Do not add
+agents merely because a repository has more files, lines, depth, or workspaces. Stop adding agents
+when each high-risk conclusion has direct evidence or corroboration; on single-agent runtimes,
+prioritize those same questions in sequential passes.
 
 ## Main-session analysis (always runs, both branches)
 
@@ -88,17 +78,6 @@ find . -type f \( -name "*.py" -o -name "*.ts" -o -name "*.tsx" -o -name "*.js" 
 find . -type f \( -name "AGENTS.md" -o -name "CLAUDE.md" \) -not -path '*/node_modules/*' 2>/dev/null
 ```
 
-Also measure the scale inputs the dynamic-agent table consumes:
-
-```bash
-total_files=$(find . -type f -not -path '*/node_modules/*' -not -path '*/.git/*' | wc -l)
-total_lines=$(find . -type f \( -name "*.ts" -o -name "*.py" -o -name "*.go" \) \
-  -not -path '*/node_modules/*' -exec wc -l {} + 2>/dev/null | tail -1 | awk '{print $1}')
-large_files=$(find . -type f \( -name "*.ts" -o -name "*.py" \) -not -path '*/node_modules/*' \
-  -exec wc -l {} + 2>/dev/null | awk '$1 > 500 {count++} END {print count+0}')
-max_depth=$(find . -type d -not -path '*/node_modules/*' -not -path '*/.git/*' \
-  | awk -F/ '{print NF}' | sort -rn | head -1)
-```
 
 ### 2. Read existing AGENTS.md
 
@@ -123,12 +102,11 @@ when present, alongside the explore agents.
     search/files → symbol/file inventory.
 
 **Fallback:** only if NEITHER LSP nor codegraph exists, use the explore agents + `ast-grep` (`sg`)
-for the symbol/reference inventory, and **mark centrality "unmeasured" in the CODE MAP** (and in the
-final report). Never silently emit a confident centrality number you could not measure.
+for the symbol/reference inventory, and mark centrality "unmeasured" in the CODE MAP so the
+[completion report](../SKILL.md#completion-report) can state the limitation.
 
 ## Collect + merge
 
 On agent-spawn runtimes, collect every background explore result after the main-session analysis
-finishes. Then **merge** all four streams — bash structure + LSP/codegraph code map + existing
-AGENTS.md insights + explore findings — into one project model. That merged model is the input to
-Phase 2.
+finishes. Then merge the bash structure, LSP/codegraph code map, existing `AGENTS.md` insights, and
+explore findings into one project model. That merged model is the input to Phase 2.
