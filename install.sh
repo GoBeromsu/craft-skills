@@ -67,12 +67,21 @@ install_codex() {
     return 1
   fi
   PROJECT_ROOT="$(cd "${PROJECT_ROOT}" && pwd)"
-  if [ "${PROJECT_ROOT}" = "${REPO_DIR}" ] ||
-    { [ -f "${PROJECT_ROOT}/.codex-plugin/plugin.json" ] &&
-      [ -f "${PROJECT_ROOT}/skills-manifest.yaml" ]; }; then
-    printf 'REFUSED: --clone must target a consumer project, not the craft-skills repository.\n' >&2
-    return 1
-  fi
+  case "${PROJECT_ROOT}/" in
+    "${REPO_DIR}/"*)
+      printf 'REFUSED: --clone must target a consumer project, not the craft-skills repository (or a path inside it).\n' >&2
+      return 1
+      ;;
+  esac
+  # Walk ancestors: a marker pair anywhere above also means we are inside a craft-skills checkout.
+  ANCESTOR="${PROJECT_ROOT}"
+  while [ "${ANCESTOR}" != "/" ]; do
+    if [ -f "${ANCESTOR}/.codex-plugin/plugin.json" ] && [ -f "${ANCESTOR}/skills-manifest.yaml" ]; then
+      printf 'REFUSED: --clone must target a consumer project, not the craft-skills repository (marker pair at %s).\n' "${ANCESTOR}" >&2
+      return 1
+    fi
+    ANCESTOR="$(dirname "${ANCESTOR}")"
+  done
 
   (
     cd "${PROJECT_ROOT}"
@@ -115,15 +124,34 @@ from pathlib import Path
 config_path = Path(sys.argv[1])
 expected_path = sys.argv[2]
 external_dirs_indent = None
+skills_indent = None
 has_expected_entry = False
 unexpected_references = []
 
 for raw_line in config_path.read_text(encoding="utf-8").splitlines():
     line = raw_line.rstrip()
+    skills_match = re.match(r"^(\s*)skills\s*:\s*(?:#.*)?$", line)
+    if skills_match:
+        skills_indent = len(skills_match.group(1))
+        external_dirs_indent = None
+        continue
     key_match = re.match(r"^(\s*)external_dirs\s*:\s*(?:#.*)?$", line)
     if key_match:
-        external_dirs_indent = len(key_match.group(1))
+        indent = len(key_match.group(1))
+        # Only the canonical skills.external_dirs list counts: the key must be
+        # nested directly under an active `skills:` parent.
+        if skills_indent is not None and indent > skills_indent:
+            external_dirs_indent = indent
+        else:
+            external_dirs_indent = None
+            if expected_path in raw_line or "craft-skills" in raw_line:
+                unexpected_references.append(line.strip())
         continue
+    if skills_indent is not None and external_dirs_indent is None:
+        stripped_top = line.strip()
+        top_indent = len(line) - len(line.lstrip())
+        if stripped_top and top_indent <= skills_indent:
+            skills_indent = None
 
     if external_dirs_indent is not None:
         stripped = line.strip()
