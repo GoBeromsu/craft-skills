@@ -120,6 +120,11 @@
       "trigger": "write a PRD for this feature",
       "expected_package": "craft-skills/write-prd",
       "forbidden_neighbors": ["craft-skills/document", "craft-skills/research", "craft-skills/write-report"]
+    },
+    {
+      "trigger": "find every call site of this function with ast-grep",
+      "expected_package": "craft-skills/ast-grep",
+      "forbidden_neighbors": ["craft-skills/refactor", "craft-skills/programming", "craft-skills/debug"]
     }
   ]
 }
