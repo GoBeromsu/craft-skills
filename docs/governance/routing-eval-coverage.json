@@ -1,15 +1,18 @@
 {
   "schemaVersion": 1,
   "expected_craft_packages": [
+    "backend",
     "debug",
     "distil",
     "document",
+    "frontend",
     "git",
     "hookify",
     "init",
     "programming",
     "refactor",
     "research",
+    "security",
     "skillify",
     "testing",
     "write-report"

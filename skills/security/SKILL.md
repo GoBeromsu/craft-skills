@@ -2,7 +2,7 @@
 name: security
 description: Finds and fixes vulnerabilities in code the user owns across web, API, and LLM surfaces, mapping every trust boundary first and triaging by production reachability and severity second. Use when asked for a security review, "is this safe to ship," "check for vulnerabilities," or "보안 점검," when auditing secrets hygiene or dependency risk, or when reviewing a PR or feature for security regressions before release. Not for building or changing LLM-agent systems themselves (use `agents`) or for installing the enforcement hook, lint, or pre-commit that closes a finding permanently (use `hookify`); this skill finds and fixes, it never attacks.
 metadata:
-  version: 2.0.1
+  version: 2.1.0
 ---
 
 # security
@@ -17,16 +17,15 @@ Do not propose a fix before this gate.
 2. Give each ingress point a parse / validate / limit decision — parse it into a typed value at the boundary, validate it against a schema, and cap its size/rate. An ingress point with none of the three is a gap.
 3. Name the assets at risk: credentials, personal data, payment data, availability, another tenant's data.
 4. Write a one-line abuse case for each top flow — "attacker submits X through channel Y to achieve Z." This turns severity triage into something concrete instead of abstract.
-5. Route to the surface-specific reference(s) and read the matching file in full before acting:
-
-   | Surface | Read |
+5. Route to the surface-specific or risk-specific reference(s) that apply before acting:
+   | Surface or scope | Read |
    |---|---|
    | Web UI / frontend rendering | `references/web.md` |
    | API / server-side handler | `references/api.md` |
    | LLM-powered feature (agent, prompt, retrieval-augmented generation (RAG), tool use) | `references/llm.md` |
-   | Always — every review, regardless of which surfaces above apply | `references/secrets-supply-chain.md` |
-
-   A single review often routes to more than one reference — a web app with an LLM feature reads `web.md`, `api.md`, and `llm.md`. `secrets-supply-chain.md` is not surface-gated like the rows above it: read it on every review, even one that hits none of the other three rows.
+   | Full audit, or dependency, build, credential, or supply-chain reachability | `references/secrets-supply-chain.md` |
+   A review can route to more than one reference — a web app with an LLM feature reads `web.md`, `api.md`, and `llm.md`. Read `secrets-supply-chain.md` and run its relevant audit commands only when its routing row applies.
+Preserve trust-boundary validation and error handling; remove either only when an adversarial regression test proves it redundant.
 
 Quick surface-identification heuristics — approximate, confirm by reading the code, not the grep alone:
 
@@ -45,11 +44,12 @@ grep -rnE "anthropic|openai|langchain" --include="*.py" --include="*.ts" --inclu
   | grep -v node_modules | head -5
 ```
 
-## Three-tier action boundary
+## Action boundary
 
 | Tier | Actions |
 |---|---|
-| Always do | Read code and configs; run detection commands and dependency audits; report every finding with `file:line` evidence and the command that surfaced it; fix a vulnerability at its source in code the user owns, and add or update a test that proves it stays closed — apply both directly, with no separate go-ahead needed. |
+| Review-only request | Read code and configs; run the detection commands that match the routed surfaces; report every finding with `file:line` evidence and the command that surfaced it. Do not apply fixes. |
+| Explicit fix request | Fix confirmed vulnerabilities at their source in code the user owns, subject to the Ask first boundary below, and add or update a test or re-run the detection command to prove each fix stays closed. |
 | Ask first | Propose the change and apply it only once explicitly accepted: authentication/session/authorization model changes; rotating or revoking a live credential; a major-version dependency bump taken as the fix; modifying a CI/CD security gate; deleting or overwriting data discovered during the audit; disclosing a finding to anyone outside the immediate team. |
 | Never do | Write or run exploit code beyond the minimal local proof needed to confirm a fix works; probe, access, or scan any system, account, or endpoint outside what the user explicitly owns or authorized; paste, log, or otherwise expose a real secret found during the audit — redact it in every report; leave a known exploitable path live "to see if it gets hit." |
 
@@ -89,7 +89,7 @@ Reachability, not a demonstrated exploit, drives the tree — a finding with cle
 
 - POSIX `grep`, `find`, `awk` for the detection commands in every reference file.
 - `git` for tracked-file and history secret scans.
-- `npm audit` / `pnpm audit` (Node) or `pip-audit` / the uv-native audit command (Python/uv) for dependency audits — see `references/secrets-supply-chain.md` for the exact commands.
+- `npm audit` / `pnpm audit` (Node) or `pip-audit` / the uv-native audit command (Python/uv) when the dependency/build/credential/supply-chain routing row applies — see `references/secrets-supply-chain.md` for the exact commands.
 - Optional: `ast-grep` for structural matches where a plain regex produces too many false positives — an optional extra, not a substitute for the commands shipped in the references.
 
 ## Anti-patterns
@@ -112,10 +112,9 @@ Reachability, not a demonstrated exploit, drives the tree — a finding with cle
 ## Verification
 
 - [ ] Every ingress channel for the reviewed feature is enumerated with a parse/validate/limit decision.
-- [ ] PHASE 0 routed to every matching reference before any fix was proposed.
-- [ ] `references/secrets-supply-chain.md` was read this review — always, regardless of which other surfaces applied.
+- [ ] PHASE 0 routed to every matching reference before any fix was proposed; `references/secrets-supply-chain.md` was read only when its routing row applied.
 - [ ] Each finding carries a fix-now / next-release / backlog verdict from the severity tree, with the reachability and severity reasoning stated.
 - [ ] Every finding cites `file:line` evidence and the detection command that surfaced it.
 - [ ] No real secret value appears anywhere in the report — redacted placeholders only.
-- [ ] A dependency audit (`npm audit` / `pip-audit` / the uv-native command in `references/secrets-supply-chain.md`) has been run and its output reviewed.
+- [ ] A dependency audit (`npm audit` / `pip-audit` / the uv-native command in `references/secrets-supply-chain.md`) ran and its output was reviewed when dependency, build, credential, or supply-chain reachability was in scope.
 - [ ] Every applied fix is proven closed by a test or a re-run of the same detection command showing a pass.

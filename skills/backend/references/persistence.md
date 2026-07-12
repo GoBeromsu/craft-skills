@@ -18,15 +18,15 @@ Run migrations against the development engine before relying on a schema change.
 
 ## ORM
 
-For a new TypeScript service, default to Prisma. Its schema-first generated client gives complete type coverage from model to query, migration history makes database evolution reviewable, Prisma Studio supports inspection without ad-hoc SQL tooling, and its ecosystem momentum reduces integration risk.
+For a truly greenfield TypeScript service, Prisma is a default choice: its schema-first generated client gives complete type coverage from model to query, migration history makes database evolution reviewable, and Prisma Studio supports inspection without ad-hoc SQL tooling.
 
-Do not select TypeORM by default just because it resembles decorator-based application code. Choose it only when the incumbent service already uses it or a concrete capability requirement cannot be met by Prisma; record that requirement before introducing a second persistence pattern.
+Do not select TypeORM by default merely because it resembles decorator-based application code. An incumbent service keeps its existing ORM, whether TypeORM or another choice; introduce or migrate persistence tooling only under explicit migration scope or a recorded capability requirement.
 
 | Need | Prisma default response |
 |---|---|
 | Typed queries | Generate the client from the schema and keep schema changes in review |
 | Schema evolution | Create and apply tracked migrations |
 | Local data inspection | Use Prisma Studio against the development database |
-| Existing TypeORM service | Preserve the incumbent ORM; do not migrate as a feature side effect |
+| Existing ORM | Preserve the incumbent ORM; do not migrate as a feature side effect |
 
 Route public HTTP request and response conventions to the `api` skill. This reference owns database-engine fidelity and ORM selection, not endpoint contract shape.
