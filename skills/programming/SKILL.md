@@ -1,24 +1,24 @@
 ---
 name: programming
-description: Applies correctness-first, type-strict engineering discipline when writing or editing Python or TypeScript. Use when asked to write a `.py` or `.ts` file, scaffold a new Python/TypeScript project, add strict types to existing code, or review a diff for over-engineering, code smells, type holes, or an oversized file. Routes to `references/python.md` or `references/typescript.md` for the per-language iron list, plus the always-loaded `references/workflow.md` task discipline. Not for suite-level test architecture (use testing) or behavior-preserving restructuring of already-working code (use refactor).
+description: Guides correctness-first, type-strict Python and TypeScript implementation. Use when asked to write a `.py` or `.ts` file, scaffold a Python/TypeScript project, add strict types, assess an implementation diff for correctness or type holes, or fix a reproducible defect. Not for smell-only assessment or behavior-preserving restructuring — use refactor; not for suite-level test architecture — use testing.
 metadata:
-  version: 2.1.0
+  version: 2.2.0
 ---
 
 # programming
 
-Write Python and TypeScript under one discipline: **correctness first, maintainability second, brevity third.** The type system is the proof, the test is the safety net, and the smallest code that satisfies both — never either alone — is the goal. Success looks like a clean type-check + lint pass, a test that locks the new behavior in, and every changed file inside the LOC ceiling below. `testing` owns suite-level architecture and `refactor` owns behavior-preserving restructuring of existing code; this skill owns writing and editing the code itself.
+Write Python and TypeScript under one discipline: **correctness first, maintainability second, brevity third.** The type system is the proof, the test is the safety net, and the smallest code that satisfies both — never either alone — is the goal. Success looks like a clean type-check + lint pass, evidence for changed observable behavior, and each changed file considered against the LOC review signal below. `testing` owns suite-level architecture, while `refactor` owns smell-only review and behavior-preserving restructuring.
 
-## Load the reference first
+## Load the task-relevant reference first
 
-Read the matching file in full before writing or editing a line — including a one-off or throwaway script; `uv run` + PEP 723 (Python) and `bun run` (TypeScript) make full discipline free even for disposable code.
+Load only the references the task needs before touching code; a one-off script does not need every language guide.
 
 | Scope | Read |
 |---|---|
-| Every code task, always | `references/workflow.md` — understand → plan → change → verify → report, and the completion contract (no fabrication, no placeholder-as-feature, no suppressing to go green) |
-| `.py`, `.pyi`, or "Python" | `references/python.md` — tooling table, iron list, data-modeling map |
-| `.ts`, `.tsx`, `.mts`, `.cts`, or "TypeScript" | `references/typescript.md` — tooling table, iron list, tsconfig flags; then `references/typescript/clean-code.md` — naming, function shape, structure |
-| Reviewing a diff or auditing for smells | `../refactor/references/code-smells.md` — the smell → fix catalog; `refactor` owns it, load it read-only from here |
+| Any implementation or code edit | `references/workflow.md` — understand → plan → change → verify → report, and the completion contract |
+| `.py`, `.pyi`, or Python task | `references/python.md` — tooling table, iron list, data-modeling map |
+| `.ts`, `.tsx`, `.mts`, `.cts`, or TypeScript task | `references/typescript.md` — tooling table, iron list, tsconfig flags; load `references/typescript/clean-code.md` when naming, function shape, or structure is in scope |
+| Smell-only review | Route to `refactor`; it owns `references/code-smells.md` and the resulting restructuring |
 
 ## Write only what the task needs
 
@@ -42,66 +42,51 @@ A deliberate shortcut carries a `craft:` comment naming its ceiling and upgrade 
 # craft: in-memory dedup, fine to ~10k ids; swap for a Redis set if this grows multi-process
 ```
 
-## Shared philosophy
+## Core decisions
 
-1. **The type system is your proof system.** Make illegal states unrepresentable — if a bug can be a type error, it must be one.
-2. **Parse, don't validate.** Untrusted input is parsed into a typed value once, at the boundary; inside it, code never re-validates.
-3. **One name = one concept.** Brand every distinct primitive (`NewType` / branded type) — a `UserId` is not a bare `str`/`string`.
-4. **Exhaustive variant matching.** Discriminated unions and enums are matched with `match`/`assert_never` or `switch`/`assertNever`; `if`/`elif`/`else` on a tagged variant is banned — it silently swallows new variants.
-5. **Trust the type system past the boundary.** No null check for a value the type proves non-null, no escape hatch (`any`, `cast`, `!`, `# type: ignore`, `@ts-ignore`) papering over a contract that belongs in types.
-6. **Test-driven.** No production line ships without a failing test that proved it was needed.
+- Make illegal states unrepresentable when a bug can become a type error.
+- Parse untrusted input into a typed value once at the boundary, then trust that contract internally.
+- Give each concept its own type and name; match tagged variants exhaustively.
+- Keep a change as one logical, independently reversible unit; split unrelated work rather than using file count as a proxy.
 
-## The 250 pure LOC ceiling
+## The 250 pure LOC review signal
 
-A source file whose pure LOC (non-blank, non-comment) exceeds 250 is architecturally broken, not a style call — past 250 a reviewer stops holding the whole file in working memory.
+A source file over 250 pure LOC deserves a cohesion review, not an automatic split. Split it when independent responsibilities make the file hard to reason about; keep a cohesive unit intact when extraction would only scatter its contract. For an existing large file, improve the unit being touched when that is a bounded, clearer change rather than expanding the task to reorganize it. Generated tables and genuinely indivisible state machines may exceed the signal with a one-line justification comment.
+
+Use the repository's incumbent measurement when it has one; otherwise this command gives a comparable pure-LOC count:
 
 ```bash
 awk '!/^[[:space:]]*$/ && !/^[[:space:]]*(\/\/|#)/' <file> | wc -l
 ```
 
-Creating a file that will exceed 250 → split by responsibility before the first commit. Editing one already over → extract the unit you're touching first. Reading one while building a feature → surface the smell and propose a split, don't pile on. Split by what each file *does*; a catch-all (`utils.py`, `helpers.ts`, `common.py`) relocates the smell. A genuinely indivisible unit (a generated table, one state machine) may exceed the ceiling with a one-line justification comment.
-
 ## TDD — red, green, refactor
 
-1. **Red.** Write a failing test naming the behavior in Given/When/Then; confirm it fails for the right reason (missing behavior, not an import typo).
-2. **Green.** Write the minimum code to pass. The next case is the next red.
-3. **Refactor.** With the test green, restructure freely — the test is the net.
+Use red-first TDD when adding or changing observable behavior, or when risk warrants a regression net: write a failing Given/When/Then test, confirm it fails for the intended reason, then write the minimum code to pass. For a localized low-risk mechanical edit, run the cheapest credible verification instead of manufacturing a test.
 
-Assert the contract, not the dump — the value, not `is not None`. Prefer the real object, then an in-memory fake, then a wire-level fake (`respx`/`msw`); mock only true unmockables (clock, randomness) at the narrowest seam. Inject a clock and subscribe to events instead of `sleep`.
+For every reproducible defect, retain a failing-first regression test at the defect's natural layer before the fix makes it pass. Assert the contract, not the dump; prefer the real object, then an in-memory fake, then a wire-level fake. Mock only true unmockables (clock, randomness) at the narrowest seam, and inject a clock or subscribe to events instead of sleeping.
+## Logging decisions
+
+When adding logs, follow the project's established logging practice. Choose the level by the consumer's need, place logs at decisions rather than every step, and keep messages stable while putting variable context in structured fields. This is the transferable logging decision rule from [omo analysis](../../docs/research/omo-analysis.md).
 
 ## Requirements
 
+Use the repository's incumbent package manager, type checker, linter, test runner, and LOC measurement first; use these defaults only when the project has no established equivalent:
+
 - Python: `uv`, `basedpyright` (`typeCheckingMode = "all"`), `ruff` (`select = ["ALL"]`), `pytest`.
 - TypeScript: `bun` (or `pnpm`), `tsc` (strict + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` + `verbatimModuleSyntax`), `biome`.
-- `awk` + `wc` for the LOC measurement.
+- `awk` + `wc` for the fallback LOC measurement.
 
 ## Anti-patterns
 
-- Skipping types on a throwaway script → use `uv run` + PEP 723 / `bun run` for full discipline at zero setup cost; throwaway code still reaches production once.
-- Treating fewer lines as the goal → treat correctness as the goal and fewer lines as the byproduct; never cut validation, security, or error handling to shrink a diff.
-- Using `any`/`cast` just to ship → encode the contract in the type instead; the escape hatch hides the bug the type system was about to catch.
-- Using `if`/`elif` on a tagged enum → use `match`/`switch` with an exhaustiveness check; `if`/`elif` silently swallows the next variant.
-- Letting a file approach the 250-LOC ceiling ("close enough") → split now; a file about to grow past the ceiling is already over.
-- Adding the test after the code → write the failing test first, always; tests-after rationalize the design already written.
-- Leaving a shortcut uncommented → mark it with a `craft:` comment naming its ceiling; unmarked, it reads as a bug to the next person.
-- Letting `dict[str, Any]` / `unknown` flow past the boundary into business logic → parse untrusted input into a typed value at the boundary.
+- Skipping types on a throwaway script → use the smallest project-compatible setup; disposable code still needs an honest contract.
+- Leaving a shortcut uncommented → mark it with a `craft:` comment naming its ceiling and upgrade path.
 - Using `except Exception` / an empty `catch` that swallows the stack trace → catch specific exceptions and handle or log them explicitly.
-- Naming a new file `utils`, `helpers`, `common`, `shared`, or `misc` → name it for the one responsibility it holds.
 - Introducing an interface/Protocol with exactly one implementation, or a factory for one product → use the concrete type directly until a second implementation exists.
 - Adding `# type: ignore` / `@ts-ignore` with no explanation → fix the type, or add a comment explaining why the escape hatch is unavoidable.
-- Shipping a feature with passing unit tests but no test that fails when the behavior is reverted → add a reverting test before calling it done.
-- Rewriting a helper the codebase already has → search for the existing util or pattern first; reuse is rung 2 of the ladder.
-- Patching only the code path a bug report names → grep every caller and fix the shared function once; the symptom path is rarely the only broken one.
+- Logging every operation or interpolating unstable context into messages → log decision points with stable messages and structured fields.
 
 ## Verification
 
-- [ ] The matching reference (`python.md` / `typescript.md`) was read before writing code.
-- [ ] Every changed file is ≤250 pure LOC (or carries a justified exception) and names one responsibility.
-- [ ] Boundaries parse untrusted input into typed values; no `Any`/`unknown` leaks inward.
-- [ ] Every tagged-variant branch is an exhaustive `match`/`switch` with `assert_never`/`assertNever`.
-- [ ] No unexplained escape hatch, and no dead null-check/try-except guarding an already-proven value.
-- [ ] No one-off helper/class introduced for a single caller.
-- [ ] No new code re-implements a helper, stdlib call, or platform feature that already covers it.
-- [ ] Every deliberate shortcut carries a `craft:` comment with its ceiling and upgrade path.
-- [ ] New behavior is locked by a test that fails when the change is reverted.
-- [ ] Type checker + linter pass clean (`basedpyright` + `ruff` / `tsc` + `biome`).
+- [ ] Task-relevant references were read before writing code.
+- [ ] The [core decisions](#core-decisions), [LOC review signal](#the-250-pure-loc-review-signal), and relevant [TDD](#tdd--red-green-refactor) or [logging](#logging-decisions) guidance were applied.
+- [ ] The incumbent type checker, linter, and focused verification pass clean.

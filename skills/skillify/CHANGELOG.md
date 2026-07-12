@@ -31,3 +31,4 @@
 - 2026-07-06 — v4.1.0: operator corrections stayed in chat memory → per-skill ## Anti-patterns registry + record-a-correction flow + CHANGELOG provenance rule.
 - 2026-07-06 — v4.1.1: provenance clauses named sources without links → contract §6 now requires what-was-taken + [name](url) form.
 - 2026-07-08 — v4.2.0: skill packages could duplicate overlapping rules across sections → added MECE ownership and link-instead-of-restating guidance. Provenance: MECE rule from [mece-correction](references/mece-correction.md).
+- 2026-07-12 — v4.3.0: dirty-tree and delivery rules mutated state and repeated → made clean-state inspection, non-destructive worktree isolation, and branch → PR single-owner guidance explicit. Folded principles: independent ground truth before action; collaboration-safe destructive operations; logical, independently revertible commits. Provenance: docs/research/omo-analysis.md.

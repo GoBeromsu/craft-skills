@@ -67,6 +67,11 @@
       "forbidden_neighbors": ["craft-skills/skillify", "craft-skills/research", "craft-skills/init"]
     },
     {
+      "trigger": "choose test placement and fixtures for an integration boundary",
+      "expected_package": "craft-skills/testing",
+      "forbidden_neighbors": ["craft-skills/programming", "craft-skills/debug", "craft-skills/refactor"]
+    },
+    {
       "trigger": "review this diff for code smells",
       "expected_package": "craft-skills/programming",
       "forbidden_neighbors": ["craft-skills/testing", "craft-skills/security", "craft-skills/debug"]

@@ -17,17 +17,29 @@ branch-then-PR delivery flow and plugin-root relocation.
 
 ## 1. Clean start
 
-Before any lifecycle change: run `git status` first and stash or set aside unrelated
-uncommitted work — never discard user-owned changes to reach a clean tree. Then:
+Before any lifecycle change, inspect the actual worktree state:
 
 ```bash
+git status --short --branch
 git fetch origin --prune
-git checkout main
-git pull --ff-only origin main
-git checkout -b <topic-branch>
 ```
 
-Do not stack a skill change on a dirty or unrelated branch.
+When the worktree is clean, update `main` and create the topic branch:
+
+```bash
+git switch main
+git pull --ff-only origin main
+git switch -c <topic-branch>
+```
+
+When unrelated work is present, leave it in place and create an isolated worktree and branch
+from the fetched remote instead:
+
+```bash
+git worktree add -b <topic-branch> ../craft-skills-<topic> origin/main
+```
+
+Do not stash, discard, or carry unrelated work into the lifecycle change.
 
 ## 2. Create
 
@@ -40,13 +52,13 @@ mkdir -p "$SKILL_DIR"
 2. Author `SKILL.md` (contract §1–§4) and seed `CHANGELOG.md` with the first dated bullet.
 3. Add `references/`, `scripts/`, `templates/`, `tests/`, `.env.example` only as the
    package-parts table (contract §5) calls for them.
-4. Validate (see `references/runtime-hygiene.md` for the script invocations), then branch →
-   commit → PR (§6).
+4. Validate (see `references/runtime-hygiene.md` for the script invocations), then follow
+   the delivery flow (§6).
 
 ## 3. Update
 
 Patch `SKILL.md` and/or `references/`, bump `metadata.version` per the version-bump rubric
-(contract §8), append one `CHANGELOG.md` bullet, validate, PR.
+(contract §8), append one `CHANGELOG.md` bullet, validate, then follow the delivery flow (§6).
 
 ### Record a correction
 
@@ -82,9 +94,9 @@ moving the real directory and fixing every path that names it.
 Mark deprecation in the **body**, never in frontmatter — the frontmatter contract is fixed
 and admits no `status` key. Add a `## Deprecated` section at the top of `SKILL.md` pointing
 to the replacement skill, bump **MAJOR** (a trigger phrase is leaving the contract), append
-a `CHANGELOG.md` bullet, and PR. Prefer a deprecated stub over physical deletion whenever
-another skill takes over the same trigger phrases. Delete the directory only after
-confirming no other skill or scheduled job still references it.
+a `CHANGELOG.md` bullet, then follow the delivery flow (§6). Prefer a deprecated stub over
+physical deletion whenever another skill takes over the same trigger phrases. Delete the
+directory only after confirming no other skill or scheduled job still references it.
 
 ### Abort an in-flight promotion
 
@@ -99,12 +111,13 @@ before any destructive step.
 
 ## 6. Branch → commit → PR
 
-Every skill change ships as branch → commit → PR unless the operator explicitly requests
-local-only. A patched file is not the deliverable; reviewable repo state is.
+Every skill change follows this flow unless the operator explicitly requests local-only;
+reviewable repo state is the deliverable.
 
-1. Clean start (§1).
-2. Make the change on the topic branch; do not drag unrelated old-branch state into the PR.
-3. Validate (`references/runtime-hygiene.md`), commit, push.
+1. Start from the clean-state route (§1).
+2. Make the change on the topic branch; do not carry unrelated old-branch state into it.
+3. Run `references/runtime-hygiene.md`'s validator playbook, then commit one logical,
+   independently revertible change and push it.
 4. Open a PR unless local-only was explicitly requested.
 
 ## 7. Plugin-root relocation
