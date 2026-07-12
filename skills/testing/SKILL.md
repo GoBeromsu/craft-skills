@@ -1,15 +1,13 @@
 ---
 name: testing
-description: 'Architects and audits the test suite for a project: classifies each test by taxonomy (unit, integration, e2e) and resource-based size, places it via a decision tree, and enforces the prove-it law that every bug fix ships with a failing-then-passing reproduction test. Use when writing tests for a change, setting up or reorganizing test structure and fixtures, adding an integration or e2e test, or triaging a flaky suite. Not for diagnosing why one test is failing right now — use debug. Not for the in-file red-green-refactor loop on one function — use programming. Not for ML eval-set methodology — use ml. Not for LLM-agent behavioral evals — use agents.'
+description: Architects and audits project test suites by selecting the cheapest layer that proves behavior and contract risk, then placing tests and fixtures for a fast, deterministic suite. Use when choosing test placement, organizing fixtures, adding an integration or e2e test, designing contract coverage, or triaging flaky suites. Not for isolated function-level red-green-refactor TDD — use programming; not for diagnosing a currently failing test — use debug; not for ML or agent eval methodology — use ml or agents.
 metadata:
-  version: 2.0.0
+  version: 2.1.0
 ---
 
 # testing
 
-Builds and maintains a test suite under one discipline: confidence first, speed second, coverage third. Success looks like every test labeled by what it verifies and sized by what it touches — deliberately, not copied from the nearest existing file — and no bug fix landing without a failing-then-passing reproduction test.
-
-`programming` owns the in-file red-green-refactor loop for one function. This skill owns everything above that: what to test at what layer, where a test lives, how a suite stays fast and deterministic, and how a fix proves itself.
+Builds and maintains a test suite under one discipline: confidence first, speed second, coverage third. Choose evidence for the behavior and contract risk at the cheapest credible layer, then place it so the suite stays fast and deterministic. `programming` owns isolated function-level red-green-refactor TDD; this skill owns suite placement, fixtures, resource layers, and cross-boundary coverage.
 
 ## Gate — read the matching reference before writing a test
 
@@ -29,35 +27,39 @@ Property and contract are techniques layered onto a taxonomy kind below, not a f
 
 Taxonomy names what a test verifies; resource size names what it costs — these are orthogonal axes, not one label. A test can be "unit" in taxonomy and "medium" in size if it touches a local sqlite file.
 
-| Kind | Scope | Speed budget | Mandatory when |
+| Kind | Scope | Typical cost | Choose when |
 |---|---|---|---|
-| Unit | single function/class, no I/O | <10ms each; whole suite <10s | every non-trivial logic branch |
-| Integration | crosses one process boundary (DB, cache, queue, another service) | <1s each | every repository/adapter and every external-service client |
-| E2E | drives the real app through its real interface | seconds each; whole suite minutes | every critical user journey (auth, checkout, primary CRUD) |
+| Unit | single function/class, no I/O | milliseconds | it catches the logic or invariant regression credibly |
+| Integration | crosses one process boundary (DB, cache, queue, another service) | usually under a second | the contract or adapter behavior needs that boundary |
+| E2E | drives the real app through its real interface | seconds | a critical user journey cannot be proved credibly at a cheaper layer |
 
-| Size | May touch | May NOT touch |
+| Size | May touch | Avoid unless the risk needs it |
 |---|---|---|
 | Small | single process, CPU + memory only | disk I/O, network, subprocess, `sleep` |
 | Medium | localhost I/O (local DB, local file, loopback socket) | any other host, real network egress |
-| Large | network, multiple real services | — (this is the ceiling) |
+| Large | network, multiple real services | — |
 
-## Placement decision tree
+Choose the cheapest layer that catches the regression. Logic with no I/O usually belongs in unit/small; a boundary you own (DB, cache, queue) often needs integration/medium; a third-party boundary can use an integration fake or a contract test. Use e2e/large for a user-visible flow through the real app when lower layers leave material risk. The pyramid ratio is a sanity check, not a target.
 
-Logic with no I/O → unit / small. Crosses a process boundary you own (DB, cache, queue) → integration / medium. Crosses a boundary you don't own (a third-party API) → integration / medium against a fake, or a contract test. A user-visible flow through the real app → e2e / large. The pyramid ratio (many unit, some integration, few e2e) is a sanity check, not a quota — never force a third e2e test where a second integration test proves the same thing cheaper.
+Before adding a fixture, builder, or helper, reuse the repository's established test pattern when it fits. A bug report is a symptom: test the shared upstream behavior that protects all callers rather than only the reported path.
 
-## The prove-it bug-fix law
+## Reproducible behavior defects
 
-Every bug fix starts with a failing reproduction test committed in the same change as the fix. Write the smallest test that reproduces the bug at its natural size (usually unit; integration if the bug lives at a boundary), run it and confirm it fails for the reported reason, then let the fix make it pass — it ships together with the fix, never as a follow-up.
+For a reproducible behavior defect, start with the smallest failing reproduction at its natural layer (usually unit; integration when the defect lives at a boundary). Confirm it fails for the reported reason, then let the fix make it pass and ship the regression test with the fix.
 
-Detection — scan recent fix commits for one that touched no test file:
+When the behavior cannot yet be reproduced or isolated, do not invent a failing test. Record that evidence limitation and retain the strongest available evidence, such as logs, a captured scenario, or monitored production behavior; turn it into a regression test when reproduction becomes possible.
+
+### Advisory commit scan
+
+This filename-based scan is a review lead, not proof: tests may live under nonstandard names and a test-file touch may not cover the defect.
 
 ```bash
 git log --oneline -20 --grep="fix" -i | cut -d' ' -f1 | while read -r sha; do
-  git diff-tree --no-commit-id --name-only -r "$sha" | grep -qEi 'test|spec' || echo "$sha: fix with no test file touched"
+  git diff-tree --no-commit-id --name-only -r "$sha" | grep -qEi 'test|spec' || echo "$sha: review evidence for this fix"
 done
 ```
 
-Pass: no output. Fail: any `fix with no test file touched` line — a bug fix landed with no proof it stays fixed.
+Review each reported commit for behavior evidence instead of treating output as a pass/fail gate.
 
 ## Core conventions (detail and detection commands in `references/conventions.md`)
 

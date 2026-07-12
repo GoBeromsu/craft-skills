@@ -67,9 +67,19 @@
       "forbidden_neighbors": ["craft-skills/skillify", "craft-skills/research", "craft-skills/init"]
     },
     {
-      "trigger": "review this diff for code smells",
+      "trigger": "choose test placement and fixtures for an integration boundary",
+      "expected_package": "craft-skills/testing",
+      "forbidden_neighbors": ["craft-skills/programming", "craft-skills/debug", "craft-skills/refactor"]
+    },
+    {
+      "trigger": "write a typed python function to parse this config file",
       "expected_package": "craft-skills/programming",
-      "forbidden_neighbors": ["craft-skills/testing", "craft-skills/security", "craft-skills/debug"]
+      "forbidden_neighbors": ["craft-skills/refactor", "craft-skills/testing", "craft-skills/debug"]
+    },
+    {
+      "trigger": "review this diff for code smells",
+      "expected_package": "craft-skills/refactor",
+      "forbidden_neighbors": ["craft-skills/programming", "craft-skills/testing", "craft-skills/debug"]
     }
   ]
 }
