@@ -1,0 +1,582 @@
+{
+ "protocol_version": 1,
+ "protocol_hash": "634d9bdd7857f741f9fb1d9d15600107c244518de5bc19e8483d22aa61e05f9b",
+ "skill": "refactor",
+ "pr": "campaign-2026-07-12",
+ "tested_tree_sha": "e7942e8344ee61a4218c64eab7a7016f56e58b1f",
+ "inputs": {
+  "baseline_ref": "e855f68",
+  "candidate_ref": "cecd4bcfceba722e7e67be169cacf4898539f626",
+  "no_skill_ref": "e855f68"
+ },
+ "runtimes": [
+  {
+   "runtime": "Claude Code",
+   "runner_identity": "claude-code lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Uses a single mechanical extraction, preserves behavior with characterization coverage where needed, and verifies proportionally to the local move's blast radius.",
+     "actual": "First confirm this is genuinely the third occurrence (rule of three), then run the invoice test suite to prove it's green right now rather than trusting memory; if the calc path has no coverage, write characterization tests asserting today's actual totals before touching anything. Then apply a single Extract Function move, replacing each duplicate call site one at a time and running the focused invoice-total test after each replacement. I'd verify the extraction changed no output — the broader suite stays green at the checkpoint — and keep it as a structure-only commit, checking with the staged-assertion diff that no test's expected value moved.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Checks language-server availability and uses semantic rename or references instead of text search when symbol safety matters, then runs the relevant final suite.",
+     "actual": "First check the TypeScript language server is up (lsp_servers) and prefer its rename over any text search, since a public symbol crosses files and a grep-and-replace would miss re-exports or hit strings; run the existing suite to confirm green before starting. I'd use lsp_prepare_rename then lsp_rename on AccountId so every reference and its declaration move atomically. Verify by running tsc/the build plus the test suite — a clean typecheck with zero unresolved references is the proof — and land it as a single refactor commit with no behavior change.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Keeps the requested structural unit cohesive, scans only smell classes relevant to that work, and flags unrelated smells rather than expanding scope.",
+     "actual": "I'd flag the scope: \"the long function\" is one cohesive, revertible unit but \"every other smell in the repository\" is not, so I'd scope this pass to the long function and treat the rest as follow-ups rather than boil the ocean inline. I'd run scripts/detect-smells.sh against the target directory as a read-only reporter to inventory what exists, confirm the touched path's tests are green (characterization tests first if not), then apply catalog moves one at a time to the long function, verifying focused-then-broader as blast radius grows. Everything else the scan surfaces gets flagged as a note or GitHub issue with its detect result, not fixed in this diff, and I'd confirm the commit mixes no structural change with a moved assertion.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "3be27653becf8b4114585ce792794776f3f116c95afe33e89df72ee61ee982dd",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Codex",
+   "runner_identity": "codex lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Uses a single mechanical extraction, preserves behavior with characterization coverage where needed, and verifies proportionally to the local move's blast radius.",
+     "actual": "First I would confirm there is a real duplication trigger by locating the third repeated invoice-total shape, then run the relevant existing tests for that path and make sure they are green before touching structure. I would extract only the shared calculation as one mechanical move, keeping call sites behavior-identical and not mixing any fixes or cleanup outside that duplication. I would verify with a focused test run immediately after extraction and then the final relevant suite for the invoice path, plus check that no existing test assertion expectations changed.",
+     "result": "failed",
+     "reason": "Covers mechanical extraction and focused verification, but does not mention adding characterization coverage if existing tests are insufficient."
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Checks language-server availability and uses semantic rename or references instead of text search when symbol safety matters, then runs the relevant final suite.",
+     "actual": "First I would check language-server status and use symbol-aware rename for the public `AccountId` export and all references across the TypeScript package, because text search is not safe enough for a public symbol rename. Before renaming, I would run the package tests to establish a green baseline and note any exported API surfaces that might need coordinated updates. I would verify by rerunning the relevant TypeScript test suite and typecheck, then confirming references/definitions resolve cleanly and that the diff contains only the mechanical rename with no behavior changes.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Keeps the requested structural unit cohesive, scans only smell classes relevant to that work, and flags unrelated smells rather than expanding scope.",
+     "actual": "First I would push back on the scope: the stated task is not one cohesive refactor, so I would narrow it to the long function or one specific smell class instead of cleaning up everything visible in the repository. If the long function lacks good coverage, I would add characterization tests for its current behavior before restructuring it, and I would flag other smells as follow-up work rather than folding them into this pass. I would verify with focused tests after each local move, a broader checkpoint suite when that one refactor is complete, and the commit-separation check to ensure no test expectations changed alongside structural edits.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "6af7b818f50ebeb52c2ed35152b8c1fa70125c19ba581ef3b2f50d198ad358f3",
+   "pass_rate": 0.9473684210526315
+  },
+  {
+   "runtime": "Hermes",
+   "runner_identity": "hermes lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Uses a single mechanical extraction, preserves behavior with characterization coverage where needed, and verifies proportionally to the local move's blast radius.",
+     "actual": "First, I would run the existing test suite to confirm it is green and pinpoint the repeated code block using a detection script or search. After extracting the logic into a new named function, I would run the full test suite again to verify that the extraction did not alter any outputs or side effects, ensuring the behavior remains identical to the original.",
+     "result": "failed",
+     "reason": "Does not mention characterization tests for untested behavior preservation; vague on single mechanical extraction vs general search"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Checks language-server availability and uses semantic rename or references instead of text search when symbol safety matters, then runs the relevant final suite.",
+     "actual": "I would first run the test suite and tsc to establish a baseline of passing, then use the language server rename feature or a script to replace all symbol occurrences while preserving capitalization context. Verification would involve running tsc again to catch any missed references or type mismatch issues, followed by the full test suite to ensure no runtime behavior was affected by the rename.",
+     "result": "failed",
+     "reason": "Offers 'script' as alternative to semantic rename which could be text-based; does not explicitly check language-server availability first"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Keeps the requested structural unit cohesive, scans only smell classes relevant to that work, and flags unrelated smells rather than expanding scope.",
+     "actual": "I would start by running coverage against the target to identify untested behavior, then write characterization tests to pin the function current output including any odd inputs. I would then apply one mechanical refactoring move at a time from the catalog, verifying the tests stay green after each step, while flagging any other smells found as out-of-scope follow-ups rather than fixing them inline.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "74fed779100533d30785446bdab6270b00359deddead4405600e88a49ee6bbb7",
+   "pass_rate": 0.8947368421052632
+  },
+  {
+   "runtime": "generic",
+   "runner_identity": "generic lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Uses a single mechanical extraction, preserves behavior with characterization coverage where needed, and verifies proportionally to the local move's blast radius.",
+     "actual": "First confirm this is genuinely the third copy (Rule of three) and that a green test suite already covers the invoice-total path — run it now rather than trusting memory; if there's no coverage, write characterization tests asserting the actual observed totals and get them green before touching anything. Then perform a single Extract Function move (per references/catalog.md), replacing each call site with the extracted function one at a time. Verify by re-running the focused invoice tests after the move, and keep this in a refactor-only commit — checking the staged diff so no existing test assertion's expected value changed.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Checks language-server availability and uses semantic rename or references instead of text search when symbol safety matters, then runs the relevant final suite.",
+     "actual": "Because symbol safety matters, I'd use the language server's rename rather than text search: check that an LSP/TS server is running, then prepare_rename/rename on AccountId so every reference and re-export updates and shadowed locals aren't touched. Confirm tests are green first, then verify after with the package's vitest suite plus a `tsc` typecheck to catch any missed reference. It's a pure rename, so it lands as a refactor commit kept separate from any behavior change.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Keeps the requested structural unit cohesive, scans only smell classes relevant to that work, and flags unrelated smells rather than expanding scope.",
+     "actual": "I'd push back on the unbounded scope — a refactor is one cohesive, independently revertible unit, not a repo-wide smell sweep. First run `bash <skill-dir>/scripts/detect-smells.sh <target-dir>` to inventory smells and confirm the suite is green (writing characterization tests first if the long function is untested), then refactor only that stated long function via mechanical moves from the catalog. Every other smell the scan surfaces gets flagged as follow-up issues rather than fixed inline; I'd verify with a focused test after each move and the broader relevant suite at completion.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "9394a4a7aa9da2792058c2b670c9f5928bf6f8767b92f0a157e824a77473b668",
+   "pass_rate": 1.0
+  }
+ ],
+ "pass_rate": 0.9605263157894737
+}

@@ -1,0 +1,579 @@
+{
+ "protocol_version": 1,
+ "protocol_hash": "f298d9cb1cdd57f2a839bb8319f5a3a941a6a108aa9adf9e57dbc6bdbdfff470",
+ "skill": "ast-grep",
+ "pr": "campaign-2026-07-12",
+ "tested_tree_sha": "e7942e8344ee61a4218c64eab7a7016f56e58b1f",
+ "inputs": {
+  "baseline_ref": "e855f68",
+  "candidate_ref": "cecd4bcfceba722e7e67be169cacf4898539f626",
+  "no_skill_ref": "e855f68"
+ },
+ "runtimes": [
+  {
+   "runtime": "Claude Code",
+   "runner_identity": "claude-code lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Uses the validate, search, dry-run, inspect, and apply ladder with an explicit TypeScript pattern.",
+     "actual": "This is a syntax-tree question, so I use ast-grep. First I validate the pattern with `ast-grep run --lang ts --pattern 'client.fetch($URL)' --debug-query`, then search without mutation (`... src/`), then dry-run `--rewrite 'http.fetch($URL)'` without `--update-all` to preview. I verify by inspecting the blast radius — total matches, changed files, and edge forms like optional chaining — and only then re-run with `--update-all`, checking the diff and focused tests.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Routes to text search because this is a bytes question, not a syntax-tree question.",
+     "actual": "\"breaking change\" is a bytes/prose target, not a code structure, so ast-grep is the wrong tool. I use plain text search like `grep -rn 'breaking change'` (or ripgrep) over the release-notes files. I verify by reading the matched lines in context to confirm they are the intended exact-phrase occurrences.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Routes to semantic LSP tooling because symbol identity and references are required.",
+     "actual": "Renaming a symbol and updating references is a semantic, type-aware task, so I use LSP/semantic tooling (e.g. lsp_rename after lsp_prepare_rename) rather than ast-grep, which would match syntactic text and miss scope/type ownership. I first run lsp_find_references on UserService to see the true reference set, then apply the rename. I verify by re-checking references resolve, the diff touches only genuine bindings, and typecheck/build passes; ast-grep would only help to catch syntactic variants outside the one resolved symbol.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "94721b6c5fcff8178e9b1f51d1f12c08d9f33ed6c94fee5f434d732b537b4752",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Codex",
+   "runner_identity": "codex lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Uses the validate, search, dry-run, inspect, and apply ladder with an explicit TypeScript pattern.",
+     "actual": "First I would treat this as a syntax-tree change and resolve `ast-grep` with `command -v ast-grep || command -v sg`, then validate a TypeScript pattern such as `client.fetch($$$ARGS)` with `--lang ts --debug-query`. Next I would run a non-mutating search scoped to the intended TS paths, dry-run the rewrite to `http.fetch($$$ARGS)`, and inspect representative matches for edge cases like optional chaining or non-TS files. I would verify by checking the match count and changed files from the dry run, then after reviewed apply the same command with `--update-all`, inspect the diff, and run focused tests.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Routes to text search because this is a bytes question, not a syntax-tree question.",
+     "actual": "First I would treat this as a bytes question, not a syntax question, because the target is an exact prose phrase in release notes rather than a code structure. I would use plain text search such as `rg -n -F \"breaking change\"` against the release-notes files and keep the scope limited to those documents. I would verify by opening the matched lines and confirming the phrase appears exactly as written, with no false positives from case differences or unrelated files.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Routes to semantic LSP tooling because symbol identity and references are required.",
+     "actual": "First I would not use ast-grep as the primary tool, because renaming a symbol and updating semantic references is a symbol-resolution task rather than a pure syntax-shape task. I would use semantic tooling or the language server rename operation for `UserService`, and only fall back to ast-grep afterward if I needed to catch syntactic leftovers the semantic rename missed. I would verify by reviewing the rename preview, checking that the declaration and all resolved references changed together, then running tests and a follow-up search for the old symbol name to confirm no unintended leftovers remain.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "b7f9e27c4142a4075afd27c17a260fa8912899a20406dcf15300fad8ca38ce65",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Hermes",
+   "runner_identity": "hermes lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Uses the validate, search, dry-run, inspect, and apply ladder with an explicit TypeScript pattern.",
+     "actual": "First, I would validate the pattern by running ast-grep run --lang ts --pattern 'client.fetch($URL)' --debug-query to ensure it parses correctly, followed by a search without mutation to inspect representative matches. I'd verify the blast radius by reviewing the dry-run output before applying the change with --update-all, and finally check the git diff to confirm only intended call sites were modified.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Routes to text search because this is a bytes question, not a syntax-tree question.",
+     "actual": "Since this targets prose in release notes rather than code structure, I would skip ast-grep and use a plain text search tool like rg \"breaking change\" CHANGELOG.md or grep. I would verify the results by checking the file paths and surrounding context in the terminal output to ensure the exact phrase was found without AST parsing errors.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Routes to semantic LSP tooling because symbol identity and references are required.",
+     "actual": "I would use semantic tooling or an LSP-based rename rather than ast-grep, because the task requires understanding scope and type ownership, not just syntactic matching. I would verify the rename by running the project's build or test suite to ensure all true references were updated without altering unrelated symbols that happened to share the name.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "3947d83b041fce81df36f150e18790f61b38020e2fd73d217fd1e7d6a31ce011",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "generic",
+   "runner_identity": "generic lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ast-grep",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Uses the validate, search, dry-run, inspect, and apply ladder with an explicit TypeScript pattern.",
+     "actual": "This is a syntax-tree question, so I'd use ast-grep. First run `command -v ast-grep || command -v sg` to pick the binary, then validate the pattern with `ast-grep run --lang ts --pattern 'client.fetch($URL)' --debug-query` and search `src/` without mutation. Then dry-run `--rewrite 'http.fetch($URL)'` without `--update-all` to preview, inspect the blast radius (match count, changed files, optional-chaining/overload edge cases), and only re-run the exact command with `--update-all`. I'd verify by reading the resulting diff and running focused tests.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Routes to text search because this is a bytes question, not a syntax-tree question.",
+     "actual": "This is a bytes/prose question — an exact phrase in release notes, not a code structure — so ast-grep is the wrong tool and I'd use plain text search (e.g. grep) for `breaking change`. Using AST search here would be a category error since syntax is irrelevant to matching prose. I'd verify by reading the returned lines to confirm they are genuine occurrences of the phrase and not partial or unrelated hits.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Routes to semantic LSP tooling because symbol identity and references are required.",
+     "actual": "Renaming a symbol with all its semantic references is a type-aware ownership question, so per the decision table I'd route it to semantic tooling/LSP rename rather than ast-grep, which matches syntax and can't distinguish this UserService from unrelated same-named tokens. I'd use the LSP rename to update the definition and all resolved references, optionally using ast-grep afterward only to catch syntactic variants outside the one resolved symbol (e.g. strings or comments). I'd verify by checking that references resolve and the project type-checks/builds cleanly.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "32308ab591ffeb51218c3beb2584dfc0eac1096dc50fceef8379c47dada616e5",
+   "pass_rate": 1.0
+  }
+ ],
+ "pass_rate": 1.0
+}

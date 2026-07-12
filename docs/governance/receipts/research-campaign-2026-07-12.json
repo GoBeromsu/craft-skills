@@ -1,0 +1,581 @@
+{
+ "protocol_version": 1,
+ "protocol_hash": "5c7eb5005a880ce91926ee74f0ab4c3d27f7e0ea556ba2f0a21a6c2f91e1ed63",
+ "skill": "research",
+ "pr": "campaign-2026-07-12",
+ "tested_tree_sha": "e7942e8344ee61a4218c64eab7a7016f56e58b1f",
+ "inputs": {
+  "baseline_ref": "e855f68",
+  "candidate_ref": "cecd4bcfceba722e7e67be169cacf4898539f626",
+  "no_skill_ref": "e855f68"
+ },
+ "runtimes": [
+  {
+   "runtime": "Claude Code",
+   "runner_identity": "claude-code lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Scope the downstream decision, use source evidence, run the smallest executable parser probe for the contested code-shaped claim, and record its observed result.",
+     "actual": "First I'd scope Phase 1: write the question — 'does our parser reject percent-encoded path traversal?' — and name the ADR it feeds, then sweep the parser's own source and any spec/RFC it claims to follow before secondary write-ups. Since this is a contested code-shaped claim, I'd verify with the smallest executable probe: feed the parser crafted inputs like `%2e%2e%2f`, `%252e%252e`, mixed-case and double-encoded variants, and record each command with its observed accept/reject result. Any variant where the probe is inconclusive gets labeled unresolved rather than promoted to 'rejects'. The synthesis in docs/research/{slug}.md reports what the probes showed and its confidence, but leaves the ADR to make the call.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Counter-search the consequential non-code claim, corroborate it independently, reconcile conflicts, and label unresolved findings when evidence is insufficient.",
+     "actual": "First I'd scope Phase 1: state 'will this care policy reduce patient harm?' and bind it to the specific board decision, then sweep primary sources first — trial data, the policy text, regulatory guidance and peer-reviewed studies — before secondary commentary. This is a consequential non-code claim, so I'd verify by counter-searching for disconfirming evidence (studies showing null or adverse effects) and corroborating any harm-reduction finding with an independent source, reconciling conflicts explicitly. Where corroboration or counter-search is inconclusive I mark the finding unresolved. The artifact separates findings from opinion and states gaps and confidence; it stops short of recommending the policy, which belongs to the board's decision.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Sweep primary sources, verify consequential claims proportionally, synthesize cited findings and options without making the final decision, and state gaps and confidence.",
+     "actual": "First I'd scope Phase 1: name the selection decision this feeds and the dimensions that decision will actually turn on (e.g. consistency model, cost, ops burden, latency), then sweep each vendor's official docs and primary benchmarks before third-party comparisons. I'd verify contested performance/capability claims proportionally — running a small executable probe for any code-shaped claim I can test, and counter-searching vendor marketing claims against independent sources — labeling anything inconclusive as unresolved. The synthesis presents the two vendors side by side in a comparison table rather than a narrative ranking, with each cell linked to its source. It closes with gaps and per-finding confidence and makes no vendor recommendation, leaving the choice to the ADR.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "f4312fe357cccdc25da360dd5929e14497ae6dc5e6b2fc7b6013f015998c1bfa",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Codex",
+   "runner_identity": "codex lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Scope the downstream decision, use source evidence, run the smallest executable parser probe for the contested code-shaped claim, and record its observed result.",
+     "actual": "First I would state the exact research question and the downstream ADR it informs, then sweep primary sources in this order: our parser’s code and tests, its path normalization dependencies, and any relevant spec text on percent-encoding and path resolution. I would verify the key claim with the smallest executable probe: run targeted test cases using percent-encoded traversal inputs such as `%2e%2e/` and mixed-encoding variants, record the commands and observed results, and mark the finding unresolved if behavior differs by code path or cannot be reproduced cleanly.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Counter-search the consequential non-code claim, corroborate it independently, reconcile conflicts, and label unresolved findings when evidence is insufficient.",
+     "actual": "First I would write the research question and the specific board decision it feeds, then start with primary evidence: the full proposed care policy text, baseline incident data, and peer-reviewed or regulator-backed studies on the same intervention and harm category. I would verify consequential claims by counter-searching for evidence of no effect or harm increase, corroborating any positive result with an independent source, and labeling the conclusion unresolved if the evidence is indirect, low quality, or not matched to the patient population.",
+     "result": "failed",
+     "reason": "Covers counter-search, corroboration, and unresolved labeling, but does not explicitly reconcile conflicting evidence."
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Sweep primary sources, verify consequential claims proportionally, synthesize cited findings and options without making the final decision, and state gaps and confidence.",
+     "actual": "First I would define the decision criteria the later ADR will need, then sweep primary sources for both vendors: official docs, pricing terms, SLA/security/compliance material, migration guidance, and source repositories or release notes where relevant. I would verify contested technical claims with small executable probes or documented repro steps against each vendor, and verify non-code claims such as uptime, compliance scope, or support guarantees by counter-checking with an independent source before putting the options side by side in a comparison table without ranking them.",
+     "result": "failed",
+     "reason": "Covers primary-source sweep and proportional verification, but does not state gaps/confidence and does not explicitly synthesize cited findings."
+    }
+   ],
+   "raw_result_hash": "667e9d88ceb03ba3a6f514b984a88a5415204d63c25aec8eae3de0ce43070537",
+   "pass_rate": 0.8947368421052632
+  },
+  {
+   "runtime": "Hermes",
+   "runner_identity": "hermes lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Scope the downstream decision, use source evidence, run the smallest executable parser probe for the contested code-shaped claim, and record its observed result.",
+     "actual": "First, I'd state the exact question ('Does the parser reject percent-encoded path traversal sequences like %2e%2e%2f?') and name the downstream ADR it feeds, since a research pass without a destination decision is premature. Then I'd run the smallest executable probe: craft a test input containing a percent-encoded traversal sequence and pass it through the actual parser binary or library to observe whether it rejects it, recording the command and observed result. I'd verify not by reading docs alone but by confirming the behavioral outcome — if the probe is inconclusive I'd label it unresolved rather than inferring from source code alone.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Counter-search the consequential non-code claim, corroborate it independently, reconcile conflicts, and label unresolved findings when evidence is insufficient.",
+     "actual": "First, I'd scope the question ('Will the proposed care policy reduce patient harm?') and confirm the board decision it feeds before opening any sources. Then I'd sweep primary sources first — the original policy documents, clinical trial data, or regulatory submissions — before secondary sources like systematic reviews or case studies, capturing any densely-cited source verbatim in a references file. For the consequential non-code claim of harm reduction, I'd counter-search for disconfirming evidence (studies showing no effect or increased harm) and corroborate with an independent source; if evidence is mixed or unavailable I'd label it unresolved rather than promote it to a conclusion.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Sweep primary sources, verify consequential claims proportionally, synthesize cited findings and options without making the final decision, and state gaps and confidence.",
+     "actual": "First, I'd state the decision this feeds — the vendor selection ADR — and scope what dimensions matter (throughput, latency, cost, operational fit). Then I'd sweep official vendor docs and published benchmarks first, then quality secondary comparison articles, running an executable probe that exercises both databases on a representative workload to ground performance claims in observed results rather than marketing materials. I'd synthesize everything into a side-by-side comparison table with inline source links, separate findings from opinion, and close with gaps and confidence — never recommending or ranking, since that belongs to the decision-maker who reads the research file.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "cc2084abed40203a8a53d8ac28b0e18dabb3dbe8bf5e28b7eb84fcec1873ffc0",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "generic",
+   "runner_identity": "generic lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Scope the downstream decision, use source evidence, run the smallest executable parser probe for the contested code-shaped claim, and record its observed result.",
+     "actual": "First I'd scope Phase 1: write the one-sentence question and name the specific ADR it feeds (e.g. the path-normalization decision), confirming that destination before opening any source. This is a contested code-shaped claim, so after sweeping the parser's own source and the relevant URL/path spec (primary sources), I'd verify per Phase 3 with the smallest executable probe — feed the actual parser inputs like `%2e%2e%2f`, `%2e%2e/`, and double-encoded `%252e` and record each command with its observed accept/reject result. If any case can't be exercised, I label it unresolved rather than concluding; findings land in docs/research/{slug}.md with the probe evidence inline, and the accept/reject decision stays with the ADR.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Counter-search the consequential non-code claim, corroborate it independently, reconcile conflicts, and label unresolved findings when evidence is insufficient.",
+     "actual": "First I'd scope the question and the board decision it informs, confirming that named decision exists downstream before sweeping. This is a consequential non-code claim, so I'd sweep primary/official sources first — trial data, clinical guidelines, the policy's own evidence base — capturing any dense repeatedly-cited source verbatim into references/{slug}.md. Per Phase 3 I'd then counter-search for disconfirming evidence (studies showing no reduction or net harm) and corroborate the harm-reduction claim with an independent source, reconciling conflicts; where corroboration is inconclusive I label the finding unresolved. The artifact presents findings and confidence with options tabled, and stops short of recommending — the board makes the call, not the file.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Sweep primary sources, verify consequential claims proportionally, synthesize cited findings and options without making the final decision, and state gaps and confidence.",
+     "actual": "First I'd scope the question and name the vendor-selection ADR this feeds, then sweep each vendor's official docs, specs, and primary benchmarks before any secondary write-ups, capturing repeatedly-cited or precision-sensitive material verbatim into references/{slug}.md. Any contested performance or limit claim I'd verify with the smallest executable probe and record the command and observed result, labeling unresolved what I can't exercise. Since a future choice hangs on this, I'd compare the two vendors side by side in a table across the dimensions that matter (not a narrative ranking), keeping findings separate from opinion. The file closes with gaps and per-finding confidence and makes no selection — the ADR that reads it picks the vendor.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "f0e004346bb43e18fd94e327b2b64ebcc85b5601787ff0cb15642b4d6470e296",
+   "pass_rate": 1.0
+  }
+ ],
+ "pass_rate": 0.9736842105263158
+}

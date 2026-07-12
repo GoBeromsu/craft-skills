@@ -1,0 +1,579 @@
+{
+ "protocol_version": 1,
+ "protocol_hash": "7bde81e5c2d50b987d666bdacca6af59bee2c1244980b366a2c6c11f78bd2ed3",
+ "skill": "testing",
+ "pr": "campaign-2026-07-12",
+ "tested_tree_sha": "e7942e8344ee61a4218c64eab7a7016f56e58b1f",
+ "inputs": {
+  "baseline_ref": "e855f68",
+  "candidate_ref": "cecd4bcfceba722e7e67be169cacf4898539f626",
+  "no_skill_ref": "e855f68"
+ },
+ "runtimes": [
+  {
+   "runtime": "Claude Code",
+   "runner_identity": "claude-code lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Selects the cheapest credible layer for the database contract, places fixtures using the suite structure, and avoids arbitrary coverage quotas.",
+     "actual": "Split by risk layer: cover the pure checkout logic (pricing, discount, validation) with unit/small tests, and add one integration/medium test that runs the real write against a local DB — the boundary we own — using the repo's established DB test pattern. For fixtures, use a test-data builder returning a fresh order with explicit overrides (DAMP), and isolate via transaction rollback in a session-scoped DB fixture so nothing leaks between tests. Per TDD, write the integration test first and confirm it fails without the change, then verify it reads back the exact rows written and still passes under pytest-randomly to rule out order dependence.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Records the evidence limitation, preserves the strongest available behavior evidence, and does not invent a failing reproduction test.",
+     "actual": "Do not invent a failing test that can't reproduce the bug — instead record the evidence limitation explicitly (e.g. in the issue) and retain the strongest available evidence: production logs, a captured request/scenario, and any monitored production signal that shows the misbehavior. Keep that as the guard until reproduction is possible. Verify by turning it into a regression test the moment the bug can be reproduced at its natural layer, confirming that test fails for the reported reason before the fix lands and passes after.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Uses e2e only because the user-visible flow needs it, while keeping lower-layer checks for cheaper risks.",
+     "actual": "Treat it as an e2e/large test — the only layer that credibly proves a critical auth journey — and read references/e2e.md first. Seed the account through the API (not UI signup), then drive the browser through the real sign-in via role/label/test-id selectors, and assert on a user-visible post-login signal using framework auto-wait, never a fixed sleep. Verify determinism by running against the primary browser and comparing a single-worker run to the default multi-worker run for order independence, and confirm it fails only when the real sign-in flow breaks, not on a markup refactor.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "1804367092fe3bc8b0701bd35339060e3eb72b9b391ba1a495afae414f9574df",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Codex",
+   "runner_identity": "codex lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Selects the cheapest credible layer for the database contract, places fixtures using the suite structure, and avoids arbitrary coverage quotas.",
+     "actual": "I would place the database-writing behavior at integration/medium first, because the change crosses a boundary we own and that is the cheapest credible layer for proving persistence behavior. I would read `references/structure.md` for test-file and fixture placement and `references/integration.md` for boundary rules, then build a fresh test-data builder or factory rather than a shared mutable fixture. I would verify by asserting both the returned checkout behavior and the exact persisted database state in an isolated test database, with deterministic setup and no real network.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Records the evidence limitation, preserves the strongest available behavior evidence, and does not invent a failing reproduction test.",
+     "actual": "I would not invent a failing test yet if the bug cannot be reproduced for the reported reason. First I would capture the strongest available evidence instead: logs, request/response samples, input payloads, environment details, and a saved scenario that narrows the suspected boundary or invariant. I would verify by making sure the evidence is durable and specific enough to turn into the smallest real regression test later, and I would record clearly that reproduction is not yet possible so the current evidence is observational, not proof.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Uses e2e only because the user-visible flow needs it, while keeping lower-layer checks for cheaper risks.",
+     "actual": "I would add one e2e/large test for the sign-in journey because a real browser flow is user-visible and usually cannot be proved credibly at a cheaper layer. Before writing it, I would read `references/e2e.md` and keep fixtures minimal: one deterministic test user, stable auth setup, and no unnecessary cross-test shared state. I would verify by driving the real app through the browser, asserting the user can sign in and reaches the expected authenticated UI state, and then run it repeatedly to confirm it is deterministic rather than flaky.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "3e2ba04ecdaa453cff4da0910521508b2d09bfb7c75f4e1fa1c3346f3e2921b6",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Hermes",
+   "runner_identity": "hermes lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Selects the cheapest credible layer for the database contract, places fixtures using the suite structure, and avoids arbitrary coverage quotas.",
+     "actual": "I'd scope the test as integration/medium since the checkout change crosses the DB boundary — a unit test on the service layer wouldn't credibly catch a regression if the bug lives in the DB write path. I'd first read the existing integration patterns in the repo (connection setup, transaction handling) and reuse them instead of inventing new fixture shapes. I'd place the test at the service or repository layer with a real local SQLite/PostgreSQL container, feed it a deterministic checkout payload via a builder with sensible defaults, assert the expected DB state and side effects (order created, payment recorded, inventory decremented), then verify the suite still runs fast and in CI by grepping for no sleep/wall-clock calls and running pytest-randomly to catch order-dependency flakes.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Records the evidence limitation, preserves the strongest available behavior evidence, and does not invent a failing reproduction test.",
+     "actual": "Per the skill's reproducible-defect guidance, I would not invent a failing test for behavior I can't yet reproduce — that produces a test that can't fail and proves nothing. Instead I'd record the evidence limitation explicitly (in a GH issue, ADRs, or a TODO comment on the code region) and preserve the strongest available evidence: production logs, a captured scenario payload, or a monitored-trace excerpt that describes the failure conditions. Once reproduction becomes possible, I'd build the smallest failing reproduction at its natural layer (unit if the bug is in-domain, integration if it crosses a boundary), let the fix make it pass, and ship the regression test alongside the fix with the evidence now attached.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Uses e2e only because the user-visible flow needs it, while keeping lower-layer checks for cheaper risks.",
+     "actual": "A real browser sign-in is e2e/large by taxonomy — it drives the real app through its user-visible interface — so I'd check whether the critical sign-in journey can be proved credibly at a cheaper layer first (e.g. an integration test around the auth token exchange might cover the contract risk). If the material risk is only at the browser level (redirects, session cookies, CSRF tokens), I'd write an e2e test that navigates the real sign-in flow end to end and asserts the post-sign-in state (redirect target, authenticated session, protected-resource access). I'd verify it by running it against a deterministic test environment (seeded user, no live upstream), confirming it fails when auth is broken and passes when fixed, and running it in CI with a headless browser runner to check it's not flaky across multiple runs.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "9747d3a698446569dcf5ba3074c2cebaec48221cec5838be1cb77ed3bbc60859",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "generic",
+   "runner_identity": "generic lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Selects the cheapest credible layer for the database contract, places fixtures using the suite structure, and avoids arbitrary coverage quotas.",
+     "actual": "First split the change by risk: pure order/pricing logic goes to unit/small tests, but the actual persistence step crosses a boundary we own, so I'd add an integration/medium test against a real local database per references/integration.md. I'd reuse the repo's established fixture/factory pattern, building the cart with a test-data builder that has sensible defaults and explicit overrides rather than a shared mutable fixture. Verify by asserting on the persisted row/state after checkout and running under pytest-randomly to confirm no order-dependence or hidden flake.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Records the evidence limitation, preserves the strongest available behavior evidence, and does not invent a failing reproduction test.",
+     "actual": "Since it can't yet be reproduced or isolated, I would not invent a failing test — that proves nothing. I'd record the evidence limitation explicitly and retain the strongest available evidence: the production logs, a captured scenario/payload, and any monitored production behavior around the failure. Then I'd convert that captured scenario into a regression test at its natural layer the moment reproduction becomes possible, and verify it fails for the reported reason before any fix makes it pass.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Uses e2e only because the user-visible flow needs it, while keeping lower-layer checks for cheaper risks.",
+     "actual": "First confirm this journey genuinely needs e2e/large — a real sign-in flow through the browser is a critical user journey that lower layers can't prove credibly — then read references/e2e.md before writing it. I'd drive the real app through its user-visible interface (the browser), using the framework's deterministic waits with no sleep, wall-clock reads, or unseeded randomness. Verify by asserting a specific post-auth signal (authenticated landing state or session), and run it repeatedly to confirm it's deterministic.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "422691fd9c554a20292ec213b938de6c6144a76ce167ec8934e9226c66c90e91",
+   "pass_rate": 1.0
+  }
+ ],
+ "pass_rate": 1.0
+}

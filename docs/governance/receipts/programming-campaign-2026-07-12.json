@@ -1,0 +1,582 @@
+{
+ "protocol_version": 1,
+ "protocol_hash": "d382dd5f97ec59164bc7bac20fd61720d1f3f5ae24ef5b75e48b10be839dcfd7",
+ "skill": "programming",
+ "pr": "campaign-2026-07-12",
+ "tested_tree_sha": "e7942e8344ee61a4218c64eab7a7016f56e58b1f",
+ "inputs": {
+  "baseline_ref": "e855f68",
+  "candidate_ref": "cecd4bcfceba722e7e67be169cacf4898539f626",
+  "no_skill_ref": "e855f68"
+ },
+ "runtimes": [
+  {
+   "runtime": "Claude Code",
+   "runner_identity": "claude-code lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Loads the Python and workflow references, parses once at the boundary, and uses red-first verification for the observable parser behavior.",
+     "actual": "First read references/python.md and the incumbent tooling, then write a failing pytest that feeds a malformed payload (missing/extra/wrong-typed field) and asserts a validation error is raised at the boundary. Implement the parser as a single boundary parse — reuse an installed validator (e.g. pydantic if already a dependency) rather than hand-rolling — that turns untrusted JSON into one typed value and rejects anything off-contract. Verify with the failing-then-passing test plus a valid-payload happy-path case, and confirm basedpyright and ruff pass clean on the changed file.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Adds a failing reproduction at the defect's natural layer before the fix and verifies the observable checkout contract.",
+     "actual": "First reproduce the bug with a failing red test at checkout's natural layer asserting an empty cart is rejected, and confirm it fails for the intended reason. Then grep every caller of the checkout/cart-validation function to find the shared cause and add one guard there — making empty-cart an illegal, ideally type-unrepresentable state — rather than patching only the reported path and leaving sibling callers broken. Verify by re-running the now-green regression test alongside a non-empty-cart happy-path case, and confirm tsc (strict) and biome pass clean.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Follows incumbent logging practice, selects level by consumer, logs the retry decision, and uses a stable message with structured fields.",
+     "actual": "First read the service's established logging practice and place a single log at the retry decision point itself — not on every attempt — with a stable message and the variable context (attempt number, delay, error cause, decision to retry vs give up) in structured fields. Choose the level by the consumer's need (e.g. warn on retry, error on exhaustion) and avoid interpolating unstable data into the message. Verify by exercising both the retry and give-up branches and asserting the emitted structured fields, then confirm the type checker and linter pass on the change.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "5da14757ead82258c490034465c299885ce2614c4bc74c0fac176266f1f253f8",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Codex",
+   "runner_identity": "codex lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Loads the Python and workflow references, parses once at the boundary, and uses red-first verification for the observable parser behavior.",
+     "actual": "First I would add a boundary parser that turns the raw webhook JSON into a typed Python value in one place, using the repo’s incumbent validation layer if it already has one, otherwise a strict Pydantic v2 model per the skill. I would write a failing-first test that passes malformed payloads such as missing required fields, wrong primitive types, and invalid tagged variants, and assert the parser raises the typed validation/error result instead of leaking a raw dict deeper into the code. I would verify by running the focused pytest case for the parser plus the project’s Python type check and lint commands, and I would only claim success if the malformed cases fail for the intended reason and the valid fixture still parses cleanly.",
+     "result": "failed",
+     "reason": "Mentions boundary parsing and red-first tests, but does not mention loading the Python and workflow references."
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Adds a failing reproduction at the defect's natural layer before the fix and verifies the observable checkout contract.",
+     "actual": "First I would reproduce the checkout bug with a failing TypeScript test at the natural behavior layer, likely the checkout validator or service entrypoint, asserting that an empty cart is rejected and cannot proceed. Then I would trace every caller of the touched function, fix the shared source of truth rather than patching one UI path, and make the empty-cart state illegal or explicitly rejected with a typed result or domain error. I would verify by rerunning the failing test until it passes, adding at least one non-empty cart success case, and then running `tsc --noEmit` plus the repo’s formatter/lint check to ensure the fix did not introduce type holes.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Follows incumbent logging practice, selects level by consumer, logs the retry decision, and uses a stable message with structured fields.",
+     "actual": "First I would read the existing logging pattern in that service and add logs only at the retry decision point, keeping the message stable and putting attempt count, error class, and retry delay into structured fields. I would avoid broad catch-and-swallow behavior; if the retry logic already narrows known error types, I would log there rather than sprinkling logs through every step. I would verify by running the smallest scenario or test that exercises both ‘retry’ and ‘do not retry’ branches and checking the emitted log records contain the expected fields, then run the incumbent type check and lint pass for the changed file.",
+     "result": "failed",
+     "reason": "Follows incumbent logging style and structured fields, but does not explicitly address choosing the log level based on the consumer."
+    }
+   ],
+   "raw_result_hash": "c689d32948601a932dbc052f43401e9a8d60395b32ff317b24d25601bd67f75f",
+   "pass_rate": 0.8947368421052632
+  },
+  {
+   "runtime": "Hermes",
+   "runner_identity": "hermes lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Loads the Python and workflow references, parses once at the boundary, and uses red-first verification for the observable parser behavior.",
+     "actual": "First I would load the `programming` skill and read `references/python.md` for tooling defaults, then search the codebase for any existing webhook-handling patterns to reuse (rung 2). I would write a failing pytest parametrized test with known-good and known-bad payloads (TDD red phase), implement the typed parser using pydantic or dataclasses with explicit validation at the boundary, and verify by running `uv run pytest` plus `basedpyright` in strict mode — the malformed-input test must fail before the fix and pass after, and the type checker must confirm no untyped paths remain.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Adds a failing reproduction at the defect's natural layer before the fix and verifies the observable checkout contract.",
+     "actual": "I would search the codebase for every caller of the checkout function to confirm the shared validation is the root cause (grep every caller, not just the reported path). Then I would load `references/typescript.md`, write a new failing test asserting that an empty cart is rejected at the checkout entry point, implement the guard in the shared validator once, and verify with `tsc --noEmit` (strict + noUncheckedIndexedAccess + exactOptionalPropertyTypes) plus `biome check` — the new test must fail before the fix and the full suite must pass after, with no new type holes introduced.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Follows incumbent logging practice, selects level by consumer, logs the retry decision, and uses a stable message with structured fields.",
+     "actual": "I would first read the service file to identify the retry decision point and note the project's existing logging style (stable messages, structured fields). Then I would add a single structured log at the decision boundary — logging the condition evaluated and the choice made — using the same logger/level convention already in place. I would verify by running the incumbent linter/formatter (`ruff` or `biome` depending on language) to confirm no style regression, and by reviewing the log output in a local run to ensure the new entries are at decision points only and contain no interpolated unstable context.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "4ad78a79f623aa1ca5eb208cc9d2b331ada171c40103061860ff8c3489e01bab",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "generic",
+   "runner_identity": "generic lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "failed",
+     "reason": "routed:debug"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Loads the Python and workflow references, parses once at the boundary, and uses red-first verification for the observable parser behavior.",
+     "actual": "First read references/workflow.md and references/python.md, then check whether the repo already installs a parsing library (pydantic/attrs) or an existing boundary-parse helper to reuse before writing anything new — parse the untrusted payload once at the boundary into a typed model. Following red-first TDD, I'd write failing pytest cases feeding malformed payloads (missing field, wrong type, extra junk) that assert a validation error is raised, confirm they fail for the right reason, then add the minimal parser to make them pass. Verify with the incumbent type checker (basedpyright, typeCheckingMode=all) plus ruff clean, and pytest showing both valid payloads parse and every malformed variant is rejected.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Adds a failing reproduction at the defect's natural layer before the fix and verifies the observable checkout contract.",
+     "actual": "First reproduce the defect with a failing TypeScript test at its natural layer that asserts an empty cart is rejected at checkout, confirming it fails because empty carts are currently accepted. Then grep every caller of the checkout/validation function and fix the shared function once — ideally making the illegal state unrepresentable (e.g. a non-empty cart type) rather than patching only the reported path and leaving sibling callers broken. Verify with tsc under strict + noUncheckedIndexedAccess and biome clean, and the full suite green including the new regression test.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Follows incumbent logging practice, selects level by consumer, logs the retry decision, and uses a stable message with structured fields.",
+     "actual": "First read the service's existing logging setup to match its established practice — logger, level conventions, and structured-field style — rather than inventing a new format. Add a single log at the retry decision point (not every step), choosing the level by the consumer's need, keeping the message string stable, and putting attempt count, delay, and cause in structured fields. Verify the type checker and linter pass and exercise the retry path to observe the log emits once at the decision with the correct level and fields.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "25fdfeea0f9116af5104c7c96c47ccaa42c7aa4a20b76ef6d1af7f5efecb986e",
+   "pass_rate": 0.9473684210526315
+  }
+ ],
+ "pass_rate": 0.9605263157894737
+}

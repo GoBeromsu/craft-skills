@@ -1,0 +1,581 @@
+{
+ "protocol_version": 1,
+ "protocol_hash": "e3a8a73b5f6f84880b68b29ba4383cc684d5178f17532e8dc72151bb453a10cc",
+ "skill": "git",
+ "pr": "campaign-2026-07-12",
+ "tested_tree_sha": "e7942e8344ee61a4218c64eab7a7016f56e58b1f",
+ "inputs": {
+  "baseline_ref": "e855f68",
+  "candidate_ref": "cecd4bcfceba722e7e67be169cacf4898539f626",
+  "no_skill_ref": "e855f68"
+ },
+ "runtimes": [
+  {
+   "runtime": "Claude Code",
+   "runner_identity": "claude-code lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Runs the ground-truth gate before staging, stages only requested hunks/files, reviews the staged diff, and preserves unrelated dirty work.",
+     "actual": "Run the ground-truth gate (git status --short, both diff --stat calls, branch, log -15, upstream) plus repo-style detection so I stage only the requested logical change and match the incumbent commit style. Then stage the two files hunk-by-hunk with `git add -p src/auth.ts` and the test file — never `git add -A`/`git add .` — leaving the README edit unstaged. I verify with `git diff --staged` (read every hunk, confirm only auth.ts and its test appear) and `git status --short` showing README.md still modified-but-unstaged. Because the message covers one logical change with no 'and', I commit once with an imperative subject sized to the repo's norm.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Uses history/blame evidence without staging, committing, rebasing, or otherwise mutating repository state.",
+     "actual": "This is investigation mode, so I collect evidence without touching the worktree, index, or history. I'd locate the retry-timeout code and run `git log -p -S'<timeout-symbol>' -- <file>` (or `-G` for the value) to find the commit that changed it, then `git blame -L <lines> <file>` to pin the exact commit/author/date, checking the timestamp falls in last spring. I read that commit's full message and diff with `git show <sha>` for the stated why-and-tradeoff, and cross-check any `Refs:`/`Closes:` issue or PR link. I report the finding as evidence only — it does not authorize any follow-on mutation.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Records no comparison base and does not call merge-base or a base-relative diff against a nonexistent ref.",
+     "actual": "The ground-truth gate already resolves BASE from origin/HEAD then any remote's default branch; with no remote default, BASE is empty, so I record 'no comparison base' and do not call merge-base or a base-relative diff. Rather than guess, I pick an explicit comparison target — typically the local `main`/`master` if it exists, or the branch's fork point — and confirm it with `git merge-base HEAD <target>`. Then I size with `git diff <target>...HEAD --shortstat` and check insertions+deletions against the ~400-line threshold. If it exceeds that, I flag a split or a stacked-branch plan; I verify by re-reading the shortstat totals against the chosen base.",
+     "result": "failed",
+     "reason": "Correctly records 'no comparison base' but then contradicts itself by picking a fallback target and running `git merge-base HEAD <target>` and a base-relative `git diff <target>...HEAD`, exactly the m"
+    }
+   ],
+   "raw_result_hash": "519b056fccb9712e38ddf3e9a308c5e43c410a6267bff4e5c3e7f1ecf3b98d5b",
+   "pass_rate": 0.9473684210526315
+  },
+  {
+   "runtime": "Codex",
+   "runner_identity": "codex lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Runs the ground-truth gate before staging, stages only requested hunks/files, reviews the staged diff, and preserves unrelated dirty work.",
+     "actual": "First I would run the ground-truth block, then inspect `git status --short`, `git diff --stat`, and `git diff --staged --stat` so I know exactly what is changed before any Git mutation. I would stage only `src/auth.ts` and its test with `git add -p src/auth.ts <test-file>` or exact file paths, explicitly leaving the README unstaged, then read `git diff --staged` in full before committing. I would verify by checking that `git diff --staged --name-only` lists only those two files and that `git status --short` still shows the README edit as unstaged.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Uses history/blame evidence without staging, committing, rebasing, or otherwise mutating repository state.",
+     "actual": "This is investigation-shaped, so I would not stage, commit, or rebase anything; I would start with the ground-truth block for context, then use `git log --follow -- <file>` and `git blame <file>` around the retry-timeout lines to identify the exact commit and author. After finding the commit, I would read its full message and surrounding history, and if needed inspect the PR or adjacent commits for rationale. I would verify by citing the specific commit SHA, date from last spring, the blamed lines, and the commit message or diff hunk that shows the timeout change.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Records no comparison base and does not call merge-base or a base-relative diff against a nonexistent ref.",
+     "actual": "First I would run the ground-truth block and, when `BASE` does not resolve, record `no comparison base` instead of attempting `git merge-base` or a base-relative PR diff. Then I would tell you PR sizing is blocked on an explicit comparison target and use a chosen branch or commit, for example `main` if it exists locally, to run `git diff <target>...HEAD --shortstat`. I would verify by naming the exact comparison target used and reporting the resulting insertions/deletions; if no valid target exists, verification is explicitly that the repo has no remote default branch and PR size cannot be stated yet under the skill's rules.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "1889c04e0eb9e0f624f7fd4ea420c3056eb0209c1eb2d588ad5648e06f6531bd",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Hermes",
+   "runner_identity": "hermes lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Runs the ground-truth gate before staging, stages only requested hunks/files, reviews the staged diff, and preserves unrelated dirty work.",
+     "actual": "First, run `git status --short` and `git diff src/auth.ts` to confirm those are the only relevant changes. Stage exactly that file with `git add src/auth.ts`, verify with `git diff --staged` showing only auth.ts changes, then commit with a single logical message. Re-run `git status --short` afterward to confirm the unrelated README edit remains unstaged and untouched.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Uses history/blame evidence without staging, committing, rebasing, or otherwise mutating repository state.",
+     "actual": "Investigation-only — no mutation. Run `git log -p --all --grep=\"retry timeout\" --since=\"2026-03-01\" --until=\"2026-05-31\"` to find candidate commits from last spring, then `git blame <file>` on the specific line of interest to see the exact author and timestamp. Read the surrounding commit messages and diffs to explain the WHY — this is evidence collection, not a prelude to a change.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Records no comparison base and does not call merge-base or a base-relative diff against a nonexistent ref.",
+     "actual": "Run `git branch -a` to confirm no remote default branch exists (no origin/HEAD to resolve), then select an explicit comparison target — either a well-known tag (e.g. `v1.0.0`) or the merge-base with a known ref — and run `git diff <target> HEAD --shortstat`. Record the absence of a default branch as the reason for choosing an explicit target, then use the insertion+deletion count to size the PR against that target.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "54e6590e74c4f3a405514ce3898e367894fbb8eab356e745c40a087a30367ab9",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "generic",
+   "runner_identity": "generic lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Runs the ground-truth gate before staging, stages only requested hunks/files, reviews the staged diff, and preserves unrelated dirty work.",
+     "actual": "Run the ground-truth gate (git status --short, both diff --stat calls, log -15) and repo-style detection first, since this is a mutating request. Then stage only the two files hunk-by-hunk with `git add -p src/auth.ts` and its test file — never `git add -A`/`.` — leaving the README edit untouched. Verify by reading `git diff --staged` in full (one logical change, no debug leftovers) and confirming `git status --short` still lists README as modified/unstaged before committing with a subject matching the detected convention and length norm.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Uses history/blame evidence without staging, committing, rebasing, or otherwise mutating repository state.",
+     "actual": "This is investigation-shaped (why/history/blame), so I collect evidence without touching the worktree, index, or history. I'd run `git log -p -S'retry' -- <file>` (or `-G` on the timeout constant) and `git blame -L` on the relevant lines to find the commit that changed the value, then read that commit's full message and body for the rationale. Verify by cross-checking the commit's author date lands in last spring and that its diff actually changes the retry timeout, not an adjacent line; I would not treat this as license to make any follow-on commit.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Records no comparison base and does not call merge-base or a base-relative diff against a nonexistent ref.",
+     "actual": "The ground-truth gate's BASE resolution finds no remote default branch, so it records `no comparison base` and I must not call `merge-base` or run a base-relative diff blindly. Instead I pick an explicit comparison target — the upstream via `@{upstream}` if the branch is pushed, or the fork point / a named base like main from `git merge-base` — and state which target I chose. Then I size with `git diff <target>...HEAD --shortstat` and flag a split (or stacked-branch plan) if insertions+deletions exceed ~400.",
+     "result": "failed",
+     "reason": "Expected behavior forbids calling merge-base and running a base-relative diff when no base resolves, but the answer records 'no comparison base' and then proceeds to call git merge-base against main a"
+    }
+   ],
+   "raw_result_hash": "bdadb9616765417a4fe9734f60810c62a2fe5fd4ec4542d1757f14a6fc814373",
+   "pass_rate": 0.9473684210526315
+  }
+ ],
+ "pass_rate": 0.9736842105263158
+}

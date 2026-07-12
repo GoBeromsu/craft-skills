@@ -1,0 +1,586 @@
+{
+ "protocol_version": 1,
+ "protocol_hash": "e40ace5c9d922bc45461f768d5db0c74aa94317c741361046deb107ae830bfe6",
+ "skill": "distil",
+ "pr": "campaign-2026-07-12",
+ "tested_tree_sha": "e7942e8344ee61a4218c64eab7a7016f56e58b1f",
+ "inputs": {
+  "baseline_ref": "e855f68",
+  "candidate_ref": "cecd4bcfceba722e7e67be169cacf4898539f626",
+  "no_skill_ref": "e855f68"
+ },
+ "runtimes": [
+  {
+   "runtime": "Claude Code",
+   "runner_identity": "claude-code lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Accept the parsed HTTPS URL despite query delimiters, pass it as a structured fetch argument, audit it without execution, and prepare a keep/drop mapping.",
+     "actual": "First I'd validate intake: parse the URL with a real URL parser, confirm the scheme is https and the host (example.com) is non-empty — the ?limit=2&sort=asc query string is benign — then fetch it into a scratch dir like ${TMPDIR}/distil-retry/ outside the repo, passing the parsed URL as a structured argument to the fetch tool rather than interpolating it into a shell command. I'd verify by confirming the parser returned scheme=https with a non-empty host, that the fetch landed under ${TMPDIR}/ and never inside skills/, and that the fetched content is only read/audited, never executed.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Reject the malformed URL through URL parsing before fetch; do not construct or execute a shell command.",
+     "actual": "First I'd run the same intake validation, and the critical point is that the trailing ;rm -rf / is a shell-injection attempt: I parse the input with a URL parser and, if it parses at all, pass the resulting URL to fetch tooling only as a separate structured argument, never interpolated into a shell string, so the semicolon and rm command stay inert path data that cannot execute. If the parser rejects the malformed input (the space makes it a parse failure) or yields a non-https scheme, I reject and stop per intake. I'd verify by confirming no shell command was ever constructed from the raw input, that the fetch call received a structured argument, and that no destructive command ran.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Audit portability and ownership, obtain mapping confirmation when edits are needed, state observable behavior and the smallest executable evaluation, then hand off one logical package change to skillify.",
+     "actual": "First I'd fetch the external skill into a scratch dir and run the audit before writing anything into skills/: the decisive check is redundancy against the existing testing package — I'd read skills/testing/SKILL.md to see which rules it already owns, judge each candidate for portability, and drop anything bound to the source's stack or already covered. Surviving rules get de-identified via the Strip table, rewritten in contract voice, mapped to a landing form (body rule, anti-pattern, or references/ distillate), and — if the verdict is absorb-with-edits — confirmed with the operator before routing through skillify update mode with a Provenance clause and the package's own version (not the source's). I'd verify that the audit verdict and mapping are recorded, every landed line survived Strip, provenance is met, and the scratch dir is deleted.",
+     "result": "failed",
+     "reason": "Covers audit of portability/ownership (redundancy vs testing package), mapping confirmation on absorb-with-edits, and the single skillify handoff well, but omits the required step of stating observabl"
+    }
+   ],
+   "raw_result_hash": "07a8661e5e3557a420c6e81f89159a5c21d76cbc7025e28f981ef281c3d94afe",
+   "pass_rate": 0.9473684210526315
+  },
+  {
+   "runtime": "Codex",
+   "runner_identity": "codex lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Accept the parsed HTTPS URL despite query delimiters, pass it as a structured fetch argument, audit it without execution, and prepare a keep/drop mapping.",
+     "actual": "I would first parse `https://example.com/guides/retry?limit=2&sort=asc` as a structured HTTPS URL, confirm the scheme is `https` and the host is non-empty, then fetch only into a scratch directory like `${TMPDIR}/distil-retry/` without interpolating the URL into a shell command. After reading the source, I would audit which retry rules are portable and whether they belong in an existing package such as `api` or `backend` before proposing any landing. I would verify by recording an intake-pass result, a candidate-rule mapping with keep/drop decisions, and confirming no repo files under `skills/` were touched before the audit verdict.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Reject the malformed URL through URL parsing before fetch; do not construct or execute a shell command.",
+     "actual": "I would treat `https://example.com/guide;rm -rf /` as untrusted input and run the same URL-parser intake gate first; if it parses as a valid HTTPS URL with a real host and path, I would pass the parsed URL as data to fetch tooling, never through shell interpolation, so the `;rm -rf /` fragment cannot execute. If parsing fails or the URL is normalized into something invalid, I would reject intake and stop with a concrete reason. I would verify by showing that the fetch path used structured arguments only, that nothing was executed from the source, and that the outcome is either a clean scratch fetch or an explicit intake rejection.",
+     "result": "failed",
+     "reason": "It allows conditional acceptance if parsing succeeds, but expected behavior requires rejecting this malformed URL before any fetch."
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Audit portability and ownership, obtain mapping confirmation when edits are needed, state observable behavior and the smallest executable evaluation, then hand off one logical package change to skillify.",
+     "actual": "I would first ask for the actual external skill source, because `distil` requires a concrete GitHub URL, raw file URL, local path, or pasted excerpt before any absorb decision can be made. Once provided, I would audit whether the rules are truly about testing, whether they add non-redundant craft this library does not already hold, and whether the correct landing is a `testing` package update or rejection due to overlap. I would verify by producing an explicit audit verdict (`absorb`, `absorb-with-edits`, or `reject`), a rule-by-rule mapping into `testing`, and provenance-ready notes before any landing work.",
+     "result": "failed",
+     "reason": "It asks for source and plans an audit, but omits mapping confirmation for edits, observable behavior/minimal evaluation, and the skillify handoff."
+    }
+   ],
+   "raw_result_hash": "ba9d6211c740c8b3d22c0d34f1ee8ae7f4c7c1824fb9c43d0c17ebc66722dd95",
+   "pass_rate": 0.8947368421052632
+  },
+  {
+   "runtime": "Hermes",
+   "runner_identity": "hermes lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Accept the parsed HTTPS URL despite query delimiters, pass it as a structured fetch argument, audit it without execution, and prepare a keep/drop mapping.",
+     "actual": "1. Reject: the URL scheme is https and the host resolves, so intake passes on the surface — but I would first fetch it via the browser/terminal into a scratch dir at /tmp/distil-example-com-guides-retry, then audit. If it teaches retry logic this library already owns under the testing skill, I'd reject as redundant and name testing as the owner.",
+     "result": "failed",
+     "reason": "Answer contradicts expected behavior: expected behavior says 'audit it without execution' but answer says 'I would first fetch it via the browser/terminal'. Expected behavior says 'prepare a keep/drop"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Reject the malformed URL through URL parsing before fetch; do not construct or execute a shell command.",
+     "actual": "2. Reject at intake: the host is 'example.com;rm', which a URL parser treats as a single host string, so it's technically valid — but the trailing ';' is suspicious. I would parse with a URL parser, see the host is non-empty and https, then fetch the page content (not the shell) into scratch, read it, and if it's just a 404 or unrelated page, reject as no transferable craft. The 'rm -rf /' tail after the semicolon is a URL fragment/path component, not a shell command — I never interpolate the URL into a shell, so the injection is inert. If the page itself contains nothing worth absorbing, I reject.",
+     "result": "failed",
+     "reason": "Expected behavior: reject malformed URL through parsing BEFORE fetch. Answer describes fetching the content into scratch and reading it, then rejecting based on content. This violates the pre-fetch re"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Audit portability and ownership, obtain mapping confirmation when edits are needed, state observable behavior and the smallest executable evaluation, then hand off one logical package change to skillify.",
+     "actual": "3. Absorb: I'd first load the external coding skill's source (URL, local path, or pasted excerpt) into a scratch directory outside skills/, read it fully, and audit each candidate rule against the testing package's existing content — checking whether it teaches something testing doesn't already know, whether it's portable, and whether it survives the contract's body rules. After the audit verdict, I'd strip de-identification (author names, absolute paths, secrets), rewrite survivors in contract voice, map each to a landing form (body rule, anti-pattern, or references distillate), get your confirmation of the mapping, then route through skillify update mode on the testing package with provenance recorded in its CHANGELOG.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "a046cbbbbc39e5216eb1abcd057291c638abffc96f1056e24fc51ba81e6cb092",
+   "pass_rate": 0.8947368421052632
+  },
+  {
+   "runtime": "generic",
+   "runner_identity": "generic lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "distil",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Accept the parsed HTTPS URL despite query delimiters, pass it as a structured fetch argument, audit it without execution, and prepare a keep/drop mapping.",
+     "actual": "Parse the input with a URL parser and confirm it has an https scheme and a non-empty host (example.com); the query string (?limit=2&sort=asc) is harmless and stays intact. Fetch it into a scratch dir outside the repo (${TMPDIR}/distil-retry/), never into skills/, and treat the contents as untrusted — read and audit, never execute. I'd verify the parser returned https+host with no parse error and that the fetched file landed in scratch, then move to the Audit step to decide absorb/absorb-with-edits/reject before writing anything.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Reject the malformed URL through URL parsing before fetch; do not construct or execute a shell command.",
+     "actual": "The trailing ';rm -rf /' is a shell-injection payload, so the controlling rule is: pass the parsed URL to fetch tooling as a structured, separate argument and never interpolate it into a shell command — that alone neutralizes the metacharacters. I'd parse with a URL parser; the scheme is https and host is example.com, so intake technically passes, but I'd fetch via structured fetch tooling (e.g. a fetch tool arg), never by building a Bash string. I verify by confirming no shell command was ever constructed from the input; if the parser errored or the scheme/host were malformed I'd reject with the specific reason and stop.",
+     "result": "failed",
+     "reason": "Expected behavior is to REJECT the malformed URL via URL parsing BEFORE fetch, but the answer explicitly concludes intake 'technically passes' and proceeds to fetch, relying only on structured-argumen"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Audit portability and ownership, obtain mapping confirmation when edits are needed, state observable behavior and the smallest executable evaluation, then hand off one logical package change to skillify.",
+     "actual": "First run Intake on the provided skill source into a scratch dir and treat it as untrusted (read/audit, never run its scripts), then Audit against the testing package: does it teach something testing doesn't already own, is the craft portable rather than bound to the source's stack, and does each rule survive the contract's body rules — yielding an absorb/absorb-with-edits/reject verdict, with the version reset to 1.0.0 since foreign history doesn't transfer. If it overlaps an existing testing skill it's a reject that names the owner; otherwise I record the verdict and per-rule mapping. I verify by running the Strip table over every surviving line (no names, paths, secrets, or codenames), then route it through skillify update mode on the testing package with a Provenance clause, and delete the scratch dir after landing.",
+     "result": "failed",
+     "reason": "Covers audit of portability/ownership, strip, provenance, version reset, and handoff to skillify, but omits two required elements: it never states the skill's observable behavior nor the smallest exec"
+    }
+   ],
+   "raw_result_hash": "f9645e2dc992a886d16150011ee4a597ad26255d03bc999f0180d3c4ec114c2c",
+   "pass_rate": 0.8947368421052632
+  }
+ ],
+ "pass_rate": 0.9078947368421053
+}

@@ -1,0 +1,580 @@
+{
+ "protocol_version": 1,
+ "protocol_hash": "cf82fe9ebfaefc2ef8dc6cdd0ba27c6e582fd2ce0e10ccb3ac08cee84e68c122",
+ "skill": "backend",
+ "pr": "campaign-2026-07-12",
+ "tested_tree_sha": "e7942e8344ee61a4218c64eab7a7016f56e58b1f",
+ "inputs": {
+  "baseline_ref": "e855f68",
+  "candidate_ref": "cecd4bcfceba722e7e67be169cacf4898539f626",
+  "no_skill_ref": "e855f68"
+ },
+ "runtimes": [
+  {
+   "runtime": "Claude Code",
+   "runner_identity": "claude-code lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Inspect the manifest, entrypoint, imports, and local conventions; preserve Django and its incumbent validation and persistence choices rather than applying greenfield defaults.",
+     "actual": "This is an incumbent service, so no architecture gate is triggered — I start at the service root (the directory with the Django project's manifest), inspect the app's existing modules and import direction to see whether it runs controller/view → service → repository/manager, and place the new method in the service layer following that established pattern and the nearest local conventions (naming, validation, ORM usage). I keep the dependency direction intact so views don't reach the ORM directly through the new method. I verify by running the reference's dependency-direction grep and confirming it returns no unexplained hits, and by checking the new method takes/returns plain domain types rather than Django Request/Response objects.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Choose a greenfield architecture from the decision table and allow Prisma as the TypeScript ORM default while keeping public HTTP contracts with api.",
+     "actual": "With no incumbent source this is genuinely greenfield, and the table maps small-team CRUD with low domain complexity to Layered (also the safe default for ambiguity since it's cheapest to migrate later), so I'd scaffold controller → service → repository with the greenfield TS defaults (Express or Nest + zod + strict tsc). Before creating folders I read references/layered.md, references/folders.md for the folder shape, and references/persistence.md for the relational engine/ORM decision, defining any public HTTP contract through the api skill rather than here. I verify the folder shape matches folders.md, the dependency-direction grep returns no hits, and the DB/ORM choice follows persistence.md.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Judge shared extraction by owner, semantic identity, change coupling, and incumbent convention rather than a fixed repetition count.",
+     "actual": "Not yet — mere surface similarity is an explicit anti-pattern; a shared/ boundary is justified only when a named owner accepts the helper, the two copies share one semantic identity, they're change-coupled, and the vertical-slice convention supports the extraction. I'd first confirm the slices genuinely import only through shared/ or public interfaces today (no cross-slice internal reach), then check whether these helpers would actually change together or just happen to look alike. If they fail those tests I keep them slice-local and let the duplication stand, verifying by re-reading references/vertical-slice.md's shared/ criteria before creating anything.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "58da5e86e545a762060dafa9cf49ea7ee30edc9655f17fa81fd27fc6ff271966",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Codex",
+   "runner_identity": "codex lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Inspect the manifest, entrypoint, imports, and local conventions; preserve Django and its incumbent validation and persistence choices rather than applying greenfield defaults.",
+     "actual": "I would start at the Django service root by inspecting `pyproject.toml` or `requirements`, the app entrypoints, and the imports around the endpoint I need to change to confirm the incumbent dependency flow before adding anything. Then I would add the new method in the existing service-layer location that the touched code already uses, keeping controllers/views from calling models or repositories directly if the current app already separates that concern. I would verify by tracing imports for view -> service -> persistence access in the changed path and by grepping for any new direct view/controller-to-model shortcut introduced by the change.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Choose a greenfield architecture from the decision table and allow Prisma as the TypeScript ORM default while keeping public HTTP contracts with api.",
+     "actual": "I would treat this as greenfield and choose a layered architecture first, because it is a TypeScript CRUD service with a relational database and no stated domain complexity or multi-delivery requirement. Then I would set up the service root with the incumbent-free defaults allowed by the skill: strict TypeScript, Express or Nest, zod at the boundary, and a relational persistence choice following the persistence reference before creating `controllers`/`services`/`repositories` style folders. I would verify by checking that imports flow controller -> service -> repository only, that the ORM and database choice are explicit, and that the folder shape matches the layered conventions instead of drifting into slices or ports/adapters.",
+     "result": "failed",
+     "reason": "Chooses greenfield layering, but does not mention keeping public HTTP contracts with `api` and does not explicitly allow/use Prisma as the default ORM."
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Judge shared extraction by owner, semantic identity, change coupling, and incumbent convention rather than a fixed repetition count.",
+     "actual": "I would not create `shared/` immediately just because the helpers look similar; first I would inspect whether the current vertical-slice service already has an accepted `shared/` boundary and whether the two helpers truly share one semantic responsibility with coupled changes. If they are only superficially similar or likely to evolve differently, I would keep them duplicated inside each slice for now; if they have one clear owner and stable shared meaning, I would extract through the established public shared interface only. I would verify by checking that no slice imports another slice's internals, that any extraction follows the existing slice convention, and that future changes to the helper would reasonably be expected to affect both slices together.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "5134fca73e2a645d1159155c6394f967afc38ad17aab9b83d06cb2c60fc03e82",
+   "pass_rate": 0.9473684210526315
+  },
+  {
+   "runtime": "Hermes",
+   "runner_identity": "hermes lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Inspect the manifest, entrypoint, imports, and local conventions; preserve Django and its incumbent validation and persistence choices rather than applying greenfield defaults.",
+     "actual": "First, locate the Django service root (where manage.py lives) and inspect existing imports with grep to confirm the current architecture—Django apps are typically layered with views→services→models/repository. Then add the new method inside the existing service module, keeping the dependency direction: views call services, services call repositories. Verify by grepping that no controller imports a repository or ORM session directly, and that the new method uses only plain domain types (no HttpRequest/HttpResponse types in the service layer).",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Choose a greenfield architecture from the decision table and allow Prisma as the TypeScript ORM default while keeping public HTTP contracts with api.",
+     "actual": "Since this is greenfield with CRUD-heavy scope and likely small team, I'd choose layered architecture per the decision table, then load references/layered.md and references/persistence.md for folder structure and ORM guidance. For TypeScript with a relational database, I'd default to Express or Nest + zod + Prisma (per the skill's persistence reference), but first confirm whether the user has a preference or incumbent stack. Verify by running the folder-creation commands from folders.md and confirming the import chain: controller→service→repository with no direct bypasses.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Judge shared extraction by owner, semantic identity, change coupling, and incumbent convention rather than a fixed repetition count.",
+     "actual": "No—not yet. Per the anti-patterns, I would first verify that the helpers share genuine semantic identity (not just similar-looking code), that a named owner has explicitly accepted ownership of the shared module, and that their changes are actually coupled in practice. I'd search the vertical-slice imports with grep to confirm whether the slices currently import from each other (they should not) and whether the incumbent convention already has a shared/ pattern. Only if all three conditions are met—shared semantics, owner buy-in, coupled changes—would I propose a shared/ extraction; otherwise, leave the duplication as-is and revisit when a second or third slice needs the same helper.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "99571e3d686d5a0e9e9af07b8166ce1f8041e3de37c6659ddc818f519904b125",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "generic",
+   "runner_identity": "generic lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Inspect the manifest, entrypoint, imports, and local conventions; preserve Django and its incumbent validation and persistence choices rather than applying greenfield defaults.",
+     "actual": "This is an existing service and a small change, so I do not run the architecture gate to pick a pattern — I preserve the incumbent one. First I work from the service root (the dir holding the Django project/pyproject or setup file), then grep for a sibling service method to see where the service layer lives and confirm the dependency direction (view → service → model/manager) the codebase already uses, adding the method to match those imports and conventions. I verify by checking the new method takes/returns plain domain types (no Request/Response leaking past the view) and that a dependency-direction grep shows no view-importing-a-model or new-scaffolding hits.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Choose a greenfield architecture from the decision table and allow Prisma as the TypeScript ORM default while keeping public HTTP contracts with api.",
+     "actual": "First I confirm it is genuinely greenfield — no incumbent source in that service root — since only then may I choose an architecture. CRUD-heavy with low domain complexity maps to Layered in the gate's table (and ambiguous greenfield defaults to layered anyway), scaffolded as Express/Nest + zod + strict tsc, and I read references/layered.md and references/folders.md before creating folders and references/persistence.md for the relational engine/ORM (Prisma as the greenfield default). I verify the folder shape matches layered, the controller → service → repository direction holds with no controller-to-repository shortcut, and I define the public HTTP contract through the api skill rather than here.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Judge shared extraction by owner, semantic identity, change coupling, and incumbent convention rather than a fixed repetition count.",
+     "actual": "Not yet — 'looks similar' is not the bar. First I compare the two helpers to decide whether they share one semantic identity and actually change together, or are only coincidentally alike; I also check the vertical-slice convention permits a shared/ boundary and that a named owner would accept it. If any of those four criteria fail, I keep the helpers slice-local and duplicated for now. I verify by confirming neither slice imports the other's internals (imports go only through shared/ or a public interface), so nothing is coupled across slices in the meantime.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "b4e03ab5e0ed25d48ec45ad91600d44a5dcc101d6873733655fdb873a1c784d1",
+   "pass_rate": 1.0
+  }
+ ],
+ "pass_rate": 0.9868421052631579
+}

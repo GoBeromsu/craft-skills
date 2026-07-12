@@ -1,0 +1,580 @@
+{
+ "protocol_version": 1,
+ "protocol_hash": "f5e1bea4fc0fcfe7e045ec4d960dc25933c5d7b290a43b7b195cdb18254df339",
+ "skill": "api",
+ "pr": "campaign-2026-07-12",
+ "tested_tree_sha": "e7942e8344ee61a4218c64eab7a7016f56e58b1f",
+ "inputs": {
+  "baseline_ref": "e855f68",
+  "candidate_ref": "cecd4bcfceba722e7e67be169cacf4898539f626",
+  "no_skill_ref": "e855f68"
+ },
+ "runtimes": [
+  {
+   "runtime": "Claude Code",
+   "runner_identity": "claude-code lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Inspects and preserves the published base and envelope; documents resource-specific contract without imposing greenfield defaults.",
+     "actual": "First I would read the existing /v2 routes, clients, and deployed response examples to record the incumbent contract: the /v2 URL base, the `data` success envelope, its pagination model, field-naming convention, and error shape. I would then model the project resource (collection, item, sub-resources) to match those exact conventions rather than inventing a new envelope. I would verify by exercising a representative success, an empty/next-page list, an expected failure, and a sanitized unexpected failure through the /v2 boundary and confirming each response matches the incumbent shape.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Uses the conventions and error-contract references for the versioned base, DTO responses, pagination, and problem responses.",
+     "actual": "First I would confirm the API is genuinely greenfield by checking that no undocumented or deployed project surface already exists to preserve; only then treat it as greenfield. I would apply the defaults in references/conventions.md for URL structure, DTOs, naming, and pagination, and references/error-contract.md for the problem shape, codes, mapping, and sanitization. I would verify by exercising representative success, empty/next-page, expected-failure, and sanitized unexpected-failure scenarios through the new contract boundary.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Requires explicit version or migration scope and a client-compatibility note before changing the contract.",
+     "actual": "Because cursor pagination is already published, I would not change it in place; first I would record the incumbent cursor contract and identify every client depending on it. I would scope the switch to offset as an explicit new version or migration, documenting affected clients, the compatibility behavior during transition, and the rollout/deprecation path. I would verify by exercising the old cursor and new offset behaviors side by side through the contract boundary and confirming clients can complete the documented transition.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "c32b7d17ba8db919fb0c29b3b28056c2ec85d670b64ec5a8d212a7dad082365c",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Codex",
+   "runner_identity": "codex lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Inspects and preserves the published base and envelope; documents resource-specific contract without imposing greenfield defaults.",
+     "actual": "I would first inspect the repository evidence for the existing `/v2` contract: route definitions, API docs, client calls, and examples, and record the incumbent base path, `data` response envelope, field naming, pagination shape, and error format. Then I would design the new project resource to match that established `/v2` contract exactly rather than introducing a new envelope or naming scheme. I would verify by exercising representative success, empty-list or next-page, expected-failure, and sanitized unexpected-failure responses against the documented contract boundary and confirming they are consistent with other `/v2` endpoints.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Uses the conventions and error-contract references for the versioned base, DTO responses, pagination, and problem responses.",
+     "actual": "I would first confirm this is genuinely greenfield by checking that no published project API, client dependency, or prior API description already exists in the repository or deployed surfaces. If it is greenfield, I would apply the defaults from `references/conventions.md` for URLs, DTOs, naming, and pagination, and use `references/error-contract.md` for the failure shape and sanitization rules. I would verify by documenting and exercising representative create/get/list success cases, an empty or paginated list case, an expected client error, and a sanitized unexpected server error through the public contract.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Requires explicit version or migration scope and a client-compatibility note before changing the contract.",
+     "actual": "I would not switch a published cursor-paginated endpoint to offset pagination in place, because that changes the public contract and would break incumbent clients that depend on cursor semantics. I would instead scope it as an explicit new version or migration surface, document affected clients, define compatibility and deprecation behavior, and provide a rollout path with concrete client verification steps. I would verify by testing both the incumbent cursor contract and the new offset-based contract separately, including next-page behavior, boundary conditions, expected failures, and sanitized unexpected failures.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "584d7ffc48597750d264e13a72190e9b8b4e9d44f2c69c0bd7612a655367752c",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Hermes",
+   "runner_identity": "hermes lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Inspects and preserves the published base and envelope; documents resource-specific contract without imposing greenfield defaults.",
+     "actual": "First, inspect the repository's published /v2 routes, client configuration, and representative responses to record the incumbent URL base (/v2), the data-wrapped success envelope, pagination model, JSON naming (likely camelCase), and error shape; preserve all of those conventions for any new project resource endpoints rather than introducing a greenfield default. Then define the project collection at /v2/projects and member at /v2/projects/{projectId} using the same DTO-only or data-envelope shape, naming, and pagination that the existing /v2 endpoints already expose, and exercise a representative success, empty/next-page, expected-failure, and sanitized unexpected-failure flow through the contract boundary to confirm the new endpoints are indistinguishable from the incumbent contract.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Uses the conventions and error-contract references for the versioned base, DTO responses, pagination, and problem responses.",
+     "actual": "First, declare the API base as /api/v1 and the collection endpoint as /api/v1/projects with a member endpoint /api/v1/projects/{projectId}, using DTO-only success payloads (no generic wrapper), camelCase JSON properties, and plural kebab-case nouns per the greenfield defaults. Choose cursor pagination for a stable ordered feed or offset pagination if the admin list needs stable totals, cap the documented limit, and define the ProblemDetail error shape with domain codes (e.g., PRJ_001) mapped beside each failure definition. Verify by exercising a successful create/read, an empty and a next-page collection response, an expected validation/domain failure returning the owned code, and an unexpected 5xx returning a sanitized SYS_xxx problem document.",
+     "result": "failed",
+     "reason": "Declares a greenfield /api/v1 base with its own conventions (DTO-only, kebab-case nouns) instead of using the referenced conventions and error-contract patterns from the existing versioned API. The ex"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Requires explicit version or migration scope and a client-compatibility note before changing the contract.",
+     "actual": "First, document the exact incumbent cursor-pagination contract — the ?cursor=&limit= request shape, the items/nextCursor response shape, sort semantics, and whether a missing nextCursor signals the final page — because the incumbent contract gate forbids changing a published endpoint without a named migration scope. Then scope the change as an explicit version or parallel migration (e.g., introduce /v3 with offset pagination alongside the existing /v2 cursor endpoint, or add an opt-in query flag under a compatibility note), and keep the cursor surface live until clients migrate. Verify by calling the existing cursor endpoint and confirming it still returns the same response shape, calling the new offset endpoint and confirming items/offset/limit/total behavior, and validating that a client can transition without receiving a breaking response or lost data.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "a9e103eaddc78452b313e6278b10b8dee2b32cea59a5c1f1782ea92e7179d187",
+   "pass_rate": 0.9473684210526315
+  },
+  {
+   "runtime": "generic",
+   "runner_identity": "generic lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Inspects and preserves the published base and envelope; documents resource-specific contract without imposing greenfield defaults.",
+     "actual": "This is not greenfield, so I would first inspect the published /v2 surface — routes, clients, API descriptions, and deployed examples — and record its URL base, the data success envelope, its pagination model, field-naming style, and error shape. I would then design the project resource to preserve that incumbent contract: mount it under /v2, wrap success responses in data, and reuse the same pagination, naming, and error conventions rather than inventing new ones. I would verify by exercising representative success, empty/next-page, expected-failure, and sanitized unexpected-failure requests through the contract boundary and confirming each envelope, page shape, and error body matches the existing /v2 endpoints.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Uses the conventions and error-contract references for the versioned base, DTO responses, pagination, and problem responses.",
+     "actual": "First I would confirm the API is genuinely greenfield by checking that no published or observable surface exists to preserve — an undocumented or unobserved surface does not count as greenfield. Then I would design the project contract using the conventions.md defaults for URL structure, DTOs, naming, and pagination, and apply error-contract.md for the failure shape, codes, mapping, and sanitization. I would verify by exercising representative success, empty/next-page, expected-failure, and sanitized unexpected-failure scenarios through the contract boundary so clients can actually drive the documented requests and responses.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Requires explicit version or migration scope and a client-compatibility note before changing the contract.",
+     "actual": "Switching cursor to offset changes published behavior, so I would not mutate the endpoint in place; I would first identify the affected clients and scope the change to an explicit new version or migration. I would document the compatibility behavior, the rollout/deprecation path for the incumbent cursor contract, and how clients verify the transition. I would verify by exercising both the retained cursor behavior during deprecation and the new offset behavior through the contract boundary, plus the empty and next-page cases, confirming the migration note names its version scope and client-compatibility guarantee.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "bf20d5a8c5d7d4e53eaafd8585bc2430c52585c08be3947ffa3416452b9aed3a",
+   "pass_rate": 1.0
+  }
+ ],
+ "pass_rate": 0.9868421052631579
+}
