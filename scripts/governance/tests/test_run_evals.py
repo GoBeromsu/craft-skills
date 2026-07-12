@@ -179,6 +179,30 @@ class RunEvalsTest(unittest.TestCase):
         result = self._run("--validate", str(self.receipt_path), "--tree", "expected-tree")
         self.assertEqual(result.returncode, 0, result.stdout)
 
+    def test_validate_diagnoses_malformed_cases_without_crashing(self) -> None:
+        receipt = self._emit()
+        self._complete(receipt)
+        # Missing result field must fail validation, not raise KeyError.
+        del receipt["runtimes"][0]["cases"][0]["result"]
+        self.receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+        result = self._run("--validate", str(self.receipt_path))
+        self.assertEqual(result.returncode, 1)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertIn("invalid result", result.stdout)
+
+    def test_validate_diagnoses_unhashable_ids_and_runtime_names(self) -> None:
+        receipt = self._emit()
+        self._complete(receipt)
+        # Non-string case_id and runtime name must fail validation, not TypeError.
+        receipt["runtimes"][0]["cases"][0]["case_id"] = ["not", "a", "string"]
+        receipt["runtimes"][1]["runtime"] = {"name": "Codex"}
+        self.receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+        result = self._run("--validate", str(self.receipt_path))
+        self.assertEqual(result.returncode, 1)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertIn("case_id", result.stdout)
+        self.assertIn("required runtime", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

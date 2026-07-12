@@ -233,7 +233,10 @@ def validate_receipt(
     runtimes = receipt.get("runtimes")
     if not isinstance(runtimes, list) or len(runtimes) != len(RUNTIMES):
         return errors + [f"runtimes must contain exactly {len(RUNTIMES)} rows"]
-    names = [runtime.get("runtime") if isinstance(runtime, dict) else None for runtime in runtimes]
+    names = [
+        runtime.get("runtime") if isinstance(runtime, dict) and isinstance(runtime.get("runtime"), str) else None
+        for runtime in runtimes
+    ]
     if set(names) != set(RUNTIMES) or len(set(names)) != len(RUNTIMES):
         errors.append("runtimes must contain one row for each required runtime")
 
@@ -249,16 +252,24 @@ def validate_receipt(
         if not all(isinstance(case, dict) for case in cases):
             errors.append(f"runtime row {index} cases must be objects")
             continue
+        row_errors: list[str] = []
         case_ids = [case.get("case_id") for case in cases]
-        if len(set(case_ids)) != len(cases) or any(not isinstance(case_id, str) or not case_id for case_id in case_ids):
-            errors.append(f"runtime row {index} case_id values must be unique non-empty strings")
+        valid_case_ids = [case_id for case_id in case_ids if isinstance(case_id, str) and case_id]
+        if len(valid_case_ids) != len(cases) or len(set(valid_case_ids)) != len(valid_case_ids):
+            row_errors.append(f"runtime row {index} case_id values must be unique non-empty strings")
         kinds = [case.get("kind") for case in cases]
         if kinds.count("trigger") != TRIGGER_COUNT or kinds.count("behavior") != BEHAVIOR_COUNT:
-            errors.append(f"runtime row {index} must contain 16 trigger and 3 behavior cases")
+            row_errors.append(f"runtime row {index} must contain 16 trigger and 3 behavior cases")
         if any(case.get("result") not in RESULTS for case in cases):
-            errors.append(f"runtime row {index} has an invalid result")
+            row_errors.append(f"runtime row {index} has an invalid result")
         if any("expected" not in case or "actual" not in case for case in cases):
-            errors.append(f"runtime row {index} cases must contain expected and actual fields")
+            row_errors.append(f"runtime row {index} cases must contain expected and actual fields")
+        if row_errors:
+            # Structurally invalid rows are diagnosed and skipped: computing
+            # signatures, hashes, or pass rates over them would crash instead
+            # of failing validation.
+            errors.extend(row_errors)
+            continue
         if source_signature is not None:
             signature = [(case.get("case_id"), case.get("kind"), case.get("expected")) for case in cases]
             if signature != source_signature:
