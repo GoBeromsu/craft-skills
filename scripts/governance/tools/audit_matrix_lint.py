@@ -3,7 +3,7 @@
 
 Blocking checks:
 - the matrix table exposes exactly the nine required fields, in order;
-- the table has exactly the expected number of rows (default 17);
+- the table has exactly the expected number of rows (only when --rows is given);
 - no cell is empty;
 - no duplicate skill names;
 - every disposition is one of candidate / change / no-change.
