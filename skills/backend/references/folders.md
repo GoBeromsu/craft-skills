@@ -11,7 +11,7 @@ The folder tree is the architecture made visible — pick the tree that matches 
 - [Hexagonal — FastAPI](#hexagonal--fastapi)
 - [Hexagonal — Express/Nest](#hexagonal--expressnest)
 - [Where tests, migrations, and config live](#where-tests-migrations-and-config-live)
-- [Mixed-pattern drift — detect across all three at once](#mixed-pattern-drift--detect-across-all-three-at-once)
+- [Architecture-shape candidates](#architecture-shape-candidates)
 - [Repo topology in a GitOps split](#repo-topology-in-a-gitops-split)
 - [Incumbent-respect clause](#incumbent-respect-clause)
 
@@ -70,7 +70,7 @@ src/
       validation.py
       repository.py
       test_cancel_order.py
-  shared/           # admitted only past the rule of three (vertical-slice.md)
+  shared/           # admitted through the shared-ownership judgment in vertical-slice.md
   db/
     migrations/
 configs/
@@ -143,7 +143,7 @@ config/
 | Migrations | `db/migrations/` at the repo root, shared across layers | `db/migrations/` at the repo root, shared across slices | `adapters/persistence/migrations/` — the adapter owns them, never the domain |
 | Config | `configs/` (or `config/`) at the repo root, one file per environment | same | same, but the domain never reads config directly; an adapter reads it and passes a typed value through a port |
 
-## Mixed-pattern drift — detect across all three at once
+## Architecture-shape candidates
 
 ```bash
 have_layered=$(find ./src -maxdepth 2 -type d \( -iname controllers -o -iname services -o -iname repositories \) | wc -l)
@@ -152,7 +152,7 @@ have_hex=$(find ./src -maxdepth 2 -type d \( -iname domain -o -iname ports -o -i
 echo "layered=$have_layered slice=$have_slice hexagonal=$have_hex"
 ```
 
-Two or more of the three counts nonzero means the service is straddling two architectures. Fix: pick the one the service is closer to, and migrate the minority folders into it as a dedicated, scoped change — never silently while doing an unrelated feature edit.
+Two or more nonzero counts flag a candidate for investigation, not proof of mixed architecture. Confirm the service manifest, entrypoint, and import direction; only a confirmed mixed dependency direction warrants a dedicated migration, never a silent feature-side edit.
 
 ## Repo topology in a GitOps split
 
@@ -177,4 +177,4 @@ Any hit outside `deploy/` is a cluster manifest creeping into the app repo. Move
 
 ## Incumbent-respect clause
 
-Detect the tree already in place (the mixed-pattern-drift command above doubles as the detector) and match it for new files. Introduce a new top-level folder only when it matches the chosen architecture's shape — not as a one-off convenience.
+Inspect the manifest, entrypoint, imports, and tree already in place, then match the established convention for new files. Introduce a new top-level folder only when it fits that confirmed architecture — not as a one-off convenience.

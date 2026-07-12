@@ -80,6 +80,21 @@
       "trigger": "review this diff for code smells",
       "expected_package": "craft-skills/refactor",
       "forbidden_neighbors": ["craft-skills/programming", "craft-skills/testing", "craft-skills/debug"]
+    },
+    {
+      "trigger": "build a responsive React component for this page",
+      "expected_package": "craft-skills/frontend",
+      "forbidden_neighbors": ["craft-skills/programming", "craft-skills/backend", "craft-skills/document"]
+    },
+    {
+      "trigger": "design the service layer for this new endpoint",
+      "expected_package": "craft-skills/backend",
+      "forbidden_neighbors": ["craft-skills/api", "craft-skills/frontend", "craft-skills/programming"]
+    },
+    {
+      "trigger": "audit this repo for security vulnerabilities",
+      "expected_package": "craft-skills/security",
+      "forbidden_neighbors": ["craft-skills/debug", "craft-skills/testing", "craft-skills/programming"]
     }
   ]
 }
