@@ -49,7 +49,7 @@ class InventorySurfacesTest(unittest.TestCase):
             ),
             encoding="utf-8",
         )
-        for relative_path in (".codex-plugin/plugin.json", ".claude-plugin/marketplace.json"):
+        for relative_path in (".codex-plugin/plugin.json", ".claude-plugin/marketplace.json", ".claude-plugin/plugin.json"):
             (root / relative_path).write_text(
                 json.dumps({"description": "Skills across 2 packages."}), encoding="utf-8"
             )
@@ -82,6 +82,15 @@ class InventorySurfacesTest(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 1)
             self.assertIn("AGENTS.md list", result.stdout)
+
+    def test_count_string_mismatch_fails(self) -> None:
+        with self._fixture() as temp:
+            root = Path(temp)
+            (root / ".claude-plugin/plugin.json").write_text(
+                json.dumps({"description": "Skills across 1 packages."}), encoding="utf-8"
+            )
+            errors = check_inventory_surfaces.check_inventory_surfaces(root)
+            self.assertTrue(any("plugin.json" in error and "count" in error.lower() for error in errors))
 
 
 if __name__ == "__main__":

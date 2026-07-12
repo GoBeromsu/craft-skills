@@ -57,7 +57,7 @@ def _routing_names(root: Path) -> set[str]:
 
 def _plugin_counts(root: Path, package_count: int) -> list[str]:
     errors: list[str] = []
-    for relative_path in (".codex-plugin/plugin.json", ".claude-plugin/marketplace.json"):
+    for relative_path in (".codex-plugin/plugin.json", ".claude-plugin/marketplace.json", ".claude-plugin/plugin.json"):
         path = root / relative_path
         payload = _load_json(path)
         text = json.dumps(payload, ensure_ascii=False)
