@@ -72,6 +72,11 @@
       "forbidden_neighbors": ["craft-skills/programming", "craft-skills/debug", "craft-skills/refactor"]
     },
     {
+      "trigger": "write a typed python function to parse this config file",
+      "expected_package": "craft-skills/programming",
+      "forbidden_neighbors": ["craft-skills/refactor", "craft-skills/testing", "craft-skills/debug"]
+    },
+    {
       "trigger": "review this diff for code smells",
       "expected_package": "craft-skills/refactor",
       "forbidden_neighbors": ["craft-skills/programming", "craft-skills/testing", "craft-skills/debug"]
