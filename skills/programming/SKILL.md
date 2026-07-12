@@ -66,7 +66,7 @@ Use red-first TDD when adding or changing observable behavior, or when risk warr
 For every reproducible defect, retain a failing-first regression test at the defect's natural layer before the fix makes it pass. Assert the contract, not the dump; prefer the real object, then an in-memory fake, then a wire-level fake. Mock only true unmockables (clock, randomness) at the narrowest seam, and inject a clock or subscribe to events instead of sleeping.
 ## Logging decisions
 
-When adding logs, follow the project's established logging practice. Choose the level by the consumer's need, place logs at decisions rather than every step, and keep messages stable while putting variable context in structured fields. This is the transferable logging decision rule from [omo analysis](../../docs/research/omo-analysis.md).
+When adding logs, follow the project's established logging practice. Choose the level by the consumer's need, place logs at decisions rather than every step, and keep messages stable while putting variable context in structured fields.
 
 ## Requirements
 

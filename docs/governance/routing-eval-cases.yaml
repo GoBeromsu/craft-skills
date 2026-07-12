@@ -73,8 +73,8 @@
     },
     {
       "trigger": "review this diff for code smells",
-      "expected_package": "craft-skills/programming",
-      "forbidden_neighbors": ["craft-skills/testing", "craft-skills/security", "craft-skills/debug"]
+      "expected_package": "craft-skills/refactor",
+      "forbidden_neighbors": ["craft-skills/programming", "craft-skills/testing", "craft-skills/debug"]
     }
   ]
 }
