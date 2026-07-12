@@ -1,0 +1,581 @@
+{
+ "protocol_version": 1,
+ "protocol_hash": "462282fb3455aad5cace62029e470febb7918086bc9b6803a264f80b8e42d8a4",
+ "skill": "init",
+ "pr": "campaign-2026-07-12",
+ "tested_tree_sha": "e7942e8344ee61a4218c64eab7a7016f56e58b1f",
+ "inputs": {
+  "baseline_ref": "e855f68",
+  "candidate_ref": "cecd4bcfceba722e7e67be169cacf4898539f626",
+  "no_skill_ref": "e855f68"
+ },
+ "runtimes": [
+  {
+   "runtime": "Claude Code",
+   "runner_identity": "claude-code lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Inspects existing files, emits the git-guard diagnostic, runs only Phase 0, preserves existing content, and reports the bootstrap outcome.",
+     "actual": "This is a docs-scaffold-only request, so I select the Bootstrap outcome and run Phase 0 (Ontology graft) alone — no cartography. First I emit the shared git-guard diagnostic line (`echo \"git-guard: core.hooksPath = ...\"`) and inspect the existing tree so I never overwrite anything, then read `references/phase-0` and seed the craft-owned `docs/` folders/files. I verify via Phase 0's idempotency guarantee: re-running writes nothing and emits only status notices, and the completion report lists the docs action while marking all cartography fields (runtime path, centrality, dirs analyzed) n/a.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Runs cartography Phases 1–4 only, selects discovery coverage by uncertainty and risk, and reports cartography evidence.",
+     "actual": "This is a hierarchical AGENTS.md request with docs explicitly excluded, so I skip Phase 0 and run the Cartography path (Phases 1–4). First I emit the git-guard diagnostic notice, inspect any existing AGENTS.md without overwriting, and classify the runtime (agent-spawn fan-out vs. single-agent sequential) before reading `references/phase-1-discovery.md`; then Phase 2 scores complexity into AGENTS_LOCATIONS, Phase 3 generates (Edit existing files, Write only new ones), and Phase 4 reviews. I verify through Phase 4's dedup-vs-parent and line-budget check, confirm centrality is marked measured or 'unmeasured' per LSP/codegraph availability, and honor the scope guard by excluding any `docs/` scaffold from the map.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Runs the explicit combined branch: Phase 0 followed by cartography, without overwriting existing documents or AGENTS.md files.",
+     "actual": "This is the both-outcomes request, so I run Phase 0 first, then Phases 1–4. I open with the git-guard diagnostic line and a non-destructive inspection of existing files, seed the `docs/` scaffold via Phase 0 (idempotent), then classify the runtime and run Cartography — scoring, generation (Edit existing / Write new), and review — while the scope guard keeps the just-seeded `docs/` ontology out of the code map. I verify with Phase 0 idempotency (re-run writes nothing), Phase 4's dedup/line-budget review, and confirmation that the root AGENTS.md carries the `## DOCS & DECISIONS` graft link back to the seeded scaffold.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "af74f8bfb5f0a167bfa891dd8b3b3e4878c6e5ce1bd1ed410e5576c21fb5aa4a",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Codex",
+   "runner_identity": "codex lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Inspects existing files, emits the git-guard diagnostic, runs only Phase 0, preserves existing content, and reports the bootstrap outcome.",
+     "actual": "I would start by selecting the bootstrap-only branch, inspect whether the craft-owned `docs/` scaffold already exists, and emit the required `git-guard` diagnostic line before making any changes. Then I would run only Phase 0 and stop, explicitly avoiding Phases 1-4 so no `AGENTS.md` mapping work happens. I would verify by checking that only the expected `docs/` scaffold files/folders were created or left untouched if already present, and that no new or modified `AGENTS.md` files exist anywhere in the repo.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Runs cartography Phases 1–4 only, selects discovery coverage by uncertainty and risk, and reports cartography evidence.",
+     "actual": "I would start by selecting the cartography-only branch, skip Phase 0 entirely, emit the `git-guard` diagnostic, and classify the runtime so I know whether discovery is parallel or sequential. Then I would run Phases 1-4 in order against code directories only, excluding any `docs/` ontology from mapping scope and editing existing `AGENTS.md` files rather than overwriting them. I would verify by reviewing the generated or updated hierarchical `AGENTS.md` set against the scoring thresholds, confirming the completion report includes runtime path and centrality measured or `unmeasured`, and confirming no docs scaffold files were created.",
+     "result": "failed",
+     "reason": "Covers Phases 1-4 and reporting, but does not state discovery coverage is chosen based on uncertainty and risk."
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Runs the explicit combined branch: Phase 0 followed by cartography, without overwriting existing documents or AGENTS.md files.",
+     "actual": "I would start by selecting the combined branch, emit the `git-guard` diagnostic, inspect existing repo state, and run Phase 0 first to create the craft docs scaffold without overwriting anything already present. After that I would run cartography Phases 1-4 in order, mapping only code directories and explicitly excluding the scaffolded `docs/` tree from AGENTS generation. I would verify by checking both outcomes separately: the expected `docs/` scaffold exists idempotently, and the correct root and subdirectory `AGENTS.md` files were created or edited according to scoring and existence rules, with the final report listing both scaffold action and cartography details.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "2f1f4816b06cc2af477436158572dee6603ad0c87a56cd7e31098b97d13d724c",
+   "pass_rate": 0.9473684210526315
+  },
+  {
+   "runtime": "Hermes",
+   "runner_identity": "hermes lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Inspects existing files, emits the git-guard diagnostic, runs only Phase 0, preserves existing content, and reports the bootstrap outcome.",
+     "actual": "I would first execute Phase 0 to graft the craft-owned 'docs/' scaffold, verifying that the standard ontology folders and 'CHANGELOG.md' templates exist at the root without any new map files appearing in the source tree. Then I would run the 'init' script again to confirm idempotency, expecting it to print status notices rather than writing duplicate files. I would also validate the git-guard diagnostic notice was emitted at the start to confirm prerequisite compliance.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Runs cartography Phases 1–4 only, selects discovery coverage by uncertainty and risk, and reports cartography evidence.",
+     "actual": "I would first classify the runtime and run Phases 1 through 4 sequentially to explore the codebase and generate a hierarchical map, verifying that the root and scored subdirectories contain updated guidance while the 'docs/' folder remains untouched. Finally, I would inspect the generated map provenance stamp and review block to ensure the managed development flow was correctly grafted without overwriting existing content. This ensures the cartography scope guard was respected throughout the process.",
+     "result": "failed",
+     "reason": "Describes Phases 1-4 and scope guard but omits the explicit uncertainty/risk selection criterion for discovery coverage and does not address reporting cartography evidence; those are named in the expe"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Runs the explicit combined branch: Phase 0 followed by cartography, without overwriting existing documents or AGENTS.md files.",
+     "actual": "I would first run Phase 0 to establish the 'docs/' scaffold, followed immediately by Phases 1 to 4 to map the code directories into map files. I would verify completion by confirming the presence of both the ontology folders and the hierarchical map, then checking that Phase 4 successfully deduplicated the generated files against the parent map line budget. Any failure here would indicate the cartography scope guard was violated during the dual-phase run.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "fa554b0c7314f7125de5242c859d681513366bf0303b1d751eedbc209e4c5785",
+   "pass_rate": 0.9473684210526315
+  },
+  {
+   "runtime": "generic",
+   "runner_identity": "generic lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Inspects existing files, emits the git-guard diagnostic, runs only Phase 0, preserves existing content, and reports the bootstrap outcome.",
+     "actual": "I'd treat this as a docs-only request: run Phase 0 (Ontology graft) and stop — not touch cartography. First I'd emit the shared git-guard diagnostic line (echo core.hooksPath), inspect the requested scaffold and any existing files without overwriting, then read references/phase-0.md and execute that procedure to create the craft-owned docs/ folders/files. I'd verify by confirming Phase 0's idempotency (a re-run writes nothing, only status notices), checking that no existing docs anchor was overwritten, and closing with a completion report marking all cartography fields n/a.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Runs cartography Phases 1–4 only, selects discovery coverage by uncertainty and risk, and reports cartography evidence.",
+     "actual": "This is a cartography-only request, so I'd skip Phase 0 and run Phases 1–4, without seeding any docs scaffold. First I'd emit the git-guard diagnostic line, then classify the runtime — agent-spawn (Task/multi_agent) fans out Phase 1 exploration concurrently, while a single-agent runtime runs Bash+Grep+Glob (+ast-grep if present) sequentially — and read references/phase-1-discovery.md to begin discovery. I'd verify by driving Phase 2's weighted scoring into AGENTS_LOCATIONS (root always; >15 create; 8–15 if distinct; <8 skip), using Edit for any existing AGENTS.md and Write only for new ones in Phase 3, running the Phase 4 dedup/line-budget review, marking centrality measured or 'unmeasured' if no LSP/codegraph was available, and ending with the full completion report.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Runs the explicit combined branch: Phase 0 followed by cartography, without overwriting existing documents or AGENTS.md files.",
+     "actual": "This asks for both outcomes, so I'd run Phase 0 first and then Phases 1–4. I'd emit the git-guard diagnostic once, inspect existing files without overwriting, execute Phase 0 to seed the docs/ scaffold, then classify the runtime and read references/phase-1-discovery.md — applying the scope guard so cartography maps only code directories and never maps the freshly seeded docs/ ontology back onto itself. I'd verify Phase 0's idempotency and untouched anchors, then Phase 2 scoring → AGENTS_LOCATIONS, Edit-vs-Write existence rule and the DOCS & DECISIONS graft link in root AGENTS.md, the Phase 4 review, centrality measured/unmeasured, and a completion report covering both the scaffold action and the cartography results.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "64a4029e9c19eaca96f973d22eec8d7e6d6d0b400d3d2178475fb83d510deff8",
+   "pass_rate": 1.0
+  }
+ ],
+ "pass_rate": 0.9736842105263158
+}

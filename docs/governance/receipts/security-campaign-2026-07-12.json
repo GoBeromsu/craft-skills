@@ -1,0 +1,583 @@
+{
+ "protocol_version": 1,
+ "protocol_hash": "eae0150725222972305c5ed3e61e85ab80bea1b7c9b526aa2b9fe50f1c17c7c2",
+ "skill": "security",
+ "pr": "campaign-2026-07-12",
+ "tested_tree_sha": "e7942e8344ee61a4218c64eab7a7016f56e58b1f",
+ "inputs": {
+  "baseline_ref": "e855f68",
+  "candidate_ref": "cecd4bcfceba722e7e67be169cacf4898539f626",
+  "no_skill_ref": "e855f68"
+ },
+ "runtimes": [
+  {
+   "runtime": "Claude Code",
+   "runner_identity": "claude-code lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Maps its trust boundaries, reads the API reference, reports evidence-backed findings with file and line evidence, and makes no fixes.",
+     "actual": "Run PHASE 0 first: enumerate every ingress channel this handler exposes (params, headers, body, uploads, any third-party/LLM responses) and give each a parse/validate/limit decision, then route to references/api.md and run its detection commands. Because this is a review-only request, I report every finding with file:line evidence, the exact detection command that surfaced it, and a fix-now/next-release/backlog verdict from the severity tree — and apply no code changes. I verify by checking that each ingress point has an explicit parse/validate/limit decision, that every finding cites file:line plus its command and a reachability+severity rationale, and that any secret-shaped value is redacted.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Routes to secrets and supply-chain guidance because dependency, build, and credential reachability are in scope, runs relevant audit commands, and triages findings by reachability and severity.",
+     "actual": "Treat this as a full audit: run PHASE 0 boundary mapping across every exposed surface (routing to web.md/api.md/llm.md as they apply) and read references/secrets-supply-chain.md since the dependency, build, and credential rows are in scope. I run the dependency audit (npm/pnpm audit or pip-audit/uv) and the git tracked-file and git log -p secret scans, triage each finding by reachability and severity, and treat any live-credential rotation or CI security-gate change as Ask-first — proposing before touching. I verify by confirming the audit command output was actually reviewed, every high/critical is triaged with a verdict, a lockfile is committed, and no real secret value appears anywhere in the report (redacted placeholders only).",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Applies confirmed source fixes only under the explicit fix request and retains the boundary validation unless an adversarial regression test proves it redundant.",
+     "actual": "I do not remove the validation on the assumption it is redundant — trust-boundary validation and error handling are preserved unless an adversarial regression test proves them redundant. First I map the ingress channel this validation guards, write an abuse-case test exercising the malformed/oversized/malicious input it would catch, and only delete it if that test still passes with it gone; otherwise it stays. For the security issues I do find, I fix at the source and prove each closed by a passing test or a clean re-run of the detection command that surfaced it, escalating any auth/session/authorization changes as Ask-first before applying.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "7668206af2e9e0f05e4683b64076105e8dde726c1a7c412c49c7ad045363f0ba",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Codex",
+   "runner_identity": "codex lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Maps its trust boundaries, reads the API reference, reports evidence-backed findings with file and line evidence, and makes no fixes.",
+     "actual": "I would start with PHASE 0: map the handler's trust boundaries by enumerating every ingress point it accepts, assigning a parse/validate/limit decision to each one, and naming the assets and abuse cases tied to the route. Then I would read `references/api.md`, run only the matching detection commands, and report findings with `file:line` evidence plus a fix-now / next-release / backlog verdict based on production reachability and severity. I would verify by making sure every input path and sink in the handler is covered in the trust-boundary map and that each reported issue cites the exact command and code location that surfaced it.",
+     "result": "failed",
+     "reason": "Describes a plan only; it does not actually read the API reference or report concrete evidence-backed findings with file:line citations."
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Routes to secrets and supply-chain guidance because dependency, build, and credential reachability are in scope, runs relevant audit commands, and triages findings by reachability and severity.",
+     "actual": "I would first do the same trust-boundary map for the release candidate, then route to both the server/web/LLM references that apply and `references/secrets-supply-chain.md` because dependencies and CI credentials are explicitly in scope. Next I would run the relevant dependency and secret-scan commands, inspect CI/build config for credential exposure and over-broad permissions, and redact any secret values in the report while triaging by real production reachability. I would verify by re-running the same audit commands to confirm the reviewed state, checking that lockfiles and CI credential paths were included in scope, and ensuring every finding has `file:line` evidence and a concrete severity verdict.",
+     "result": "failed",
+     "reason": "Covers the right scope in theory, but it is still only a proposed process and provides no actual audit results, command outputs, or file:line triage."
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Applies confirmed source fixes only under the explicit fix request and retains the boundary validation unless an adversarial regression test proves it redundant.",
+     "actual": "I would not remove the validation first; I would treat that as blocked by the skill's gate and prove whether the validation is actually redundant by mapping the request ingress, identifying the downstream sinks, and checking whether equivalent parse/validate/limit enforcement already exists at the true boundary. Then I would read the applicable surface references, fix any confirmed vulnerabilities at the source, and only remove validation if an adversarial regression test shows the security property is preserved without it. I would verify by adding or updating tests for malformed, oversized, and boundary-case inputs and by re-running the same detection command that identified each issue to show the fix stays closed.",
+     "result": "failed",
+     "reason": "States the correct guardrails, but it does not actually apply fixes, preserve validation via proof, or provide adversarial regression tests and confirmed source fixes."
+    }
+   ],
+   "raw_result_hash": "55dba807964dbf4fae951c32b5dceecf703c077ab678f1ad586e09cf1f32d2fa",
+   "pass_rate": 0.8421052631578947
+  },
+  {
+   "runtime": "Hermes",
+   "runner_identity": "hermes lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Maps its trust boundaries, reads the API reference, reports evidence-backed findings with file and line evidence, and makes no fixes.",
+     "actual": "I'd run the trust-boundary mapping from PHASE 0 first: enumerate the API's ingress channels (routes, query params, headers, request bodies), identify assets at risk (auth state, user data, downstream services), read `references/api.md` for surface-specific guidance, then grep or use ast-grep for detection commands (SQL injection sinks, eval/exec calls, missing authz checks, verbose errors). Each finding gets a file:line citation plus a reachability+severity verdict from the triage tree. No code changes — just a report.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Routes to secrets and supply-chain guidance because dependency, build, and credential reachability are in scope, runs relevant audit commands, and triages findings by reachability and severity.",
+     "actual": "I'd start with PHASE 0 trust-boundary mapping across build/CI/DX channels, then read `references/secrets-supply-chain.md` since dependencies and CI credentials are in scope. I'd run `npm audit` or `pip-audit`/`uv audit` for dependency risk, `git log -p` or `git grep` for credential leakage in history, scan for open-source supply-chain flags (lockfile drift, unaudited sub-deps), and probe CI configs for hardcoded tokens or permissive workflow permissions. Every finding gets a file:line citation, a severity triage verdict, and — since this is a release candidate with fix request implicit — I'd apply narrow reversals (rotate leaked creds, pin vulnerable deps, scoped CI token policies) and re-run the same audit commands to prove the path is closed.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Applies confirmed source fixes only under the explicit fix request and retains the boundary validation unless an adversarial regression test proves it redundant.",
+     "actual": "I'd not touch the banner until I prove it's truly redundant. First, PHASE 0: map the request-ingress channels feeding that validation layer and name the assets it protects. Read `references/api.md` and `references/programming.md` for typed-boundary patterns, then trace every call path that reaches the sink(s) the validation guards. If a downstream parse/validate step genuinely subsumes the banner, I'd document the proof with file:line evidence before removing it. If I find a gap — a path that bypasses the replacement — I'd fix the missing guard at the true boundary (not by restoring the redundant check) and add a regression test or re-run the detection command to prove the surface is covered.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "7fac5367b20a0722f411569c3cc1674d1c733c1b316e51e62988fe06b59ab147",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "generic",
+   "runner_identity": "generic lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "none",
+     "result": "failed",
+     "reason": "routed:none"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Maps its trust boundaries, reads the API reference, reports evidence-backed findings with file and line evidence, and makes no fixes.",
+     "actual": "First run PHASE 0 trust-boundary mapping on the handler: enumerate every ingress channel (params, headers, body, webhooks, upstream API responses), assign each a parse/validate/limit decision, name the assets at risk, and route to references/api.md before touching anything. Since this is a review-only request, I stay in the review-only tier — read the code and configs, run the api.md detection commands (grep for injection sinks, missing authz, object-level access), and report each finding without applying any fix. I verify by ensuring every finding cites file:line evidence plus the exact detection command that surfaced it, and carries a fix-now/next-release/backlog verdict from the severity tree with its reachability-and-severity reasoning stated.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Routes to secrets and supply-chain guidance because dependency, build, and credential reachability are in scope, runs relevant audit commands, and triages findings by reachability and severity.",
+     "actual": "Run PHASE 0 first, routing to every matching surface reference (api.md/web.md/llm.md as the code dictates) AND to references/secrets-supply-chain.md, since the dependency/build/credential routing row explicitly applies. Then run the audit commands from that reference — npm audit / pip-audit for high/critical CVEs, and a git-tracked-file plus git log -p scan for secret-shaped strings — while treating any live-credential rotation, CI/CD gate change, or major-version bump as Ask-first proposals, not unilateral actions. I verify by confirming the dependency-audit output was actually reviewed, that CI build credentials were checked for exposure, and that no real secret value appears anywhere in the report — only redacted placeholders — with each finding triaged by the severity tree.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Applies confirmed source fixes only under the explicit fix request and retains the boundary validation unless an adversarial regression test proves it redundant.",
+     "actual": "I do not delete first: the skill mandates preserving trust-boundary validation and error handling, removing either only when an adversarial regression test proves it redundant, so I map the boundary this validation guards (which ingress channel and sink it sits between) before judging it \"redundant.\" If it turns out to be genuinely duplicated by an equivalent upstream parse/validate/limit, I write an adversarial regression test that passes with the check removed; if it's the only guard, I keep it and report that removing it opens a vulnerability. For any security issues I fix under the explicit-fix tier, I fix at the source — but flag auth/session/authorization changes as Ask-first — and verify each fix is proven closed by a passing test or by re-running the detection command that surfaced it.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "e9d153eac4e58baeeabc014e7bc24e3188698c4985b1252f8f425978ccc847a7",
+   "pass_rate": 0.9473684210526315
+  }
+ ],
+ "pass_rate": 0.9473684210526315
+}

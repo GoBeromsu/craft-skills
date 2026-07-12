@@ -1,0 +1,579 @@
+{
+ "protocol_version": 1,
+ "protocol_hash": "e8a02e087462b8115f056da2f7a31ad30e661513147bb71c5187e3f50b9fe652",
+ "skill": "cicd",
+ "pr": "campaign-2026-07-12",
+ "tested_tree_sha": "e7942e8344ee61a4218c64eab7a7016f56e58b1f",
+ "inputs": {
+  "baseline_ref": "e855f68",
+  "candidate_ref": "cecd4bcfceba722e7e67be169cacf4898539f626",
+  "no_skill_ref": "e855f68"
+ },
+ "runtimes": [
+  {
+   "runtime": "Claude Code",
+   "runner_identity": "claude-code lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Detects and preserves the incumbent provider and topology before proposing changes.",
+     "actual": "First run the incumbent topology gate: read `.gitlab-ci.yml`, existing branch-protection/required MR checks, the K8s manifests, the container-registry image path, and recent successful pipeline+deploy evidence to pin down provider (GitLab CI), image path, orchestrator (Kubernetes), deployment target, and who owns the deploy — then preserve all of them rather than reshaping the stack. I'd add cheap MR-stage jobs for fast feedback plus a deploy stage that fails closed on missing/malformed release inputs (image tag, environment) before any `kubectl apply`, and retains build/runtime evidence. Verify by opening a docs-only MR to show the visible no-op path and a code MR to show the full-check path, confirming the required check stays stable on both. Then rehearse a failed release and confirm `kubectl rollout undo` (or equivalent) recovers without destroying durable state like PVCs.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Selects the bounded Jenkins/Compose recipe and applies its safety constraints.",
+     "actual": "Since it's greenfield, I'd first select and document the four topology decisions — CI provider = Jenkins on the deployment server, image path = local Docker build with no registry, orchestrator = Docker Compose, and the deployment target/owner — before writing any pipeline file, and apply the pipeline-safety recipe for this exact topology. I'd author a Jenkinsfile that builds the image locally, validates release inputs and fails closed before mutating the running Compose stack, and retains build and runtime logs as evidence. Verify by running one green end-to-end deploy, then deliberately triggering a failed release (bad/missing input) and confirming the manual-recovery path brings the stack back without wiping named volumes or other durable state.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Verifies both the documentation-only no-op and workflow-change full-check paths.",
+     "actual": "First identify the CI provider and the exact required-check name in branch protection, because the real hazard of a path gate is a required check flipping to skipped and hanging pending forever, which silently blocks merges. I'd inspect the current workflow's path filters against the required-check list, then make the change so the required check reports complete on both the matched (full-check) and unmatched (no-op) paths — e.g. an always-run sentinel job as in the ci-gating recipe rather than gating the required job itself. Verify with two PRs: a docs-only PR that exercises the visible no-op path and a source PR that hits the matched path, confirming each reports the required check as finished so merges never stall.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "27d23adf4370f5be46a4d7ab84b22410de38a3f727ff72ef3c7167f880f8c359",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Codex",
+   "runner_identity": "codex lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Detects and preserves the incumbent provider and topology before proposing changes.",
+     "actual": "I would first inspect the incumbent delivery evidence in the repo: `.gitlab-ci.yml`, any included GitLab templates, Kubernetes manifests or Helm charts, environment overlays, release scripts, and docs that show the current image path, cluster target, and who triggers deployment. I would preserve GitLab CI as the provider and Kubernetes as the orchestrator, then shape the PR pipeline around cheap validation stages plus a release path that rejects malformed release inputs before any cluster mutation. I would verify by showing the recorded topology decisions, running or tracing a documentation-only no-op PR path and a code-change full-check path, and confirming a failed release leaves deployment state untouched while retaining pipeline logs and build artifacts.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Selects the bounded Jenkins/Compose recipe and applies its safety constraints.",
+     "actual": "I would first make the topology explicit because the repo is greenfield: Jenkins is the CI provider, builds run on the deployment server, Docker Compose is the orchestrator, there is no registry, and the deployment owner must be named in the docs and pipeline. Then I would use the Jenkins-plus-local-Compose safety recipe to design a PR feedback path, strict release-input validation, artifact and runtime evidence retention, and a rollback action that swaps back to the previous Compose release without deleting durable state. I would verify by documenting those decisions, exercising both a no-op and full-check PR path, and simulating a bad release input plus a failed deployment to confirm the job fails closed and the manual or scripted rollback restores the prior service set.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Verifies both the documentation-only no-op and workflow-change full-check paths.",
+     "actual": "I would first inspect the current workflow file, the existing path filters, and the exact required-check name enforced by branch protection so I do not break the stable PR check contract. If this is GitHub Actions, I would update the path gate so the required check still always appears, with a visible no-op result when changes are out of scope and the full path when relevant files change. I would verify by testing at least one documentation-only diff and one in-scope workflow diff, then confirming the same required check name is reported in both cases and that the run output clearly shows which path was selected.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "cdf5857ec1a20fe73d939dcd0055626300a30d44ca14db5072c051f07810b2d4",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Hermes",
+   "runner_identity": "hermes lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Detects and preserves the incumbent provider and topology before proposing changes.",
+     "actual": "Inspect .gitlab-ci.yml, GitLab protected branch settings, and the last 3 successful deploy logs to identify the incumbent image registry path, Kubernetes namespace, deployment job/service account, and any required-check names already enforced. Then I'd add a cheap lint-and-unit-test job at the top of the pipeline that must pass before the longer integration and deploy stages, gate the deploy stage behind an explicit image_tag input validated for format, and write a rollback job that re-applies the previous known-good manifest from the pipeline artifacts. I'd verify by merging a doc-only MR to confirm the new stage is visible and non-blocking for docs, triggering a full pipeline to confirm the required checks behave correctly across both the no-op and full paths, and then intentionally deploying a bad image and running the rollback job to confirm the prior state is restored without deleting logs or artifacts.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Selects the bounded Jenkins/Compose recipe and applies its safety constraints.",
+     "actual": "Before writing a Jenkinsfile, I'd document the four topology decisions: CI provider = Jenkins, image path = local Docker Compose builds with no registry, orchestrator = the deployment server via SSH/docker-compose, and deployment owner = a named service account or bot user. Then I'd author a Jenkinsfile with a PR gating stage (cheap lint + unit tests) that blocks the full Docker Compose build-and-deploy stage, add input validation that fails closed on missing or malformed release inputs (e.g., undefined image tag or missing compose file), and script a rollback step that redeploys the previous Docker Compose image tag from a persisted artifact list. I'd verify by merging a doc-only commit to confirm the Jenkinsfile parses and the no-op path is visible, running a full build-and-deploy pipeline to confirm the gate and full path work, and then breaking the deploy intentionally to confirm the rollback restores the prior state while preserving build logs and output evidence.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Verifies both the documentation-only no-op and workflow-change full-check paths.",
+     "actual": "I'd load the ci-gating.md reference, locate the GitHub Actions workflow file and the exact required-check name that the branch-protection rule enforces, then edit the workflow to rename or relocate the job that produces that check and update the branch-protection setting and any docs referencing the old check. I'd open one documentation-only PR to make the visible no-op path (doc changes) exercise the gate without triggering the full workflow, and a second PR with the workflow and branch-protection change to exercise the full-check path end-to-end. I'd verify by merging the doc-only PR and confirming the required check still appears and passes, then merging the workflow PR and confirming the new check name is listed in branch protection and the pipeline runs the full gate on a code change.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "dd95b4ebd7bd41e27771572ff5c500cc6ae57a4dd924d32b52316703c650144a",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "generic",
+   "runner_identity": "generic lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Detects and preserves the incumbent provider and topology before proposing changes.",
+     "actual": "This is an existing-topology task, so I run the incumbent topology gate first: read `.gitlab-ci.yml`, the project's protected-branch / merge-request pipeline requirements, the Kubernetes manifests, and the container-registry config to record the CI provider (GitLab CI), the required-check names, the image path (likely GitLab Container Registry), the orchestrator/target (Kubernetes), and who owns deploy — then preserve all of them, since neither the GitHub-Actions nor the Jenkins recipe applies here and their specifics must not be transferred. I design cheap MR feedback, fail-closed gating on release inputs (image tag/env), retained build+runtime evidence, and a reversible recovery path using `kubectl rollout undo` or Helm rollback that never destroys durable state (PVCs/DB). I verify by checking evidence captures all four topology decisions, confirming a docs-only MR shows the visible no-op path while a pipeline-change MR exercises the full-check path, and exercising a failed rollout to confirm rollback preserves durable state.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Selects the bounded Jenkins/Compose recipe and applies its safety constraints.",
+     "actual": "Because this is greenfield, I first select and document the four topology decisions before writing any file: CI provider = Jenkins on the deployment server, image path = local Docker builds with no registry, orchestrator = Docker Compose, and the deployment target/owner — this matches `references/pipeline-safety.md`, so I apply that recipe and no other. I then author the pipeline to give cheap PR feedback, fail closed on missing/malformed release inputs before any runtime mutation, retain build and runtime evidence, and use a recovery action that preserves durable Compose volumes/data. I verify against the checklist: the topology record is complete, PR feedback is cheap with a stable check, a workflow change shows the full-check path, invalid inputs are rejected pre-mutation, and a simulated failed release confirms the manual-recovery path keeps durable state intact.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Verifies both the documentation-only no-op and workflow-change full-check paths.",
+     "actual": "First I identify whether the gated workflow is a required PR check and on which provider, since a path filter that skips a required check makes it never report and leaves PRs stuck waiting — if it's GitHub Actions I consult `references/ci-gating.md`, otherwise I preserve the incumbent provider's mechanism for keeping the check stable across both paths. I make the change so the required check still reports on every PR: the path that doesn't match takes an observable no-op (green) path and the matching path runs the full check. I verify by opening a change that doesn't touch the gated paths (e.g. docs-only) to confirm the check still reports green via the no-op path, and a change that does touch them to confirm the full-check path runs.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "5a91150c3279df957a3379731b9266a3f26ab92e69ac7dfb93165da4edb1e0a0",
+   "pass_rate": 1.0
+  }
+ ],
+ "pass_rate": 1.0
+}

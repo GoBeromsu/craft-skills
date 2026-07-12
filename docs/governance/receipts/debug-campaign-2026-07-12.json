@@ -1,0 +1,585 @@
+{
+ "protocol_version": 1,
+ "protocol_hash": "6404586b2b92f4ddb46be611a089aa517770fceb25529a60e8ae94b42dd0596f",
+ "skill": "debug",
+ "pr": "campaign-2026-07-12",
+ "tested_tree_sha": "e7942e8344ee61a4218c64eab7a7016f56e58b1f",
+ "inputs": {
+  "baseline_ref": "e855f68",
+  "candidate_ref": "cecd4bcfceba722e7e67be169cacf4898539f626",
+  "no_skill_ref": "e855f68"
+ },
+ "runtimes": [
+  {
+   "runtime": "Claude Code",
+   "runner_identity": "claude-code lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Uses the failing test and stack trace as direct observed evidence to seed a hypothesis, confirms the mechanism without unnecessary competing hypotheses, then adds a red-green regression test and exercises the user scenario.",
+     "actual": "First reproduce: run the exact test command and capture the full stack trace verbatim, since a deterministic null dereference gives me a concrete first hypothesis from the faulting line. I'd read that line and trace backward to which reference is null and where it should have been assigned, keeping observed facts (the trace line, the null value) separate from inferences about why. If the trace alone doesn't prove which value is null, I'd add one assertion or log at the dereference site to confirm the mechanism before touching source. Then fix, add a regression test that fails against the pre-fix code and passes after, exercise the real scenario, and remove the probe.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Records reproduction rate and observed facts, keeps competing hypotheses while the evidence is ambiguous, and instruments only when existing evidence cannot discriminate.",
+     "actual": "An intermittent timeout is a report, not yet a target, so first I'd run checkout N times and record the actual failure rate to make it reproducible-on-demand. Checkout is a multi-hop pipeline (client→gateway→service→DB/payment), so I'd bisect by layer: add timing at each boundary and probe the midpoint to learn which half owns the latency, then recurse into that half. I'd hold competing hypotheses (slow DB query, lock contention, external payment-gateway latency) and run the probe that discriminates between them rather than the one confirming a favorite. Given the flakiness I'd timebox the search, and if a race or third-party outage can't be pinned I'd act on the best-evidenced hypothesis and state which assumption stays unconfirmed.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Treats the static contract violation as direct evidence, inventories any temporary files, processes, ports, environment changes, and debugger sessions, and removes them after proving the fix.",
+     "actual": "A static type-contract violation directly establishes the failure, so no runtime repro is needed to seed the hypothesis — I'd first read the exact error to get the expected vs. actual response shape. Then I'd locate every return path in the handler and identify which branch emits the non-conforming shape (missing field, wrong type, nullable where non-null is required), logging the mismatch as observed fact. I'd fix that return path and verify by re-running the type check so the contract now passes. I'd add a test or type-level assertion that fails against the pre-fix handler and passes after, then confirm the real request/response scenario still behaves correctly.",
+     "result": "failed",
+     "reason": "Correctly treats the static contract violation as direct evidence and adds a red-green check, but entirely omits the required runtime-hygiene step — no inventory of temporary files/processes/ports/env"
+    }
+   ],
+   "raw_result_hash": "d69e754ab4b369a8a625097d4986582771003ba5f103afc0152da30738a897e0",
+   "pass_rate": 0.9473684210526315
+  },
+  {
+   "runtime": "Codex",
+   "runner_identity": "codex lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Uses the failing test and stack trace as direct observed evidence to seed a hypothesis, confirms the mechanism without unnecessary competing hypotheses, then adds a red-green regression test and exercises the user scenario.",
+     "actual": "First I would run the exact failing test to capture the stack trace and pin the null dereference to a specific line, then separate observed facts from inferences before reading surrounding code. If more than one input or branch could produce the null, I would add the smallest assertion or log needed to prove which value is unexpectedly null and why it was allowed through. I would verify by adding a regression test that fails before the fix and passes after it, then rerun the original deterministic test and any directly related path.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Records reproduction rate and observed facts, keeps competing hypotheses while the evidence is ambiguous, and instruments only when existing evidence cannot discriminate.",
+     "actual": "First I would reproduce the timeout under repeated runs, record the exact command, failure rate, and elapsed timings, and split observations from hypotheses instead of assuming the slow layer. Then I would bisect by layer with the cheapest midpoint probes available, for example timing client-to-gateway versus gateway-to-downstream calls, so I can prove whether the delay is before, inside, or after checkout. I would verify by showing the instrumented evidence that identifies the mechanism, then rerunning the checkout enough times after the fix to demonstrate the timeout no longer occurs and the latency distribution is back within expectations.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Treats the static contract violation as direct evidence, inventories any temporary files, processes, ports, environment changes, and debugger sessions, and removes them after proving the fix.",
+     "actual": "First I would treat the static type error as deterministic evidence and inspect the handler's declared response contract alongside the concrete return paths to find which branch produces the invalid shape. If the mismatch is not obvious from the type error alone, I would add the smallest targeted test that exercises the suspect branch and captures the actual returned object. I would verify by making that regression test fail before the fix and pass after it, then rerunning the type checker to confirm the handler now satisfies the response contract.",
+     "result": "failed",
+     "reason": "Uses the static type error correctly, but omits the required inventory and cleanup of temporary files, processes, ports, env changes, or debugger sessions."
+    }
+   ],
+   "raw_result_hash": "909bd4868836d104045044521028192e222c51a7e1f41cfa83363a20fe9960b5",
+   "pass_rate": 0.9473684210526315
+  },
+  {
+   "runtime": "Hermes",
+   "runner_identity": "hermes lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Uses the failing test and stack trace as direct observed evidence to seed a hypothesis, confirms the mechanism without unnecessary competing hypotheses, then adds a red-green regression test and exercises the user scenario.",
+     "actual": "First, run the deterministic test to capture the exact stack trace and command invocation — that's the observed evidence. Then inspect the dereference site (code + stack trace line) to identify which variable is null and trace back through its initialization or data flow to find where it failed to be set. Finally, apply the fix and run the test again to verify it passes; if the fix changes a contract, add a regression test that fails on the old code and passes on the new.",
+     "result": "failed",
+     "reason": "Answer traces linearly through code rather than seeding a specific mechanism hypothesis from the stack trace, then confirming it versus competing hypotheses. Expected behavior emphasizes hypothesis-dr"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Records reproduction rate and observed facts, keeps competing hypotheses while the evidence is ambiguous, and instruments only when existing evidence cannot discriminate.",
+     "actual": "Since the timeout is intermittent, I'd start by running the checkout command repeatedly in a loop to measure the failure rate rather than guessing at causes — an unreproduced bug is a report, not a target yet. Next, I'd probe the pipeline layers in order: is it the client-side network, the gateway, the backend service, or the database? A midpoint probe (e.g. health-check or latency log at the gateway) lets me eliminate one half of the stack. Once the fault-bearing layer is isolated, I'd bisect inputs (payload size, user context) or add a targeted log line to discriminate between remaining hypotheses, then confirm the mechanism before patching.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Treats the static contract violation as direct evidence, inventories any temporary files, processes, ports, environment changes, and debugger sessions, and removes them after proving the fix.",
+     "actual": "First, capture the exact static contract violation output (the tool's error message) to establish what the expected shape is and what the handler is actually returning — that's the observed evidence. Then inspect the handler's response construction and compare it against the contract definition to see which field is missing, extra, or mis-typed; if the static check alone is ambiguous, add a minimal runtime assertion or log line to capture the actual response shape at execution time. After identifying the mechanism, fix the handler, re-run the static check to confirm green, and add a regression test that constructs the real user-facing request and validates the response shape.",
+     "result": "failed",
+     "reason": "Answer treats the static contract violation as evidence and follows the contract inspection path, but completely omits the required inventory-and-cleanup step: it never records temporary files, proces"
+    }
+   ],
+   "raw_result_hash": "cb677ac8a868647e71a467d35513b4c142cf4c80853effdff0e2eea9c1fff978",
+   "pass_rate": 0.8947368421052632
+  },
+  {
+   "runtime": "generic",
+   "runner_identity": "generic lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "git",
+     "result": "failed",
+     "reason": "routed:git"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "cicd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Uses the failing test and stack trace as direct observed evidence to seed a hypothesis, confirms the mechanism without unnecessary competing hypotheses, then adds a red-green regression test and exercises the user scenario.",
+     "actual": "Since the test is deterministic, I'd first run it to reproduce on demand and capture the exact invocation plus the full stack trace verbatim (Observed), noting the file:line where the null is dereferenced. The trace directly seeds the hypothesis, so I'd follow that frame to the value that is null and trace backward to where it should have been assigned — instrumenting with a log/assert only if the trace can't prove which upstream path left it null. I'd verify by writing a regression test that fails (red) on the pre-fix code and passes (green) after the fix, then exercise the real user scenario, and remove any temporary probes.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Records reproduction rate and observed facts, keeps competing hypotheses while the evidence is ambiguous, and instruments only when existing evidence cannot discriminate.",
+     "actual": "An intermittent failure isn't yet a debugging target, so I'd first run the checkout N times and record the failure rate rather than theorizing from a single timeout. Because the evidence is ambiguous, I'd hold competing hypotheses (e.g. downstream DB lock vs. gateway/network stall vs. payment-service latency) and bisect along the layer axis — probe the midpoint of the client→gateway→service→DB pipeline with timing logs to learn which half owns the delay, then recurse into that half only, letting the cheapest discriminating probe decide. I'd verify by adding a regression test around the confirmed slow hop; if the race stays too flaky to pin down, I'd timebox, act on the best-evidenced hypothesis, and state which assumption remains unconfirmed.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Treats the static contract violation as direct evidence, inventories any temporary files, processes, ports, environment changes, and debugger sessions, and removes them after proving the fix.",
+     "actual": "The static type violation directly establishes the failure, so I'd start from the reported contract mismatch — read the exact expected vs. actual response shape and locate every return path in the handler that can produce it. I'd confirm which branch emits the invalid shape by the static evidence (or a minimal assert/log at the return sites if more than one path is plausible) rather than guessing, keeping Observed (the type error text) separate from Inferred (which branch). I'd fix that branch and verify with a regression test asserting the response conforms to the contract — failing before the fix, passing after — plus exercising the real request that hits that path.",
+     "result": "failed",
+     "reason": "Correctly treats the static contract violation as direct evidence and fixes the offending branch, but omits the required runtime-hygiene step — it never inventories temporary files/processes/ports/env"
+    }
+   ],
+   "raw_result_hash": "1c341aa3496e2434fdd2e325df32e7f472f60d948fb2e1abee1ea23388856053",
+   "pass_rate": 0.8947368421052632
+  }
+ ],
+ "pass_rate": 0.9210526315789473
+}

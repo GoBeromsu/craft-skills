@@ -1,0 +1,582 @@
+{
+ "protocol_version": 1,
+ "protocol_hash": "2448ba5ba0a7cf6d07e83b20358bbc01f111c4c249dff018aec8593ef4f0a014",
+ "skill": "agents",
+ "pr": "campaign-2026-07-12",
+ "tested_tree_sha": "e7942e8344ee61a4218c64eab7a7016f56e58b1f",
+ "inputs": {
+  "baseline_ref": "e855f68",
+  "candidate_ref": "cecd4bcfceba722e7e67be169cacf4898539f626",
+  "no_skill_ref": "e855f68"
+ },
+ "runtimes": [
+  {
+   "runtime": "Claude Code",
+   "runner_identity": "claude-code lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Routes the schema and tool-selection behavior change through agents, adds versioned eval coverage, and routes validation and execution enforcement to security.",
+     "actual": "A tool-schema change is a behavior change, so eval-first: I'd add golden-set cases covering both a well-formed customer ID (must pass) and malformed ones — wrong length, wrong charset, empty, injection-y — that must be rejected. Then tighten the schema with an explicit type/pattern/format constraint on the customer-ID field. Because acting on model-produced tool arguments is untrusted input, I'd route the actual validate-and-reject enforcement through the `security` skill rather than re-implementing it here. Verify by replaying the eval set and confirming every invalid case is rejected and the valid case still passes.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Externalizes the reused prompt to a versioned prompts file, treats the dashboard copy as deployment state, and evaluates the behavior change.",
+     "actual": "This is the 'prompts are code' law: the prompt is reused, so it earns externalization to a versioned `prompts/` file that has its own diff, with the vendor dashboard treated as a deployment target, not the source of truth. First I'd pin current behavior with an eval/golden set so the move is provably behavior-preserving, then copy the exact prompt into the committed file and wire the agent to load it from there. Verify by running the eval set before and after and confirming identical outputs, and that the prompt now lives in a diffable, reviewable file.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Routes allowlists, permissions, execution controls, and consumption caps to security rather than treating them as agent-behavior work.",
+     "actual": "I'd decline the unrestricted framing — tool allowlists, permissions, execution controls, and consumption caps are the `security` skill's domain, not this one, and 'loop until it finishes' with no bound violates the untrusted-output law. First I'd load `security` for its allowlist/permission and consumption-cap (loop/iteration and token/cost bound) patterns and scope the agent to only the tools it needs. Verify with security's detection commands that an allowlist and hard iteration/consumption caps are in place, plus an eval proving the agent still completes its task within those bounds.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "7ef2b28d3ef4fb25616de330d632dc1e59f60f17f00a9bec389237843ede6466",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Codex",
+   "runner_identity": "codex lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Routes the schema and tool-selection behavior change through agents, adds versioned eval coverage, and routes validation and execution enforcement to security.",
+     "actual": "First I would treat the schema change as an agent-behavior change and add an eval case that tries invalid customer IDs at the boundaries we care about, such as malformed format, empty value, and wrong length. Then I would tighten the tool argument schema itself with a typed constraint, for example a regex/enum/length-bounded field in pydantic or zod, rather than relying on prompt text. I would verify by replaying the eval set and confirming invalid IDs are rejected with an actionable error while valid IDs still pass.",
+     "result": "failed",
+     "reason": "Adds schema constraints and evals, but does not route validation/execution enforcement to security as required."
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Externalizes the reused prompt to a versioned prompts file, treats the dashboard copy as deployment state, and evaluates the behavior change.",
+     "actual": "First I would create a versioned prompt file in `prompts/` because this prompt is reused and needs an independent, reviewable diff instead of living only in a vendor dashboard. Before switching the agent to load that file, I would add or update eval cases that prove the prompt still produces the required behavior after the migration. I would verify by checking the prompt file is committed in git, the eval suite passes against the file-backed prompt, and any dashboard copy is treated only as a deployment target, not the source of truth.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Routes allowlists, permissions, execution controls, and consumption caps to security rather than treating them as agent-behavior work.",
+     "actual": "First I would stop and route this through `security`, because unrestricted tool access and open-ended looping are explicitly outside this skill and require allowlist, permission, execution-control, and consumption-cap decisions. From the `agents` side, the only acceptable first step is to define the intended task scope and the minimal tool/action surface the agent actually needs, then hand off enforcement to `security`. I would verify only after `security` review by confirming the final tool grant is least-privilege, loop/termination limits are explicit, and the behavior still passes its eval cases under those constraints.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "184c322e97d2f833a105989a47a05964189cdf644ac3f1db6c9939e1187d7d42",
+   "pass_rate": 0.9473684210526315
+  },
+  {
+   "runtime": "Hermes",
+   "runner_identity": "hermes lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Routes the schema and tool-selection behavior change through agents, adds versioned eval coverage, and routes validation and execution enforcement to security.",
+     "actual": "First, load the skill's PHASE 0 work-type gate: this tool-schema tightening is a behavior change, so I'd read references/evals.md and references/security.md (hand-off). Then I'd write a golden-set eval case that submits known-invalid customer IDs (empty string, wrong format, SQL injection attempts) and asserts the tool returns a clean rejection. I'd externalize the schema to skills/agents/references/tool-schemas.md if it isn't there already, update the schema with the new validation rule, and verify by running the detection command `git diff --name-only` to confirm both the schema and evals/ are touched, then exercising the eval runner to confirm invalid IDs are rejected before any code ships.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Externalizes the reused prompt to a versioned prompts file, treats the dashboard copy as deployment state, and evaluates the behavior change.",
+     "actual": "This is prompt authoring, which is itself a behavior change, so I'd read references/evals.md followed by references/prompts-tools.md before doing anything. I'd pull the support-agent system prompt from the vendor dashboard into a versioned file at prompts/support-agent.md, commit it alongside the code it gates, and create an eval case that asserts the agent's output quality (tone, tool-selection accuracy, refusal of off-topic queries) is unchanged or better when fed from the file-based prompt versus the dashboard copy. Verification: the detection command shows no FLAG (evals/ is touched), the prompt file passes code-review diffability, and the eval runner green-lights the new prompt source as a drop-in replacement.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Routes allowlists, permissions, execution controls, and consumption caps to security rather than treating them as agent-behavior work.",
+     "actual": "I would NOT do this as stated — the skill explicitly hands off 'tool allowlists, permissions, execution controls, and consumption caps' to the security skill, and giving an agent unrestricted access with an unbounded loop is the exact anti-pattern those controls exist to prevent. Instead, I'd load the security skill first, define a bounded tool-allowlist and a max-iteration guard (or loop-detection timeout) as enforcement, create an eval that confirms the agent still solves the task within those bounds, and verify the change by running the security detection command and the eval runner. The skill's 'LLM output is untrusted input' law means an unbounded loop could amplify every bad output into a full-system incident; shipping this without those guards would violate the core laws themselves.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "1164c8208530e33a8467cd2286cea0d4469c00cb55c136b6249f02678e9eb87f",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "generic",
+   "runner_identity": "generic lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "agents",
+     "result": "failed",
+     "reason": "routed:agents"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "agents",
+     "result": "failed",
+     "reason": "routed:agents"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Routes the schema and tool-selection behavior change through agents, adds versioned eval coverage, and routes validation and execution enforcement to security.",
+     "actual": "A tool-schema change is a behavior change, so PHASE 0 routes me to references/evals.md then prompts-tools.md — I would first add an eval case to the versioned golden set that feeds a malformed customer ID and asserts the schema rejects it (plus a valid ID that still passes), then tighten the schema's format/pattern constraint to satisfy it. Because the model's tool-call argument is untrusted input, I would also load the `security` skill for the parse/validate/limit enforcement rather than trusting the schema alone. I verify by replaying the golden set until the new case passes and running the detect grep to confirm the diff touches evals/, producing no FLAG line.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Externalizes the reused prompt to a versioned prompts file, treats the dashboard copy as deployment state, and evaluates the behavior change.",
+     "actual": "Under 'prompts are code', reuse alone justifies externalizing, so I move the prompt into a versioned prompts/ file that the runtime reads, demoting the vendor dashboard to a deployment target rather than the source of truth. Since a prompt edit is itself a behavior change, I capture the current dashboard prompt verbatim and add/keep an eval case so the migration is proven behavior-preserving. I verify by replaying the golden set to confirm identical outputs and running the detect grep to ensure the prompts/ change lands with a corresponding evals/ change (no FLAG).",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Routes allowlists, permissions, execution controls, and consumption caps to security rather than treating them as agent-behavior work.",
+     "actual": "This is out of scope for the `agents` skill — tool allowlists, permissions, execution controls, and consumption caps all belong to `security`, so I would stop and load that skill rather than grant unrestricted access here. Unrestricted tools plus an unbounded loop violates 'LLM output is untrusted input' and needs an allowlist, execution controls, and a consumption/iteration cap, not a blank check. I verify by confirming the enforcement (bounded loop, scoped tool allowlist, caps) is implemented via `security`'s detection commands, and I do not treat 'let it loop until it finishes' as acceptable without those bounds.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "fc62c7a217739d58370ba34135ffd83c21f1a755b0040ae5432c16bae6b322ca",
+   "pass_rate": 0.8947368421052632
+  }
+ ],
+ "pass_rate": 0.9605263157894737
+}

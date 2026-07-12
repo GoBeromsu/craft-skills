@@ -1,0 +1,583 @@
+{
+ "protocol_version": 1,
+ "protocol_hash": "169c409e6c57339f76dc13fddece54278b8e3a26f900d64b2737a4ebea24d8b4",
+ "skill": "document",
+ "pr": "campaign-2026-07-12",
+ "tested_tree_sha": "e7942e8344ee61a4218c64eab7a7016f56e58b1f",
+ "inputs": {
+  "baseline_ref": "e855f68",
+  "candidate_ref": "cecd4bcfceba722e7e67be169cacf4898539f626",
+  "no_skill_ref": "e855f68"
+ },
+ "runtimes": [
+  {
+   "runtime": "Claude Code",
+   "runner_identity": "claude-code lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Routes to the ADR reference and template without creating unrelated artifacts.",
+     "actual": "Since the user explicitly asked to record a decision as an ADR, I'd load references/adr.md and author from templates/adr.md at docs/decisions/ADR-NNN-{topic}.md. First I'd scan docs/decisions/ for the highest existing ADR-NNN to assign the next sequential number and check docs/decisions/README.md for the index. Verify: the file answers exactly one cross-cutting decision, lives at the canonical path with a slug matching its topic, and includes the ## Changelog section; I'd add it to the ADR index.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Counts and proposes canonical destinations, but does not move existing files without an explicit request.",
+     "actual": "Because the user explicitly requested the move, the sprawl guard is satisfied, so I'd first run the root-doc-sprawl check (find -maxdepth 1 -name '*.md' | sed | grep -viE conventional-set | wc -l) to confirm the five loose files and list exactly which they are. Then I'd read each one and route it by the primary question it answers into an ontology row — research→docs/research/, spec/plan→docs/exec-plan/active/{slug}/, rule→docs/rules/, decision→docs/decisions/ — proposing one canonical destination per file. Verify: every file lands at exactly one canonical location, no file dead-ends, and each slug matches its target folder/filename before I move it.",
+     "result": "failed",
+     "reason": "Expected behavior is to count and PROPOSE canonical destinations without moving existing files absent an explicit request. The answer declares the sprawl guard 'satisfied' and proceeds to actually mov"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Makes the body immutable only after the user explicitly adopts the finalized-plan contract and records finalized: true.",
+     "actual": "I'd separate the two actions: committing does not lock a plan — a working plan stays editable after commits — so \"lock its body forever\" means adopting the finalized-plan contract, which requires this explicit user request (which I have). I'd set finalized: true in the plan's frontmatter at docs/exec-plan/active/{slug}/plan.md, leaving it in active/ since lifecycle is folder position, not the finalized flag, and let the commit proceed normally. Verify: only the finalization frontmatter changed, the body is now treated as immutable, and I'd note that any future scope change must get a new slug with this plan marked status: superseded + superseded-by.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "9a32e24d28ceb305ae785e3ecbc3641184e2ec636d81ddcfdd7c97642a3f7d3d",
+   "pass_rate": 0.9473684210526315
+  },
+  {
+   "runtime": "Codex",
+   "runner_identity": "codex lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Routes to the ADR reference and template without creating unrelated artifacts.",
+     "actual": "First I would load `references/adr.md`, inspect `docs/decisions/README.md` and existing `docs/decisions/ADR-*.md` files, then create or update the next `ADR-NNN-{topic}.md` using `templates/adr.md` because this is an explicit decision-record request. I would verify that the artifact lives under `docs/decisions/`, that the ADR number/topic fit the repo’s sequence, and that the document includes an in-place `## Changelog` instead of splitting the decision across another doc.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Counts and proposes canonical destinations, but does not move existing files without an explicit request.",
+     "actual": "First I would run the root-doc-sprawl check, list the five loose root Markdown files, and classify each one into exactly one canonical destination under `docs/` using the ontology or routing table. Because the user explicitly asked to put them under `docs`, I would move them only after assigning each file a single target path rather than dumping them into a generic folder. I would verify by rerunning the root-doc-sprawl check, confirming each moved file answers one question only, and checking that no file was duplicated or left at the root.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Makes the body immutable only after the user explicitly adopts the finalized-plan contract and records finalized: true.",
+     "actual": "First I would treat this as an explicit adoption of the finalized-plan contract: move or confirm the plan at `docs/exec-plan/active/{slug}/plan.md`, update its frontmatter to `finalized: true`, and leave the body unchanged from that point forward except for allowed lifecycle fields. I would not create an ADR, because this is a plan-lifecycle action, not a decision-record request. I would verify that the plan remains under `active/{slug}/`, that `finalized: true` is present, and that any future scope change would require a new slug with the old plan marked `status: superseded` and `superseded-by: {new-slug}`.",
+     "result": "failed",
+     "reason": "Treats the prompt as automatic adoption of the finalized-plan contract instead of requiring explicit contract adoption before making the body immutable."
+    }
+   ],
+   "raw_result_hash": "5dac3d83e6971e509e972f49da126ca7e9af6928035ea53b06c9efcf3a6f08f4",
+   "pass_rate": 0.9473684210526315
+  },
+  {
+   "runtime": "Hermes",
+   "runner_identity": "hermes lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Routes to the ADR reference and template without creating unrelated artifacts.",
+     "actual": "First read `references/adr.md` to understand the ADR format, then list `docs/decisions/` to find the highest existing NNN so the new ADR gets the next sequential number. Create the file at `docs/decisions/ADR-NNN-{topic}.md` using `templates/adr.md`, fill in the title/decision/context/consequences and the `## Changelog` entry, then verify by reading the created file back to confirm the frontmatter and changelog block are correct.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Counts and proposes canonical destinations, but does not move existing files without an explicit request.",
+     "actual": "Run the root-doc-sprawl check command to identify the five loose files by name, then read each one to determine which ontology bucket it belongs to (research, spec, plan, decision, rule, or references). Propose the canonical `docs/` path for each file and wait for explicit approval before moving anything — after moves complete, re-run the sprawl check to verify the root is clean.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Makes the body immutable only after the user explicitly adopts the finalized-plan contract and records finalized: true.",
+     "actual": "Locate the plan at `docs/exec-plan/active/{slug}/plan.md`, read it to confirm the current frontmatter, then patch it to add `finalized: true` and update any status fields to reflect immutability. Verify by reading the file afterward to confirm the frontmatter reflects the lock, and if the user explicitly confirmed the commit action, run `git add` + `git commit` — but I would not commit based solely on interpreting intent from wording.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "b81cb9c557ad0ccec5b99f73a754e94d7a4a284cb68be3a85a73f73f2bad6497",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "generic",
+   "runner_identity": "generic lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "programming",
+     "result": "failed",
+     "reason": "routed:programming"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Routes to the ADR reference and template without creating unrelated artifacts.",
+     "actual": "This is an explicit decision-record request, so I'd load references/adr.md and author from templates/adr.md, filing at docs/decisions/ADR-NNN-{topic}.md — picking the next free NNN by scanning existing docs/decisions/ADR-*.md and matching the slug to the topic. I'd capture exactly one cross-cutting, expensive-to-reverse decision and include the required ## Changelog section. Verify: the file sits in docs/decisions/ with a unique sequential NNN, its slug matches the filename, and it answers only that one decision (no research/plan content bleeding in).",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Counts and proposes canonical destinations, but does not move existing files without an explicit request.",
+     "actual": "First I'd run the root-doc-sprawl check (find -maxdepth 1 -name '*.md' | sed | grep -viE the conventional set | wc -l) to confirm which of the five are genuinely loose versus conventional (README/AGENTS/CLAUDE/CHANGELOG/CONTRIBUTING/LICENSE/CODE_OF_CONDUCT). For each remaining file I'd read it, determine the single primary question it answers, and route it to its canonical docs/ path via the ontology/routing tables (e.g. research→docs/research/, spec/plan→docs/exec-plan/active/{slug}/, rule→docs/rules/, ADR→docs/decisions/). Since the user explicitly asked to move them, I'd propose the mapping then relocate. Verify: each lands at exactly one canonical location for its type and the root-doc-sprawl count drops accordingly.",
+     "result": "failed",
+     "reason": "Expected behavior is to count and propose canonical destinations but NOT move existing files absent an explicit (confirmed) request; the answer treats the vague 'put them under docs' as sufficient aut"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Makes the body immutable only after the user explicitly adopts the finalized-plan contract and records finalized: true.",
+     "actual": "Committing a plan does not lock it — a working plan stays editable after commits — but 'lock its body forever' is the explicit adoption of the immutable-plan contract, so I'd set finalized: true in the plan's frontmatter (keeping it at docs/exec-plan/active/{slug}/plan.md) and commit. From that point only lifecycle/finalization frontmatter may change; any scope change must spawn a new slug and mark this one status: superseded + superseded-by. Verify: the plan file carries finalized: true, its slug still matches its folder, and the body is unchanged by the commit.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "27c18b32a0afd94ce174baec6d53aacd51610c41544b1408358fc223367a657b",
+   "pass_rate": 0.8947368421052632
+  }
+ ],
+ "pass_rate": 0.9473684210526315
+}

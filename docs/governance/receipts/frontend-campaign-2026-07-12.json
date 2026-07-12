@@ -1,0 +1,579 @@
+{
+ "protocol_version": 1,
+ "protocol_hash": "15f7b3bcd8f6a0df26a0866df44dbe99d4b7fa9d81e844066b75e0344cf02b9e",
+ "skill": "frontend",
+ "pr": "campaign-2026-07-12",
+ "tested_tree_sha": "e7942e8344ee61a4218c64eab7a7016f56e58b1f",
+ "inputs": {
+  "baseline_ref": "e855f68",
+  "candidate_ref": "cecd4bcfceba722e7e67be169cacf4898539f626",
+  "no_skill_ref": "e855f68"
+ },
+ "runtimes": [
+  {
+   "runtime": "Claude Code",
+   "runner_identity": "claude-code lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Inspect the incumbent primitive and implement the small composition without requiring a new architecture decision or docs/design.md update; verify the rendered states.",
+     "actual": "This is a composition using an existing primitive and existing tokens, so it skips the rendering classification and the docs/design.md gate. I'd build the new card by composing the incumbent Card primitive and referencing the existing spacing tokens rather than hardcoding values, keeping dependency direction downward (the feature imports Card, not the reverse). I'd verify by capturing the card at each relevant breakpoint/state after the last edit and comparing same-size screenshots so the responsive behavior is confirmed visually.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Classify Vite as a known incumbent and treat the rendering migration as separately scoped rather than introducing Next.js during the feature.",
+     "actual": "First I'd classify the incumbent from package.json and vite.config to confirm it's an SPA (Vite), because this is a rendering-runtime migration (SPA→SSR/RSC), which the skill treats as separately scoped rather than dropping Next.js beside the existing runtime. Since it changes rendering architecture, I'd read references/architectures.md and read/update docs/design.md to record the SSR decision before implementing. I'd verify by loading a product page and checking view-source contains server-rendered markup (not an empty shell), confirming the pages actually render on the server.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Classify the repository as truly greenfield, use the rendering decision table before scaffolding, and document the selected architecture and reusable visual pattern.",
+     "actual": "This is truly greenfield (no manifest, config, entrypoint, or source), so I'd read references/architectures.md to pick a rendering model before scaffolding — static content with one interactive newsletter widget points to SSG/islands (e.g., Astro) so pages ship as static HTML and only the widget hydrates. Because this is a rendering-architecture decision on a new project, the design.md gate applies, so I'd scaffold docs/design.md from the document skill's template first. I'd verify by inspecting the build output for static HTML pages and confirming only the newsletter widget hydrates in the browser.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "1b321247c3abbce939af279007358944721cad6e6d8598f54365f29f5665fba7",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Codex",
+   "runner_identity": "codex lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Inspect the incumbent primitive and implement the small composition without requiring a new architecture decision or docs/design.md update; verify the rendered states.",
+     "actual": "First I would classify this as a known-incumbent frontend change inside the existing React app and confirm there is already a `Card` primitive plus established spacing tokens, because this is composition work rather than an architecture or design-system change. I would build the card by reusing the incumbent primitive and token scale only, keeping any local UI state inside the component unless `references/state.md` shows it belongs higher. Verification would be a responsive check at the project’s standard breakpoints plus a quick code audit that the new component imports only existing primitives/tokens and does not introduce ad hoc spacing values.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Classify Vite as a known incumbent and treat the rendering migration as separately scoped rather than introducing Next.js during the feature.",
+     "actual": "First I would not start converting anything; I would classify the current repo as a known-incumbent Vite SPA and treat a move to Next.js as a rendering-architecture migration that requires reading `references/architectures.md` and updating `docs/design.md` before implementation. Because the skill forbids introducing a second runtime casually, I would document the migration scope, routing/data-fetching changes, and the server-rendered product-page boundary before touching code. Verification would be a documented rendering decision in `docs/design.md`, plus a migration plan that proves there will be one runtime at the end and that product pages are rendered through Next’s server path rather than duplicated in the old SPA.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Classify the repository as truly greenfield, use the rendering decision table before scaffolding, and document the selected architecture and reusable visual pattern.",
+     "actual": "First I would classify this as truly greenfield and choose the rendering model before scaffolding; for a public marketing site with mostly static content and one small interactive widget, I would select an SSG or islands architecture from `references/architectures.md`, with islands preferred if the newsletter widget is the only hydrated surface. Because this is a structural rendering and visual-system decision, I would create or update `docs/design.md` up front with the architecture choice, design primitives, and widget boundary. Verification would be a build that outputs static pages with only the newsletter widget hydrated, plus a check that no broader client runtime was introduced beyond that bounded interactive island.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "3af2fac1ad138d0e733c844ccde7e714abe7fa03029a96c7f69f867ea8d636c7",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Hermes",
+   "runner_identity": "hermes lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Inspect the incumbent primitive and implement the small composition without requiring a new architecture decision or docs/design.md update; verify the rendered states.",
+     "actual": "I'd first check package.json and src/ for the existing Card component and spacing tokens, then build the responsive card by importing those primitives directly—no design.md gate needed for a small fix. I'd verify by running the dev server and confirming the card renders with the correct spacing in both mobile and desktop viewports.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Classify Vite as a known incumbent and treat the rendering migration as separately scoped rather than introducing Next.js during the feature.",
+     "actual": "This is a rendering-model migration, so I'd read references/architectures.md first, then update docs/design.md to document the Vite→Next.js decision before touching any code. I'd scaffold the Next.js app structure alongside the existing Vite code, migrate pages incrementally (likely via app/ router for SSR), and verify by building both the server-rendered product pages and checking that the dev server runs without the old Vite config.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Classify the repository as truly greenfield, use the rendering decision table before scaffolding, and document the selected architecture and reusable visual pattern.",
+     "actual": "I'd classify this as truly greenfield, read references/architectures.md to choose SSG for the static content plus islands for the newsletter widget (since it needs hydration), then scaffold the project with that rendering model. I'd verify by running the build, confirming all pages generate static HTML, and checking that the newsletter widget hydrates correctly in the browser.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "4c15300048cf5633619f4184852289b85584d81bbf48f72af060e7b5e2947f58",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "generic",
+   "runner_identity": "generic lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "frontend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Inspect the incumbent primitive and implement the small composition without requiring a new architecture decision or docs/design.md update; verify the rendered states.",
+     "actual": "First I'd classify the repo as a known React incumbent from package.json/entrypoints and locate the existing Card primitive and spacing tokens, then compose the responsive card by reusing them — no new architecture and no new tokens. Because this only uses an existing primitive with no material design-system or token change, the docs/design.md gate does not apply and I proceed while preserving incumbent patterns, keeping dependency direction downward (feature imports the primitive, never the reverse). I'd verify visually: capture the card at every relevant breakpoint/state after the last edit and diff same-size captures to confirm the responsive result.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Classify Vite as a known incumbent and treat the rendering migration as separately scoped rather than introducing Next.js during the feature.",
+     "actual": "This is a rendering-mode migration (Vite SPA → Next.js SSR/RSC), which is separately scoped, not an in-place fix, so first I'd confirm the Vite SPA is the known incumbent (vite.config, no server entry) and read references/architectures.md for the SSR/RSC rules rather than bolting a second runtime beside the incumbent. Since this changes the rendering architecture, the design.md gate applies: I'd read/update docs/design.md to record the rendering decision before implementation. I'd verify by checking the served response for product pages — server-rendered markup present in view-source / initial HTML (not an empty client shell) — plus a clean production build.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Classify the repository as truly greenfield, use the rendering decision table before scaffolding, and document the selected architecture and reusable visual pattern.",
+     "actual": "First I'd confirm this is truly greenfield (no manifest, framework config, entrypoint, or frontend source), then use the references/architectures.md decision table to choose a model before scaffolding — static content with one small interactive newsletter widget points to SSG/islands (e.g., Astro) rather than a full SPA/SSR runtime. Because this is a rendering-architecture decision, the design.md gate applies, so I'd scaffold docs/design.md (via the document skill's template) to record the choice and any tokens before building. I'd verify the build emits fully static HTML per page with content in the served markup, and that only the newsletter widget hydrates as an island.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "163b8f583c67b079245855881cf686aa2c8501e868610cece29773745ec73394",
+   "pass_rate": 1.0
+  }
+ ],
+ "pass_rate": 1.0
+}

@@ -1,0 +1,580 @@
+{
+ "protocol_version": 1,
+ "protocol_hash": "206e0d36bc41d9ea25de45596aeee0761d881d434f71799537dcee7c1cee9a28",
+ "skill": "ml",
+ "pr": "campaign-2026-07-12",
+ "tested_tree_sha": "e7942e8344ee61a4218c64eab7a7016f56e58b1f",
+ "inputs": {
+  "baseline_ref": "e855f68",
+  "candidate_ref": "cecd4bcfceba722e7e67be169cacf4898539f626",
+  "no_skill_ref": "e855f68"
+ },
+ "runtimes": [
+  {
+   "runtime": "Claude Code",
+   "runner_identity": "claude-code lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Preserves the incumbent Conda environment and project layout, reads dataset and training guidance, uses a leakage-safe split, and records a reproducible result.",
+     "actual": "This is a training run in an established project, so I load references/training.md and preserve the existing Conda environment and layout rather than introducing uv or a new src/ scaffold. First I confirm a train/validation/test split exists and fit every preprocessing statistic (scaling, imputation, vocabulary) on the train split only, then fit a boring reference model — majority-class/linear/frozen-pretrained — so there is an actual baseline number on the board. I verify by producing a reproducibility receipt for the run (committed git SHA, config file, data-manifest hash) and reporting the baseline metric with the test set touched exactly once at the end. I also run the datasets.md leakage-detection commands to rule out a split computed after fitting.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Uses the greenfield uv/pyproject/importable-package recipe as a default, selects task-appropriate tooling, and establishes a locked environment.",
+     "actual": "A new project plus dataset work matches two task-gate rows, so I load references/project-layout.md and references/datasets.md before writing code. First I scaffold the greenfield default — uv-locked pyproject.toml, a src/ package with importable training code, and a smoke test — then construct the dataset by making the train/validation/test splits before computing any statistic and adding a pandera (or equivalent) schema check on ingest. I verify by confirming the environment is locked and the package imports and its smoke test passes, and by running the leakage-detection commands to prove no scaler/vocabulary was fit across the concatenated splits. Each artifact gets a data-manifest hash so later runs are reproducible from SHA + config + manifest.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Runs a smoke test for the throwaway exploration; because the result informs a decision, applies the baseline, comparison, variance, and run-receipt discipline.",
+     "actual": "\"Quick exploration\" doesn't lower the bar here, because the result will be reported to the team to drive a decision, so the full baseline-comparison-variance ladder from references/training.md applies. First I make sure the new feature is derived and any fitted parameters computed on the train split only — a leaked feature is the classic way exploration inflates a number — and I put its metric in the same table as the existing baseline, not \"better than nothing.\" I verify improvement by running ≥3 seeds and reporting variance, not a single-seed delta, keeping the test set untouched until the one final read. Then I hand the team a receipt (SHA, config, manifest) so the comparison is rerunnable, and flag it plainly if the gain is within seed noise.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "53371e457db13048896f0b6d6d7560a10a83a86daca387af8c348fb13bbf3d3c",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Codex",
+   "runner_identity": "codex lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Preserves the incumbent Conda environment and project layout, reads dataset and training guidance, uses a leakage-safe split, and records a reproducible result.",
+     "actual": "First I would preserve the existing Conda environment and project layout, then read the dataset/training discipline against this repo: confirm the split already exists or create train/validation/test before fitting any scaler, imputer, encoder, or feature selector. I would run a boring baseline first with one config per run and record a reproducibility receipt: git SHA, config path, and data manifest hash. I would verify by checking that every fitted preprocessing artifact was trained on the train split only, the baseline metric is reported on validation during tuning and on test only once at the end, and the run can be traced back to the exact code and data state.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Uses the greenfield uv/pyproject/importable-package recipe as a default, selects task-appropriate tooling, and establishes a locked environment.",
+     "actual": "First I would scaffold a greenfield tabular ML project with a locked `uv` environment, `pyproject.toml`, importable `src/` package layout, and a dataset manifest plus schema checks before any modeling code. Then I would construct the dataset pipeline so the split happens before any learned preprocessing, and add a baseline training entrypoint that runs from a single config file. I would verify by creating a smoke run end to end, confirming the environment is reproducible from lockfiles, and checking that the baseline result is tied to a git SHA, config, and manifest hash.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Runs a smoke test for the throwaway exploration; because the result informs a decision, applies the baseline, comparison, variance, and run-receipt discipline.",
+     "actual": "First I would treat \"quick exploration\" as non-reportable until it clears the same honesty bar: make sure the baseline already exists, freeze the test set, and run the feature idea against train/validation only under the existing environment and layout. If the feature requires fitting anything, that fit happens on train only, and I would compare it against the baseline over at least 3 seeds rather than a single lucky run. I would verify by showing the baseline and candidate in the same table with seed variance, confirming the test set was not used in the exploration loop, and only then deciding whether the feature merits a final one-time test evaluation.",
+     "result": "failed",
+     "reason": "Covers baseline and variance discipline, but does not explicitly include a smoke test or a reproducibility run receipt."
+    }
+   ],
+   "raw_result_hash": "8fcc7ffad00170e23bc30fd401263cc71bf1627c07039235aa046dc1d7913e0a",
+   "pass_rate": 0.9473684210526315
+  },
+  {
+   "runtime": "Hermes",
+   "runner_identity": "hermes lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Preserves the incumbent Conda environment and project layout, reads dataset and training guidance, uses a leakage-safe split, and records a reproducible result.",
+     "actual": "First, do not alter the existing Conda environment; instead, load the references-training-md reference to confirm the baseline discipline ladder. Verify that the test set is touched only once, the code is committed to a specific git SHA for reproducibility, and the train-validation-test split was performed before any scaler or imputation fit to prevent leakage.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Uses the greenfield uv/pyproject/importable-package recipe as a default, selects task-appropriate tooling, and establishes a locked environment.",
+     "actual": "First, read references-project-layout-md and scaffold the project using uv for dependency locking and a src/ layout to ensure the code is importable. Verify by confirming the existence of a locked environment file, that the package is importable from the src/ directory, and that any reported result includes a reproducibility receipt.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Runs a smoke test for the throwaway exploration; because the result informs a decision, applies the baseline, comparison, variance, and run-receipt discipline.",
+     "actual": "First, verify that a boring baseline (majority-class, linear, or frozen-pretrained) already exists on the board because a novel approach cannot be judged without one. Verify the reported improvement number is in the same table as the baseline and that variance over 3 or more seeds is reported to rule out a single-seed lucky result.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "7bf31a091ac7e60093635d21d62b443bb8b8c889a24aaf40cd3e02f7ce3d7f65",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "generic",
+   "runner_identity": "generic lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "ml",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "agents",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "programming",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Preserves the incumbent Conda environment and project layout, reads dataset and training guidance, uses a leakage-safe split, and records a reproducible result.",
+     "actual": "First I'd load references/training.md and preserve the existing Conda environment and project layout rather than introducing uv or a new structure — an established project keeps its lockfile. Before fitting anything, I'd confirm the train/validation/test split exists and that every fitted statistic (scaler, imputer, vocabulary) is fit on the train split only, then establish a concrete baseline (majority-class or linear), not 'better than nothing.' I'd verify by producing a reproducibility receipt — clean git SHA (no uncommitted changes), config file, and data-manifest hash — reporting the baseline number with variance over ≥3 seeds, and confirming the test set was touched exactly once for the final number.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Uses the greenfield uv/pyproject/importable-package recipe as a default, selects task-appropriate tooling, and establishes a locked environment.",
+     "actual": "This hits two task-gate rows, so I'd load both references/project-layout.md and references/datasets.md (tabular, so no vision). I'd scaffold a greenfield layout using the uv/pyproject.toml/src/ recipe with a locked environment and a smoke test, then construct the dataset doing the train/val/test split before computing any statistic from the data. I'd verify the environment is locked and the training code is importable, the smoke test passes, and that scaling/imputation/vocabulary steps run after the split on the train partition only — checked with the leakage-detection commands in datasets.md.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Runs a smoke test for the throwaway exploration; because the result informs a decision, applies the baseline, comparison, variance, and run-receipt discipline.",
+     "actual": "'Quick' doesn't exempt this — because the result will be reported to the team to decide whether it beats the baseline, the full baseline-comparison and variance discipline applies, so I'd load references/training.md and datasets.md. First I'd fit the feature transformation on the train split only and run the leakage checks, since a feature engineered on all data before the split is the classic invisible-in-code failure. I'd verify by putting the new-feature number and the baseline number in the same table, reporting both with variance over ≥3 seeds, keeping the test set touched once, and attaching a reproducibility receipt so the team's decision rests on a rerunnable comparison rather than a single lucky seed.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "190569851407dbfa932655fa3578e0628a4b77941f7a6f6c835e6c1caf5363b0",
+   "pass_rate": 1.0
+  }
+ ],
+ "pass_rate": 0.9868421052631579
+}

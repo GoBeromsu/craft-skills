@@ -1,0 +1,583 @@
+{
+ "protocol_version": 1,
+ "protocol_hash": "c36ec18671e706ffbd6c55178bacb4e142836358b000b6b3d725086f2d5c6beb",
+ "skill": "skillify",
+ "pr": "campaign-2026-07-12",
+ "tested_tree_sha": "e7942e8344ee61a4218c64eab7a7016f56e58b1f",
+ "inputs": {
+  "baseline_ref": "e855f68",
+  "candidate_ref": "cecd4bcfceba722e7e67be169cacf4898539f626",
+  "no_skill_ref": "e855f68"
+ },
+ "runtimes": [
+  {
+   "runtime": "Claude Code",
+   "runner_identity": "claude-code lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Inspect worktree state and create an isolated worktree/branch without stashing or modifying unrelated edits; record the correction and follow the linked validation and delivery flow.",
+     "actual": "Because the worktree has unrelated edits, I'd take the clean-start route for dirty state (lifecycle §1): leave those edits in place and spin up an isolated worktree/branch from the fetched remote with `git worktree add -b <topic> ../craft-skills-<topic> origin/main` — never stash or carry the unrelated work in. Then I'd apply the correction via the three-way split (§3): the corrected behavior as an imperative step, one `## Anti-patterns` entry, and a `CHANGELOG.md` bullet (PATCH, or MINOR if a step was added) with a `Provenance:` clause if the operator handed over source. I'd verify by running both Layer-1 validators in `--diff-base origin/main...HEAD` mode and confirming they pass. Success is the correction encoded in the skill (not left in chat memory) and delivered via branch → PR.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Run admission and eval-first authoring, create the package to contract, then use the lifecycle delivery flow rather than restating branch or PR mechanics.",
+     "actual": "First I'd run the admission check — reusable craft, owned by this library, vendor-agnostic — and confirm no sibling already owns deployment-check triggers so the description gets a clean 'Not for X' boundary. Then, eval-first: draft `evals/evals.json` (~3 scenarios) and `evals/triggers.json` (8 should-trigger + 8 near-miss) before writing `SKILL.md`, scaffold `skills/deployment-check/` off a clean branch, author the frontmatter-exact SKILL.md, and seed `CHANGELOG.md`. I'd verify by running the 16 trigger prompts to confirm it fires only on intended prompts, running both Layer-1 validators, then delivering via branch → commit → PR.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Use the lifecycle move/rename procedure, update references, validate the moved package, and follow the single delivery flow.",
+     "actual": "I'd use `git mv skills/lint skills/static-analysis` so history survives (lifecycle §4), then search the whole repo for the old `lint` path and rewrite every hit — script paths, reference links, verification blocks, CI workflow steps, and any other skill's cross-references — and delete stale bytecode/cache under the old path. Since the name changes, I'd update the frontmatter `name` to equal the new directory and add a CHANGELOG bullet. I'd verify by running `validate-skill-format.py` to confirm the moved package is still well-formed and by loading it in Claude Code to confirm it appears under its trigger phrases, then deliver via branch → PR.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "03045773f97259f9ba930d1968afa659014c8fafcd79620e89a654e1a1e699c4",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Codex",
+   "runner_identity": "codex lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Inspect worktree state and create an isolated worktree/branch without stashing or modifying unrelated edits; record the correction and follow the linked validation and delivery flow.",
+     "actual": "First I would treat this as an `update` and follow the clean-start route for unrelated edits: inspect `git status --short --branch`, fetch `origin`, and create an isolated worktree/branch from `origin/main` instead of touching the dirty worktree. Then I would encode the repeated correction in the `testing` package via the three-way split: patch the workflow text if the fix is reusable, add one `## Anti-patterns` entry for the failure mode, bump `metadata.version` per the rubric, and append one dated `CHANGELOG.md` bullet. I would verify by running the two Layer-1 validators in diff mode against `origin/main...HEAD` and by checking that the relevant eval scenarios and trigger prompts now pass for the updated skill.",
+     "result": "failed",
+     "reason": "Covers clean-start isolation and correction recording, but omits the required branch→commit→PR delivery flow."
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Run admission and eval-first authoring, create the package to contract, then use the lifecycle delivery flow rather than restating branch or PR mechanics.",
+     "actual": "First I would run the admission check to confirm a deployment-check workflow is reusable craft, not already owned by another upstream harness, and still vendor-agnostic as plain Markdown with `${ENV_VAR}` indirection. If it passes, I would treat it as `create`: draft `evals/evals.json` and `evals/triggers.json` before writing `skills/deployment-check/SKILL.md`, then author the package with the required frontmatter, a seed `CHANGELOG.md`, and only the extra parts the package-parts table actually justifies. I would verify by exercising the drafted eval scenarios and the 16 trigger prompts, then running both validators so the new package passes format and runtime-hygiene checks.",
+     "result": "failed",
+     "reason": "Covers admission, eval-first authoring, and validation, but never routes the change through the lifecycle delivery flow."
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Use the lifecycle move/rename procedure, update references, validate the moved package, and follow the single delivery flow.",
+     "actual": "First I would treat this as a move/rename and use `git mv skills/lint skills/static-analysis` so history survives, then search the repository for every reference to `skills/lint` or the old skill name and rewrite those active paths and links. I would also update the moved package’s frontmatter `name`, description boundaries if needed, version/changelog, and remove any stale cache or bytecode left under the old path. I would verify by running `validate-skill-format.py` on the moved package, running the runtime-hygiene validator on the diff, and confirming the renamed skill still resolves under its trigger phrases rather than relying on any routing index.",
+     "result": "failed",
+     "reason": "Covers move/rename mechanics, reference updates, and validation, but omits the required branch→commit→PR delivery flow."
+    }
+   ],
+   "raw_result_hash": "fc2931376b6c436c34ff74d4e391f87aa8703f8e1d4e59c44e21c498c4240a37",
+   "pass_rate": 0.8421052631578947
+  },
+  {
+   "runtime": "Hermes",
+   "runner_identity": "hermes lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Inspect worktree state and create an isolated worktree/branch without stashing or modifying unrelated edits; record the correction and follow the linked validation and delivery flow.",
+     "actual": "First, run git status and stash/untrack the unrelated edits rather than discarding them, then fetch origin, switch to main, pull --ff-only, and branch off for the update. Verify by confirming git status is clean on the new branch (only the testing-skill changes present) and that validate-skill-format.py --diff-base origin/main...HEAD passes before touching SKILL.md.",
+     "result": "failed",
+     "reason": "Answer proposes stashing/untracking unrelated edits, which directly violates the explicit requirement to NOT modify or stash the current worktree state. The correct approach is creating an isolated wo"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Run admission and eval-first authoring, create the package to contract, then use the lifecycle delivery flow rather than restating branch or PR mechanics.",
+     "actual": "First, run the admission check against the three questions (reusable craft, not already owned upstream, vendor-agnostic Markdown-only), then sprint the eval-first loop by drafting evals/evals.json and evals/triggers.json before writing any SKILL.md. Verify by running the drafted trigger prompts against the description to confirm the 8 should-trigger and 8 near-miss prompts route correctly, and that Layer-1 validators pass once the package is written.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Use the lifecycle move/rename procedure, update references, validate the moved package, and follow the single delivery flow.",
+     "actual": "First, git mv the entire old lint directory into the static-analysis area so history survives, carrying references/, scripts/, tests/, evals/, .env.example, and CHANGELOG.md. Verify by rewriting every routing surface (master RESOLVER.md, area RESOLVER.md, internal path references), then confirming skill_view(name='static-analysis/lint') resolves and git diff --check passes with no orphans.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "ee29c34e79cf804e7a53006342a402890afe5e63c0a7d78723e472c11052f7ee",
+   "pass_rate": 0.9473684210526315
+  },
+  {
+   "runtime": "generic",
+   "runner_identity": "generic lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "skillify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "security",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Inspect worktree state and create an isolated worktree/branch without stashing or modifying unrelated edits; record the correction and follow the linked validation and delivery flow.",
+     "actual": "Because the worktree has unrelated edits, I would NOT stash or carry them — I'd run the clean-start route (lifecycle §1), leaving that work in place and creating an isolated worktree+branch off the fetched remote: `git worktree add -b <topic> ../craft-skills-<topic> origin/main`. Then I'd apply the record-a-correction three-way split (§3): encode the corrected behavior as an imperative workflow step, add a `## Anti-patterns` entry for the failure it prevents, and append a CHANGELOG bullet with any `Provenance:` clause, bumping PATCH (MINOR if a step was added). I'd verify by running both Layer-1 validators in `--diff-base origin/main...HEAD` mode and confirming the correction actually appears in all three locations before opening the PR (§6).",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Run admission and eval-first authoring, create the package to contract, then use the lifecycle delivery flow rather than restating branch or PR mechanics.",
+     "actual": "First I'd run the admission check (reusable craft / owned here / vendor-agnostic) — all three must be yes — then, before writing any SKILL.md, draft `evals/evals.json` (~3 scenarios) and `evals/triggers.json` (8 should-trigger + 8 near-miss), since evals are the quality gate, not a sign-off. Then per create (§2) I'd `mkdir skills/deployment-check`, author the SKILL.md with a verb-first name equal to the directory and a description weaving 3–6 real trigger phrases plus a 'Not for X' boundary, and seed CHANGELOG.md with the first dated bullet. I'd verify by running the eval scenarios and confirming all 16 trigger prompts route correctly, then passing both Layer-1 validators before the branch→PR flow.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Use the lifecycle move/rename procedure, update references, validate the moved package, and follow the single delivery flow.",
+     "actual": "Per move/rename (§4) I'd use `git mv skills/lint skills/static-analysis` so history survives, then grep the whole repo for the old path/name and rewrite every hit — script paths, reference links, verification blocks, CI steps, and other skills' cross-references — and also rename the frontmatter `name` to match the new directory. I'd delete any stale bytecode/cache under the old path. I'd verify not by a routing index but by loading: open Claude Code to confirm the moved skill still surfaces under its trigger phrases, and run `python3 skills/skillify/scripts/validate-skill-format.py` to confirm the package is still well-formed before delivery.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "f0490c9d01946ade168cdda82b0e84da2c83e83e26b05afad558b7c8bf1e5b11",
+   "pass_rate": 1.0
+  }
+ ],
+ "pass_rate": 0.9473684210526315
+}

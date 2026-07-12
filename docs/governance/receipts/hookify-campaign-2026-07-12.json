@@ -1,0 +1,581 @@
+{
+ "protocol_version": 1,
+ "protocol_hash": "5b2db80b25f4b8cf17d7767b4faef2529698baa3bf48be55fa13d3bad7e05203",
+ "skill": "hookify",
+ "pr": "campaign-2026-07-12",
+ "tested_tree_sha": "e7942e8344ee61a4218c64eab7a7016f56e58b1f",
+ "inputs": {
+  "baseline_ref": "e855f68",
+  "candidate_ref": "cecd4bcfceba722e7e67be169cacf4898539f626",
+  "no_skill_ref": "e855f68"
+ },
+ "runtimes": [
+  {
+   "runtime": "Claude Code",
+   "runner_identity": "claude-code lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Chooses the earliest deterministic surface, measures blocking suitability, installs through guards.d, and proves violating and clean inputs.",
+     "actual": "This is a tier-3 pre-commit case (irreversible once committed) that passes the 3 gates — path checks are local, cheap, deterministic, and stable. I'd copy scripts/guard-skeleton.py and narrow it to one rule: if any staged file path is under secrets/, exit non-zero with the rule and exact fix on one stderr line; then drop it as an executable into .githooks/guards.d/ and point core.hooksPath at .githooks once via scripts/pre-commit.sh (hookify owns this dispatcher). I'd verify by proving it red per Phase 5: stage a file under secrets/ and watch the commit get blocked, then stage a clean file and watch it pass — observing both directly, with --selfcheck as smoke proof.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Requires focused red/green regressions around parsing/content decisions and uses selfcheck only as smoke proof.",
+     "actual": "First I'd state the rule in one sentence (invalid license field in package metadata → reject with the corrected field), then confirm the 3 gates: parsing metadata is local, cheap, and repeatable, so it can graduate to a blocking surface (tier-2 lint or tier-3 pre-commit). I'd copy guard-skeleton.py, narrow it to exactly this one rule reading the metadata file from stdin/args, and because it's a nontrivial parsing guard add focused red/green regression tests around the decision boundary (valid vs. invalid license), not a broad suite. I'd verify by running those tests plus proving it red: feed a bad license field and watch it block, feed a valid one and watch it pass.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Rejects a blocking hook because it depends on external state; recommends a softer surface while the rule is observed.",
+     "actual": "I would not put this behind a blocking hook: a guard that reaches a live policy service over the network fails gate G1 (local and cheap, no external state), so it's disqualified from a blocking pre-commit per the anti-patterns. Instead I'd either move the check to a softer surface — a non-blocking lint warning or CI backstop where network calls are acceptable — or, if the policy can be snapshotted, export it to deterministic local data the guard reads offline so it becomes cheap and repeatable. I'd verify the local-only version the normal way (prove it red/green); the networked version I'd explicitly flag as unfit for in-loop enforcement rather than install it and pretend it's deterministic.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "f8bc444549539b54ad351ca195c4318666b212d49c3cc8850d08af9d1a927163",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Codex",
+   "runner_identity": "codex lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Chooses the earliest deterministic surface, measures blocking suitability, installs through guards.d, and proves violating and clean inputs.",
+     "actual": "First I would state the rule in one sentence: \"A commit must not add any tracked file under `secrets/`; move the file out of `secrets/` or stop staging it.\" Then I would install this at tier-3 pre-commit by adding a single executable guard under `.githooks/guards.d/` that inspects staged added paths, because the violation becomes irreversible at commit time and is cheap and deterministic to detect locally. I would verify by staging a new file under `secrets/` and observing the commit get blocked with a one-line fix message, then staging a normal file outside `secrets/` and observing the commit pass.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Requires focused red/green regressions around parsing/content decisions and uses selfcheck only as smoke proof.",
+     "actual": "First I would check the 3 gates and keep it off a blocking hook unless the metadata shape and accepted license values are already stable, cheap to parse locally, and accurate on representative files. If it passes, I would author one focused guard from the skeleton that parses the package metadata file and rejects invalid `license` values with the exact allowed fix; the surface would usually be tier-2 lint first, graduating to pre-commit only after it proves stable. I would verify with one known-bad metadata sample that is rejected and one known-good sample that passes, plus focused regression tests around the parser and the license decision boundary.",
+     "result": "failed",
+     "reason": "Covers focused red/green regressions, but does not mention using selfcheck only as smoke proof."
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Rejects a blocking hook because it depends on external state; recommends a softer surface while the rule is observed.",
+     "actual": "I would not put this behind a blocking pre-commit hook first, because a live policy service fails G1: it depends on external state and network availability, so it is not local and cheap. The correct first move is to keep the rule at a softer surface such as CI or an optional non-blocking check while preserving any local deterministic subset as a separate guard. I would verify by showing that local commits still work offline and that the remote policy check reliably reports violations in its non-blocking or CI surface instead of freezing normal local workflow.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "ee3195cd33a98ea85f3d3f4af772aa2e38357d0345e849d50700b5b5749b48ad",
+   "pass_rate": 0.9473684210526315
+  },
+  {
+   "runtime": "Hermes",
+   "runner_identity": "hermes lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Chooses the earliest deterministic surface, measures blocking suitability, installs through guards.d, and proves violating and clean inputs.",
+     "actual": "I would copy the guard-skeleton.py into .githooks/guards.d/ and script it to inspect the staged diff for any file under secrets/, exiting non-zero with a message to move secrets to a vault. To install, I would set core.hooksPath to .githooks via git config, then verify by staging a file under secrets/ to confirm the block and a file in src/ to confirm the pass.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Requires focused red/green regressions around parsing/content decisions and uses selfcheck only as smoke proof.",
+     "actual": "Because this checks file content quality, I would implement it as a tier-2 lint rule (e.g., a custom script run by the linter) rather than a blocking pre-commit hook, per the surface ladder. If a hook is mandated, I would adapt guard-skeleton.py to parse the metadata file in the diff and reject invalid licenses, verifying it by committing a known-bad license field and a valid one.",
+     "result": "failed",
+     "reason": "Answer pivots to a tier-2 lint rule instead of committing to a blocking guard with focused red/green regressions; verification mentions bad/valid inputs but does not demonstrate the parsing/content de"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Rejects a blocking hook because it depends on external state; recommends a softer surface while the rule is observed.",
+     "actual": "I would reject this as a blocking local hook because it violates G1 (Local and cheap) by requiring network access to a live backend, which introduces latency and nondeterminism. Instead, I would configure it as a CI backstop or a non-blocking pre-push warning, verifying that local commits remain fast while the remote policy is still enforced on push.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "3cce4227af3585419ad4904892601f412eb7e65fd333f916a0646bd86249e85a",
+   "pass_rate": 0.9473684210526315
+  },
+  {
+   "runtime": "generic",
+   "runner_identity": "generic lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "hookify",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "git",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "debug",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "testing",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "refactor",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "backend",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Chooses the earliest deterministic surface, measures blocking suitability, installs through guards.d, and proves violating and clean inputs.",
+     "actual": "This is a tier-3 pre-commit guard on an observable target (the staged path), and hookify owns the core.hooksPath/.githooks mechanism. First I'd copy scripts/guard-skeleton.py and narrow it to one rule — reject any staged file whose path is under secrets/, exiting non-zero with the rule and exact fix on one stderr line — then drop it as an executable into .githooks/guards.d/ and point core.hooksPath at .githooks once via scripts/pre-commit.sh (never a competing pre-commit file). I'd verify by proving it red: stage a file under secrets/ and watch the commit get blocked, then stage a clean file and watch it pass, observing both directly (guard-skeleton --selfcheck as smoke proof).",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Requires focused red/green regressions around parsing/content decisions and uses selfcheck only as smoke proof.",
+     "actual": "This is a content-quality rule, so before it goes behind a blocking hook it must clear the 3-gate check — cheap/local, accurate/repeatable, and stable (metadata schema no longer drifting). I'd author one narrow guard from guard-skeleton.py that parses the package metadata and rejects invalid license fields, and because it's a nontrivial parsing guard I'd add focused red/green regression tests around the decision boundary (valid vs. invalid license values), not a broad suite. While the false-positive rate is still being observed I'd install it as a non-blocking lint (tier-2), graduating it to a .githooks/guards.d/ pre-commit only once measured evidence supports blocking; I'd verify by running a known-invalid field (blocked) and a valid field (passes) and confirming the regression tests are green.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Rejects a blocking hook because it depends on external state; recommends a softer surface while the rule is observed.",
+     "actual": "I would not make this a blocking pre-commit hook: reaching a live policy service fails gate G1 (local and cheap, no external state), and a guard that hits the network is nondeterministic and slow — a false block from a flaky service teaches --no-verify and erodes trust in every other hook. First I'd state that back and instead either replicate the policy as a deterministic local check that needs no network, or place the live call at a softer, non-blocking surface (a lint warning the agent runs mid-task, with CI as the backstop for whoever skipped local). I'd verify the local-check path the normal way — prove it red on a violating and a clean input — and confirm the guard never touches the network so it stays deterministic.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "7814df51f204309454a52e3e0e5d2ec8941c394ac417e874ba6ba0991d1a5e54",
+   "pass_rate": 1.0
+  }
+ ],
+ "pass_rate": 0.9736842105263158
+}

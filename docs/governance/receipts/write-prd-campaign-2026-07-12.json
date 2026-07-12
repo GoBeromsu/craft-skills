@@ -1,0 +1,586 @@
+{
+ "protocol_version": 1,
+ "protocol_hash": "5f63147f396b745fe59e93dfc7e85965ea76abb94125cc971545a85932284db0",
+ "skill": "write-prd",
+ "pr": "campaign-2026-07-12",
+ "tested_tree_sha": "e7942e8344ee61a4218c64eab7a7016f56e58b1f",
+ "inputs": {
+  "baseline_ref": "e855f68",
+  "candidate_ref": "cecd4bcfceba722e7e67be169cacf4898539f626",
+  "no_skill_ref": "e855f68"
+ },
+ "runtimes": [
+  {
+   "runtime": "Claude Code",
+   "runner_identity": "claude-code lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Returns a completed PRD with evidence-supported content and Open Issues for unknowns.",
+     "actual": "First I would open templates/prd.template.md to fix the section order and table shapes, then in New draft mode fill only the sections the template structure and approved scope support, drawing every field from the product idea and pushing any unresolved fact into Open Issues with an owner role and review point rather than inventing answers. I would strip all instructional/example text so the deliverable is a filled PRD, not the blank frame. I verify by running the Quality Check: Problem explains user pain and business cost before naming features, Objectives/Features In/Success Metrics/Timeline are mutually consistent, metrics are measurable or state how they'll be measured, and no body TBDs remain.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Preserves the supplied structure and approved scope rather than forcing the packaged sequence.",
+     "actual": "First I would read the supplied template end-to-end to learn its exact section order and table shapes, since a user-provided template overrides the packaged default, then work in Complete draft mode: preserve existing filled content, replace placeholders only where context supports a concrete answer, and convert every remaining placeholder into an Open Issue with owner and due date. I would not reorder or restructure the document. I verify by diffing against the original to confirm order and filled content are preserved, that no placeholder text survives in the body, and that each unresolved item now lives in Open Issues with Open status.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Assesses distinct approved outcomes without imposing a numeric objective cap.",
+     "actual": "First I would run a Review-draft pass, listing the distinct approved outcomes across the multi-team scope and mapping each Objective to the outcome and use case it expresses, checking that every scoped team's outcome is represented and that overlapping objectives are consolidated rather than padded to a fixed count. Since the request is review-only, I would report gaps rather than rewrite unless completion was asked. I verify by confirming each approved outcome traces to at least one Objective and each Objective traces back to an outcome, flagging any team scope with no covering objective as a missing-objective finding.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "03d14bcdc5709d20f5f08b6261f946d9669c1ce474d73219d5c7a06935f2be94",
+   "pass_rate": 1.0
+  },
+  {
+   "runtime": "Codex",
+   "runner_identity": "codex lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Returns a completed PRD with evidence-supported content and Open Issues for unknowns.",
+     "actual": "I would start from `templates/prd.template.md` as the default frame, then pull the strongest available product context from the user’s idea and convert missing facts into explicit Open Issues instead of inventing them. I would verify by checking that the Problem, users, objectives, scope, metrics, rollout/phasing, and open issues are all present and internally consistent, with instructional template text removed from the final PRD.",
+     "result": "failed",
+     "reason": "Describes a process instead of returning a completed PRD with evidence-backed content and explicit Open Issues."
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Preserves the supplied structure and approved scope rather than forcing the packaged sequence.",
+     "actual": "I would preserve the supplied template’s existing section order and table shapes, keep any valid filled content, and replace placeholders only where the provided context supports a concrete answer. I would verify by reviewing each section for stale placeholders, ensuring unresolved items were moved into Open Issues with owner and review point, and confirming the completed draft still matches the original template structure.",
+     "result": "failed",
+     "reason": "States the right approach but does not actually complete the supplied PRD template in its existing structure."
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Assesses distinct approved outcomes without imposing a numeric objective cap.",
+     "actual": "I would first inspect whether the current objectives map cleanly to the distinct approved outcomes across the multi-team scope, consolidating overlap but adding objectives where separate outcomes are materially different. I would verify by tracing each in-scope workstream and timeline item back to an objective, and by checking that success metrics and exclusions still align without leaving any major team-owned scope unsupported by an objective.",
+     "result": "failed",
+     "reason": "Outlines a review method but does not actually assess whether the PRD has enough objectives for the approved scope."
+    }
+   ],
+   "raw_result_hash": "da775121a5ced2d8cefc6471ff9467b9545e763b0a48965e46c6a233b64ded4d",
+   "pass_rate": 0.8421052631578947
+  },
+  {
+   "runtime": "Hermes",
+   "runner_identity": "hermes lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Returns a completed PRD with evidence-supported content and Open Issues for unknowns.",
+     "actual": "First, I would load the `write-prd` skill to read the packaged template at `templates/prd.template.md` and understand its required sections. Then I'd ask one concise question about the product's core problem, target user, and desired outcome if the idea is rough enough to risk a misleading PRD. With that context, I'd fill the template sections (One Pager, Scope, Metrics, Rollout, Open Issues, History) using available product notes and mark unresolved facts as Open Issues rather than inventing answers.",
+     "result": "failed",
+     "reason": "Describes a process ('First, I would...') rather than returning an actual completed PRD with evidence-supported content and Open Issues; no deliverable presented"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Preserves the supplied structure and approved scope rather than forcing the packaged sequence.",
+     "actual": "I'd read the supplied template first to lock in its section order and table shapes, treating the user-provided structure as authoritative. Then I'd sweep through each section: replace placeholders with concrete answers from available context (product notes, meeting notes, tickets), preserve any already-filled content, and convert remaining unresolved placeholders into Open Issues with an owner role and review point. I'd remove instructional prompts and example blocks from the final deliverable, keeping only the filled PRD.",
+     "result": "failed",
+     "reason": "Describes an intent to preserve supplied structure but provides no evidence of the completed template or assessment that the structure was actually preserved; no deliverable presented"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Assesses distinct approved outcomes without imposing a numeric objective cap.",
+     "actual": "I'd read the PRD's Objectives section alongside the approved multi-team scope description to trace each scope item back to an objective. Then I'd check for gaps — any approved scope work not traceable to an objective, any objective covering disjoint outcome sets, and any objectives that merely restate features rather than express outcomes. I'd deliver a verdict with specific gaps (missing objectives, weak scope boundaries, unmeasurable metrics) and patch the draft only if the user asked for completion rather than a review-only response.",
+     "result": "failed",
+     "reason": "Describes a review methodology and mentions checking for gaps without imposing a cap, but delivers no actual verdict with specific gaps or assessment of the PRD; only intent stated, no output produced"
+    }
+   ],
+   "raw_result_hash": "43952ae0a2d9b33caccf1d4073204deb313781b5317fa99dfc854a68b41afb77",
+   "pass_rate": 0.8421052631578947
+  },
+  {
+   "runtime": "generic",
+   "runner_identity": "generic lane via local CLI (campaign-2026-07-12)",
+   "cases": [
+    {
+     "case_id": "trigger-should-01",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-02",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-03",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-04",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-05",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-06",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "none",
+     "result": "failed",
+     "reason": "routed:none"
+    },
+    {
+     "case_id": "trigger-should-07",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-should-08",
+     "kind": "trigger",
+     "expected": "should_trigger",
+     "actual": "write-prd",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-01",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-02",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-03",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "document",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-04",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "none",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-05",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "write-report",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-06",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "research",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-07",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "init",
+     "result": "passed"
+    },
+    {
+     "case_id": "trigger-nomiss-08",
+     "kind": "trigger",
+     "expected": "should_not_trigger",
+     "actual": "api",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-01",
+     "kind": "behavior",
+     "expected": "Returns a completed PRD with evidence-supported content and Open Issues for unknowns.",
+     "actual": "This is New-draft mode with no user template, so I would first open `templates/prd.template.md` to lock in its section order and table shapes as the frame, then mine the provided product idea for problem, users, use cases, objectives, in/out scope, metrics, and phasing. Where the idea is thin I write a best-effort draft and push unresolved facts into Open Issues with an owner role and review point (using TBD only in metadata, never body), and I ask one concise question only if the product/user/outcome is so unclear any PRD would mislead. I verify against the Quality Check: Problem states user pain and business cost before features; Objectives, Features In, Success Metrics, and Timeline are mutually consistent; metrics are measurable or state how; and I strip all instructional/example text so the deliverable is the filled PRD.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-02",
+     "kind": "behavior",
+     "expected": "Preserves the supplied structure and approved scope rather than forcing the packaged sequence.",
+     "actual": "This is Complete-draft mode, so I first read the supplied template end-to-end and treat its existing section order and table shapes as authoritative, overriding the packaged default. I preserve already-filled content, replace placeholders only where the product context supports a concrete answer, and convert every remaining placeholder into an Open Issue with Open status, owner role, and due date/review point rather than inventing answers. I verify the original order is untouched, that no TBD leaks into body sections (metadata only), that implied decisions are phrased as assumptions or Open Issues, and that beginner/prompt text is removed while writing in the template's language.",
+     "result": "passed"
+    },
+    {
+     "case_id": "behavior-03",
+     "kind": "behavior",
+     "expected": "Assesses distinct approved outcomes without imposing a numeric objective cap.",
+     "actual": "This is Review-draft mode framed as a question, so I first enumerate each distinct approved outcome and use case in the multi-team scope, then check that the PRD's Objectives express each one — writing as many as needed and consolidating overlap rather than applying a fixed cap. I verify by tracing traceability and consistency across Objectives ↔ Features In ↔ Success Metrics ↔ Feature Timeline, flagging any approved outcome with no owning objective as a gap and any objective unmeasurable or unmapped to scope. Because the ask is 'whether' it has enough, I return a review-only verdict with the specific missing objectives, and only patch the draft if the user also asked for completion.",
+     "result": "passed"
+    }
+   ],
+   "raw_result_hash": "e435443e15f3b9f885d5a99e0aba5b83217aa7835dbbbed2ab65173149e2018e",
+   "pass_rate": 0.9473684210526315
+  }
+ ],
+ "pass_rate": 0.9078947368421053
+}
