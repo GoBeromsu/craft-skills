@@ -18,13 +18,13 @@
 | frontend | pass | high — 모든 UI 편집에 탐지·전체 ref·design.md 강제 | possible — programming TS 작업 | partial — 무히트=greenfield 오분류 | med — root-cause·행동 테스트 부재 | pass | change | skills/frontend/SKILL.md:18-43 |
 | backend | pass | high — 고정 스택(FastAPI/uv 등) 무조건 규칙화, rule-of-three | possible — programming scaffold | partial | med — 행동 테스트·원자 커밋 누락 | pass | change | skills/backend/SKILL.md:16-59,67-84 |
 | security | pass | med — 좁은 리뷰에도 supply-chain ref·의존성 감사 반복 강제 | none | partial | high — 원자 커밋만 미명시 | pass | change | skills/security/SKILL.md:20-29,112-121 |
-| agents | pass | med — 10-line prompt 규칙·고정 5+5 케이스 획일 적용 | likely — security와 tool-permission 충돌 | partial | high — 재사용·원자 커밋 누락 | pass | change | skills/agents/SKILL.md:3,42-58; references/evals.md:18-45 |
+| agents | pass | med — 10-line prompt 규칙·고정 5+5 케이스 획일 적용 | likely — security와 tool-permission 충돌 | partial | high — 재사용·원자 커밋 누락 | pass | change | skills/agents/SKILL.md:3,42-58; skills/agents/references/evals.md:18-45 |
 | ml | pass | med — uv/src/pyproject·특정 라이브러리를 incumbent 무관 요구 | none | partial | high — 원자 커밋·root-cause 규칙 누락 | pass | change | skills/ml/SKILL.md:18-37,65 |
 | git | pass | med — 8-command gate 무조건 선행, 부재 가능한 origin/main fallback | none | partial | high — dirty work 보존 규칙 누락 | pass | change | skills/git/SKILL.md:12-25,134-143 |
 | hookify | pass | med — "test suite 필요⇒application code" 반복, 증거 대신 간접 신호 | none | partial | med — 비자명 guard 회귀 테스트 약함 | pass | change | skills/hookify/SKILL.md:47-51,54-66 |
 | init | pass | high — 요청 무관 5단계 강제, final-report 규칙 4회 중복 | likely — document의 docs/ 스캐폴드·hookify hook 소유권 충돌 | poor | med — 최소 변경·행동 테스트 약함 | pass | change | skills/init/SKILL.md:11-21,54-61,93-119 |
 | document | warn — 트리거 7개(3-6 초과) | med — plan 불변·root >3 자동 이동 절대화 | likely — init과 docs/ 스캐폴드 중복 | partial | med — 요청 외 문서 보존 약함 | pass | change | skills/document/SKILL.md:2-3,49-57,98-102 |
-| write-report | pass | low — 반복이 enforced-report 불변조건에 한정 | none | good | high — source-first·validator 증거 직접 반영 | pass | no-change | skills/write-report/SKILL.md:10-25,123-134 |
+| write-report | pass | low — 반복이 enforced-report 불변조건에 한정 | none | good | high — source-first·validator 증거 직접 반영 | pass | no-change | skills/write-report/SKILL.md:10-25,69-121 |
 
 ## 배치 구성 (change 16행, 매트릭스 행 순서, 4+4+4+4)
 
