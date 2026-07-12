@@ -66,9 +66,12 @@ install_codex() {
     printf 'REFUSED: Codex clone project root is not a directory: %s\n' "${PROJECT_ROOT}" >&2
     return 1
   fi
-  PROJECT_ROOT="$(cd "${PROJECT_ROOT}" && pwd)"
+  # Physical normalization: resolve symlinks so a link pointing into the
+  # repository cannot bypass the prefix check or the marker-pair walk.
+  PROJECT_ROOT="$(cd -P "${PROJECT_ROOT}" && pwd -P)"
+  REPO_DIR_P="$(cd -P "${REPO_DIR}" && pwd -P)"
   case "${PROJECT_ROOT}/" in
-    "${REPO_DIR}/"*)
+    "${REPO_DIR_P}/"*|"${REPO_DIR_P}")
       printf 'REFUSED: --clone must target a consumer project, not the craft-skills repository (or a path inside it).\n' >&2
       return 1
       ;;
@@ -124,34 +127,27 @@ from pathlib import Path
 config_path = Path(sys.argv[1])
 expected_path = sys.argv[2]
 external_dirs_indent = None
-skills_indent = None
+key_stack = []  # list of (indent, key) tracking real mapping ancestry
 has_expected_entry = False
 unexpected_references = []
 
 for raw_line in config_path.read_text(encoding="utf-8").splitlines():
     line = raw_line.rstrip()
-    skills_match = re.match(r"^(\s*)skills\s*:\s*(?:#.*)?$", line)
-    if skills_match:
-        skills_indent = len(skills_match.group(1))
-        external_dirs_indent = None
-        continue
-    key_match = re.match(r"^(\s*)external_dirs\s*:\s*(?:#.*)?$", line)
+    key_match = re.match(r"^(\s*)([A-Za-z0-9_-]+)\s*:\s*(?:#.*)?$", line)
     if key_match:
         indent = len(key_match.group(1))
-        # Only the canonical skills.external_dirs list counts: the key must be
-        # nested directly under an active `skills:` parent.
-        if skills_indent is not None and indent > skills_indent:
+        key = key_match.group(2)
+        while key_stack and key_stack[-1][0] >= indent:
+            key_stack.pop()
+        # The canonical list is exactly top-level `skills` -> direct child
+        # `external_dirs`: the ancestry stack must be [] for skills and
+        # [skills] for external_dirs.
+        if key == "external_dirs" and [entry[1] for entry in key_stack] == ["skills"]:
             external_dirs_indent = indent
         else:
             external_dirs_indent = None
-            if expected_path in raw_line or "craft-skills" in raw_line:
-                unexpected_references.append(line.strip())
+        key_stack.append((indent, key))
         continue
-    if skills_indent is not None and external_dirs_indent is None:
-        stripped_top = line.strip()
-        top_indent = len(line) - len(line.lstrip())
-        if stripped_top and top_indent <= skills_indent:
-            skills_indent = None
 
     if external_dirs_indent is not None:
         stripped = line.strip()
