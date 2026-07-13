@@ -74,11 +74,13 @@ test.fixme("flaky: JIRA-1234 — race on cart total update", async ({ page }) =>
 
 Both forms keep the test discoverable and its reason visible in CI output, unlike a commented-out test or a bare `.skip`.
 
-### Setup through the API, not the UI
+### Setup through the API or a narrow bootstrap, not the UI
 
-Seed prerequisite state — login, an existing account, an existing record — directly through the API or a DB seed call. Drive the UI only for the behavior actually under test. A checkout e2e test that also drives account signup through five UI screens pays that cost on every run and starts failing on someone else's unrelated signup bug.
+Create prerequisite state — login, an existing account, an existing record — through the application API or a narrow idempotent bootstrap. Drive the UI only for the behavior actually under test. A checkout e2e test that also drives account signup through five UI screens pays that cost on every run and starts failing on someone else's unrelated signup bug.
 
-Grey zone — no reliable grep for this; judge by reading the test's opening steps: do they merely reach a starting state that has nothing to do with what the test claims to verify? If yes, move that setup to an API call or fixture and start the UI interaction at the state under test.
+For production QA, use the application API or a narrowly scoped, idempotent prerequisite bootstrap. Never run a generic/full demo seed, reset, or broad cleanup unless repository-owned evidence proves the target is a dedicated disposable non-production environment.
+
+Grey zone — no reliable grep for this; judge by reading the test's opening steps: do they merely reach a starting state that has nothing to do with what the test claims to verify? If yes, move that setup to an API call or narrow fixture and start the UI interaction at the state under test.
 
 ```typescript
 // SMELL — full UI signup just to reach a logged-in state

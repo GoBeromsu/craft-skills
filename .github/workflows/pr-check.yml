@@ -139,6 +139,18 @@ jobs:
           fetch-depth: 0
       - run: python3 skills/skillify/scripts/validate-runtime-hygiene.py --diff-base origin/main...HEAD
 
+  distribution-version:
+    name: distribution-version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify package and plugin version bumps
+        run: python3 scripts/governance/tools/check_version_bump.py --diff-base origin/${{ github.base_ref }}...HEAD
+      - name: Run distribution guard tests
+        run: python3 -m unittest scripts.governance.tests.test_check_version_bump scripts.governance.tests.test_verify_plugin_install scripts.governance.tests.test_resolve_plugin_revision
+
   harness-portable:
     name: harness-portable
     runs-on: ubuntu-latest

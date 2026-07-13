@@ -2,7 +2,7 @@
 name: testing
 description: Architects and audits project test suites by selecting the cheapest layer that proves behavior and contract risk, then placing tests and fixtures for a fast, deterministic suite. Use when choosing test placement, organizing fixtures, adding an integration or e2e test, designing contract coverage, or triaging flaky suites. Not for isolated function-level red-green-refactor TDD — use programming; not for diagnosing a currently failing test — use debug; not for ML or agent eval methodology — use ml or agents.
 metadata:
-  version: 2.1.0
+  version: 2.1.1
 ---
 
 # testing
@@ -64,6 +64,11 @@ Review each reported commit for behavior evidence instead of treating output as 
 ## Core conventions (detail and detection commands in `references/conventions.md`)
 
 A test name states the behavior as Given/When/Then (`test_given_empty_cart_when_checkout_then_rejects`), never the implementation. Test code favors DAMP (readable repetition) over DRY: a factory returning a fresh instance beats a shared mutable fixture; a builder with sensible defaults and explicit overrides beats one giant shared fixture file every test partially depends on. No `sleep`, wall-clock read, or unseeded randomness inside a unit/small test — each is a flake built in on day one. Every test asserts something specific about behavior; a test incapable of failing proves nothing.
+
+## Anti-patterns
+
+- Wrapping every database test in an outer rollback when the application owns commits, rollbacks, or transaction-local RLS state → inspect transaction ownership and choose truncate or a per-test schema/database when the wrapper cannot preserve real behavior.
+- Running a generic or full demo seed to prepare production QA → create prerequisites through the application API or a narrow idempotent bootstrap; broad seed/reset remains limited to a proven dedicated disposable non-production target.
 
 ## Requirements
 

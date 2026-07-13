@@ -16,6 +16,14 @@ Do not introduce an H2-style in-memory substitute merely to avoid local database
 
 Run migrations against the development engine before relying on a schema change. A passing in-memory test does not prove production SQL compatibility.
 
+## Role and destructive target contract
+
+Detect the production engine and major version from the repository's runtime manifests, deployment configuration, or managed-database declaration. Development and integration environments use that detected engine and major; do not replace it with a fixed image tag or an in-memory substitute.
+
+Inspect application configuration, migration commands, and deployment wiring to distinguish the runtime application role from the privileged migration/admin role. Preserve that split: exercise application behavior and authorization through the runtime application role, and use the privileged migration/admin role only for explicitly owned schema migration or narrow bootstrap operations. A convenient admin URL is not an application runtime credential.
+
+Before reset, truncate, broad seed, or any other destructive data lifecycle action, require repository-owned guard evidence or target identity proving a dedicated disposable non-production target. A URL, database name, hostname, or environment label alone is not proof. If target identity or role ownership is ambiguous, stop the destructive action and retain the database unchanged.
+
 ## ORM
 
 For a truly greenfield TypeScript service, Prisma is a default choice: its schema-first generated client gives complete type coverage from model to query, migration history makes database evolution reviewable, and Prisma Studio supports inspection without ad-hoc SQL tooling.
@@ -29,4 +37,4 @@ Do not select TypeORM by default merely because it resembles decorator-based app
 | Local data inspection | Use Prisma Studio against the development database |
 | Existing ORM | Preserve the incumbent ORM; do not migrate as a feature side effect |
 
-Route public HTTP request and response conventions to the `api` skill. This reference owns database-engine fidelity and ORM selection, not endpoint contract shape.
+Route public HTTP request and response conventions to the `api` skill. This reference owns database-engine fidelity, database-role separation, destructive-target proof, and ORM selection, not endpoint contract shape.
