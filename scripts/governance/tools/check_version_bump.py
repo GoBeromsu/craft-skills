@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import subprocess
 from dataclasses import dataclass
@@ -15,9 +16,17 @@ _SEMVER = re.compile(
     r"(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?"
     r"(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$"
 )
+_ROOT_PLUGIN_MANIFESTS = (
+    ".codex-plugin/plugin.json",
+    ".claude-plugin/plugin.json",
+)
 
 
-@dataclass(frozen=True)
+class VersionCheckError(Exception):
+    pass
+
+
+@dataclass(frozen=True, slots=True)
 class SemVer:
     major: int
     minor: int
@@ -63,7 +72,7 @@ def _run_git(root: Path, *args: str) -> str:
         check=False,
     )
     if process.returncode:
-        raise RuntimeError(process.stderr.strip() or f"git {' '.join(args)} failed")
+        raise VersionCheckError(process.stderr.strip() or f"git {' '.join(args)} failed")
     return process.stdout
 
 
@@ -71,7 +80,7 @@ def _base_commit(root: Path, diff_base: str) -> str:
     if "..." in diff_base:
         left, right = diff_base.split("...", 1)
         if not left or not right:
-            raise RuntimeError(f"invalid symmetric diff range {diff_base!r}")
+            raise VersionCheckError(f"invalid symmetric diff range {diff_base!r}")
         return _run_git(root, "merge-base", left, right).strip()
     return _run_git(root, "rev-parse", diff_base).strip()
 
@@ -84,6 +93,11 @@ def _changed_packages(root: Path, diff_base: str) -> set[str]:
         if len(parts) >= 3 and parts[0] == "skills":
             packages.add(parts[1])
     return packages
+
+
+def _root_plugin_manifest_changed(root: Path, diff_base: str) -> bool:
+    changed = set(_run_git(root, "diff", "--name-only", diff_base).splitlines())
+    return any(relative in changed for relative in _ROOT_PLUGIN_MANIFESTS)
 
 
 def _git_show(root: Path, revision: str, path: str) -> str | None:
@@ -117,6 +131,45 @@ def _version_from_skill(text: str) -> str | None:
         if version_match and metadata_indent is not None and len(version_match.group(1)) > metadata_indent:
             return version_match.group(2).strip('"\'')
     return None
+
+
+def _version_from_plugin(text: str | None) -> str | None:
+    if text is None:
+        return None
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError:
+        return None
+    version = payload.get("version") if isinstance(payload, dict) else None
+    return version if isinstance(version, str) else None
+
+
+def _root_plugin_violations(root: Path, base: str) -> list[str]:
+    violations: list[str] = []
+    current_versions: dict[str, str] = {}
+    base_versions: dict[str, str] = {}
+    for relative in _ROOT_PLUGIN_MANIFESTS:
+        current_path = root / relative
+        current_text = current_path.read_text(encoding="utf-8") if current_path.exists() else None
+        current_version = _version_from_plugin(current_text)
+        base_version = _version_from_plugin(_git_show(root, base, relative))
+        if current_version is None or _parse_semver(current_version) is None:
+            violations.append(f"{relative}: root plugin version is not valid semver")
+        else:
+            current_versions[relative] = current_version
+        if base_version is None or _parse_semver(base_version) is None:
+            violations.append(f"{relative}: base root plugin version is not valid semver")
+        else:
+            base_versions[relative] = base_version
+
+    if len(set(current_versions.values())) > 1:
+        violations.append("root plugin versions must match")
+    for relative in _ROOT_PLUGIN_MANIFESTS:
+        current = _parse_semver(current_versions[relative]) if relative in current_versions else None
+        previous = _parse_semver(base_versions[relative]) if relative in base_versions else None
+        if current is not None and previous is not None and not previous < current:
+            violations.append(f"{relative}: root plugin version must increase")
+    return violations
 
 
 def _dated_bullets(text: str) -> set[str]:
@@ -165,7 +218,10 @@ def check(root: Path, diff_base: str) -> tuple[list[str], list[str]]:
     base = _base_commit(root, diff_base)
     violations: list[str] = []
     notes: list[str] = []
-    for package in sorted(_changed_packages(root, diff_base)):
+    changed_packages = _changed_packages(root, diff_base)
+    if changed_packages or _root_plugin_manifest_changed(root, diff_base):
+        violations.extend(_root_plugin_violations(root, base))
+    for package in sorted(changed_packages):
         skill_path = root / "skills" / package / "SKILL.md"
         current_skill = skill_path.read_text(encoding="utf-8") if skill_path.exists() else None
         base_skill = _git_show(root, base, f"skills/{package}/SKILL.md")
@@ -206,7 +262,7 @@ def main() -> int:
     args = parser.parse_args()
     try:
         violations, notes = check(Path.cwd(), args.diff_base)
-    except RuntimeError as error:
+    except VersionCheckError as error:
         print(f"check_version_bump: {error}")
         return 1
     for note in notes:
