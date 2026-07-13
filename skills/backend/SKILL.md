@@ -2,7 +2,7 @@
 name: backend
 description: Routes backend service engineering through an architecture-detection gate — layered, vertical-slice, or hexagonal — then applies dependency-direction rules, persistence choices, and folder conventions. Use when building a backend service or designing the service layer for a new endpoint, setting up production-fidelity local database development, deciding whether a service should be layered or hexagonal, choosing Prisma or preserving an incumbent ORM, adding a repository or use case to an existing service, or reviewing folder structure for architecture drift (e.g. "백엔드 구조 잡아줘"). Not for public HTTP API contracts — use api; not for UI rendering work — use frontend.
 metadata:
-  version: 3.1.0
+  version: 3.1.1
 ---
 
 # backend
@@ -49,7 +49,7 @@ Use this gate before choosing an architecture or creating service folders. Small
    | Layered service (detected or chosen) | `references/layered.md` |
    | Vertical-slice service | `references/vertical-slice.md` |
    | Hexagonal service | `references/hexagonal.md` |
-   | Any service choosing a database engine or ORM | `references/persistence.md` |
+   | Any service choosing a database engine or ORM, database role, major version, or destructive target | `references/persistence.md` |
    | Any service creating folders | `references/folders.md` |
 
 ## Requirements
@@ -73,6 +73,7 @@ Not for: public HTTP API contracts, response shapes, or REST conventions (`api` 
 - Domain code (`domain/`) importing a web framework or ORM → keep domain code framework-agnostic; put such calls behind a port/adapter.
 - A feature slice importing another slice's internals outside `shared/` → import only through `shared/` or a public interface, never another slice's internals.
 - Two or more architecture-triad folders (`controllers/`+`services/`+`repositories/` alongside `domain/`+`ports/`+`adapters/`) coexisting in one service → keep exactly one pattern per service; flag mixed-pattern drift instead of layering a third pattern on top.
+- Resetting, truncating, or seeding through whichever database URL is available → preserve the runtime application role and privileged migration/admin role split, then require repository-owned proof that the target is a dedicated disposable non-production target; an ambiguous URL or environment name stops destructive work.
 
 ## Verification
 
@@ -80,5 +81,5 @@ Not for: public HTTP API contracts, response shapes, or REST conventions (`api` 
 - [ ] Existing services retained their architecture and stack conventions; a greenfield choice was made only where no incumbent source exists.
 - [ ] The matching reference file was read before structural changes.
 - [ ] No dependency-direction violation — the grep commands in the loaded reference return no unexplained hits.
-- [ ] Database engine and ORM decisions follow `references/persistence.md`; public API contracts were defined through the `api` skill.
+- [ ] Database engine, detected production major, role separation, and destructive-target proof follow `references/persistence.md`; public API contracts were defined through the `api` skill.
 - [ ] Folder shape matches `references/folders.md` for the established or chosen architecture.

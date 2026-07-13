@@ -23,11 +23,11 @@ An integration test earns trust by touching something real — the ladder below 
 
 | Option | Mechanics | Choose when | Trade-off |
 |---|---|---|---|
-| Transaction rollback | Wrap each test in a transaction; roll back after | Fast suite, DB supports nested transactions/savepoints | Code under test must not itself commit or roll back — that breaks the wrapping transaction |
-| Truncate between tests | Delete all rows from touched tables after each test | Code under test commits internally (can't rely on rollback) | Slower than rollback; must track which tables to truncate as the schema grows |
-| Per-test schema/database | Spin up a fresh schema or database per test (or per worker) | Tests run in parallel across workers and rollback/truncate would contend | Slowest, most isolated; needs automated schema/database provisioning |
+| Transaction rollback | Wrap each test in a transaction; roll back after | The application does not own commit/rollback and no transaction-local security state must cross the wrapper | Application-owned transaction boundaries or `SET LOCAL` RLS state can make the test unlike production |
+| Truncate between tests | Delete all rows from touched tables after each test | The application owns transactions or commits, including transaction-local RLS flows | Slower than rollback; must track which tables to truncate as the schema grows |
+| Per-test schema/database | Spin up a fresh schema or database per test (or per worker) | Parallel workers, application-owned transactions, or RLS state make shared cleanup unsafe | Slowest, most isolated; needs automated schema/database provisioning |
 
-Default to transaction rollback when the code under test doesn't manage its own transactions; escalate up the table only when a rung's trade-off actually bites.
+Choose isolation from the application's transaction ownership and security-state behavior. Transaction rollback is conditional, not universal: use it only when the code under test does not control the transaction and transaction-local RLS cannot be masked. Otherwise use truncate or a per-test schema/database.
 
 ### Amortizing container startup cost
 
@@ -36,14 +36,17 @@ A containerized dependency's slow part is starting it, not querying it — start
 ```python
 @pytest.fixture(scope="session")
 def postgres_container():
-    with PostgresContainer("postgres:16") as pg:
+    production_image = os.environ["TEST_POSTGRES_IMAGE"]
+    with PostgresContainer(production_image) as pg:
         yield pg
 ```
+
+Set `TEST_POSTGRES_IMAGE` from the production manifest or managed-database declaration so the integration suite uses the detected production engine and major version. Do not encode a convenient fixed major in the fixture.
 
 A per-test container restart turns a 200ms test into a multi-second test; the same isolation guarantee comes from transaction rollback inside one long-lived container.
 
 ```python
-# Transaction-rollback isolation, as a reusable fixture
+# Conditional transaction-rollback isolation for code that does not own transactions
 @pytest.fixture
 def db_session(engine):
     connection = engine.connect()
@@ -55,7 +58,7 @@ def db_session(engine):
     connection.close()
 ```
 
-Every test using `db_session` sees a clean database and leaves no trace for the next test — no truncate step, no explicit cleanup code in the test body itself.
+This fixture is valid only when the application does not commit, roll back, open an application-owned transaction, or depend on transaction-local RLS state. Use truncate or an isolated schema/database when any of those behaviors are part of the path under test.
 
 ### Contract tests for service boundaries
 
@@ -89,6 +92,12 @@ Config differences between test and prod stay explicit and minimal:
 | Behavior | — | query semantics, isolation level, feature flags, schema version |
 
 A test environment that silently diverges on a *behavior* row is not testing the thing that ships — treat any such diff as a bug in the test setup, not an acceptable shortcut.
+
+### Database roles and RLS assertions
+
+Provision and migrate the same-major real database with the privileged migration/admin role, then run repository and service behavior through the runtime application role. RLS coverage proves both allowed and denied tenant paths through that application role; an admin-role-only passing test bypasses the production authorization boundary.
+
+If cleanup needs truncate, reset, or broad seed access, first prove the target is a dedicated disposable non-production database using a repository-owned guard or target identity. Do not reuse privileged cleanup credentials as the application's test credential.
 
 ## Fakes and mocks — a worked example
 
