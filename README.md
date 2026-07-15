@@ -88,19 +88,23 @@ The clone is optional development context; its skills have the nested layout
 
 ### Hermes
 
-**Hermes mount path:** `~/dev/GoBeromsu/craft-skills/skills`, via `skills.external_dirs` in your Hermes config:
+**Hermes canonical channel:** install the repository root as a standalone plugin:
 
-1. Clone the repo:
+**Hermes mount path:** `plugins/craft-skills/skills`.
+
+1. Install and enable the plugin:
    ```bash
-   git clone https://github.com/GoBeromsu/craft-skills.git ~/dev/GoBeromsu/craft-skills
+   hermes plugins install GoBeromsu/craft-skills --enable
    ```
-2. Add the mount to `${HERMES_HOME}/config.yaml`:
+2. Mount the plugin-owned skill tree in `${HERMES_HOME}/config.yaml`:
    ```yaml
    skills:
      external_dirs:
-       - ~/dev/GoBeromsu/craft-skills/skills
+       - plugins/craft-skills/skills
    ```
-   Use a literal absolute path — Hermes expands `~` but not `${VARS}` in config paths.
+   Hermes resolves this profile-relative path against the active `HERMES_HOME` and
+   recursively discovers the 30 `SKILL.md` packages. The plugin initializer registers
+   no skills, hooks, tools, middleware, or commands.
 3. Restart the gateway:
    ```bash
    hermes gateway restart
@@ -109,6 +113,10 @@ The clone is optional development context; its skills have the nested layout
    ```bash
 hermes skills list | grep -E 'agents|api|aside|ast-grep|backend|cicd|debug|defuddle|distil|document|frontend|git|hookify|init|ml|obsidian-bases|obsidian-canvas|obsidian-cli|obsidian-clipper|obsidian-doctor|obsidian-markdown|obsidian-mermaid|programming|refactor|research|security|skillify|testing|write-prd|write-report'
    ```
+
+When bstack is also installed, list `plugins/bstack/skills` before
+`plugins/craft-skills/skills`; bstack owns the first bare `skillify` lookup.
+Install from the repository root because the `.hermes` subdirectory is intentionally rejected.
 
 See `.hermes/README.md` for full deployment details.
 
@@ -163,7 +171,7 @@ For Codex and Hermes, a POSIX-sh installer is provided:
 ```bash
 ./install.sh codex    # print the Codex plugin commands
 ./install.sh codex --clone /path/to/project  # optionally clone development context
-./install.sh hermes   # print the config snippet to paste into ${HERMES_HOME}/config.yaml
+./install.sh hermes   # print the Hermes plugin command and profile-relative config snippet
 ./install.sh claude   # print the Claude Code marketplace commands
 ./install.sh all      # run all three
 ```
@@ -179,8 +187,8 @@ claude plugin validate .
 python3 skills/skillify/scripts/validate-skill-format.py
 ```
 
-Codex and Hermes need no separate validation step — both read `AGENTS.md` / `SKILL.md`
-directly from the tracked tree.
+Codex reads the tracked plugin tree directly. Hermes integration is covered by the isolated
+plugin install/load contract test under `scripts/governance/tests/`.
 
 ## License
 

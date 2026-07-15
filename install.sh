@@ -5,7 +5,7 @@
 #   ./install.sh claude    Print the Claude Code marketplace install commands
 #   ./install.sh codex [--clone [PROJECT_ROOT]]
 #                       Print Codex plugin commands; optionally clone development context
-#   ./install.sh hermes    Print the Hermes skills.external_dirs config snippet
+#   ./install.sh hermes    Print the Hermes plugin and skills discovery config
 #   ./install.sh all       Run all three targets
 #
 # Idempotent — safe to re-run. Never hardcodes secrets or user paths beyond $HOME.
@@ -111,10 +111,13 @@ install_codex() {
 install_hermes() {
   header "Hermes"
 
-  # Hermes mount path: ~/dev/GoBeromsu/craft-skills/skills.
-  SKILLS_PATH="${HOME}/dev/GoBeromsu/craft-skills/skills"
+  SKILLS_PATH="plugins/craft-skills/skills"
 
-  note "ASSUMPTION: Hermes config.yaml uses 'skills.external_dirs'. Verify with: hermes --help | grep -i external"
+  note "Install and enable the repository-root Hermes plugin."
+  printf '\n'
+  printf '    hermes plugins install GoBeromsu/craft-skills --enable\n'
+  printf '\n'
+  note "The .hermes subdirectory is not an install target."
   note "Automatic config.yaml editing is NOT performed — paste the snippet below manually."
 
   if [ -n "${HERMES_HOME}" ] && [ -f "${HERMES_HOME}/config.yaml" ]; then
@@ -193,7 +196,8 @@ raise SystemExit(1)
   printf '  │      - %s\n' "${SKILLS_PATH}"
   printf '  └──────────────────────────────────────────────────────────────┘\n'
   printf '\n'
-  note "Use a literal absolute path — Hermes expands ~ but NOT \${VARS} in config paths."
+  note "Hermes resolves this profile-relative path against the active HERMES_HOME."
+  note "Place plugins/bstack/skills before this entry when bstack is installed; bstack owns the first bare skillify lookup."
   printf '\n'
   step "After editing config.yaml, restart the gateway:"
   printf '\n'
@@ -248,7 +252,7 @@ case "${TARGET}" in
     printf '\n'
     printf '  claude   Print Claude Code marketplace install commands\n'
     printf '  codex    Print Codex plugin commands; --clone optionally adds development context\n'
-    printf '  hermes   Print Hermes skills.external_dirs config snippet\n'
+    printf '  hermes   Print the Hermes plugin command and profile-relative skills config\n'
     printf '  all      Run all three targets\n'
     exit 0
     ;;

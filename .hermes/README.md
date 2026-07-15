@@ -1,78 +1,50 @@
 # craft-skills — Hermes Integration
 
-This directory documents how to mount craft-skills into a Hermes Agent installation.
-No hook scripts live here yet; a `hooks/` subdirectory will be added once
-`.claude/hooks/protect-skillify.sh` is authored.
+Hermes v0.18.2 installs craft-skills from the repository root. The root plugin
+loads as a zero-registration bridge; recursive skill discovery comes from the
+plugin-owned `skills/` directory through `skills.external_dirs`.
 
----
+## Install
 
-## Mount via skills.external_dirs
+```bash
+hermes plugins install GoBeromsu/craft-skills --enable
+```
 
-**Hermes mount path:** `~/dev/GoBeromsu/craft-skills/skills`.
+The install target is `${HERMES_HOME}/plugins/craft-skills`. The `.hermes`
+subdirectory contains integration guidance only, so it is not a plugin install
+target.
 
-Hermes loads skills from an external directory by adding an entry to
-`${HERMES_HOME}/config.yaml`. Add the block below, then restart the gateway.
+## Discover Skills
+
+**Hermes mount path:** `plugins/craft-skills/skills`.
+
+Add the profile-relative plugin skill path to `${HERMES_HOME}/config.yaml`:
 
 ```yaml
-# In ${HERMES_HOME}/config.yaml — merge under the existing skills: key,
-# or add the full block if none exists yet.
 skills:
   external_dirs:
-    - ~/dev/GoBeromsu/craft-skills/skills
-                                     # Hermes expands ~ but NOT ${VARS} in
-                                     # config.yaml paths — use the stable literal path.
+    - plugins/craft-skills/skills
 ```
 
-**Steps:**
+Hermes resolves relative entries against the active `HERMES_HOME` and scans the
+directory recursively for `SKILL.md`. The bridge preserves the repository's
+flat 30-package tree and registers no plugin skills, hooks, tools, middleware,
+or commands.
 
-1. Clone this repo to a stable location (suggested: `~/dev/GoBeromsu/craft-skills`).
-2. Set `CRAFT_SKILLS_REPO_PATH` in your shell profile:
-   ```bash
-   export CRAFT_SKILLS_REPO_PATH="$HOME/dev/GoBeromsu/craft-skills"
-   ```
-3. Merge the `skills.external_dirs` block above into `${HERMES_HOME}/config.yaml`
-   using the literal clone path (not a `${VAR}` expansion).
-4. Restart the gateway:
-   ```bash
-   hermes gateway restart
-   ```
-5. Verify skills are visible:
-   ```bash
-   hermes skills list | grep -E 'document|git|init|skillify|write-prd'
-   ```
-
-**ASSUMPTION NOTE:** The `skills.external_dirs` key name and config.yaml merge behaviour
-are based on the Hermes Agent documented interface. If your installed Hermes version uses
-a different key (e.g. `external_skill_dirs`), check with `hermes --help | grep -i external`
-and adjust accordingly.
-
----
-
-## Future: skillify Write-Protection Hook
-
-Once `.claude/hooks/protect-skillify.sh` is authored and made executable (`+x`), a
-Hermes `pre_tool_call` hook can be wired to block unauthorized writes to
-`skills/skillify/**`. The hook block to merge into `${HERMES_HOME}/config.yaml` will
-look like:
+When both bstack and craft-skills are installed, bstack owns the first bare
+`skillify` lookup. Keep its path first:
 
 ```yaml
-# Future hook block — do not activate until protect-skillify.sh exists
-# hooks:
-#   pre_tool_call:
-#     - matcher: "terminal|write_file|patch|Bash|Write|Edit"
-#       command: "~/dev/GoBeromsu/craft-skills/.claude/hooks/protect-skillify.sh"
-#       timeout: 10
+skills:
+  external_dirs:
+    - plugins/bstack/skills
+    - plugins/craft-skills/skills
 ```
 
-**Key contract notes (verified from Hermes source):**
+Restart Hermes after changing the profile configuration, then verify discovery:
 
-- Event key is `pre_tool_call` (not `pre_tool_use` — that is Claude Code's key).
-- Hermes dispatches via `shlex.split(os.path.expanduser(command))` with `shell=False`,
-  so a leading `~` expands to `$HOME` but `${VARS}` do not — use a literal `~/...` path.
-- Deny protocol: stdout `{"decision":"block","reason":"..."}` + exit non-zero.
-- A hook does not fire until allowlisted. For a headless launchd gateway, set
-  `hooks_auto_accept: true` in `config.yaml` (or `HERMES_ACCEPT_HOOKS=1`) before restart.
-  The `--accept-hooks` flag is `hermes gateway run` (foreground) only.
-
-Create this file (`protect-skillify-hermes.yaml`) in `.hermes/hooks/` once the script
-is ready, mirroring the pattern documented in the bstack reference repo.
+```bash
+hermes gateway restart
+hermes skills list | grep -E 'agents|api|skillify|write-report'
+hermes plugins list --user --json
+```

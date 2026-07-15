@@ -30,14 +30,13 @@ that contract.
 |---------|------------------------|
 | **Claude Code** | Claude marketplace commands: `/plugin marketplace add GoBeromsu/craft-skills` then `/plugin install craft-skills@craft-skills`. |
 | **Codex** | Canonical channel: vendor-native plugin install with `codex plugin marketplace add GoBeromsu/craft-skills` then `codex plugin add craft-skills@craft-skills --json`; marketplace metadata lives in `.codex-plugin/plugin.json`. Codex auxiliary clone path: `.agents/skills/craft-skills` is optional development context from the user project's root; skills are nested at `.agents/skills/craft-skills/skills/<name>/SKILL.md`. |
-| **Hermes** | Hermes mount path: `~/dev/GoBeromsu/craft-skills/skills` via `skills.external_dirs` — see `.hermes/README.md`. |
+| **Hermes** | Install the repository root with `hermes plugins install GoBeromsu/craft-skills --enable`. Hermes mount path: `plugins/craft-skills/skills` through `skills.external_dirs`. Hermes recursively discovers the flat packages; the plugin initializer registers nothing. Keep `plugins/bstack/skills` first when both repos are installed so bstack owns the first bare `skillify` lookup. The `.hermes` subdirectory is not installable. |
 | **Generic agents** (Cursor, Gemini, Copilot, etc.) | Point the instruction-file import at `skills/<name>/SKILL.md`; each file is self-contained. |
 
 ## Environment variables
 
 | Variable | Meaning |
 |----------|---------|
-| `CRAFT_SKILLS_REPO_PATH` | Optional shell variable for the stable Hermes clone root `~/dev/GoBeromsu/craft-skills`; config.yaml itself uses the literal mount path. |
 | `CRAFT_WT_REMOTE_HOST` | Tailscale hostname for remote worktree exec (the worktree recipe now lives in the `git` skill's `references/worktree.md`; optional). |
 
 ## Rails

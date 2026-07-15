@@ -11,7 +11,7 @@ from pathlib import Path
 
 _ROOT = Path(__file__).resolve().parent.parent.parent.parent
 _INSTALL = _ROOT / "install.sh"
-_SKILLS_PATH = os.path.expanduser("~/dev/GoBeromsu/craft-skills/skills")
+_SKILLS_PATH = "plugins/craft-skills/skills"
 _SUBPROCESS_TIMEOUT_SECONDS = 5
 
 
@@ -87,6 +87,10 @@ class HermesConfigGuardTest(unittest.TestCase):
         result = self._hermes(f"skills:\n  external_dirs:\n    - {_SKILLS_PATH}\n")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("canonical", result.stdout)
+        self.assertIn(
+            "hermes plugins install GoBeromsu/craft-skills --enable",
+            result.stdout,
+        )
 
     def test_wrong_parent_key_fails(self) -> None:
         result = self._hermes(f"other:\n  external_dirs:\n    - {_SKILLS_PATH}\n")
