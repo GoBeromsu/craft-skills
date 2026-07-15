@@ -4,8 +4,8 @@
 # Usage:
 #   ./install.sh claude    Print the Claude Code marketplace install commands
 #   ./install.sh codex [--clone [PROJECT_ROOT]]
-#                       Print Codex plugin commands; clone only when --clone is supplied
-#   ./install.sh hermes    Print the Hermes skills.external_dirs config snippet
+#                       Print Codex plugin commands; optionally clone development context
+#   ./install.sh hermes    Print the Hermes plugin and skills discovery config
 #   ./install.sh all       Run all three targets
 #
 # Idempotent — safe to re-run. Never hardcodes secrets or user paths beyond $HOME.
@@ -42,15 +42,14 @@ install_claude() {
 install_codex() {
   header "Codex"
 
-  # Codex canonical channel: .codex-plugin/plugin.json.
-  note "Canonical channel: install the plugin defined by ${REPO_DIR}/.codex-plugin/plugin.json."
+  note "Canonical channel: install craft-skills from the Codex plugin marketplace."
   printf '\n'
-  printf '    codex plugin marketplace add %s\n' "${REPO_DIR}"
+  printf '    codex plugin marketplace add GoBeromsu/craft-skills\n'
   printf '    codex plugin add craft-skills@craft-skills --json\n'
   printf '\n'
 
   if [ "$#" -eq 0 ]; then
-    note "Optional discovery clone: ./install.sh codex --clone [PROJECT_ROOT]"
+    note "Optional development clone: ./install.sh codex --clone [PROJECT_ROOT]"
     return 0
   fi
   if [ "$#" -eq 1 ] && [ "$1" = "--clone" ]; then
@@ -91,7 +90,7 @@ install_codex() {
     # Codex auxiliary clone path: .agents/skills/craft-skills.
     CLONE_DIR="${PWD}/.agents/skills/craft-skills"
     REPO_URL="https://github.com/GoBeromsu/craft-skills.git"
-    note "Optional discovery clone target: ${CLONE_DIR}."
+    note "Optional development clone target: ${CLONE_DIR}."
 
     if [ -d "${CLONE_DIR}/.git" ]; then
       ok "Already cloned at ${CLONE_DIR} — skipping clone."
@@ -102,7 +101,7 @@ install_codex() {
       ok "Cloned to ${CLONE_DIR}"
     fi
 
-    note "The auxiliary clone has a nested layout: skills live at ${CLONE_DIR}/skills/<name>/SKILL.md."
+    note "The auxiliary development clone has a nested layout: skills live at ${CLONE_DIR}/skills/<name>/SKILL.md."
     ok "Codex setup complete."
   )
 }
@@ -112,14 +111,17 @@ install_codex() {
 install_hermes() {
   header "Hermes"
 
-  # Hermes mount path: ~/dev/GoBeromsu/craft-skills/skills.
-  SKILLS_PATH="${HOME}/dev/GoBeromsu/craft-skills/skills"
+  SKILLS_PATH="plugins/craft-skills/skills"
 
-  note "ASSUMPTION: Hermes config.yaml uses 'skills.external_dirs'. Verify with: hermes --help | grep -i external"
+  note "Install and enable the repository-root Hermes plugin."
+  printf '\n'
+  printf '    hermes plugins install GoBeromsu/craft-skills --enable\n'
+  printf '\n'
+  note "The .hermes subdirectory is not an install target."
   note "Automatic config.yaml editing is NOT performed — paste the snippet below manually."
 
   if [ -n "${HERMES_HOME}" ] && [ -f "${HERMES_HOME}/config.yaml" ]; then
-    if HERMES_REFERENCES="$(python3 - "${HERMES_HOME}/config.yaml" "${SKILLS_PATH}" <<'PY'
+    if HERMES_REFERENCES="$(python3 -c '
 import re
 import sys
 from pathlib import Path
@@ -172,7 +174,7 @@ if has_expected_entry and not unexpected_references:
     raise SystemExit(0)
 print("\n".join(unexpected_references))
 raise SystemExit(1)
-PY
+' "${HERMES_HOME}/config.yaml" "${SKILLS_PATH}"
     )"; then
       ok "config.yaml has the canonical skills.external_dirs entry."
       return 0
@@ -194,7 +196,8 @@ PY
   printf '  │      - %s\n' "${SKILLS_PATH}"
   printf '  └──────────────────────────────────────────────────────────────┘\n'
   printf '\n'
-  note "Use a literal absolute path — Hermes expands ~ but NOT \${VARS} in config paths."
+  note "Hermes resolves this profile-relative path against the active HERMES_HOME."
+  note "Place plugins/bstack/skills before this entry when bstack is installed; bstack owns the first bare skillify lookup."
   printf '\n'
   step "After editing config.yaml, restart the gateway:"
   printf '\n'
@@ -248,8 +251,8 @@ case "${TARGET}" in
     printf 'Usage: %s [claude|codex [--clone [PROJECT_ROOT]]|hermes|all]\n' "$0"
     printf '\n'
     printf '  claude   Print Claude Code marketplace install commands\n'
-    printf '  codex    Print Codex plugin commands; --clone optionally clones for discovery\n'
-    printf '  hermes   Print Hermes skills.external_dirs config snippet\n'
+    printf '  codex    Print Codex plugin commands; --clone optionally adds development context\n'
+    printf '  hermes   Print the Hermes plugin command and profile-relative skills config\n'
     printf '  all      Run all three targets\n'
     exit 0
     ;;

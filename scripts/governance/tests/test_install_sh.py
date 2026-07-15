@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import signal
 import subprocess
 import tempfile
 import unittest
@@ -10,20 +11,40 @@ from pathlib import Path
 
 _ROOT = Path(__file__).resolve().parent.parent.parent.parent
 _INSTALL = _ROOT / "install.sh"
-_SKILLS_PATH = os.path.expanduser("~/dev/GoBeromsu/craft-skills/skills")
+_SKILLS_PATH = "plugins/craft-skills/skills"
+_SUBPROCESS_TIMEOUT_SECONDS = 5
 
 
-def _run(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess:
+def _run(
+    *args: str,
+    env: dict[str, str] | None = None,
+    cwd: Path = _ROOT,
+) -> subprocess.CompletedProcess[str]:
     merged = dict(os.environ)
     if env:
         merged.update(env)
-    return subprocess.run(
-        ["bash", str(_INSTALL), *args],
-        capture_output=True,
+    command = ["bash", str(_INSTALL), *args]
+    with subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         text=True,
-        cwd=_ROOT,
+        cwd=cwd,
         env=merged,
-    )
+        start_new_session=True,
+    ) as process:
+        try:
+            stdout, stderr = process.communicate(timeout=_SUBPROCESS_TIMEOUT_SECONDS)
+        except subprocess.TimeoutExpired:
+            os.killpg(process.pid, signal.SIGKILL)
+            process.communicate(timeout=_SUBPROCESS_TIMEOUT_SECONDS)
+            raise
+        return subprocess.CompletedProcess(
+            command,
+            process.wait(),
+            stdout,
+            stderr,
+        )
 
 
 class CodexCloneGuardTest(unittest.TestCase):
@@ -47,18 +68,17 @@ class CodexCloneGuardTest(unittest.TestCase):
 
     def test_default_invocation_does_not_clone(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            result = subprocess.run(
-                ["bash", str(_INSTALL), "codex"],
-                capture_output=True,
-                text=True,
-                cwd=tmp,
-            )
+            result = _run("codex", cwd=Path(tmp))
             self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn(
+                "codex plugin marketplace add GoBeromsu/craft-skills",
+                result.stdout,
+            )
             self.assertFalse((Path(tmp) / ".agents").exists())
 
 
 class HermesConfigGuardTest(unittest.TestCase):
-    def _hermes(self, config: str) -> subprocess.CompletedProcess:
+    def _hermes(self, config: str) -> subprocess.CompletedProcess[str]:
         with tempfile.TemporaryDirectory() as tmp:
             (Path(tmp) / "config.yaml").write_text(config, encoding="utf-8")
             return _run("hermes", env={"HERMES_HOME": tmp})
@@ -67,6 +87,10 @@ class HermesConfigGuardTest(unittest.TestCase):
         result = self._hermes(f"skills:\n  external_dirs:\n    - {_SKILLS_PATH}\n")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("canonical", result.stdout)
+        self.assertIn(
+            "hermes plugins install GoBeromsu/craft-skills --enable",
+            result.stdout,
+        )
 
     def test_wrong_parent_key_fails(self) -> None:
         result = self._hermes(f"other:\n  external_dirs:\n    - {_SKILLS_PATH}\n")
@@ -80,7 +104,7 @@ class HermesConfigGuardTest(unittest.TestCase):
 
 
 class HermesAncestryGuardTest(unittest.TestCase):
-    def _hermes(self, config: str) -> subprocess.CompletedProcess:
+    def _hermes(self, config: str) -> subprocess.CompletedProcess[str]:
         with tempfile.TemporaryDirectory() as tmp:
             (Path(tmp) / "config.yaml").write_text(config, encoding="utf-8")
             return _run("hermes", env={"HERMES_HOME": tmp})
@@ -89,7 +113,7 @@ class HermesAncestryGuardTest(unittest.TestCase):
         result = self._hermes(
             f"skills:\n  nested:\n    external_dirs:\n      - {_SKILLS_PATH}\n"
         )
-        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("noncanonical", result.stdout)
 
     def test_non_toplevel_skills_parent_fails(self) -> None:
