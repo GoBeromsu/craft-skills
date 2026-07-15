@@ -29,7 +29,7 @@ that contract.
 | Runtime | How skills are loaded |
 |---------|------------------------|
 | **Claude Code** | Claude marketplace commands: `/plugin marketplace add GoBeromsu/craft-skills` then `/plugin install craft-skills@craft-skills`. |
-| **Codex** | Canonical channel: plugin install from `.codex-plugin/plugin.json` with `codex plugin marketplace add ./` then `codex plugin add craft-skills@craft-skills --json`. Codex auxiliary clone path: `.agents/skills/craft-skills` from the user project's root; skills are nested at `.agents/skills/craft-skills/skills/<name>/SKILL.md`. |
+| **Codex** | Canonical channel: vendor-native plugin install with `codex plugin marketplace add GoBeromsu/craft-skills` then `codex plugin add craft-skills@craft-skills --json`; marketplace metadata lives in `.codex-plugin/plugin.json`. Codex auxiliary clone path: `.agents/skills/craft-skills` is optional development context from the user project's root; skills are nested at `.agents/skills/craft-skills/skills/<name>/SKILL.md`. |
 | **Hermes** | Hermes mount path: `~/dev/GoBeromsu/craft-skills/skills` via `skills.external_dirs` — see `.hermes/README.md`. |
 | **Generic agents** (Cursor, Gemini, Copilot, etc.) | Point the instruction-file import at `skills/<name>/SKILL.md`; each file is self-contained. |
 

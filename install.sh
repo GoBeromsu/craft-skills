@@ -4,7 +4,7 @@
 # Usage:
 #   ./install.sh claude    Print the Claude Code marketplace install commands
 #   ./install.sh codex [--clone [PROJECT_ROOT]]
-#                       Print Codex plugin commands; clone only when --clone is supplied
+#                       Print Codex plugin commands; optionally clone development context
 #   ./install.sh hermes    Print the Hermes skills.external_dirs config snippet
 #   ./install.sh all       Run all three targets
 #
@@ -42,15 +42,14 @@ install_claude() {
 install_codex() {
   header "Codex"
 
-  # Codex canonical channel: .codex-plugin/plugin.json.
-  note "Canonical channel: install the plugin defined by ${REPO_DIR}/.codex-plugin/plugin.json."
+  note "Canonical channel: install craft-skills from the Codex plugin marketplace."
   printf '\n'
-  printf '    codex plugin marketplace add %s\n' "${REPO_DIR}"
+  printf '    codex plugin marketplace add GoBeromsu/craft-skills\n'
   printf '    codex plugin add craft-skills@craft-skills --json\n'
   printf '\n'
 
   if [ "$#" -eq 0 ]; then
-    note "Optional discovery clone: ./install.sh codex --clone [PROJECT_ROOT]"
+    note "Optional development clone: ./install.sh codex --clone [PROJECT_ROOT]"
     return 0
   fi
   if [ "$#" -eq 1 ] && [ "$1" = "--clone" ]; then
@@ -91,7 +90,7 @@ install_codex() {
     # Codex auxiliary clone path: .agents/skills/craft-skills.
     CLONE_DIR="${PWD}/.agents/skills/craft-skills"
     REPO_URL="https://github.com/GoBeromsu/craft-skills.git"
-    note "Optional discovery clone target: ${CLONE_DIR}."
+    note "Optional development clone target: ${CLONE_DIR}."
 
     if [ -d "${CLONE_DIR}/.git" ]; then
       ok "Already cloned at ${CLONE_DIR} — skipping clone."
@@ -102,7 +101,7 @@ install_codex() {
       ok "Cloned to ${CLONE_DIR}"
     fi
 
-    note "The auxiliary clone has a nested layout: skills live at ${CLONE_DIR}/skills/<name>/SKILL.md."
+    note "The auxiliary development clone has a nested layout: skills live at ${CLONE_DIR}/skills/<name>/SKILL.md."
     ok "Codex setup complete."
   )
 }
@@ -248,7 +247,7 @@ case "${TARGET}" in
     printf 'Usage: %s [claude|codex [--clone [PROJECT_ROOT]]|hermes|all]\n' "$0"
     printf '\n'
     printf '  claude   Print Claude Code marketplace install commands\n'
-    printf '  codex    Print Codex plugin commands; --clone optionally clones for discovery\n'
+    printf '  codex    Print Codex plugin commands; --clone optionally adds development context\n'
     printf '  hermes   Print Hermes skills.external_dirs config snippet\n'
     printf '  all      Run all three targets\n'
     exit 0

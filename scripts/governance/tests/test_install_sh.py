@@ -70,6 +70,10 @@ class CodexCloneGuardTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             result = _run("codex", cwd=Path(tmp))
             self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn(
+                "codex plugin marketplace add GoBeromsu/craft-skills",
+                result.stdout,
+            )
             self.assertFalse((Path(tmp) / ".agents").exists())
 
 
