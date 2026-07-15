@@ -119,7 +119,7 @@ install_hermes() {
   note "Automatic config.yaml editing is NOT performed — paste the snippet below manually."
 
   if [ -n "${HERMES_HOME}" ] && [ -f "${HERMES_HOME}/config.yaml" ]; then
-    if HERMES_REFERENCES="$(python3 - "${HERMES_HOME}/config.yaml" "${SKILLS_PATH}" <<'PY'
+    if HERMES_REFERENCES="$(python3 -c '
 import re
 import sys
 from pathlib import Path
@@ -172,7 +172,7 @@ if has_expected_entry and not unexpected_references:
     raise SystemExit(0)
 print("\n".join(unexpected_references))
 raise SystemExit(1)
-PY
+' "${HERMES_HOME}/config.yaml" "${SKILLS_PATH}"
     )"; then
       ok "config.yaml has the canonical skills.external_dirs entry."
       return 0
