@@ -1,7 +1,7 @@
 {
   "name": "craft-skills",
-  "version": "0.5.1",
-  "description": "Work-craft Codex skills across 30 packages — research, debugging, documentation, git craft, structural AST search, write-prd product requirements, API/CI-CD/frontend/backend/ML/agent engineering, testing, refactoring, security triage, and skill authoring.",
+  "version": "0.5.2",
+  "description": "Work-craft Codex skills across 31 packages — research, debugging, documentation, git craft, structural AST search, write-prd product requirements, API/CI-CD/frontend/backend/ML/agent engineering, testing, refactoring, security triage, and skill authoring.",
   "author": {
     "name": "Beomsu Koh"
   },
@@ -19,7 +19,7 @@
   "interface": {
     "displayName": "craft-skills",
     "shortDescription": "Work-craft skills for Codex",
-    "longDescription": "craft-skills packages 30 reusable Codex skills for engineering and research craft: documentation, deep research, debugging, git workflow, structural AST search, project bootstrap, hook authoring, write-prd product requirements, technical reports, API/CI-CD/frontend/backend/ML/agent engineering, testing, refactoring, security triage, and skill-authoring governance.",
+    "longDescription": "craft-skills packages 31 reusable Codex skills for engineering and research craft: documentation, deep research, debugging, git workflow, structural AST search, project bootstrap, hook authoring, write-prd product requirements, technical reports, API/CI-CD/frontend/backend/ML/agent engineering, testing, refactoring, security triage, and skill-authoring governance.",
     "developerName": "Beomsu Koh",
     "category": "Engineering",
     "capabilities": [

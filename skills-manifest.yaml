@@ -1495,6 +1495,63 @@
     },
     {
       "schema_version": 1,
+      "id": "craft-skills/tailscale",
+      "name": "tailscale",
+      "kind": "leaf",
+      "lifecycle": "active",
+      "version": "1.0.0",
+      "owner_repo": "craft-skills",
+      "owner_domain": "research-development",
+      "visibility": "public",
+      "compatibility": [
+        "claude-code",
+        "codex",
+        "hermes"
+      ],
+      "provenance": {
+        "upstream": "bstack:skills/tailscale",
+        "commit": null,
+        "license": "MIT",
+        "absorbed_from": [
+          "bstack/tailscale"
+        ]
+      },
+      "replacement_for": [],
+      "replaced_by": null,
+      "children": [],
+      "adapters": [
+        {
+          "runtime": "claude-code",
+          "surface": "plugin-skill",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        }
+      ],
+      "validation_profile": {
+        "discovery_parity": "strict",
+        "adapter_parity": "strict",
+        "provenance_license": "strict",
+        "private_data_hygiene": "strict",
+        "deprecation": "strict",
+        "routing_eval": "smoke",
+        "install_doctor": "package",
+        "topology": "leaf"
+      }
+    },
+    {
+      "schema_version": 1,
       "id": "craft-skills/testing",
       "name": "testing",
       "kind": "leaf",
