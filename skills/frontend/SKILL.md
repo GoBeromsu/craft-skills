@@ -2,7 +2,7 @@
 name: frontend
 description: 'Routes frontend engineering through incumbent-aware rendering and design-scope decisions, then applies component-reuse layering, state-placement rules, and folder conventions. Use when building a React/Vue/Svelte page or component ("프론트엔드 구조 잡아줘"), asking "should this be a client or server component", choosing SPA vs SSR/RSC vs SSG vs islands for a new or existing app, deciding where a piece of state should live, or picking a folder convention (type-based, feature-based, layered feature-sliced) for a codebase. Not for API/server design — use api(공개 HTTP 계약)/backend(서비스 구조); not for authoring design.md itself — use document.'
 metadata:
-  version: 2.2.0
+  version: 2.3.0
 ---
 
 # frontend
@@ -75,6 +75,7 @@ Use `programming` alongside this skill for per-file TypeScript/JavaScript discip
 - Mixing type-based and feature-based folders with no stated migration → follow one incumbent convention or plan a migration.
 - Repeating API base URLs, path/version prefixes, proxies, or BFF routing in components/features → use the API boundary above instead of restating transport rules in feature code.
 - Treating missing framework-config hits as proof of a greenfield app → inspect manifests, entrypoints, and source; preserve an unknown incumbent rather than scaffolding over it.
+- In a Next.js App Router project, deferring `features/<domain>/` until a second page needs the same domain state/logic, or unifying page-only UI across routes before it actually repeats → colocate page UI in `app/<route>/_components/` and move domain state/logic/API/types to `features/<domain>/` from first use (`references/folders.md`'s Next.js App Router section).
 
 ## Verification
 

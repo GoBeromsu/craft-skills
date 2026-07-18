@@ -125,6 +125,7 @@ Note the drift in the work notes or final report rather than silently reorganizi
 
 - Which rendering model a component belongs to (server vs. client leaf) → `architectures.md` in this skill.
 - Where a component's data comes from (props vs. store vs. server cache) → `state.md` in this skill.
+- Promoting an already-colocated `app/<route>/_components/` file to top-level `components/` in a Next.js App Router project uses a 2-reuse threshold, not the rule of three above → `folders.md`'s Next.js App Router section in this skill.
 - Per-file TypeScript discipline (prop typing, exhaustiveness) → `programming`.
 - Component-level test structure and coverage → `testing`.
 - Rendering untrusted content inside a component (raw HTML injection, XSS escape hatches) → `security`.
