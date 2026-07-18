@@ -35,6 +35,7 @@ only, and naming a source there fails skillify's attribution gate.
 | `research` | — | — | original (skill-library redesign) |
 | `debug` | — | — | original (skill-library redesign) |
 | `aside` | — | — | original (grounded in Aside developer docs, https://docs.aside.com/help/developers) |
+| `enrich-notes` | — | — | original (distilled from the operator's EMSE task-note enrichment session, 2026-07-18) |
 | `tailscale` | `tailscale` skill (v1.1.1) — tailnet-health gate, daemon-variant restart paths, OAuth-popup triage, profile/identity drift | [bstack](https://github.com/GoBeromsu/bstack) | derived |
 
 ## Relationship vocabulary

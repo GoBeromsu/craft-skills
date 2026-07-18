@@ -25,6 +25,7 @@ context.
 | `defuddle` | Extract clean Markdown or metadata JSON from web articles and docs with the Defuddle CLI — strips nav/ads/boilerplate and falls back to a headless browser for JS-heavy pages. |
 | `distil` | Distil transferable rules and conventions from an external source — a repo, an article, an AGENTS.md, or a third-party skill — into the library under the authoring contract, with provenance recorded. |
 | `document` | Route documentation into the `docs/` ontology while keeping ADR authoring explicit-only unless the user asks to record a decision. |
+| `enrich-notes` | Enrich an existing Obsidian vault note with verified links and facts — promote plain references to real links after a curl → `gh api` → web-search verification ladder, and verify technical figures against primary sources with labeled estimates. |
 | `frontend` | Gate frontend engineering on a rendering-architecture decision (SPA / SSR-RSC / SSG / islands) before UI code is written, then apply component-reuse, state-placement, and folder rules. |
 | `git` | Guide version-control craft — ground-truth and incumbent-style detection, the atomic-commit split protocol, commit/branch/PR conventions, and non-interactive-safe history surgery, including the `git wt` worktree workflow. |
 | `hookify` | Turn a convention or best practice into local, deterministic enforcement so a violation is blocked before it happens, not corrected after. |
@@ -60,7 +61,7 @@ Claude marketplace commands:
 /plugin install craft-skills@craft-skills
 ```
 
-Then invoke any of the 31 skills above by name, e.g. `api`, `aside`, `ast-grep`, `defuddle`, `obsidian-markdown`,
+Then invoke any of the 32 skills above by name, e.g. `api`, `aside`, `ast-grep`, `defuddle`, `obsidian-markdown`,
 `init`, `skillify`, `programming`, `research`, `write-prd`, `debug`.
 
 ---
@@ -112,7 +113,7 @@ The clone is optional development context; its skills have the nested layout
    ```
 4. Verify:
    ```bash
-hermes skills list | grep -E 'agents|api|aside|ast-grep|backend|cicd|debug|defuddle|distil|document|frontend|git|hookify|init|ml|obsidian-bases|obsidian-canvas|obsidian-cli|obsidian-clipper|obsidian-doctor|obsidian-markdown|obsidian-mermaid|programming|refactor|research|security|skillify|tailscale|testing|write-prd|write-report'
+hermes skills list | grep -E 'agents|api|aside|ast-grep|backend|cicd|debug|defuddle|distil|document|enrich-notes|frontend|git|hookify|init|ml|obsidian-bases|obsidian-canvas|obsidian-cli|obsidian-clipper|obsidian-doctor|obsidian-markdown|obsidian-mermaid|programming|refactor|research|security|skillify|tailscale|testing|write-prd|write-report'
    ```
 
 When bstack is also installed, list `plugins/bstack/skills` before

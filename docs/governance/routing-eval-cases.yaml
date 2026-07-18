@@ -175,6 +175,11 @@
       "trigger": "ssh over tailscale is hanging and the peer is missing from tailscale status",
       "expected_package": "craft-skills/tailscale",
       "forbidden_neighbors": ["craft-skills/debug", "craft-skills/security", "craft-skills/git"]
+    },
+    {
+      "trigger": "promote the plain-text references in my vault task note into verified links and re-check every cited url",
+      "expected_package": "craft-skills/enrich-notes",
+      "forbidden_neighbors": ["craft-skills/obsidian-markdown", "craft-skills/obsidian-cli", "craft-skills/research"]
     }
   ]
 }
