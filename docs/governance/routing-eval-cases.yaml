@@ -170,6 +170,11 @@
       "trigger": "drive the Aside browser to log into a dashboard and grab a screenshot",
       "expected_package": "craft-skills/aside",
       "forbidden_neighbors": ["craft-skills/defuddle", "craft-skills/obsidian-clipper", "craft-skills/research"]
+    },
+    {
+      "trigger": "ssh over tailscale is hanging and the peer is missing from tailscale status",
+      "expected_package": "craft-skills/tailscale",
+      "forbidden_neighbors": ["craft-skills/debug", "craft-skills/security", "craft-skills/git"]
     }
   ]
 }
