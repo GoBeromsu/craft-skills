@@ -91,32 +91,21 @@ The clone is optional development context; its skills have the nested layout
 
 **Hermes canonical channel:** install the repository root as a standalone plugin:
 
-**Hermes mount path:** `plugins/craft-skills/skills`.
-
 1. Install and enable the plugin:
    ```bash
    hermes plugins install GoBeromsu/craft-skills --enable
    ```
-2. Mount the plugin-owned skill tree in `${HERMES_HOME}/config.yaml`:
-   ```yaml
-   skills:
-     external_dirs:
-       - plugins/craft-skills/skills
-   ```
-   Hermes resolves this profile-relative path against the active `HERMES_HOME` and
-   recursively discovers the 30 `SKILL.md` packages. The plugin initializer registers
-   no skills, hooks, tools, middleware, or commands.
-3. Restart the gateway:
+2. Restart the gateway:
    ```bash
    hermes gateway restart
    ```
-4. Verify:
+3. Verify the namespaced plugin skills:
    ```bash
-hermes skills list | grep -E 'agents|api|aside|ast-grep|backend|cicd|debug|defuddle|distil|document|frontend|git|hookify|init|ml|obsidian-bases|obsidian-canvas|obsidian-cli|obsidian-clipper|obsidian-doctor|obsidian-markdown|obsidian-mermaid|programming|refactor|research|security|skillify|tailscale|testing|write-prd|write-report'
+hermes plugins list --plain --no-bundled
+# In a Hermes session: skill_view(name='craft-skills:write-prd')
    ```
 
-When bstack is also installed, list `plugins/bstack/skills` before
-`plugins/craft-skills/skills`; bstack owns the first bare `skillify` lookup.
+Namespacing preserves any existing bare-name owner such as bstack's `skillify`.
 Install from the repository root because the `.hermes` subdirectory is intentionally rejected.
 
 See `.hermes/README.md` for full deployment details.
