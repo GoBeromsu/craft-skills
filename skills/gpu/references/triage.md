@@ -61,6 +61,12 @@ failures, finally "GPU Reset Required" and a hung `nvidia-smi`).
   passing smoke test after a driver change does not decide between them. Say "not
   isolated" rather than declaring the first fix that survives a smoke test the root
   cause.
+- **Read the memory counters.** `nvidia-smi -q` ECC sections (volatile vs aggregate,
+  correctable vs uncorrectable), retired pages, and row-remap status separate a
+  software-triggered fault from failing hardware: a climbing uncorrectable count on one
+  GPU is an RMA conversation, not a software bug. After any incident, the health gate
+  (`dcgmi diag`, `references/shared-hosts.md` §7) belongs in the checklist before the
+  node takes real work again.
 
 ## 4. Fail-closed deployment rules
 

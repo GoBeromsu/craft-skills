@@ -12,6 +12,7 @@ for everyone on it.
 4. [Footprint budgeting](#4-footprint-budgeting)
 5. [Co-tenant etiquette](#5-co-tenant-etiquette)
 6. [Cluster specifics](#6-cluster-specifics)
+7. [New-host acceptance](#7-new-host-acceptance)
 
 ---
 
@@ -60,6 +61,14 @@ Never jump from zero to the full run:
    ```bash
    nvidia-smi --query-gpu=timestamp,temperature.gpu,power.draw,power.limit,clocks.sm,pstate,clocks_throttle_reasons.active --format=csv -l 2 > thermal.csv
    ```
+   Timing discipline: CUDA executes asynchronously — call `torch.cuda.synchronize()`
+   (or time with CUDA events) before reading any timer, discard the warmup steps (JIT,
+   allocator, and cache effects pollute the first iterations), and report the median of
+   steady state. For an A-vs-B comparison, lock the clocks first (`nvidia-smi -lgc`
+   with persistence mode on; unlock with `-rgc` after) — a locked-clock number is
+   stable run-to-run where a default boosting clock is not — and watch the run with
+   `nvidia-smi dmon`; the plain GPU-Util percentage is too coarse to prove the GPU is
+   actually busy.
 3. **Full run**: requested resources and wall-clock projected from the micro-bench
    numbers (steps × measured step time, plus a checkpoint/conversion overhead margin),
    not from intuition. Checkpointing verified before the long run starts, so a mid-run
@@ -100,3 +109,22 @@ Budget all four, not just VRAM:
 - Post-mortem a finished or killed job against its request
   (`sacct -j <jobid> --format=JobID,MaxRSS,Elapsed,State`) and feed the numbers into the
   next request.
+
+## 7. New-host acceptance
+
+Once per new or suspect machine, before its first real workload — a faulty GPU turns
+into weeks of "debugging" software that was never broken:
+
+1. **Health gate:** `dcgmi diag -r 2` (from NVIDIA DCGM; a few minutes, catches most
+   faulty GPUs). Escalate to `-r 3`/`-r 4` (tens of minutes to hours) only when a fault
+   is suspected but level 2 passes — silent data corruption is only exercised at
+   level 4. Clusters run level 2 as a job epilogue; on a workstation, rerun it after
+   any driver change.
+2. **Fingerprint:** record `python -m torch.utils.collect_env` alongside the probe
+   outputs — the canonical environment record for bug reports and every later "what
+   changed" question.
+3. **Interconnect (multi-GPU):** a minimal `torch.distributed` all-reduce across all
+   GPUs proves NCCL and the links before a real job discovers they are broken.
+4. **Sustained load:** the micro-bench (§3) with thermal logging doubles as burn-in —
+   a power cap under load is a board spec to plan around; thermal throttling on a
+   workstation is an airflow problem to fix before trusting any benchmark number.
