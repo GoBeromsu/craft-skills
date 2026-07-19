@@ -172,10 +172,20 @@ The script is idempotent and safe to re-run.
 
 ## Validation
 
+`scripts/ci-local.sh` mirrors every required CI gate locally (pr-size, both Layer-1 validators, distribution-version, harness-portable, marketplace validation) and is the merge gate whenever GitHub Actions cannot run:
+
 ```bash
-claude plugin validate .
-python3 skills/skillify/scripts/validate-skill-format.py
+bash scripts/ci-local.sh
 ```
+
+Enable the tracked git hooks once per clone — pre-commit runs the fast Layer-1 pair, pre-push runs the full mirror:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+`SKIP_LOCAL_CI=1` bypasses a hook once; `SKIP_MARKETPLACES=1` skips the claude/codex CLI job.
+Individual checks can still be run directly (`claude plugin validate .`, `python3 skills/skillify/scripts/validate-skill-format.py`).
 
 Codex reads the tracked plugin tree directly. Hermes integration is covered by the isolated
 plugin install/load contract test under `scripts/governance/tests/`.

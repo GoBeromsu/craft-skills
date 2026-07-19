@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Full CI mirror before every push — the merge gate while GitHub Actions is
+# unavailable. Escape hatch: SKIP_LOCAL_CI=1 git push ...
+set -uo pipefail
+if [ "${SKIP_LOCAL_CI:-0}" = "1" ]; then
+  echo "pre-push: skipped (SKIP_LOCAL_CI=1)"
+  exit 0
+fi
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+exec bash "$REPO_ROOT/scripts/ci-local.sh"
