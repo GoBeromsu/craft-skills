@@ -27,7 +27,7 @@ only, and naming a source there fails skillify's attribution gate.
 | `refactor` | smell-detection catalog format; 12-move refactoring catalog; naming/function/comment smell entries | [code-yeongyu/lazycodex](https://github.com/code-yeongyu/lazycodex) (MIT); Martin Fowler, *Refactoring* (2nd ed.); [labs42io/clean-code-typescript](https://github.com/labs42io/clean-code-typescript) (MIT) | adapted |
 | `git` | ground-truth command block; repo-style detection; `references/worktree.md` git-guard scripts (6) | code-yeongyu/lazycodex (MIT) `git-master`; eldercare-fall-ai | adapted (scripts vendored) |
 | `security` | threat-model-first workflow; dependency-audit triage; LLM hardening rules | addyosmani/agent-skills; OWASP Top 10 for LLM Applications | adapted |
-| `skillify` | two-layer discipline; skill-anatomy format SSOT; compact-name style | gstack (Garry Tan), addyosmani/agent-skills, code-yeongyu/lazycodex | adapted |
+| `skillify` | two-layer discipline; skill-anatomy format SSOT; compact-name style; vendor lenses + absorption protocol (degrees-of-freedom, reusable-parts planning, baseline-delta evals, experience-capture flow) | gstack (Garry Tan), addyosmani/agent-skills, code-yeongyu/lazycodex; openai/skills `.system/skill-creator`; anthropics/skills `skill-creator`; NousResearch/hermes-agent | adapted |
 | `hookify` | hook patterns/philosophy; Claude Code hooks model; git `core.hooksPath` convention | Yeachan-Heo/oh-my-claudecode, Claude Code hooks docs | adapted |
 | `init` | — | — | original |
 | `write-report` | — | — | original (promoted from a project-local skill) |
