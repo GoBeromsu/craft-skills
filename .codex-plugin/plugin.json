@@ -1,6 +1,6 @@
 {
   "name": "craft-skills",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "Work-craft Codex skills across 32 packages — research, debugging, documentation, git craft, structural AST search, write-prd product requirements, API/CI-CD/frontend/backend/ML/agent engineering, testing, refactoring, security triage, and skill authoring.",
   "author": {
     "name": "Beomsu Koh"
