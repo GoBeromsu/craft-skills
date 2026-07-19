@@ -175,6 +175,16 @@
       "trigger": "ssh over tailscale is hanging and the peer is missing from tailscale status",
       "expected_package": "craft-skills/tailscale",
       "forbidden_neighbors": ["craft-skills/debug", "craft-skills/security", "craft-skills/git"]
+    },
+    {
+      "trigger": "set up pytorch and flash attention on the new RTX workstation",
+      "expected_package": "craft-skills/gpu",
+      "forbidden_neighbors": ["craft-skills/ml", "craft-skills/backend", "craft-skills/debug"]
+    },
+    {
+      "trigger": "run this fine-tuning job on the shared lab GPU server",
+      "expected_package": "craft-skills/gpu",
+      "forbidden_neighbors": ["craft-skills/ml", "craft-skills/cicd", "craft-skills/backend"]
     }
   ]
 }

@@ -1,8 +1,8 @@
 ---
 name: ml
-description: Applies ML/DL research engineering discipline — reproducible project layout, leakage-safe dataset construction, and a training-discipline ladder — to classical ML, deep learning, fine-tuning, and vision work. Use when scaffolding a new ML project, asked to "build a dataset" or "데이터셋 구축", running or reviewing a "train a model" experiment, or building a "vision model" pipeline (augmentation, detection, segmentation). Not for per-file Python discipline (typing, TDD loop) — use `programming` — and not for building or changing LLM-agent behavior (prompts, tools, agent evals) — use `agents`.
+description: Applies ML/DL research engineering discipline — reproducible project layout, leakage-safe dataset construction, and a training-discipline ladder — to classical ML, deep learning, fine-tuning, and vision work. Use when scaffolding a new ML project, asked to "build a dataset" or "데이터셋 구축", running or reviewing a "train a model" experiment, or building a "vision model" pipeline (augmentation, detection, segmentation). Not for per-file Python discipline (typing, TDD loop) — use `programming` — not for building or changing LLM-agent behavior (prompts, tools, agent evals) — use `agents` — and not for GPU/CUDA environment setup or shared-host job launch — use `gpu`.
 metadata:
-  version: 2.1.0
+  version: 2.2.0
 ---
 
 # ml
@@ -19,6 +19,7 @@ Identify the task type before writing dataset, training, or vision code. Rows st
 | Dataset construction, ingestion, splitting, labeling, or versioning | `references/datasets.md` | Stacks with `training.md` and/or `vision.md` whenever the dataset also feeds a training run or is image/video data. |
 | A training run for any model class, including standalone LLM fine-tuning (SFT, LoRA) | `references/training.md` | |
 | A vision task (image/video pipeline, augmentation, detection/segmentation) | `references/vision.md` | Load in addition to `training.md` — vision rules layer on top of the general training ladder, not replace it. |
+| A run that will execute on a GPU host — CUDA/build selection, VRAM budgeting, shared-machine or HPC launch | Load the `gpu` skill first | `gpu` proves the environment and gates the launch; the references here still own the methodology once the environment is proven. |
 | Building or changing agent behavior — prompts, tools, a tool-use loop, agent evals | Stop here | Load the `agents` skill instead; it owns the eval-first law for that work. |
 
 Example: labeling and splitting an image dataset that will then be trained on matches three rows at once — load `datasets.md` + `training.md` + `vision.md` together, not `vision.md` alone.
@@ -57,7 +58,7 @@ Example: labeling and splitting an image dataset that will then be trained on ma
 
 ## Boundaries
 
-Not for wrapping a trained model behind a serving API — load `backend` — or for suite-level test-architecture decisions — load `testing`. The `agents` boundary from the task gate is the one worth double-checking on every task: "the model calls a tool" or "the pipeline reasons over retrieved text" is agent work even when it also touches a model file.
+Not for wrapping a trained model behind a serving API — load `backend` — or for suite-level test-architecture decisions — load `testing`. GPU/CUDA environment, compatibility, and shared-host launch preflight are `gpu`'s domain — a GPU training run loads `gpu` first, then this skill. The `agents` boundary from the task gate is the one worth double-checking on every task: "the model calls a tool" or "the pipeline reasons over retrieved text" is agent work even when it also touches a model file.
 
 ## Verification
 
