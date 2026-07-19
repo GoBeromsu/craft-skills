@@ -13,7 +13,7 @@ from typing import Final, Sequence
 
 _ROOT: Final = Path(__file__).resolve().parent.parent.parent.parent
 _PLUGIN_NAME: Final = "craft-skills"
-_PLUGIN_VERSION: Final = "0.5.2"
+_PLUGIN_VERSION: Final = "0.5.3"
 _PACKAGE_COUNT: Final = 31
 _SUBPROCESS_TIMEOUT_SECONDS: Final = 20
 _RUNTIME_PROBE: Final = "\n".join(
@@ -198,7 +198,7 @@ class HermesPluginIntegrationTest(unittest.TestCase):
             {2},
         )
 
-    def test_initialization_registers_nothing(self) -> None:
+    def test_initialization_registers_every_skill_under_plugin_namespace(self) -> None:
         result = _run(
             [str(self._python), "-c", _RUNTIME_PROBE],
             cwd=self._hermes_source,
@@ -213,7 +213,9 @@ class HermesPluginIntegrationTest(unittest.TestCase):
         self.assertEqual(plugin["tools"], 0)
         self.assertEqual(plugin["middleware"], 0)
         self.assertEqual(plugin["commands"], 0)
-        self.assertEqual(payload["skills"], [])
+        self.assertEqual(len(payload["skills"]), _PACKAGE_COUNT)
+        self.assertIn("write-prd", payload["skills"])
+        self.assertIn("testing", payload["skills"])
 
     def test_hermes_subdirectory_install_is_rejected(self) -> None:
         failure_home = self._temporary_root / "failure-home"
