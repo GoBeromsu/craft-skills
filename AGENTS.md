@@ -13,8 +13,8 @@ A package is one flat directory: `skills/<name>/SKILL.md` plus whichever of `ref
 every skill is one level deep. `evals/` directories are local, gitignored scratch for the
 eval-first authoring loop; they are never committed.
 
-The 31 packages (alphabetical): `agents`, `api`, `aside`, `ast-grep`, `backend`, `cicd`, `debug`,
-`defuddle`, `distil`, `document`, `frontend`, `git`, `hookify`, `init`, `ml`, `obsidian-bases`,
+The 32 packages (alphabetical): `agents`, `api`, `aside`, `ast-grep`, `backend`, `cicd`, `debug`,
+`defuddle`, `distil`, `document`, `frontend`, `git`, `gpu`, `hookify`, `init`, `ml`, `obsidian-bases`,
 `obsidian-canvas`, `obsidian-cli`, `obsidian-clipper`, `obsidian-doctor`, `obsidian-markdown`,
 `obsidian-mermaid`, `programming`, `refactor`, `research`, `security`, `skillify`, `tailscale`, `testing`,
 `write-prd`, `write-report`.

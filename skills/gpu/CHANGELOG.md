@@ -1,0 +1,3 @@
+# Changelog
+
+- 2026-07-19 — v1.0.0: two shared-host incidents (an uncapped flash-attn source build exhausted host RAM and froze the machine for its co-tenant; a Blackwell sm_120 GPU rejected wheels chosen from prior-generation memory) → probe-before-install and budget-before-launch discipline, with compat-chain, shared-host, and triage references. Provenance: preflight script, occupancy predicate, and settings-delta from the operator's RTX 6000 feasibility probe (EMSE project, `2026_07_rtx6000_probe/`); fail-closed deployment rules from the operator's edge-GPU Xid incident report (Senior AI Lab project); progressive-scaling ladder from the operator's HPC notes.

@@ -36,6 +36,7 @@ only, and naming a source there fails skillify's attribution gate.
 | `debug` | — | — | original (skill-library redesign) |
 | `aside` | — | — | original (grounded in Aside developer docs, https://docs.aside.com/help/developers) |
 | `tailscale` | `tailscale` skill (v1.1.1) — tailnet-health gate, daemon-variant restart paths, OAuth-popup triage, profile/identity drift | [bstack](https://github.com/GoBeromsu/bstack) | derived |
+| `gpu` | operator incident evidence — RTX 6000 probe preflight/occupancy predicate/settings delta, a shared-host RAM-freeze post-mortem, an edge-GPU Xid incident report, HPC progressive-scaling notes | — (operator-supplied, local) | original |
 
 ## Relationship vocabulary
 
