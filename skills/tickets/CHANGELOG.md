@@ -1,0 +1,1 @@
+- 2026-07-20 — v1.0.0: no skill existed for executing a team's GitHub-issue work ticket → ground-truth ticket-contract parse (최소 요구/완료 조건/절대 금지), AGENTS.md-first implementation, completion-criteria verification before the PR opens, and a board-move close-out.

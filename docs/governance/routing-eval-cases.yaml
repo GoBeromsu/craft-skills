@@ -185,6 +185,16 @@
       "trigger": "run this fine-tuning job on the shared lab GPU server",
       "expected_package": "craft-skills/gpu",
       "forbidden_neighbors": ["craft-skills/ml", "craft-skills/cicd", "craft-skills/backend"]
+    },
+    {
+      "trigger": "oss-hub 티켓 #12 진행해줘",
+      "expected_package": "craft-skills/tickets",
+      "forbidden_neighbors": ["craft-skills/git", "craft-skills/init", "craft-skills/skillify"]
+    },
+    {
+      "trigger": "pick up issue #7 and open a PR",
+      "expected_package": "craft-skills/tickets",
+      "forbidden_neighbors": ["craft-skills/git", "craft-skills/debug", "craft-skills/init"]
     }
   ]
 }

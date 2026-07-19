@@ -45,6 +45,7 @@ context.
 | `skillify` | Own the full lifecycle of craft-skills packages — create, update, move, retire — through an eval-first authoring loop and deterministic format validation. |
 | `tailscale` | Verify and repair the Tailscale tailnet that carries cross-host work — SSH, remote process inspection, `scp` — before a dependent workflow runs, triaging failures as network-layer versus service-layer across macOS daemon variants. |
 | `testing` | Architect and audit the test suite — classify each test by taxonomy and resource-based size, place it via a decision tree, and enforce the prove-it law that every bug fix ships with a failing-then-passing test. |
+| `tickets` | Execute a team work ticket delivered as a GitHub issue — parse its 최소 요구/완료 조건/절대 금지 contract, defer to the target repo's own AGENTS.md, and prove each completion criterion before a PR opens. |
 | `write-prd` | Author decision-ready product requirements documents from a provided or packaged template, keeping scope, metrics, rollout, and open issues coherent. |
 | `write-report` | Scaffold and author a project's one-off canonical technical report against a single YAML frame whose depth is the enforced table of contents. |
 
@@ -61,7 +62,7 @@ Claude marketplace commands:
 /plugin install craft-skills@craft-skills
 ```
 
-Then invoke any of the 32 skills above by name, e.g. `api`, `aside`, `ast-grep`, `defuddle`, `obsidian-markdown`,
+Then invoke any of the 33 skills above by name, e.g. `api`, `aside`, `ast-grep`, `defuddle`, `obsidian-markdown`,
 `init`, `skillify`, `programming`, `research`, `write-prd`, `debug`.
 
 ---
@@ -147,6 +148,7 @@ skills/research/SKILL.md
 skills/security/SKILL.md
 skills/skillify/SKILL.md
 skills/testing/SKILL.md
+skills/tickets/SKILL.md
 skills/write-prd/SKILL.md
 skills/write-report/SKILL.md
 ```
