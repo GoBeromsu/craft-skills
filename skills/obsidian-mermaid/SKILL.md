@@ -1,90 +1,97 @@
 ---
 name: obsidian-mermaid
-description: Author Mermaid diagrams that render correctly in Obsidian's bundled Mermaid (11.4.1), avoiding the `\n`-in-label, unquoted-special-character, ignored-subgraph-direction, and post-11.4.1 diagram-type pitfalls. Use when a flowchart, sequence, or state diagram must render inside an Obsidian note, or when a diagram copied from mermaid.live or an AI tool breaks in Obsidian. Not for diagrams rendered outside Obsidian (the version pin does not apply) or `.canvas` visual graphs (use obsidian-canvas).
+description: Authors and verifies Mermaid diagrams against Obsidian's bundled renderer, including flowchart, sequence, class, architecture, journey, pie, kanban, treemap, mindmap, timeline, Sankey, and XY charts. Use when a diagram must render inside an Obsidian note, when architecture-beta or treemap-beta compatibility is uncertain, or when Mermaid copied from Notion, mermaid.live, or an AI tool breaks in Obsidian. Not for `.canvas` visual graphs (use obsidian-canvas) or renderers outside Obsidian where this compatibility baseline does not apply.
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # obsidian-mermaid
 
-## Overview
+Author Mermaid blocks that render in the target Obsidian installation. Success means the
+chosen diagram prefix is available in Obsidian's bundled Mermaid version, the block renders
+without a parser error, and an older-bundle fallback is available for beta diagram types.
 
-Obsidian bundles Mermaid 11.4.1 (behind the current release). Diagrams from mermaid.live or AI tools often break because of `\n` in labels, unquoted special characters, subgraph direction, or post-11.4.1 diagram types. This skill encodes what actually works.
+## Compatibility gate
 
-## Key Constraints
+Do not infer Obsidian compatibility from Notion or mermaid.live. Identify the target
+Obsidian and bundled Mermaid versions when possible, then run one representative block in
+the target renderer. The verified baseline is Obsidian 1.13.1 with Mermaid 11.13.0; all
+catalog entries below parse and emit SVG on that baseline.
 
-| Rule | Detail |
-| --- | --- |
-| Use `flowchart`, not `graph` | Different rendering behavior in Obsidian despite being spec aliases |
-| No `\n` in labels | Use `<br>` or keep labels single-line |
-| Quote special characters | Wrap labels containing `()`, `:`, `/`, or non-ASCII in `"quotes"` |
-| `direction` in subgraphs ignored | Silently ignored when nodes have external edges |
-| `%%{init}%%` not supported | Config blocks are not rendered |
-| Max ~5 nodes per diagram | Beyond this, readability collapses |
-| Prefer TD or LR orientation | Most readable for note diagrams |
+When the bundle is older or unknown, default to `flowchart`, `sequenceDiagram`,
+`classDiagram`, `stateDiagram-v2`, `gantt`, `journey`, or `pie`. Treat prefixes ending in
+`-beta` as version-gated and keep a `flowchart` fallback.
 
-## Supported Diagram Types (11.4.1)
+## Verified diagram catalog
 
-Works: `flowchart`, `sequenceDiagram`, `classDiagram`, `stateDiagram-v2`, `gantt`, `journey`, `mindmap`, `timeline`, `sankey`, `xychart-beta`
+| Purpose | Prefix | Compatibility note |
+| --- | --- | --- |
+| Process or decision flow | `flowchart TD` / `flowchart LR` | Default fallback for every structural diagram |
+| Object relationships | `classDiagram` | Supports cardinality and labeled relations |
+| Message exchange | `sequenceDiagram` | Prefer explicit actor names and arrow semantics |
+| Service topology | `architecture-beta` | Version-gated; use a grouped flowchart on older bundles |
+| Experience scoring | `journey` | Task score and actor list follow each task label |
+| Proportions | `pie` | Quote labels |
+| Work status | `kanban` | Verify the bundle before using on older Obsidian releases |
+| Hierarchical proportions | `treemap-beta` | Version-gated; use pie or flowchart when unavailable |
+| Hierarchy | `mindmap` | Keep indentation exact |
+| Milestones | `timeline` | One period followed by one or more events |
+| Quantified flow | `sankey` | CSV-like source, target, value rows |
+| Bar and line series | `xychart-beta` | Version-gated; keep axes and series lengths aligned |
 
-Does NOT work (post-11.4.1): `block-beta`, `architecture`, `kanban`
+Use the copy-ready syntax in
+[references/diagram-catalog.md](references/diagram-catalog.md) rather than reconstructing
+an unfamiliar grammar from memory.
 
-## Example: Safe Flowchart
+## Syntax constraints
 
-````markdown
-```mermaid
-flowchart TD
-    A[Start] --> B{Decision}
-    B -->|Yes| C[Action]
-    B -->|No| D[Skip]
-    C --> E[End]
-    D --> E
-```
-````
-
-## When to Use
-
-- Use when the output should be a Mermaid diagram inside an Obsidian note.
-- Use when a diagram clarifies process, flow, architecture, or relationships.
-- Do not use when the renderer is not Obsidian's bundled Mermaid.
+- Use `flowchart`, not `graph`, for the conservative fallback.
+- Use `<br>` or a single line instead of `\n` inside labels.
+- Quote labels containing `()`, `:`, `/`, or non-ASCII when that grammar accepts quoted
+  labels; do not mechanically quote identifiers or architecture service keys.
+- Keep subgraph direction advisory: Mermaid ignores it when nodes have external edges.
+- Prefer `TD` or `LR`; split a diagram when labels or edges stop being readable rather than
+  enforcing an arbitrary node limit.
+- Preserve the exact case and suffix of diagram prefixes such as `sequenceDiagram`,
+  `stateDiagram-v2`, `architecture-beta`, `treemap-beta`, and `xychart-beta`.
 
 ## Process
 
-1. **Pick the right diagram type**
-	- Choose from the supported list above. Default to `flowchart TD` or `flowchart LR`.
+1. Select the smallest diagram type that expresses the relationship.
+2. Apply the compatibility gate before choosing a beta or recently added type.
+3. Start from the catalog example and replace labels and data without changing grammar.
+4. Put the source in an exact ` ```mermaid ` fence.
+5. Render in the target Obsidian installation. A parser-only pass is insufficient when SVG
+   generation, icons, or layout is part of the result.
+6. If the target blocks Mermaid behind a trust prompt, ask the operator to approve it; do
+   not bypass or click a security permission silently.
+7. On failure, preserve the intended information in a `flowchart` fallback and report the
+   Obsidian and Mermaid versions tested.
 
-2. **Write labels safely**
-	- No `\n` — use `<br>` or single-line text.
-	- Wrap any label with `()`, `:`, `/`, or non-ASCII in double quotes.
+## Safe fallback
 
-3. **Keep diagrams small**
-	- Max ~5 nodes. Split into multiple diagrams if larger.
-	- Prefer two clean diagrams over one dense one.
+````markdown
+```mermaid
+flowchart LR
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Action]
+    B -->|No| D[Fallback]
+```
+````
 
-4. **Verify syntax**
-	- Check code fence is ` ```mermaid ` (no extra characters).
-	- Confirm diagram type is in the supported list.
+## Anti-patterns
 
-## Common Rationalizations
-
-| Rationalization | Reality |
-| --- | --- |
-| "If mermaid.live renders it, Obsidian will too." | Obsidian is pinned to 11.4.1; newer features silently fail. |
-| "I can put everything into one diagram." | Diagrams beyond ~5 nodes become unreadable; split them. |
-| "`\n` works in labels on the live editor." | `\n` in labels breaks Obsidian's parser; use `<br>`. |
-
-## Red Flags
-
-- `graph` keyword used instead of `flowchart`.
-- `\n` appears in any node label.
-- `%%{init}%%` block present.
-- Diagram uses `block-beta`, `architecture`, or `kanban` types.
-- More than ~5 nodes without splitting into sub-diagrams.
+- Treating a Notion or mermaid.live render as proof of Obsidian support → test the bundled renderer.
+- Using a beta prefix without a fallback → provide an equivalent `flowchart`, pie, or table representation.
+- Copying a newer diagram type into a version-pinned note → record the tested Obsidian and Mermaid baseline.
+- Forcing all content into one dense diagram → split at a stable process or domain boundary.
+- Clicking Obsidian's Mermaid trust prompt during automation → stop and request operator approval.
 
 ## Verification
 
-- [ ] Diagram type is from the supported list.
-- [ ] No `\n` in labels — `<br>` or single-line only.
-- [ ] Labels with `()`, `:`, `/`, or non-ASCII are quoted.
-- [ ] Diagram has ~5 or fewer nodes, or is split.
-- [ ] Code fence is correctly formed as ` ```mermaid `.
+- [ ] Target Obsidian and bundled Mermaid versions are known or compatibility is treated as unknown.
+- [ ] Diagram prefix is exact and version-compatible.
+- [ ] Labels use grammar-appropriate quoting and contain no literal `\n`.
+- [ ] The exact fenced block renders to SVG in the target Obsidian renderer.
+- [ ] Beta or recently added types have a conservative fallback.
+- [ ] Any trust prompt remains operator-controlled.
