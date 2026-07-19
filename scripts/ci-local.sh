@@ -17,6 +17,11 @@ set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
+# Git hooks export GIT_DIR and friends, which override cwd-based repository
+# discovery in every child git process — the guard tests build fixture repos
+# and would commit into the real repository instead. Scrub so the gate behaves
+# identically from a hook, a terminal, or CI.
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_OBJECT_DIRECTORY GIT_COMMON_DIR GIT_PREFIX GIT_QUARANTINE_PATH
 DIFF_BASE="${DIFF_BASE:-origin/main}"
 SCRATCH="$(mktemp -d)"
 trap 'rm -rf "$SCRATCH"' EXIT
