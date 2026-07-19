@@ -1442,7 +1442,7 @@
       "name": "skillify",
       "kind": "leaf",
       "lifecycle": "active",
-      "version": "4.3.0",
+      "version": "4.4.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
@@ -1456,7 +1456,10 @@
         "commit": null,
         "license": "MIT",
         "absorbed_from": [
-          "bstack/skillify"
+          "bstack/skillify",
+          "openai/skills:.system/skill-creator",
+          "anthropics/skills:skill-creator",
+          "NousResearch/hermes-agent:website/docs"
         ]
       },
       "replacement_for": [],

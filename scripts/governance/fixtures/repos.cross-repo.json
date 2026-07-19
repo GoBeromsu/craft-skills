@@ -7,5 +7,5 @@
     # Default sibling checkout for the personal automation repository.
     {"name": "bstack", "path": "../bstack"}
   ],
-  "external_repos": ["bstack", "oh-my-secondbrain"]
+  "external_repos": ["bstack", "oh-my-secondbrain", "openai", "anthropics", "NousResearch"]
 }
