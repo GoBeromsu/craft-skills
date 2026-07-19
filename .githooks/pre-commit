@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Fast Layer-1 gate on every commit (single-ref base validates the worktree,
+# uncommitted changes included). Escape hatch: SKIP_LOCAL_CI=1 git commit ...
+set -uo pipefail
+if [ "${SKIP_LOCAL_CI:-0}" = "1" ]; then
+  echo "pre-commit: skipped (SKIP_LOCAL_CI=1)"
+  exit 0
+fi
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+DIFF_BASE="${DIFF_BASE:-origin/main}"
+python3 skills/skillify/scripts/validate-skill-format.py --diff-base "$DIFF_BASE" &&
+python3 skills/skillify/scripts/validate-runtime-hygiene.py --diff-base "$DIFF_BASE" || {
+  echo "pre-commit: Layer-1 validation failed (SKIP_LOCAL_CI=1 to bypass once)"
+  exit 1
+}
