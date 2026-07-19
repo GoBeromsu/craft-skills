@@ -1,8 +1,8 @@
 ---
 name: gpu
-description: Applies GPU environment and resource discipline — probe the hardware before choosing any install, budget the host before launching any job — to CUDA/PyTorch setup, attention-backend builds, and GPU job launches. Use when setting up CUDA or PyTorch on a new GPU machine, asked to "install flash attention", debugging "torch.cuda.is_available() returns False", "CUDA out of memory", or "no kernel image is available", sizing VRAM, running a training/inference job on a shared GPU host or HPC, benchmarking a GPU, or working on Apple Silicon (MPS, M-series). Not for training methodology, datasets, or evaluation discipline — use `ml` — and not for serving a model behind an API — use `backend`.
+description: Applies GPU environment and resource discipline — probe the hardware before choosing any install, budget the host before launching any job — to CUDA/PyTorch setup, attention-backend builds, and GPU job launches. Use when setting up CUDA or PyTorch on a new GPU machine, asked to "install flash attention", debugging "torch.cuda.is_available() returns False", "CUDA out of memory", or "no kernel image is available", sizing VRAM, running a training/inference job on a shared GPU host or HPC, or working on Apple Silicon (MPS, M-series). Not for training methodology, datasets, or evaluation discipline — use `ml` — and not for serving a model behind an API — use `backend`.
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # gpu
@@ -38,7 +38,7 @@ Four facts come out: the GPU's compute capability, the driver's CUDA ceiling, th
 
 - **The compatibility chain is strict.** GPU compute capability ∈ torch's compiled arch list; torch's CUDA runtime ≤ the driver's CUDA ceiling; local `nvcc` matches torch's CUDA version for any source build. One link broken → "no kernel image", import failures, or a build that dies hours in. `references/compat.md` has the chain, per-architecture minimums, and the selection procedure.
 - **Support is a matrix you read, not a flag you try.** Before installing on a new architecture: the official compatibility matrix (new-architecture support ships *experimental* before *stable*), the package's supported-architecture list, the wheel index for the exact version combination, and the issue tracker for this GPU's sm. A build system accepting an arch flag proves nothing — validation status is published, not probed. `references/compat.md` §3 sequences the checks.
-- **A source build is a host-RAM job, not a GPU job.** Each parallel `nvcc` compile of a heavy kernel library takes roughly 3–6 GB of host RAM; a default `MAX_JOBS` on a 32 GB host freezes the machine in under two minutes — SSH included. Cap `MAX_JOBS` at `free_RAM_GB / 6`, run it under `nice`, and treat the build itself as a launch that needs the shared-host gate.
+- **A source build is a host-RAM job, not a GPU job.** Parallel `nvcc` compiles of a heavy kernel library consume host RAM at gigabytes per job; an uncapped build can freeze the whole machine, SSH included. Cap `MAX_JOBS` from free host RAM, run it under `nice`, and treat the build itself as a launch that needs the shared-host gate — `references/compat.md` §4 owns the cap formula and the safe build command.
 - **Occupancy predicate before any GPU allocation on a shared host.** Sample utilization and memory several times and confirm no other compute process exists; only a "Free" verdict permits allocation. `references/shared-hosts.md` owns the predicate and thresholds.
 - **Smoke before scale.** One CUDA matmul proves the stack; a short micro-bench measures real VRAM peak and step time; only then commit to the full run, with the full run's footprint extrapolated from measured numbers rather than guessed.
 - **Fatal CUDA errors are fatal.** A CUDA launch failure or device assert corrupts the context — exit the process and start clean. Catching it as a generic per-item exception and continuing turns one fault into a cascade and destroys the evidence of the first failure.
@@ -52,14 +52,13 @@ Four facts come out: the GPU's compute capability, the driver's CUDA ceiling, th
 ## Anti-patterns
 
 - Installing torch/CUDA from memory of the previous GPU generation → probe compute capability and driver ceiling first; pick the build whose arch list contains this GPU.
-- Launching a source build with default `MAX_JOBS` on a shared or small-RAM host → cap by `free_RAM_GB / 6`, `nice` it, and warn co-tenants first.
+- Launching a source build with default `MAX_JOBS` on a shared or small-RAM host → cap `MAX_JOBS` from free host RAM (`references/compat.md` §4), `nice` it, and warn co-tenants first.
 - Catching a fatal CUDA error per-item and continuing the loop → exit the process, restart with a fresh context, preserve the failing input.
 - Hard-coding `flash_attention_2` because the last machine supported it → gate on a support check with an SDPA fallback.
 - `device_map="auto"` on a VRAM-tight host → silent CPU spill masks the real footprint; pin the device map and assert it after load.
 - Running diagnostic CUDA workloads on a GPU already throwing Xid errors → passive triage from system logs first; a wedged GPU turns probes into new faults.
 - Rebooting or downgrading a driver before capturing prior-boot logs → the evidence of the first fault is gone; capture, then change state.
 - Treating "the build accepted my arch flag" as evidence of support → validation status lives in the release-notes matrix and the issue tracker; read them before installing (`references/compat.md` §3).
-- Comparing performance numbers timed without warmup and synchronization → warm up, synchronize (or use CUDA events), report steady-state medians, and lock clocks for A-vs-B claims (`references/shared-hosts.md` §3).
 - Carrying CUDA instincts to Apple Silicon — expecting `nvidia-smi`, flash-attn, or a separate VRAM pool → the two laws hold but the chain differs; load `references/apple-silicon.md`.
 
 ## Boundaries

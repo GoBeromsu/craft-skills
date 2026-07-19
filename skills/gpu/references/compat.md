@@ -86,8 +86,7 @@ A source build is a launch — on a shared host it also passes the shared-host g
 (`references/shared-hosts.md`).
 
 - **RAM cap first.** Each parallel `nvcc` job on a heavy kernel library costs several GB
-  of host RAM — flash-attn's own build system budgets ~5 GB per compile thread, and its
-  README warns that on hosts under 96 GB an uncapped ninja will exhaust memory.
+  of host RAM (flash-attn's own build system budgets ~5 GB per compile thread).
   `MAX_JOBS = free_RAM_GB / 6`, rounded down, minimum 1. An uncapped build on a 32 GB
   host freezes it — SSH and all — in under two minutes.
 - **Toolkit match.** `nvcc --version` must equal `torch.version.cuda` before starting; fix
