@@ -223,6 +223,26 @@ class CheckVersionBumpTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn(".claude-plugin/plugin.json: root plugin version must increase", result.stdout)
 
+    def test_accepts_plugin_yaml_matching_root_manifests(self) -> None:
+        (self.root / "plugin.yaml").write_text("name: craft-skills\nversion: 0.5.1\nkind: standalone\n", encoding="utf-8")
+        self._commit_change("1.0.1", "updated guidance", "- 2026-07-12 — updated guidance\n- 2026-01-01 — initial release\n")
+        result = self._run()
+        self.assertEqual(result.returncode, 0, result.stdout)
+
+    def test_rejects_plugin_yaml_stale_against_root_manifests(self) -> None:
+        (self.root / "plugin.yaml").write_text("name: craft-skills\nversion: 0.5.0\nkind: standalone\n", encoding="utf-8")
+        self._commit_change("1.0.1", "updated guidance", "- 2026-07-12 — updated guidance\n- 2026-01-01 — initial release\n")
+        result = self._run()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("plugin.yaml: version 0.5.0 must match .codex-plugin/plugin.json version 0.5.1", result.stdout)
+
+    def test_rejects_plugin_yaml_invalid_semver(self) -> None:
+        (self.root / "plugin.yaml").write_text("name: craft-skills\nversion: not-a-version\nkind: standalone\n", encoding="utf-8")
+        self._commit_change("1.0.1", "updated guidance", "- 2026-07-12 — updated guidance\n- 2026-01-01 — initial release\n")
+        result = self._run()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("plugin.yaml: version is not valid semver", result.stdout)
+
     def test_accepts_new_package_with_note(self) -> None:
         package = self.root / "skills" / "new-demo"
         package.mkdir()
