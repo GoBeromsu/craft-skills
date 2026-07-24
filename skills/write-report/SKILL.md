@@ -2,7 +2,7 @@
 name: write-report
 description: 'Scaffolds and authors a project''s one-off canonical technical report against a single YAML frame (technical-report.yaml) whose depth is the enforced table of contents — section, then heading, then required must-content. Use when asked to "scaffold a technical report" or "기술 보고서", when writing or restructuring a report section against that frame, or when checking a section''s structure and pinned sources for "TOC enforcement" against its source manifest. Not for ongoing project documentation, READMEs, ADRs, or changelogs (use `document`) — write-report owns exactly one canonical, one-off deliverable per project.'
 metadata:
-  version: 1.0.0
+  version: 1.0.1
 ---
 
 # write-report
@@ -80,6 +80,15 @@ Defaults, unless the frame's `governance` overrides them:
   guess a fact.
 - The canonical document changes only under the approver named (by role) in `governance` —
   agents propose, humans approve.
+- **Korean body prose uses formal polite speech (합쇼체 / ~습니다·~입니다).** Declarative
+  plain style (`~다` / `~한다` / `~이다` as the default sentence ender) is not the house
+  default when the report is written in Korean. Technical nouns (ArgoCD, namespace, env)
+  stay in English; sentence endings stay 경어. Record the same rule under
+  `governance.must` house-style so the project frame does not silently drop it.
+
+When drafting or reviewing a Korean section, rewrite endings before submit:
+`~한다` → `~합니다`, `~이다` → `~입니다`, `~있다` → `~있습니다`, `~없다` → `~없습니다`.
+Keep headings and table cells terse if needed; full sentences in body paragraphs use 경어.
 
 ## Author/Validate workflow
 
@@ -132,3 +141,9 @@ rendered markdown, is always what becomes canonical.
 ## Requirements
 
 - `python3` with PyYAML (`pip install pyyaml`) for both validators.
+
+## Anti-patterns
+
+- Korean report body written in plain declarative endings (`~다`/`~한다`/`~이다`) → rewrite to formal polite 합쇼체 (`~습니다`/`~입니다`) before approval.
+- Treating English-only house style as complete for a Korean deliverable → add the 경어 rule to `governance` house style and apply it in Author mode.
+- Softening 경어 only in the Index while sections stay plain → every section file follows the same ending style.
