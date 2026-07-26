@@ -1,8 +1,8 @@
 ---
 name: obsidian-markdown
-description: Create and edit Obsidian Flavored Markdown — wikilinks, embeds, callouts, properties, tags, comments, math, and Mermaid fences — following a compact note house style: `##` main sections, `####` subsections, hyphen bullets with tab indentation, no blank lines in the body, colon-style phrasing, and web links as footnotes. Use whenever writing or formatting a `.md` note for an Obsidian vault, or when a task mentions wikilinks, callouts, frontmatter, tags, or embeds. Not for `.base` data views (use obsidian-bases) or `.canvas` files (use obsidian-canvas).
+description: Create and edit Obsidian Flavored Markdown — wikilinks, embeds, callouts, properties, tags, comments, math, and Mermaid fences — following a compact note house style: `##`/`####` headings, nested tab-indented bullets, no blank lines in the body, colon-style phrasing, body dates as `[[YYYY-MM-DD]]`, person names as `[[Name]]`, and external URLs as inline `[text](url)` (not footnotes). Use whenever writing or formatting a `.md` note for an Obsidian vault, or when a task mentions wikilinks, callouts, frontmatter, tags, or embeds. Not for `.base` data views (use obsidian-bases) or `.canvas` files (use obsidian-canvas).
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # obsidian-markdown
@@ -15,7 +15,7 @@ Create and edit valid Obsidian Flavored Markdown (OFM) that also follows a compa
 
 Use the `obsidian-cli` skill for all note creation, edit, search, and property mutation inside the vault. Do not shell out to raw `cat`/`sed` on vault paths. See the `obsidian-cli` SKILL.md for the command surface and required preconditions (Obsidian must be running).
 
-OFM extends CommonMark and GFM with wikilinks, embeds, callouts, properties, comments, and other syntax; this skill covers those extensions and bakes a compact note house style (heading, spacing, note-style, web-link, tab-indentation, and bullet-depth rules) into every note it produces. Standard Markdown (bold, italic, code blocks, tables) is assumed knowledge.
+OFM extends CommonMark and GFM with wikilinks, embeds, callouts, properties, comments, and other syntax; this skill covers those extensions and bakes a compact note house style (heading, spacing, note-style, nested bullets, date/people wikilinks, and inline web links) into every note it produces. Standard Markdown (bold, italic, code blocks, tables) is assumed knowledge.
 
 ## When to Use
 
@@ -34,7 +34,7 @@ OFM extends CommonMark and GFM with wikilinks, embeds, callouts, properties, com
 3. **Link related notes** using wikilinks (`[[Note]]`) for internal vault connections, and standard Markdown links for external URLs.
 4. **Embed content** from other notes, images, or PDFs using `![[embed]]`. See [EMBEDS.md](EMBEDS.md).
 5. **Add callouts** for highlighted information using `> [!type]`. See [CALLOUTS.md](CALLOUTS.md).
-6. **Check formatting against the Formatting Rules below** -- main sections default `##`, subsections `####`, hyphen bullets with tabs, no H1/H5+, no bullet past depth 3, no blank lines in body structure, note-style phrasing, and web links as footnotes. Fix before moving on.
+6. **Check formatting against the Formatting Rules below** -- main sections default `##`, subsections `####`, hyphen bullets with tabs and nested hierarchy preferred, no H1/H5+, no bullet past depth 3, no blank lines in body structure, note-style phrasing, body dates as `[[YYYY-MM-DD]]`, person names as `[[Name]]`, and external URLs as inline `[text](url)` (not footnotes). Fix before moving on.
 7. **Verify** the note renders correctly in Obsidian's reading view.
 
 > When choosing between wikilinks and Markdown links: use `[[wikilinks]]` for notes within the vault (Obsidian tracks renames automatically) and `[text](url)` for external URLs only.
@@ -64,6 +64,7 @@ Use the heading level specified by the user for main sections. If no heading lev
 Use a single hyphen followed by one space (`- `) for every bullet point. For nested bullets, indent each level with one tab character. Maintain consistent indentation for bullets at the same level.
 
 Top-level bullet counts as depth 1. A bullet indented once is depth 2. Indented twice is depth 3. A fourth level is not allowed -- promote it to a subsection, a separate list, or note-style line.
+Prefer nested bullets when an item has sub-context (members under a group, steps under a task, caveats under a rule) instead of flattening siblings into one long list.
 
 ```markdown
 - Phase one                 <- depth 1 (GOOD)
@@ -111,18 +112,41 @@ Use case: when the idea applies
 
 ### Rule 5: Preserve source text unless formatting is requested
 
-When the task is to format given text, do not add additional content or modify the source meaning. Only apply the required markdown formatting, heading levels, bullet indentation, and link/footnote formatting.
+When the task is to format given text, do not add additional content or modify the source meaning. Only apply the required markdown formatting, heading levels, bullet indentation, date/people wikilinks, and link formatting.
 
-### Rule 6: Use markdown footnotes for web links
+### Rule 6: Use inline markdown links for web URLs
 
-When adding web links in Obsidian notes, prefer markdown footnotes so the body stays note-like. Use inline source labels and collect URLs in footnotes. If the user explicitly asks for a `References` section, use heading `## References` and standard markdown links there.
+When adding web links in Obsidian notes, use standard inline markdown links: `[label](https://example.com)`.
+Do not prefer footnotes (`[^1]` / `[^1]: ...`) for ordinary web URLs — keep the destination readable next to the claim.
+If the user asks for a `References` section, use heading `## References` and the same `[label](url)` form there.
 
 ```markdown
-Claim: source summary[^1]
-[^1]: [Title](https://example.com)
+Demo: [Solar Open 2 beta](https://open2-beta.upstage.ai/)
+Folder: [전문가사용자평가](https://drive.google.com/drive/folders/…)
 ```
 
 YAML frontmatter is the exception: keep YAML-standard spaces for arrays and nested properties.
+
+### Rule 7: Wrap body dates as date wikilinks
+
+In Markdown body text, wrap calendar dates as Obsidian wikilinks: `[[YYYY-MM-DD]]`.
+Keep YAML frontmatter date fields as plain `YYYY-MM-DD` scalars so typed metadata stays valid.
+
+```markdown
+- 마감: [[2026-07-27]] (월) 13:00
+- 테스트 기간: 지금 ~ [[2026-07-27]] (월) 13:00
+```
+
+```yaml
+date_created: 2026-07-26
+date_modified: 2026-07-26
+```
+
+### Rule 8: Wrap person names as people wikilinks
+
+When the body refers to a person, wrap the name as a wikilink: `[[고범수]]`, `[[장현서]]`.
+Prefer the People-note filename when it is known; use a first-mention wikilink rather than bare plain text.
+Creating or enriching CRM People notes is out of scope for this skill — hand that off to the people / make-people workflow when the operator asks for a People note.
 
 ## Internal Links (Wikilinks)
 
@@ -248,6 +272,9 @@ To link Mermaid nodes to Obsidian notes, add `class NodeName internal-link;`.
 
 ## Footnotes
 
+Footnote syntax exists in OFM, but this house style does not use it for web links (see Rule 6).
+Reserve footnotes only when the operator explicitly asks for them.
+
 ```markdown
 Text with a footnote[^1].
 
@@ -258,7 +285,7 @@ Inline footnote.^[This is inline.]
 
 ## Complete Example
 
-This example obeys the house style: main sections are `##`, subsections are `####`, nested bullets use tabs, the body has no blank lines between headings/sections/lists, and web links are footnoted.
+This example obeys the house style: main sections are `##`, subsections are `####`, nested bullets use tabs, body dates and people are wikilinked, the body has no blank lines between headings/sections/lists, and web links are inline markdown.
 
 ````markdown
 ---
@@ -270,9 +297,10 @@ tags:
 status: in-progress
 ---
 ## Summary
-Aim: improve [[workflow]] with modern techniques
-Deadline: first milestone due January 30
-Source: project brief[^1]
+- Aim: improve [[workflow]] with modern techniques
+	- Owner: [[고범수]]
+	- Deadline: [[2024-01-30]]
+	- Source: [project brief](https://example.com/project-alpha)
 ## Tasks
 - [x] Initial planning
 - [ ] Development phase
@@ -290,7 +318,6 @@ Algorithm: $O(n \log n)$ sorting
 Reference: [[Algorithm Notes#Sorting]]
 Embed: ![[Architecture Diagram.png|600]]
 Reviewed: [[Meeting Notes 2024-01-10#Decisions]]
-[^1]: [Project brief](https://example.com/project-alpha)
 ````
 
 ## Common Rationalizations
@@ -304,7 +331,9 @@ Reviewed: [[Meeting Notes 2024-01-10#Decisions]]
 | "Two-space indentation renders fine in Markdown, so it is fine for Obsidian notes." | Rendering is not the only criterion. These note bodies use literal tabs for nested bullets so the source matches Obsidian's outliner behavior. |
 | "Blank lines make Markdown easier to read." | This house style is compact: no blank lines before/after headings or between section/list blocks inside the body. |
 | "A normal paragraph sounds more polished." | Prefer note-style fragments and colon labels over essay prose unless the user explicitly requests narrative writing. |
-| "I'll paste web links inline." | Use markdown footnotes for web links to keep the note body clean. |
+| "I'll hide web links in footnotes." | Use inline `[label](url)` for web links; footnotes are not the house default. |
+| "Bare dates and bare names are fine in the body." | Body dates are `[[YYYY-MM-DD]]`; person names are `[[Name]]` wikilinks. |
+| "Flat bullet lists are cleaner." | Prefer nested bullets when items have sub-context; keep depth ≤ 3. |
 
 ## Red Flags
 
@@ -315,7 +344,9 @@ Reviewed: [[Meeting Notes 2024-01-10#Decisions]]
 - Main sections using `###` when the user did not explicitly request that level.
 - Blank lines before or after headings, or between sections/lists in the note body.
 - Essay-style full sentences where note-style colon phrasing would preserve the source meaning.
-- Raw web URLs or inline web links in the body when a footnote would work.
+- Footnotes (`[^n]`) used for ordinary web URLs when inline `[label](url)` would work.
+- Bare ISO dates in the body (`2026-07-27`) instead of `[[2026-07-27]]`.
+- Bare person names in the body when a `[[Name]]` wikilink is available.
 - Frontmatter `title` plus an H1 restating the same string.
 
 ## Verification
@@ -329,7 +360,10 @@ Reviewed: [[Meeting Notes 2024-01-10#Decisions]]
 - [ ] `grep -nP '^\t{3,}- ' <note>` returns zero matches (no bullet past depth 3 when using tab indentation).
 - [ ] Body structure has no blank lines before/after headings or between section/list blocks.
 - [ ] Note text uses concise note-style phrasing and colons where appropriate.
-- [ ] Web links are represented as markdown footnotes unless the user explicitly requested a `## References` section.
+- [ ] Web links use inline `[label](url)`; footnotes are absent unless the operator explicitly requested them.
+- [ ] Body calendar dates use `[[YYYY-MM-DD]]`; YAML date fields stay plain `YYYY-MM-DD`.
+- [ ] Person names in the body use `[[Name]]` wikilinks on first mention.
+- [ ] Hierarchical content prefers nested tab bullets (depth ≤ 3) over flat lists.
 - [ ] Every wikilink resolves to an existing note or is explicitly intended as a placeholder.
 - [ ] Callouts use a valid type from [CALLOUTS.md](CALLOUTS.md).
 - [ ] The note renders in Obsidian reading view without broken embeds or unrendered syntax.
