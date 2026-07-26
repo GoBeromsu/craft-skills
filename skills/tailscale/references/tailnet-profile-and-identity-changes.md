@@ -35,6 +35,51 @@ tailscale status --json | python3 -c 'import json,sys; print(json.load(sys.stdin
   fails under another. Re-resolve the peer name after every switch.
 - Switching profiles changes this host's own 100.x address too; do not carry an
   address learned under one profile into work done under another.
+- `tailscale switch` changes the active network for **every** process on the host,
+  not just the current workflow. A hop taken to find a node must be undone —
+  switch back to the profile the workflow runs on before continuing.
+
+### A1. Ownership classification — own tailnet vs external
+
+Reachability is not authorization. Before the first command that reaches a peer,
+place the target in one of two classes:
+
+- **Own** — a node on the operator's own personal tailnet, owned by the operator's
+  own account.
+- **External** — a node **shared in** from another account (Tailscale node
+  sharing), or any node on a tailnet the operator was **invited** to rather than
+  owns. An organization or another person's tailnet the operator holds a login for
+  is external, however routine the access feels.
+
+Two signals settle it:
+
+```bash
+# 1. Which tailnet is active, and which account is Self?
+tailscale status --json | python3 -c 'import json,sys; d=json.load(sys.stdin); \
+print("TAILNET", d["CurrentTailnet"]["Name"]); print("SELF-USER", d["User"][str(d["Self"]["UserID"])]["LoginName"])'
+
+# 2. Which account owns the target peer? A different LoginName than Self's means shared in.
+tailscale status --json | python3 -c 'import json,sys; d=json.load(sys.stdin); \
+[print(p["HostName"], d["User"][str(p["UserID"])]["LoginName"]) for p in d["Peer"].values()]'
+```
+
+The plain `tailscale status` output carries the same owner in its per-peer account
+column — the JSON form is for when the text output is ambiguous.
+
+**The gate.** On an external target, stop and get the operator's explicit approval
+before running anything that reaches the peer or changes state on it: `ssh`, `scp`,
+remote process control, `serve`, `funnel`, ACL or admin-console edits, or
+`tailscale up`/`down` under that profile. State what the approval covers — the
+tailnet, the peer, the owning account, and the exact command. Approval is per-task:
+it does not carry to the next peer, the next command, or the next session.
+
+Always permitted without asking, because they are how the classification is made:
+`tailscale status`, `tailscale switch --list`, `tailscale ping`, and a discovery hop
+that switches profiles, reads status, and switches back.
+
+When the owning account cannot be established — an unparseable status, a peer the
+JSON does not attribute — the target is external for gating purposes. Ambiguity
+resolves toward asking.
 
 ## B. Reachability drift — peer offline, asleep, or just returned
 
@@ -86,9 +131,11 @@ times out.
 
 1. **Profile** — is the intended tailnet the active profile?
    (`tailscale switch --list`, `CurrentTailnet.Name`)
-2. **Identity** — is the address you are about to use the `Peer`, not `Self`?
+2. **Ownership** — is the target on the operator's own tailnet, or external? If
+   external, ask before acting (§A1). Reachable is not authorized.
+3. **Identity** — is the address you are about to use the `Peer`, not `Self`?
    (`tailscale status --json` → `Self` vs `Peer`)
-3. **Reachability** — does `tailscale ping <peer>` return pong? If not, defer the
+4. **Reachability** — does `tailscale ping <peer>` return pong? If not, defer the
    action and re-attempt on reconnect; do not SSH into an unreachable peer.
 
 Only after all three hold does the network-vs-service triage in
