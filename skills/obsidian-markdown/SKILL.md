@@ -1,6 +1,6 @@
 ---
 name: obsidian-markdown
-description: Create and edit Obsidian Flavored Markdown — wikilinks, embeds, callouts, properties, tags, comments, math, and Mermaid fences — following a compact note house style: `##`/`####` headings, nested tab-indented bullets, no blank lines in the body, colon-style phrasing, body dates as `[[YYYY-MM-DD]]`, person names as `[[Name]]`, and external URLs as inline `[text](url)` (not footnotes). Use whenever writing or formatting a `.md` note for an Obsidian vault, or when a task mentions wikilinks, callouts, frontmatter, tags, or embeds. Not for `.base` data views (use obsidian-bases) or `.canvas` files (use obsidian-canvas).
+description: Create, edit, or reformat any `.md` note that lives in an Obsidian vault — this house style applies to every vault note, including ones whose request never mentions Obsidian or its syntax. Covers wikilinks, embeds, callouts, frontmatter properties, tags, comments, math, and Mermaid fences, plus the compact style: `##`/`####` headings, nested tab-indented bullets, no blank lines in the body, colon-style phrasing, body dates as `[[YYYY-MM-DD]]`, person names as `[[Name]]`, inline `[text](url)` links. Use when writing or cleaning up a meeting note, journal entry, summary, or captured idea in a vault. Not for `.base` data views (use obsidian-bases) or `.canvas` files (use obsidian-canvas).
 metadata:
   version: 2.0.0
 ---
