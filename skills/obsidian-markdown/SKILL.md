@@ -2,7 +2,7 @@
 name: obsidian-markdown
 description: Create and edit Obsidian Flavored Markdown — wikilinks, embeds, callouts, properties, tags, comments, math, and Mermaid fences — following a compact note house style: `##`/`####` headings, nested tab-indented bullets, no blank lines in the body, colon-style phrasing, body dates as `[[YYYY-MM-DD]]`, person names as `[[Name]]`, and external URLs as inline `[text](url)` (not footnotes). Use whenever writing or formatting a `.md` note for an Obsidian vault, or when a task mentions wikilinks, callouts, frontmatter, tags, or embeds. Not for `.base` data views (use obsidian-bases) or `.canvas` files (use obsidian-canvas).
 metadata:
-  version: 1.1.0
+  version: 2.0.0
 ---
 
 # obsidian-markdown
@@ -64,7 +64,8 @@ Use the heading level specified by the user for main sections. If no heading lev
 Use a single hyphen followed by one space (`- `) for every bullet point. For nested bullets, indent each level with one tab character. Maintain consistent indentation for bullets at the same level.
 
 Top-level bullet counts as depth 1. A bullet indented once is depth 2. Indented twice is depth 3. A fourth level is not allowed -- promote it to a subsection, a separate list, or note-style line.
-Prefer nested bullets when an item has sub-context (members under a group, steps under a task, caveats under a rule) instead of flattening siblings into one long list.
+Prefer nested bullets when an item has sub-context (members under a group, steps under a task, caveats under a rule) instead of flattening siblings into one long list. Attributes that describe the same subject are siblings, not children -- nest only what is genuinely subordinate.
+YAML frontmatter is the exception to tab indentation: keep YAML-standard spaces for arrays and nested properties.
 
 ```markdown
 - Phase one                 <- depth 1 (GOOD)
@@ -121,20 +122,21 @@ Do not prefer footnotes (`[^1]` / `[^1]: ...`) for ordinary web URLs — keep th
 If the user asks for a `References` section, use heading `## References` and the same `[label](url)` form there.
 
 ```markdown
-Demo: [Solar Open 2 beta](https://open2-beta.upstage.ai/)
-Folder: [전문가사용자평가](https://drive.google.com/drive/folders/…)
+Demo: [beta console](https://example.com/beta)
+Folder: [reviewer uploads](https://drive.google.com/drive/folders/<folder-id>)
 ```
-
-YAML frontmatter is the exception: keep YAML-standard spaces for arrays and nested properties.
 
 ### Rule 7: Wrap body dates as date wikilinks
 
 In Markdown body text, wrap calendar dates as Obsidian wikilinks: `[[YYYY-MM-DD]]`.
 Keep YAML frontmatter date fields as plain `YYYY-MM-DD` scalars so typed metadata stays valid.
 
+Wikilink only a date the source actually states. When the source gives a bare day or month with no year (`January 30`, `마감 30일`), leave it as written rather than inferring a year to complete the `[[YYYY-MM-DD]]` form — Rule 5 forbids supplying facts the source did not.
+
 ```markdown
 - 마감: [[2026-07-27]] (월) 13:00
 - 테스트 기간: 지금 ~ [[2026-07-27]] (월) 13:00
+- 1차 마감: January 30          <- year unstated in source: leave as-is
 ```
 
 ```yaml
@@ -144,9 +146,9 @@ date_modified: 2026-07-26
 
 ### Rule 8: Wrap person names as people wikilinks
 
-When the body refers to a person, wrap the name as a wikilink: `[[고범수]]`, `[[장현서]]`.
-Prefer the People-note filename when it is known; use a first-mention wikilink rather than bare plain text.
-Creating or enriching CRM People notes is out of scope for this skill — hand that off to the people / make-people workflow when the operator asks for a People note.
+When the body refers to a person, wrap the name as a wikilink on first mention: `[[Hong Gildong]]`, `[[홍길동]]`.
+Use the People-note filename when one exists; when it does not, the wikilink is a deliberate placeholder that the operator may resolve later, so it does not need a target to be correct.
+Creating or enriching People notes is out of scope for this skill — say so and stop when the operator asks for one.
 
 ## Internal Links (Wikilinks)
 
@@ -298,9 +300,10 @@ status: in-progress
 ---
 ## Summary
 - Aim: improve [[workflow]] with modern techniques
-	- Owner: [[고범수]]
-	- Deadline: [[2024-01-30]]
-	- Source: [project brief](https://example.com/project-alpha)
+- Owner: [[Hong Gildong]]
+- Deadline: [[2024-01-30]]
+	- Blocker: vendor sign-off outstanding
+- Source: [project brief](https://example.com/project-alpha)
 ## Tasks
 - [x] Initial planning
 - [ ] Development phase
@@ -364,7 +367,7 @@ Reviewed: [[Meeting Notes 2024-01-10#Decisions]]
 - [ ] Body calendar dates use `[[YYYY-MM-DD]]`; YAML date fields stay plain `YYYY-MM-DD`.
 - [ ] Person names in the body use `[[Name]]` wikilinks on first mention.
 - [ ] Hierarchical content prefers nested tab bullets (depth ≤ 3) over flat lists.
-- [ ] Every wikilink resolves to an existing note or is explicitly intended as a placeholder.
+- [ ] Every topical wikilink resolves to an existing note or is explicitly intended as a placeholder. Date wikilinks (Rule 7) and person wikilinks (Rule 8) are intentional placeholders by design and are exempt — an unresolved `[[2026-07-27]]` or `[[홍길동]]` is correct output, not a broken link.
 - [ ] Callouts use a valid type from [CALLOUTS.md](CALLOUTS.md).
 - [ ] The note renders in Obsidian reading view without broken embeds or unrendered syntax.
 
