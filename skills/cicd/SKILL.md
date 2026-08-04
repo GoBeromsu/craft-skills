@@ -2,7 +2,7 @@
 name: cicd
 description: "Designs CI/CD changes that preserve the repository's delivery topology and make releases observable and reversible. Use when asked to set up the PR pipeline and deployment for this repo, configure CI/CD, add a deployment pipeline, define required CI checks, design release rollback, or 배포 파이프라인을 설계할 때. Not for service architecture or persistence — use backend; test-suite design — use testing; or commit and PR mechanics — use git."
 metadata:
-  version: 1.1.1
+  version: 1.2.0
 ---
 
 # cicd
@@ -27,11 +27,17 @@ Use [ci-gating.md](references/ci-gating.md) only when the selected CI provider i
 - [ ] Missing or malformed release inputs fail before runtime mutation, and build or runtime evidence is retained.
 - [ ] An exact release input resolves to a recorded commit SHA rather than a moving branch.
 - [ ] Exercise failures before and after migration; automatic application rollback after migration is enabled only with compatibility proof, and the manual-recovery path preserves durable state.
+- [ ] A deploy-time CI gate asserts the exact release SHA's job-level conclusion — filtered to the CI workflow's own triggering event — rather than re-running proof commands or trusting commit ancestry alone.
 
 ## Anti-patterns
 
 - Replacing an incumbent tag, release, or immutable commit resolver with `checkout main` → preserve the repository's release semantics and deploy the exact resolved SHA in detached state.
 - Automatically switching to `PREV_TAG` after a migration succeeds but health or smoke checks fail → capture evidence and fail stopped unless no schema change or backward compatibility was proven before deployment; code rollback is not database recovery.
+- Re-running lint, test, or build inside the deployment pipeline for a commit the CI provider already validated → assert the CI provider's already-recorded conclusion for that exact commit instead; deployment confirms release readiness, it does not re-prove code correctness.
+- Trusting `git merge-base --is-ancestor` to prove a release commit passed CI → assert the CI conclusion of the exact release SHA; ancestry only proves lineage, and a commit merged before its required check finished is still an ancestor.
+- A second, comment-declared "merge-ready" or "accept" signal running alongside the required check → assert mergeability only from the required check's actual state, and route access control to platform features (ruleset, environment protection, collaborator permissions) instead of a parallel truth source.
+- Removing deployment-time re-verification before a new exact-SHA CI gate has proven itself against a real release → land the gate, exercise it against an actual deployment, then remove the redundant check; the reverse order leaves a window where neither layer verifies.
+- Adding a date cutoff or bypass switch so pre-existing releases pass a newly fail-closed gate → cut a new release that satisfies the gate instead; the exception outlives the reason for it and the gate around it gets forgotten.
 
 ## Boundaries
 
