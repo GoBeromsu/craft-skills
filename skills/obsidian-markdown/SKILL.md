@@ -1,21 +1,21 @@
 ---
 name: obsidian-markdown
-description: Create, edit, or reformat any `.md` note that lives in an Obsidian vault — this house style applies to every vault note, including ones whose request never mentions Obsidian or its syntax. Covers wikilinks, embeds, callouts, frontmatter properties, tags, comments, math, and Mermaid fences, plus the compact style: `##`/`####` headings, nested tab-indented bullets, no blank lines in the body, colon-style phrasing, body dates as `[[YYYY-MM-DD]]`, person names as `[[Name]]`, inline `[text](url)` links. Use when writing or cleaning up a meeting note, journal entry, summary, or captured idea in a vault. Not for `.base` data views (use obsidian-bases) or `.canvas` files (use obsidian-canvas).
+description: Create, edit, or reformat any `.md` note that lives in an Obsidian vault — this house style applies to every vault note, including ones whose request never mentions Obsidian or its syntax. Covers wikilinks, embeds, callouts, frontmatter properties, tags, comments, math, and Mermaid fences, plus the house style: headings-first structure (`##` sections, `###`/`####` subsections instead of deep bullet nesting), short one-idea-per-line bullets capped at depth 2, tables for comparative or multi-attribute information, numbered lists for sequences and plans, blank lines encouraged around headings/tables/blocks, body dates as `[[YYYY-MM-DD]]`, person names as `[[Name]]`, inline `[text](url)` links. Use when writing or cleaning up a meeting note, journal entry, summary, or captured idea in a vault. Not for `.base` data views (use obsidian-bases) or `.canvas` files (use obsidian-canvas).
 metadata:
-  version: 2.0.0
+  version: 3.0.0
 ---
 
 # obsidian-markdown
 
 ## Overview
 
-Create and edit valid Obsidian Flavored Markdown (OFM) that also follows a compact note house style.
+Create and edit valid Obsidian Flavored Markdown (OFM) that also follows a headings-first note house style.
 
 ## Vault Access
 
 Use the `obsidian-cli` skill for all note creation, edit, search, and property mutation inside the vault. Do not shell out to raw `cat`/`sed` on vault paths. See the `obsidian-cli` SKILL.md for the command surface and required preconditions (Obsidian must be running).
 
-OFM extends CommonMark and GFM with wikilinks, embeds, callouts, properties, comments, and other syntax; this skill covers those extensions and bakes a compact note house style (heading, spacing, note-style, nested bullets, date/people wikilinks, and inline web links) into every note it produces. Standard Markdown (bold, italic, code blocks, tables) is assumed knowledge.
+OFM extends CommonMark and GFM with wikilinks, embeds, callouts, properties, comments, and other syntax; this skill covers those extensions and bakes a headings-first note house style (heading structure, short bullets, tables, numbered lists, spacing, note-style phrasing, date/people wikilinks, and inline web links) into every note it produces. Standard Markdown (bold, italic, code blocks, tables) is assumed knowledge.
 
 ## When to Use
 
@@ -34,7 +34,7 @@ OFM extends CommonMark and GFM with wikilinks, embeds, callouts, properties, com
 3. **Link related notes** using wikilinks (`[[Note]]`) for internal vault connections, and standard Markdown links for external URLs.
 4. **Embed content** from other notes, images, or PDFs using `![[embed]]`. See [EMBEDS.md](EMBEDS.md).
 5. **Add callouts** for highlighted information using `> [!type]`. See [CALLOUTS.md](CALLOUTS.md).
-6. **Check formatting against the Formatting Rules below** -- main sections default `##`, subsections `####`, hyphen bullets with tabs and nested hierarchy preferred, no H1/H5+, no bullet past depth 3, no blank lines in body structure, note-style phrasing, body dates as `[[YYYY-MM-DD]]`, person names as `[[Name]]`, and external URLs as inline `[text](url)` (not footnotes). Fix before moving on.
+6. **Check formatting against the Formatting Rules below** -- structure with headings (main sections `##`, subsections `###`/`####`) rather than deep bullet nesting; bullets hold one idea per line at depth ≤ 2; three-or-more comparable items become a table; sequences and plans become a numbered list; blank lines separate headings, tables, and logical blocks; no H1/H5+; note-style phrasing; body dates as `[[YYYY-MM-DD]]`; person names as `[[Name]]`; external URLs as inline `[text](url)` (not footnotes). Fix before moving on.
 7. **Verify** the note renders correctly in Obsidian's reading view.
 
 > When choosing between wikilinks and Markdown links: use `[[wikilinks]]` for notes within the vault (Obsidian tracks renames automatically) and `[text](url)` for external URLs only.
@@ -43,79 +43,122 @@ OFM extends CommonMark and GFM with wikilinks, embeds, callouts, properties, com
 
 Apply to every note created or edited under this skill. These rules override whatever example headings, spacing, link, or bullet formats appear in upstream OFM references.
 
-### Rule 1: Headings default to `##` for main sections and `####` for subsections
+### Rule 1: Structure with headings, not nesting
 
-Use the heading level specified by the user for main sections. If no heading level is specified, use `##` (H2) as the default. For subsections inside main sections, use `####` (H4). Avoid `###` unless the user explicitly asks for a three-level outline. Never use `#` (H1) and never use `#####`/`######` (H5/H6).
+Use headings to carry structure, not bullet indentation. Main sections use `##`. Topical subsections use `###`. Sub-topics inside a subsection use `####`. Never use `#` (H1) -- the note title lives in the filename and frontmatter `title` property, and an H1 duplicates them. Never use `#####`/`######` (H5/H6) -- a section needing that depth should be split into sibling sections instead.
 
-- **Why no H1:** The note title lives in the filename and the frontmatter `title` property -- an H1 inside the body duplicates it and breaks outline renderers that treat the filename as the document title.
-- **Why default `##` / `####`:** This house style treats H2 as the main note outline and H4 as local subsection labels.
-- **Why no H5+:** If a section needs to nest past H4, the section is doing too much -- split it into sibling sections, promote it to its own note, or flatten the hierarchy.
+When a bullet tree wants to go three or more levels deep, that is the signal to promote the top level to a heading and flatten the rest -- not to add another indent.
 
 ```markdown
 # Project Alpha            <- BAD: H1 duplicates the title
-## Project Alpha           <- GOOD: default main section
-#### Tasks                 <- GOOD: subsection inside a main section
-### Backend                <- AVOID unless explicitly requested
+## Project Alpha           <- GOOD: main section
+### Backend                <- GOOD: topical subsection
+#### Auth rewrite          <- GOOD: sub-topic under Backend
 ##### API routes           <- BAD: H5 -- restructure instead
 ```
 
-### Rule 2: Bullets use hyphen markers and tab indentation
+### Rule 2: One idea per bullet, one line per bullet
 
-Use a single hyphen followed by one space (`- `) for every bullet point. For nested bullets, indent each level with one tab character. Maintain consistent indentation for bullets at the same level.
+A bullet holds one fact or one action, on one line. A bullet that chains multiple clauses with arrows (`→`), em-dashes, or parenthetical asides is a paragraph in disguise -- split it into separate bullets or rewrite it as prose under a heading.
 
-Top-level bullet counts as depth 1. A bullet indented once is depth 2. Indented twice is depth 3. A fourth level is not allowed -- promote it to a subsection, a separate list, or note-style line.
-Prefer nested bullets when an item has sub-context (members under a group, steps under a task, caveats under a rule) instead of flattening siblings into one long list. Attributes that describe the same subject are siblings, not children -- nest only what is genuinely subordinate.
-YAML frontmatter is the exception to tab indentation: keep YAML-standard spaces for arrays and nested properties.
+```markdown
+- Deploy → staging first, then prod after QA signs off (target Friday)   <- BAD: one bullet, three ideas
+```
+
+```markdown
+- Deploy to staging first
+- Deploy to prod after QA signs off
+- Target: Friday
+```
+
+### Rule 3: Maximum bullet depth is 2
+
+A bullet may have one level of children and no more: depth 1 (top-level) and depth 2 (its direct children). Depth 3+ is an anti-pattern -- promote the deeper content to its own heading instead.
+
+Bullets use a single hyphen followed by one space (`- `). Indent the one allowed child level with a single tab. YAML frontmatter is the exception: keep YAML-standard spaces for arrays and nested properties.
 
 ```markdown
 - Phase one                 <- depth 1 (GOOD)
-	- Backend                 <- depth 2 (GOOD)
-		- Auth rewrite          <- depth 3 (GOOD, deepest allowed)
-			- JWT rotation        <- depth 4 (BAD: flatten or promote)
+	- Backend                 <- depth 2 (GOOD, deepest allowed)
+		- Auth rewrite           <- depth 3 (BAD: promote or flatten)
+			- JWT rotation         <- depth 4 (BAD)
 ```
 
 Fix by promoting:
 
 ```markdown
 - Phase one
-	- Backend
-		- Auth rewrite: see details
-#### Auth rewrite details
+	- Backend: see Auth rewrite below
+
+#### Auth rewrite
 - JWT rotation
 - Session invalidation
 ```
 
-### Rule 3: No blank lines inside the note body structure
+### Rule 4: Tables for comparative or multi-attribute information
 
-Do not insert blank lines before or after headings. Do not insert blank lines between different sections, subsections, or bullet lists. Keep the body compact and note-like.
-
-```markdown
-## Main Section
-Content of the main section.
-#### Subsection
-- Bullet point 1
-- Bullet point 2
-	- Nested bullet point
-## Another Main Section
-More content here.
-```
-
-### Rule 4: Prefer note-style phrasing over prose
-
-Use concise note-style lines instead of full-sentence essay prose. Use colons (`:`) for definitions, labels, and readable key-value phrasing.
+When three or more items share the same set of attributes (tool comparisons, per-item status, location/content/action triples), use a table instead of parallel or nested bullets -- a table makes the shared attributes scannable in a way bullets cannot.
 
 ```markdown
-## Concept
-Definition: short explanation
-Use case: when the idea applies
-- Implication: concise note
+- Tool A: fast, no auth support, CLI only
+- Tool B: slow, has auth support, CLI and GUI
+- Tool C: fast, has auth support, GUI only
 ```
 
-### Rule 5: Preserve source text unless formatting is requested
+```markdown
+| Tool | Speed | Auth | Interface |
+|------|-------|------|-----------|
+| A | Fast | No | CLI |
+| B | Slow | Yes | CLI, GUI |
+| C | Fast | Yes | GUI |
+```
 
-When the task is to format given text, do not add additional content or modify the source meaning. Only apply the required markdown formatting, heading levels, bullet indentation, date/people wikilinks, and link formatting.
+### Rule 5: Numbered lists for sequences and ordered plans
 
-### Rule 6: Use inline markdown links for web URLs
+Use a numbered list (`1.`, `2.`, `3.`) for steps that happen in order or a plan with a fixed sequence. Never fake numbering inside bullets (`- 1.`, `- 3-1.`) -- the bullet glyph and the number are double signaling the same thing.
+
+```markdown
+- 1. Draft the outline        <- BAD: bullet and number both signal order
+- 3-1. Review with team       <- BAD: fake sub-numbering
+```
+
+```markdown
+1. Draft the outline
+2. Circulate for feedback
+3. Review with team
+4. Finalize
+```
+
+### Rule 6: Blank lines are allowed and encouraged
+
+Put a blank line around headings, tables, quotes, and between logical blocks. Readability beats compactness. This reverses the older "no blank lines in the body" rule -- that rule is retired.
+
+### Rule 7: Do not mix concern types in one tree
+
+A plan (a sequence), its content design (an artifact's structure), a reference checklist, and rationale are different kinds of information. Give each its own heading section instead of nesting all of them inside one bullet tree.
+
+```markdown
+## Plan
+1. ...
+2. ...
+
+### Content design
+| Section | Purpose |
+|---|---|
+| ... | ... |
+
+### Checklist
+- ...
+
+### Rationale
+...
+```
+
+### Rule 8: Preserve source text unless formatting is requested
+
+When the task is to format given text, do not add additional content or modify the source meaning. Only apply the required markdown formatting, heading levels, bullet depth, date/people wikilinks, and link formatting.
+
+### Rule 9: Use inline markdown links for web URLs
 
 When adding web links in Obsidian notes, use standard inline markdown links: `[label](https://example.com)`.
 Do not prefer footnotes (`[^1]` / `[^1]: ...`) for ordinary web URLs — keep the destination readable next to the claim.
@@ -126,12 +169,12 @@ Demo: [beta console](https://example.com/beta)
 Folder: [reviewer uploads](https://drive.google.com/drive/folders/<folder-id>)
 ```
 
-### Rule 7: Wrap body dates as date wikilinks
+### Rule 10: Wrap body dates as date wikilinks
 
 In Markdown body text, wrap calendar dates as Obsidian wikilinks: `[[YYYY-MM-DD]]`.
 Keep YAML frontmatter date fields as plain `YYYY-MM-DD` scalars so typed metadata stays valid.
 
-Wikilink only a date the source actually states. When the source gives a bare day or month with no year (`January 30`, `마감 30일`), leave it as written rather than inferring a year to complete the `[[YYYY-MM-DD]]` form — Rule 5 forbids supplying facts the source did not.
+Wikilink only a date the source actually states. When the source gives a bare day or month with no year (`January 30`, `마감 30일`), leave it as written rather than inferring a year to complete the `[[YYYY-MM-DD]]` form — Rule 8 forbids supplying facts the source did not.
 
 ```markdown
 - 마감: [[2026-07-27]] (월) 13:00
@@ -144,11 +187,49 @@ date_created: 2026-07-26
 date_modified: 2026-07-26
 ```
 
-### Rule 8: Wrap person names as people wikilinks
+### Rule 11: Wrap person names as people wikilinks
 
 When the body refers to a person, wrap the name as a wikilink on first mention: `[[Hong Gildong]]`, `[[홍길동]]`.
 Use the People-note filename when one exists; when it does not, the wikilink is a deliberate placeholder that the operator may resolve later, so it does not need a target to be correct.
 Creating or enriching People notes is out of scope for this skill — say so and stop when the operator asks for one.
+
+## Anti-pattern vs. Good
+
+Before -- a "work order" note that nests a plan, references, and rationale all under one root, with a bullet that chains a whole sentence:
+
+```markdown
+## 작업 순서
+- 1. 설계 검토 → 팀 리뷰 후 반영 (금요일까지, 우선순위 높음)
+	- 참고 자료
+		- 기존 문서
+			- v1 스펙
+				- 변경 이력
+		- 관련 이슈: #123
+	- 이유: 기존 구조가 확장성이 없고, 순서를 지키지 않으면 다른 팀과 충돌함
+- 2. 구현 → 백엔드 먼저, 인증부터 시작
+```
+
+After -- the same content split into headings, a numbered plan, a table, and short bullets:
+
+```markdown
+## Plan
+
+1. Review the design with the team by Friday (high priority)
+2. Implement the backend, starting with auth
+3. Implement the frontend
+4. Ship
+
+### Reference Materials
+
+| Type | Item |
+|------|------|
+| Doc | v1 spec |
+| Issue | #123 |
+
+### Rationale
+
+- Current structure does not scale; skipping the review order risks conflicts with other teams
+```
 
 ## Internal Links (Wikilinks)
 
@@ -274,7 +355,7 @@ To link Mermaid nodes to Obsidian notes, add `class NodeName internal-link;`.
 
 ## Footnotes
 
-Footnote syntax exists in OFM, but this house style does not use it for web links (see Rule 6).
+Footnote syntax exists in OFM, but this house style does not use it for web links (see Rule 9).
 Reserve footnotes only when the operator explicitly asks for them.
 
 ```markdown
@@ -287,7 +368,7 @@ Inline footnote.^[This is inline.]
 
 ## Complete Example
 
-This example obeys the house style: main sections are `##`, subsections are `####`, nested bullets use tabs, body dates and people are wikilinked, the body has no blank lines between headings/sections/lists, and web links are inline markdown.
+This example obeys the house style: main sections are `##`, topical subsections are `###`, bullets hold one idea per line at depth ≤ 2, blank lines separate blocks, body dates and people are wikilinked, and web links are inline markdown.
 
 ````markdown
 ---
@@ -298,28 +379,40 @@ tags:
   - active
 status: in-progress
 ---
+
 ## Summary
+
 - Aim: improve [[workflow]] with modern techniques
 - Owner: [[Hong Gildong]]
 - Deadline: [[2024-01-30]]
-	- Blocker: vendor sign-off outstanding
 - Source: [project brief](https://example.com/project-alpha)
+
 ## Tasks
-- [x] Initial planning
-- [ ] Development phase
-	- [ ] Backend implementation
-	- [ ] Frontend design
-#### Backend
+
+1. Initial planning
+2. Backend implementation
+3. Frontend design
+4. Review
+
+### Backend
+
 - Auth service
 	- JWT rotation
 	- Session store
-#### Frontend
+
+### Frontend
+
 - Component library
 - Routing rewrite
+
 ## Notes
+
 Algorithm: $O(n \log n)$ sorting
+
 Reference: [[Algorithm Notes#Sorting]]
+
 Embed: ![[Architecture Diagram.png|600]]
+
 Reviewed: [[Meeting Notes 2024-01-10#Decisions]]
 ````
 
@@ -328,24 +421,26 @@ Reviewed: [[Meeting Notes 2024-01-10#Decisions]]
 | Rationalization | Reality |
 |---|---|
 | "I'll use H1 for the title so it's obvious what the note is about." | The title lives in the filename and frontmatter `title` property. An H1 duplicates them and breaks outline renderers that already treat the filename as the document title. |
-| "Just one more indent level -- the structure really is that deep." | Past depth 3 readers lose the outline. Promote the content to a sub-heading, a separate list, or prose. If the data truly has 4+ axes, it's a table, not a list. |
+| "Just one more indent level -- the structure really is that deep." | Past depth 2, readers lose the outline. That's what headings are for -- promote the deeper content to a `###`/`####` section instead of nesting again. |
 | "This note is a meta-doc, so H5/H6 is fine." | If the note needs H5, it needs to be split. Nothing in an Obsidian note renders better at H5 than it does as its own sibling H3/H4 section. |
-| "The upstream kepano example used deeper nesting, so it's fine to copy." | Upstream is a syntax reference, not a style guide. These rules override any nesting shown in references. |
-| "Two-space indentation renders fine in Markdown, so it is fine for Obsidian notes." | Rendering is not the only criterion. These note bodies use literal tabs for nested bullets so the source matches Obsidian's outliner behavior. |
-| "Blank lines make Markdown easier to read." | This house style is compact: no blank lines before/after headings or between section/list blocks inside the body. |
-| "A normal paragraph sounds more polished." | Prefer note-style fragments and colon labels over essay prose unless the user explicitly requests narrative writing. |
+| "I'll chain a few ideas with arrows so the bullet stays terse." | A bullet chaining clauses with `→`, em-dashes, or parentheticals is a paragraph in disguise. Split it into separate bullets or write it as prose under a heading. |
+| "Nesting the plan, references, and reasoning under one root keeps it all together." | A sequence, an artifact's structure, a reference list, and rationale are different kinds of information. Give each its own heading section instead of one bullet tree. |
+| "I'll number inside the bullet so the order is extra clear." | `- 1.` / `- 3-1.` double-signals order with both a bullet glyph and a number. Use a numbered list instead. |
+| "These three items are similar enough for a bullet list." | Three or more items sharing the same attributes belong in a table, not parallel or nested bullets. |
+| "Blank lines make the note longer than it needs to be." | Blank lines around headings, tables, and blocks are encouraged. Readability beats compactness. |
 | "I'll hide web links in footnotes." | Use inline `[label](url)` for web links; footnotes are not the house default. |
 | "Bare dates and bare names are fine in the body." | Body dates are `[[YYYY-MM-DD]]`; person names are `[[Name]]` wikilinks. |
-| "Flat bullet lists are cleaner." | Prefer nested bullets when items have sub-context; keep depth ≤ 3. |
 
 ## Red Flags
 
 - A leading `# ` line inside the body of an Obsidian note (H1).
 - Any `##### ` or `###### ` line (H5/H6).
 - Any body bullet indented with spaces instead of literal tabs. YAML frontmatter is exempt.
-- A body bullet indented three or more tabs (`^\t{3,}- `), which is depth 4+ and should be promoted or flattened.
-- Main sections using `###` when the user did not explicitly request that level.
-- Blank lines before or after headings, or between sections/lists in the note body.
+- A body bullet indented two or more tabs (`^\t{2,}- `), which is depth 3+ and should be promoted to a heading.
+- A bullet whose text contains `→`, an em-dash used as a clause joiner, or a parenthetical aside chaining a second idea.
+- Fake numbering inside a bullet (`- 1.`, `- 3-1.`).
+- Three or more parallel bullets sharing the same attributes that should be a table instead.
+- A plan, a reference list, and rationale all nested under one heading or bullet root instead of split into their own sections.
 - Essay-style full sentences where note-style colon phrasing would preserve the source meaning.
 - Footnotes (`[^n]`) used for ordinary web URLs when inline `[label](url)` would work.
 - Bare ISO dates in the body (`2026-07-27`) instead of `[[2026-07-27]]`.
@@ -357,17 +452,19 @@ Reviewed: [[Meeting Notes 2024-01-10#Decisions]]
 - [ ] Frontmatter is present and at least one property is set.
 - [ ] `grep -nE '^# ' <note>` returns zero matches (no H1 in body).
 - [ ] `grep -nE '^#{5,} ' <note>` returns zero matches (no H5+).
-- [ ] Main sections use the user-specified heading level, defaulting to `##`.
-- [ ] Subsections inside main sections use `####` unless the user explicitly requested a different outline.
+- [ ] Structure is carried by headings (`##` main sections, `###`/`####` subsections), not by deep bullet nesting.
 - [ ] `awk 'BEGIN{fm=0} NR==1&&$0=="---"{fm=1;next} fm&&$0=="---"{fm=0;next} !fm && /^ +-/ {print FNR ":" $0}' <note>` returns zero matches (no space-indented body bullets).
-- [ ] `grep -nP '^\t{3,}- ' <note>` returns zero matches (no bullet past depth 3 when using tab indentation).
-- [ ] Body structure has no blank lines before/after headings or between section/list blocks.
+- [ ] `grep -nP '^\t{2,}- ' <note>` returns zero matches (no bullet past depth 2).
+- [ ] Every bullet holds one idea on one line -- no `→`/em-dash/parenthetical clause chains.
+- [ ] Three-or-more-item comparisons use a table, not parallel or nested bullets.
+- [ ] Sequences and ordered plans use a numbered list, not bullets with numbers baked in.
+- [ ] Blank lines separate headings, tables, quotes, and logical blocks.
+- [ ] A plan, artifact structure, reference checklist, and rationale each live in their own heading section, not nested inside one tree.
 - [ ] Note text uses concise note-style phrasing and colons where appropriate.
 - [ ] Web links use inline `[label](url)`; footnotes are absent unless the operator explicitly requested them.
 - [ ] Body calendar dates use `[[YYYY-MM-DD]]`; YAML date fields stay plain `YYYY-MM-DD`.
 - [ ] Person names in the body use `[[Name]]` wikilinks on first mention.
-- [ ] Hierarchical content prefers nested tab bullets (depth ≤ 3) over flat lists.
-- [ ] Every topical wikilink resolves to an existing note or is explicitly intended as a placeholder. Date wikilinks (Rule 7) and person wikilinks (Rule 8) are intentional placeholders by design and are exempt — an unresolved `[[2026-07-27]]` or `[[홍길동]]` is correct output, not a broken link.
+- [ ] Every topical wikilink resolves to an existing note or is explicitly intended as a placeholder. Date wikilinks (Rule 10) and person wikilinks (Rule 11) are intentional placeholders by design and are exempt — an unresolved `[[2026-07-27]]` or `[[홍길동]]` is correct output, not a broken link.
 - [ ] Callouts use a valid type from [CALLOUTS.md](CALLOUTS.md).
 - [ ] The note renders in Obsidian reading view without broken embeds or unrendered syntax.
 
