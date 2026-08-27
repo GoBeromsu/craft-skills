@@ -117,16 +117,12 @@
       "id": "craft-skills/aside",
       "name": "aside",
       "kind": "leaf",
-      "lifecycle": "active",
+      "lifecycle": "deleted",
       "version": "1.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
-      "compatibility": [
-        "claude-code",
-        "codex",
-        "hermes"
-      ],
+      "compatibility": [],
       "provenance": {
         "upstream": null,
         "commit": null,
@@ -134,28 +130,9 @@
         "absorbed_from": []
       },
       "replacement_for": [],
-      "replaced_by": null,
+      "replaced_by": "bstack/browser/aside",
       "children": [],
-      "adapters": [
-        {
-          "runtime": "claude-code",
-          "surface": "plugin-skill",
-          "status": "generated",
-          "reason": null
-        },
-        {
-          "runtime": "codex",
-          "surface": "instruction-file",
-          "status": "generated",
-          "reason": null
-        },
-        {
-          "runtime": "hermes",
-          "surface": "instruction-file",
-          "status": "generated",
-          "reason": null
-        }
-      ],
+      "adapters": [],
       "validation_profile": {
         "discovery_parity": "strict",
         "adapter_parity": "strict",
@@ -891,16 +868,12 @@
       "id": "craft-skills/obsidian-bases",
       "name": "obsidian-bases",
       "kind": "leaf",
-      "lifecycle": "active",
+      "lifecycle": "deleted",
       "version": "1.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
-      "compatibility": [
-        "claude-code",
-        "codex",
-        "hermes"
-      ],
+      "compatibility": [],
       "provenance": {
         "upstream": null,
         "commit": null,
@@ -908,28 +881,9 @@
         "absorbed_from": []
       },
       "replacement_for": [],
-      "replaced_by": null,
+      "replaced_by": "bstack/obsidian/bases",
       "children": [],
-      "adapters": [
-        {
-          "runtime": "claude-code",
-          "surface": "plugin-skill",
-          "status": "generated",
-          "reason": null
-        },
-        {
-          "runtime": "codex",
-          "surface": "instruction-file",
-          "status": "generated",
-          "reason": null
-        },
-        {
-          "runtime": "hermes",
-          "surface": "instruction-file",
-          "status": "generated",
-          "reason": null
-        }
-      ],
+      "adapters": [],
       "validation_profile": {
         "discovery_parity": "strict",
         "adapter_parity": "strict",
@@ -946,16 +900,12 @@
       "id": "craft-skills/obsidian-canvas",
       "name": "obsidian-canvas",
       "kind": "leaf",
-      "lifecycle": "active",
+      "lifecycle": "deleted",
       "version": "1.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
-      "compatibility": [
-        "claude-code",
-        "codex",
-        "hermes"
-      ],
+      "compatibility": [],
       "provenance": {
         "upstream": null,
         "commit": null,
@@ -963,28 +913,9 @@
         "absorbed_from": []
       },
       "replacement_for": [],
-      "replaced_by": null,
+      "replaced_by": "bstack/obsidian/canvas",
       "children": [],
-      "adapters": [
-        {
-          "runtime": "claude-code",
-          "surface": "plugin-skill",
-          "status": "generated",
-          "reason": null
-        },
-        {
-          "runtime": "codex",
-          "surface": "instruction-file",
-          "status": "generated",
-          "reason": null
-        },
-        {
-          "runtime": "hermes",
-          "surface": "instruction-file",
-          "status": "generated",
-          "reason": null
-        }
-      ],
+      "adapters": [],
       "validation_profile": {
         "discovery_parity": "strict",
         "adapter_parity": "strict",
@@ -1001,16 +932,12 @@
       "id": "craft-skills/obsidian-cli",
       "name": "obsidian-cli",
       "kind": "leaf",
-      "lifecycle": "active",
+      "lifecycle": "deleted",
       "version": "1.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
-      "compatibility": [
-        "claude-code",
-        "codex",
-        "hermes"
-      ],
+      "compatibility": [],
       "provenance": {
         "upstream": null,
         "commit": null,
@@ -1018,28 +945,9 @@
         "absorbed_from": []
       },
       "replacement_for": [],
-      "replaced_by": null,
+      "replaced_by": "bstack/obsidian/cli",
       "children": [],
-      "adapters": [
-        {
-          "runtime": "claude-code",
-          "surface": "plugin-skill",
-          "status": "generated",
-          "reason": null
-        },
-        {
-          "runtime": "codex",
-          "surface": "instruction-file",
-          "status": "generated",
-          "reason": null
-        },
-        {
-          "runtime": "hermes",
-          "surface": "instruction-file",
-          "status": "generated",
-          "reason": null
-        }
-      ],
+      "adapters": [],
       "validation_profile": {
         "discovery_parity": "strict",
         "adapter_parity": "strict",
@@ -1056,16 +964,12 @@
       "id": "craft-skills/obsidian-clipper",
       "name": "obsidian-clipper",
       "kind": "leaf",
-      "lifecycle": "active",
+      "lifecycle": "deleted",
       "version": "1.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
-      "compatibility": [
-        "claude-code",
-        "codex",
-        "hermes"
-      ],
+      "compatibility": [],
       "provenance": {
         "upstream": null,
         "commit": null,
@@ -1073,28 +977,9 @@
         "absorbed_from": []
       },
       "replacement_for": [],
-      "replaced_by": null,
+      "replaced_by": "bstack/obsidian/clipper",
       "children": [],
-      "adapters": [
-        {
-          "runtime": "claude-code",
-          "surface": "plugin-skill",
-          "status": "generated",
-          "reason": null
-        },
-        {
-          "runtime": "codex",
-          "surface": "instruction-file",
-          "status": "generated",
-          "reason": null
-        },
-        {
-          "runtime": "hermes",
-          "surface": "instruction-file",
-          "status": "generated",
-          "reason": null
-        }
-      ],
+      "adapters": [],
       "validation_profile": {
         "discovery_parity": "strict",
         "adapter_parity": "strict",
@@ -1111,16 +996,12 @@
       "id": "craft-skills/obsidian-doctor",
       "name": "obsidian-doctor",
       "kind": "leaf",
-      "lifecycle": "active",
+      "lifecycle": "deleted",
       "version": "1.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
-      "compatibility": [
-        "claude-code",
-        "codex",
-        "hermes"
-      ],
+      "compatibility": [],
       "provenance": {
         "upstream": null,
         "commit": null,
@@ -1128,28 +1009,9 @@
         "absorbed_from": []
       },
       "replacement_for": [],
-      "replaced_by": null,
+      "replaced_by": "bstack/obsidian/doctor",
       "children": [],
-      "adapters": [
-        {
-          "runtime": "claude-code",
-          "surface": "plugin-skill",
-          "status": "generated",
-          "reason": null
-        },
-        {
-          "runtime": "codex",
-          "surface": "instruction-file",
-          "status": "generated",
-          "reason": null
-        },
-        {
-          "runtime": "hermes",
-          "surface": "instruction-file",
-          "status": "generated",
-          "reason": null
-        }
-      ],
+      "adapters": [],
       "validation_profile": {
         "discovery_parity": "strict",
         "adapter_parity": "strict",
@@ -1166,16 +1028,12 @@
       "id": "craft-skills/obsidian-markdown",
       "name": "obsidian-markdown",
       "kind": "leaf",
-      "lifecycle": "active",
+      "lifecycle": "deleted",
       "version": "1.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
-      "compatibility": [
-        "claude-code",
-        "codex",
-        "hermes"
-      ],
+      "compatibility": [],
       "provenance": {
         "upstream": null,
         "commit": null,
@@ -1183,28 +1041,9 @@
         "absorbed_from": []
       },
       "replacement_for": [],
-      "replaced_by": null,
+      "replaced_by": "bstack/obsidian/markdown",
       "children": [],
-      "adapters": [
-        {
-          "runtime": "claude-code",
-          "surface": "plugin-skill",
-          "status": "generated",
-          "reason": null
-        },
-        {
-          "runtime": "codex",
-          "surface": "instruction-file",
-          "status": "generated",
-          "reason": null
-        },
-        {
-          "runtime": "hermes",
-          "surface": "instruction-file",
-          "status": "generated",
-          "reason": null
-        }
-      ],
+      "adapters": [],
       "validation_profile": {
         "discovery_parity": "strict",
         "adapter_parity": "strict",
@@ -1221,16 +1060,12 @@
       "id": "craft-skills/obsidian-mermaid",
       "name": "obsidian-mermaid",
       "kind": "leaf",
-      "lifecycle": "active",
+      "lifecycle": "deleted",
       "version": "1.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
-      "compatibility": [
-        "claude-code",
-        "codex",
-        "hermes"
-      ],
+      "compatibility": [],
       "provenance": {
         "upstream": null,
         "commit": null,
@@ -1238,28 +1073,9 @@
         "absorbed_from": []
       },
       "replacement_for": [],
-      "replaced_by": null,
+      "replaced_by": "bstack/obsidian/mermaid",
       "children": [],
-      "adapters": [
-        {
-          "runtime": "claude-code",
-          "surface": "plugin-skill",
-          "status": "generated",
-          "reason": null
-        },
-        {
-          "runtime": "codex",
-          "surface": "instruction-file",
-          "status": "generated",
-          "reason": null
-        },
-        {
-          "runtime": "hermes",
-          "surface": "instruction-file",
-          "status": "generated",
-          "reason": null
-        }
-      ],
+      "adapters": [],
       "validation_profile": {
         "discovery_parity": "strict",
         "adapter_parity": "strict",

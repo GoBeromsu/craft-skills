@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 CHECKER_NAME = "topology"
-CHECKER_VERSION = "2"
+CHECKER_VERSION = "3"
 
 TOPOLOGY_KINDS = {"leaf", "thick", "area", "adapter-wrapper", "runtime-hook", "command"}
 SKILL_DIRECTORY_KINDS = {"leaf", "thick", "area", "adapter-wrapper"}
@@ -137,6 +137,10 @@ def check(aggregate: dict[str, Any], config: dict[str, Any]) -> list[dict[str, A
 
     for package in aggregate.get("packages", []):
         if not isinstance(package, dict):
+            continue
+        if package.get("lifecycle") == "deleted":
+            # A deleted package's directory is intentionally removed; it has no
+            # topology to validate. See docs/governance/skill-manifest-schema.md.
             continue
         kind = package.get("kind")
         if kind not in TOPOLOGY_KINDS:

@@ -37,7 +37,11 @@ def _agents_names(root: Path) -> set[str]:
 
 def _manifest_names(root: Path) -> set[str]:
     manifest = _load_json(root / "skills-manifest.yaml")
-    return {package["name"] for package in manifest["packages"]}
+    return {
+        package["name"]
+        for package in manifest["packages"]
+        if package.get("lifecycle") != "deleted"
+    }
 
 
 def _coverage_names(root: Path) -> set[str]:

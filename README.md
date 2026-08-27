@@ -17,7 +17,6 @@ context.
 |-------|---------|
 | `agents` | Build and change LLM-agent systems — prompts, tool schemas, context/tracing wiring — under an eval-first discipline that proves a behavior change against a versioned eval set before shipping. |
 | `api` | Define contract-first public HTTP APIs with stable resource URLs, DTO-only success payloads, pagination, and diagnosable sanitized failures. |
-| `aside` | Drive the Aside AI browser (CLI, MCP server, or automation REPL) to do real work inside logged-in, authenticated web apps that a plain fetch or static extractor can't reach. |
 | `ast-grep` | Search and replace code by syntax-tree shape with ast-grep, validating parseable patterns and inspecting a dry-run before mutation. |
 | `backend` | Route backend engineering through an architecture-detection gate (layered / vertical-slice / hexagonal), then apply dependency-direction rules, persistence choices, and per-framework folder conventions. |
 | `cicd` | Design inexpensive, reliable PR validation and reversible Jenkins Compose deployment pipelines with deployment-server-owned image builds. |
@@ -31,13 +30,6 @@ context.
 | `hookify` | Turn a convention or best practice into local, deterministic enforcement so a violation is blocked before it happens, not corrected after. |
 | `init` | Bootstrap the craft-owned `docs/` scaffold on a fresh repo, then generate a complexity-scored hierarchical `AGENTS.md` knowledge base on a mature one, in one triaged run. |
 | `ml` | Apply ML/DL research-engineering discipline — reproducible project layout, leakage-safe dataset construction, and a training-discipline ladder — to classical ML, deep learning, fine-tuning, and vision work. |
-| `obsidian-bases` | Author and debug Obsidian Bases (`.base` files and `base` blocks) — filters, formulas, views, and `groupBy`/`sort` design for a readable dataset. |
-| `obsidian-canvas` | Create and edit Obsidian JSON Canvas (`.canvas`) files — nodes, edges, groups, and connections per the JSON Canvas 1.0 spec, with edge-integrity validation. |
-| `obsidian-cli` | Operate an Obsidian vault through the `obsidian-cli` binary — note reads/writes/search with write-then-readback verification and a destructive-op guard. |
-| `obsidian-clipper` | Author selector-verified Obsidian Web Clipper JSON templates that map clipped fields to vault frontmatter. |
-| `obsidian-doctor` | Diagnose and repair broken Obsidian plugins and Templater templates against an accumulating registry, driving Obsidian via obsidian-cli. |
-| `obsidian-markdown` | Write Obsidian Flavored Markdown (wikilinks, embeds, callouts, properties) following a compact note house style. |
-| `obsidian-mermaid` | Author Mermaid diagrams that render in Obsidian's pinned Mermaid 11.4.1, avoiding label-escaping and unsupported-diagram-type pitfalls. |
 | `programming` | Apply correctness-first, type-strict engineering discipline when writing or editing Python or TypeScript. |
 | `refactor` | Restructure code without changing what it does, each move backed by a detection command and threshold, gated behind a characterization-test protocol for untested legacy code. |
 | `research` | Run a decision-depth research workflow ending in a `docs/research/{slug}.md` artifact — sweep primary sources, synthesize with a citation on every claim, and state gaps and confidence, never the decision itself. |
@@ -61,7 +53,7 @@ Claude marketplace commands:
 /plugin install craft-skills@craft-skills
 ```
 
-Then invoke any of the 32 skills above by name, e.g. `api`, `aside`, `ast-grep`, `defuddle`, `obsidian-markdown`,
+Then invoke any of the 24 skills above by name, e.g. `api`, `ast-grep`, `defuddle`, `document`,
 `init`, `skillify`, `programming`, `research`, `write-prd`, `debug`.
 
 ---
@@ -120,7 +112,6 @@ Point the agent's instruction-file import at the skill you want:
 
 ```
 skills/api/SKILL.md
-skills/aside/SKILL.md
 skills/agents/SKILL.md
 skills/backend/SKILL.md
 skills/cicd/SKILL.md
@@ -134,13 +125,6 @@ skills/git/SKILL.md
 skills/hookify/SKILL.md
 skills/init/SKILL.md
 skills/ml/SKILL.md
-skills/obsidian-bases/SKILL.md
-skills/obsidian-canvas/SKILL.md
-skills/obsidian-cli/SKILL.md
-skills/obsidian-clipper/SKILL.md
-skills/obsidian-doctor/SKILL.md
-skills/obsidian-markdown/SKILL.md
-skills/obsidian-mermaid/SKILL.md
 skills/programming/SKILL.md
 skills/refactor/SKILL.md
 skills/research/SKILL.md
