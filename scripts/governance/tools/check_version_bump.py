@@ -262,11 +262,6 @@ def check(root: Path, diff_base: str) -> tuple[list[str], list[str]]:
         current_skill = skill_path.read_text(encoding="utf-8") if skill_path.exists() else None
         base_skill = _git_show(root, base, f"skills/{package}/SKILL.md")
         if current_skill is None:
-            if not (root / "skills" / package).exists():
-                # The whole package directory was removed (retired package), rather
-                # than SKILL.md going missing from an otherwise-present directory.
-                notes.append(f"{package}: removed package (directory deleted)")
-                continue
             violations.append(f"{package}: SKILL.md is missing")
             continue
 

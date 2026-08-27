@@ -17,6 +17,7 @@ context.
 |-------|---------|
 | `agents` | Build and change LLM-agent systems — prompts, tool schemas, context/tracing wiring — under an eval-first discipline that proves a behavior change against a versioned eval set before shipping. |
 | `api` | Define contract-first public HTTP APIs with stable resource URLs, DTO-only success payloads, pagination, and diagnosable sanitized failures. |
+| `aside` | **Deprecated** — moved to [`bstack/browser/aside`](https://github.com/GoBeromsu/bstack); do not use for Aside AI browser automation. |
 | `ast-grep` | Search and replace code by syntax-tree shape with ast-grep, validating parseable patterns and inspecting a dry-run before mutation. |
 | `backend` | Route backend engineering through an architecture-detection gate (layered / vertical-slice / hexagonal), then apply dependency-direction rules, persistence choices, and per-framework folder conventions. |
 | `cicd` | Design inexpensive, reliable PR validation and reversible Jenkins Compose deployment pipelines with deployment-server-owned image builds. |
@@ -30,6 +31,13 @@ context.
 | `hookify` | Turn a convention or best practice into local, deterministic enforcement so a violation is blocked before it happens, not corrected after. |
 | `init` | Bootstrap the craft-owned `docs/` scaffold on a fresh repo, then generate a complexity-scored hierarchical `AGENTS.md` knowledge base on a mature one, in one triaged run. |
 | `ml` | Apply ML/DL research-engineering discipline — reproducible project layout, leakage-safe dataset construction, and a training-discipline ladder — to classical ML, deep learning, fine-tuning, and vision work. |
+| `obsidian-bases` | **Deprecated** — moved to [`bstack/obsidian/bases`](https://github.com/GoBeromsu/bstack); do not use for Obsidian Bases (`.base` file) work. |
+| `obsidian-canvas` | **Deprecated** — moved to [`bstack/obsidian/canvas`](https://github.com/GoBeromsu/bstack); do not use for Obsidian Canvas (`.canvas` file) work. |
+| `obsidian-cli` | **Deprecated** — moved to [`bstack/obsidian/cli`](https://github.com/GoBeromsu/bstack); do not use for Obsidian vault operations via the CLI. |
+| `obsidian-clipper` | **Deprecated** — moved to [`bstack/obsidian/clipper`](https://github.com/GoBeromsu/bstack); do not use for Obsidian Web Clipper template work. |
+| `obsidian-doctor` | **Deprecated** — moved to [`bstack/obsidian/doctor`](https://github.com/GoBeromsu/bstack); do not use for Obsidian plugin diagnosis/repair. |
+| `obsidian-markdown` | **Deprecated** — moved to [`bstack/obsidian/markdown`](https://github.com/GoBeromsu/bstack); do not use for Obsidian vault markdown / house-style work. |
+| `obsidian-mermaid` | **Deprecated** — moved to [`bstack/obsidian/mermaid`](https://github.com/GoBeromsu/bstack); do not use for Mermaid diagrams inside Obsidian. |
 | `programming` | Apply correctness-first, type-strict engineering discipline when writing or editing Python or TypeScript. |
 | `refactor` | Restructure code without changing what it does, each move backed by a detection command and threshold, gated behind a characterization-test protocol for untested legacy code. |
 | `research` | Run a decision-depth research workflow ending in a `docs/research/{slug}.md` artifact — sweep primary sources, synthesize with a citation on every claim, and state gaps and confidence, never the decision itself. |
@@ -53,7 +61,7 @@ Claude marketplace commands:
 /plugin install craft-skills@craft-skills
 ```
 
-Then invoke any of the 24 skills above by name, e.g. `api`, `ast-grep`, `defuddle`, `document`,
+Then invoke any of the 32 skills above by name, e.g. `api`, `ast-grep`, `defuddle`, `document`,
 `init`, `skillify`, `programming`, `research`, `write-prd`, `debug`.
 
 ---

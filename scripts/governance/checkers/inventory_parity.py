@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 CHECKER_NAME = "inventory_parity"
-CHECKER_VERSION = "2"
+CHECKER_VERSION = "1"
 SKILL_KINDS = {"leaf", "thick", "area"}
 DOC_FILES = ("README.md", "AGENTS.md")
 PLUGIN_DIRS = (".claude-plugin", ".codex-plugin", ".hermes")
@@ -43,8 +43,6 @@ def _repo_skill_names(aggregate: dict[str, Any], repo_name: str) -> set[str]:
         if not isinstance(package, dict):
             continue
         if package.get("owner_repo") != repo_name or package.get("kind") not in SKILL_KINDS:
-            continue
-        if package.get("lifecycle") == "deleted":
             continue
         name = package.get("name")
         if isinstance(name, str) and name:
