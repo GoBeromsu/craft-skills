@@ -15,7 +15,7 @@ _FIXTURE = _GOVERNANCE / "fixtures" / "repos.portable.json"
 sys.path.insert(0, str(_GOVERNANCE))
 
 import harness
-from checkers import provenance, routing_eval
+from checkers import deprecation, provenance, routing_eval
 
 
 class HarnessProfilesTest(unittest.TestCase):
@@ -129,6 +129,56 @@ class HarnessProfilesTest(unittest.TestCase):
                 "external_repos": ["bstack", "oh-my-secondbrain"],
             },
         )
+        self.assertEqual(findings[0]["severity"], "blocking")
+
+    def test_deprecation_external_replacement_is_advisory_only_in_portable_profile(self) -> None:
+        aggregate = {
+            "packages": [
+                {
+                    "id": "craft-skills/obsidian-bases",
+                    "owner_repo": "craft-skills",
+                    "lifecycle": "deprecated",
+                    "replaced_by": "bstack/obsidian/bases",
+                }
+            ]
+        }
+        repos = [{"name": "craft-skills", "path": str(_ROOT)}]
+        portable = deprecation.run(
+            aggregate,
+            {"repos": repos, "profile": "portable", "external_repos": ["bstack", "oh-my-secondbrain"]},
+        )
+        cross_repo = deprecation.run(
+            aggregate,
+            {"repos": repos, "profile": "cross-repo", "external_repos": ["bstack", "oh-my-secondbrain"]},
+        )
+        self.assertEqual(len(portable), 1)
+        self.assertEqual(portable[0]["code"], "deprecation.replacement_unresolved")
+        self.assertEqual(portable[0]["severity"], "advisory")
+        self.assertEqual(len(cross_repo), 1)
+        self.assertEqual(cross_repo[0]["code"], "deprecation.replacement_missing")
+        self.assertEqual(cross_repo[0]["severity"], "blocking")
+
+    def test_deprecation_dangling_replacement_still_blocks_in_portable_profile(self) -> None:
+        aggregate = {
+            "packages": [
+                {
+                    "id": "craft-skills/obsidian-bases",
+                    "owner_repo": "craft-skills",
+                    "lifecycle": "deprecated",
+                    "replaced_by": "craft-skills/does-not-exist",
+                }
+            ]
+        }
+        findings = deprecation.run(
+            aggregate,
+            {
+                "repos": [{"name": "craft-skills", "path": str(_ROOT)}],
+                "profile": "portable",
+                "external_repos": ["bstack", "oh-my-secondbrain"],
+            },
+        )
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0]["code"], "deprecation.replacement_missing")
         self.assertEqual(findings[0]["severity"], "blocking")
 
     def test_active_missing_forbidden_neighbor_blocks_when_expected_score_is_zero(self) -> None:
