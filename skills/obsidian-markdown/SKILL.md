@@ -2,7 +2,7 @@
 name: obsidian-markdown
 description: Deprecated — moved to bstack/obsidian/markdown; do not use for Obsidian vault markdown / house-style work.
 metadata:
-  version: 3.0.0
+  version: 3.0.1
 ---
 
 ## Deprecated
