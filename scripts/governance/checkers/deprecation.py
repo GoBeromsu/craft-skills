@@ -6,8 +6,10 @@ import re
 from pathlib import Path
 from typing import Any
 
+from ._repo_ns import is_known_external_reference
+
 CHECKER_NAME = "deprecation"
-CHECKER_VERSION = "1"
+CHECKER_VERSION = "2"
 DEPRECATED_LIFECYCLES = {"deprecated", "archived"}
 ARCHIVE_PARTS = {"archive", "archived"}
 
@@ -190,16 +192,30 @@ def check(aggregate: dict[str, Any], config: dict[str, Any]) -> list[dict[str, A
                 )
             for replacement in replacements:
                 if replacement not in package_ids:
-                    findings.append(
-                        _finding(
-                            package,
-                            "blocking",
-                            "deprecation.replacement_missing",
-                            "replaced_by points to a package id absent from the aggregate.",
-                            package_path,
-                            {"replaced_by": replacement},
+                    if config.get("profile") == "portable" and is_known_external_reference(
+                        replacement, config, set(repos)
+                    ):
+                        findings.append(
+                            _finding(
+                                package,
+                                "advisory",
+                                "deprecation.replacement_unresolved",
+                                "replaced_by references an unavailable external repository in the portable profile.",
+                                package_path,
+                                {"replaced_by": replacement},
+                            )
                         )
-                    )
+                    else:
+                        findings.append(
+                            _finding(
+                                package,
+                                "blocking",
+                                "deprecation.replacement_missing",
+                                "replaced_by points to a package id absent from the aggregate.",
+                                package_path,
+                                {"replaced_by": replacement},
+                            )
+                        )
         elif lifecycle == "active":
             package_id = package.get("id")
             archive_refs: list[str] = []
