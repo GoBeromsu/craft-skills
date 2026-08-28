@@ -10,7 +10,8 @@ least `SKILL.md` + `CHANGELOG.md`. This validator enforces, per package:
      `compatibility`, and `allowed-tools` keys. `allowed-tools` is an
      experimental, implementation-dependent declaration, not a portable
      enforcement mechanism.
-  2. `name` equals the package directory name and is kebab-case.
+  2. `name` equals the package directory name, is kebab-case, and is <= 64
+     characters.
   3. `description` is 1..1024 characters (hard bounds); a shape warning
      (non-blocking) fires under 200 or over 700 characters.
   4. `metadata.version` is present and is semver `MAJOR.MINOR.PATCH`.
@@ -66,6 +67,7 @@ BODY_LINE_LIMIT = 500
 DESCRIPTION_MIN_WARN = 200
 DESCRIPTION_MAX_WARN = 700
 DESCRIPTION_HARD_MAX = 1024
+NAME_MAX_LENGTH = 64
 
 
 @dataclass
@@ -81,6 +83,11 @@ def parse_scalar(value: str) -> object:
     value = value.strip()
     if len(value) >= 2 and value[0] == value[-1] and value[0] in "'\"":
         return value[1:-1]
+    if value.startswith("[") and value.endswith("]"):
+        inner = value[1:-1]
+        return [parse_scalar(item) for item in inner.split(",") if item.strip()]
+    if value.startswith("{") and value.endswith("}"):
+        return {}
     if value in {"null", "Null", "NULL", "~"}:
         return None
     if value.lower() == "true":
@@ -121,11 +128,6 @@ def parse_frontmatter(text: str) -> "dict[str, object] | None":
         key, _, val = line.partition(":")
         key = key.strip()
         val = val.strip()
-        if val.startswith("[") and val.endswith("]"):
-            inner = val[1:-1]
-            fields[key] = [parse_scalar(v) for v in inner.split(",") if v.strip()]
-            i += 1
-            continue
         if val != "":
             fields[key] = parse_scalar(val)
             i += 1
@@ -144,12 +146,32 @@ def parse_frontmatter(text: str) -> "dict[str, object] | None":
             fields[key] = list_items
         elif block_lines:
             nested: dict[str, object] = {}
-            for ln in block_lines:
+            base_indent = min(len(ln) - len(ln.lstrip()) for ln in block_lines if ln.strip())
+            for index, ln in enumerate(block_lines):
+                if not ln.strip() or len(ln) - len(ln.lstrip()) != base_indent:
+                    continue
                 stripped = ln.strip()
-                if not stripped or ":" not in stripped:
+                if ":" not in stripped:
                     continue
                 nkey, _, nval = stripped.partition(":")
-                nested[nkey.strip()] = parse_scalar(nval)
+                nval = nval.strip()
+                if nval:
+                    nested[nkey.strip()] = parse_scalar(nval)
+                    continue
+                children = [
+                    child for child in block_lines[index + 1:]
+                    if child.strip() and len(child) - len(child.lstrip()) > base_indent
+                ]
+                if children and children[0].lstrip().startswith("- "):
+                    nested[nkey.strip()] = [
+                        parse_scalar(child.lstrip()[2:])
+                        for child in children
+                        if child.lstrip().startswith("- ")
+                    ]
+                elif children:
+                    nested[nkey.strip()] = {}
+                else:
+                    nested[nkey.strip()] = ""
             fields[key] = nested
         else:
             fields[key] = val
@@ -224,6 +246,9 @@ def check_skill(skill_dir: Path) -> list[Finding]:
     elif not KEBAB_CASE_RE.match(str(fm_name)):
         findings.append(Finding(name, "NAME_NOT_KEBAB_CASE",
                                 f"{fm_name!r} is not kebab-case"))
+    elif len(fm_name) > NAME_MAX_LENGTH:
+        findings.append(Finding(name, "NAME_TOO_LONG",
+                                f"{len(fm_name)} > {NAME_MAX_LENGTH} chars"))
 
     desc = fm.get("description", "")
     if not desc:
@@ -244,10 +269,18 @@ def check_skill(skill_dir: Path) -> list[Finding]:
     if not isinstance(metadata, dict):
         findings.append(Finding(name, "NO_METADATA", "missing metadata.version block"))
     else:
+        for key, value in metadata.items():
+            if not isinstance(key, str) or not isinstance(value, str):
+                findings.append(Finding(
+                    name,
+                    "BAD_METADATA",
+                    "metadata must be a string-to-string map",
+                ))
+                break
         version = metadata.get("version", "")
         if not version:
             findings.append(Finding(name, "NO_VERSION", "missing metadata.version"))
-        elif not SEMVER_RE.match(str(version)):
+        elif not isinstance(version, str) or not SEMVER_RE.match(version):
             findings.append(Finding(name, "BAD_VERSION", f"{version!r} is not MAJOR.MINOR.PATCH"))
 
     if "license" in fm and (not isinstance(fm["license"], str) or not fm["license"].strip()):

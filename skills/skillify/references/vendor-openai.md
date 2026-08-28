@@ -19,20 +19,18 @@ SKILL.md; place material used only while executing in `scripts/`, `references/`,
 Bundle a script when repeatable deterministic work would otherwise be recreated. Put detailed
 reference material behind an explicit need, not in the default reading path.
 
-**Prompts are an ownership boundary.** Keep each instruction owned in one authoritative place;
-state autonomy and approval boundaries explicitly. Prefer lean, direct prompts over repeated
-context or generic exhortation.
+**Prompts set action boundaries.** Keep each instruction owned in one authoritative place.
+Use lean, direct portable prompts, and state which actions proceed autonomously and which require approval rather than leaving that boundary to inference.
 
-**Change evidence before inference effort.** Before changing model or effort settings, run
-representative evaluations for the actual task. Evaluate task-shaped work with the smallest
-useful prompt–tool–check (PTC) loop, rather than optimizing a generic benchmark.
+**Change evidence before model or effort.** Before changing model or effort settings, run representative evaluations for the actual task.
+Use task-shaped deterministic processing for repeatable, order-sensitive work rather than optimizing a generic benchmark.
 
 ## 3. Runtime plumbing (OpenAI-only)
 
 - `agents/openai.yaml` is OpenAI product metadata, not portable skill instruction. Its
   display, prompt, icon, brand, and declared-tool fields belong only in an OpenAI adapter.
-- OpenAI model/API parameters, including effort controls, are Codex/OpenAI concerns. They do
-  not belong in universal SKILL.md guidance.
+- GPT-5.6 parameters, including OpenAI-documented effort controls, are OpenAI API concerns. They do not belong in universal SKILL.md guidance.
+- Programmatic Tool Calling is an OpenAI API pattern, not a portable processing requirement. Its API-specific mechanics stay in this lens.
 - The historical creator package demonstrates the `scripts/`, `references/`, and `assets/`
   layout and its recommended `agents/openai.yaml` adapter. Its repository status does not make
   that adapter a universal package requirement.
@@ -46,17 +44,11 @@ useful prompt–tool–check (PTC) loop, rather than optimizing a generic benchm
   treated as the current OpenAI distribution mechanism.
 - **Frontmatter and product fields.** `agents/openai.yaml` and any OpenAI-only fields are not
   admitted into the portable contract.
-- **Prompt tuning.** OpenAI-specific API parameters remain OpenAI-only. The portable rule is
-  to improve instructions, task shape, and evidence first.
+- **Prompt tuning.** GPT-5.6 parameters and Programmatic Tool Calling API mechanics remain OpenAI-only. The portable rule is to improve instructions, task shape, and evidence first.
 
 ## 5. Absorbed into core
 
-- Degree-of-freedom matched to fragility → `contract.md` §4.
-- Concise progressive disclosure and purpose-driven `scripts/`, `references/`, and `assets/`
-  → `contract.md` §5.
-- One owner per instruction; explicit autonomy/approval limits; lean prompts → `contract.md`
-  §4.
-- Representative before/after evaluation and task-shaped prompt–tool–check loops →
-  `evaluation.md` §§1–4.
-- Description as the compact trigger surface, not a second copy of execution guidance →
-  `contract.md` §3.
+- Lean portable prompts → `contract.md` §4.
+- Explicit action and approval boundaries → `contract.md` §4.
+- Representative model/effort evaluation → `evaluation.md` §7.
+- Task-shaped deterministic processing → `contract.md` §5.

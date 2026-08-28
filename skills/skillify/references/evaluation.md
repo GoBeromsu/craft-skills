@@ -24,6 +24,7 @@ A capable agent completes many tasks respectably with no skill at all; the skill
 - **Updating:** snapshot the current version first (`cp -r` to scratch) and run the baseline arm against the snapshot — otherwise the comparison silently tests new-vs-nothing instead of new-vs-old.
 - Run both arms in fresh agent sessions with no authoring context — the author already knows what the skill "meant to say" and cannot observe its ambiguity. Use parallel subagents when the runtime has them; sequential runs otherwise.
 - Record cost alongside correctness (tokens, wall time when observable). A skill that wins on quality but doubles cost should say so in its body rather than surprise its callers.
+- When comparing a model, reasoning/effort setting, or harness change, use representative tasks and record success, cited evidence, token use, and latency for both arms. Verify the conclusion again in a fresh context; do not promote a configuration from one favorable run.
 
 ## 2. Scenario evals
 

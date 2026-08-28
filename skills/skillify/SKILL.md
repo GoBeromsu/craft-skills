@@ -2,7 +2,7 @@
 name: skillify
 description: Owns the full lifecycle of craft-skills skill packages — creating, updating, moving/renaming, retiring them, and absorbing frontier labs' skill-creators into vendor lenses — through an eval-first authoring loop and deterministic format validation. Use when a user says things like "make a skill", "skillify this workflow", "turn this into a skill", "update this skill", "move this skill", "absorb openai's new skill-creator", or "스킬 만들자", or when a recurring workflow correction needs to be encoded into a governing skill instead of staying in chat memory. Not for one-off project scripts or prompts with no reuse intent — those stay local to the originating project.
 metadata:
-  version: 4.7.0
+  version: 4.7.1
 ---
 
 # skillify
@@ -62,7 +62,7 @@ Full rules: `references/contract.md`.
 ## Vendor lenses
 
 Every frontier lab distills how skills are best made for its models into its own skill-creator.
-The universal lessons are already merged into this package's core files; each lens holds one vendor's distinctive emphases, runtime plumbing, and recorded divergences from this library's contract.
+Put portable lessons in the single core owner that governs them; each lens holds only its vendor's distinctive emphases, runtime plumbing, and recorded divergences from this library's contract.
 
 | Lens | Read when | Official source |
 |------|-----------|-----------------|
@@ -74,7 +74,7 @@ The universal lessons are already merged into this package's core files; each le
 
 Core recipes must run unchanged on Hermes, Claude Code, Codex, Cursor, and Grok-native runtimes; a universal recipe never requires a single vendor's tool.
 Vendor fields, commands, plugin metadata, and other runtime plumbing stay in the matching lens.
-When a lab ships a new or updated skill-creator, run the [absorption protocol](references/vendor-absorption.md): universal lessons merge into core with provenance, plumbing stays in the lens, and disagreements are recorded — never silently imported.
+When a lab ships a new or updated skill-creator, run the [absorption protocol](references/vendor-absorption.md): merge only demonstrated portable lessons into their core owner with provenance, keep plumbing in the lens, and record disagreements — never silently import.
 
 ## Lifecycle
 
@@ -91,8 +91,10 @@ Follow the [branch → commit → PR delivery flow](references/lifecycle.md#6-br
 
 ## Requirements
 
-- `python3` — both Layer-1 validators
-- `gh` — PR creation and branch flow
+- `python3` — official source: https://docs.python.org/3/; safe probe: `python3 --version`; support boundary: Python 3.10+ for Layer-1 validators.
+- `gh` — official source: https://cli.github.com/manual/; safe probe: `gh --version`; support boundary: current `gh pr create`, `gh pr checks`, and `gh pr merge` command surfaces for the delivery flow.
+- Dependency trigger — a selected dependency/runtime release or a changed probe/capability requires official-documentation review and affected evals before updating this package.
+The dependency contract applies to skillify immediately; apply it to another package when that package is next touched or when its own dependency trigger fires. Do not create mass churn or a global inventory.
 
 ## Anti-patterns
 
@@ -104,6 +106,7 @@ Follow the [branch → commit → PR delivery flow](references/lifecycle.md#6-br
 - Duplicated overlapping guidance inside one package → apply `references/contract.md` §9; link to the owner instead of restating the rule.
 - An upstream mechanism imported into core without the portability test → classify universal vs plumbing per the absorption protocol; plumbing stays in the lens.
 - Patching the body until the three eval examples pass → generalize the lesson instead; held-out prompts judge the result (`references/evaluation.md §5`).
+- A skill that narrates internal reasoning or asks a user to reveal it → request only decisions, constraints, evidence, and deliverables needed to act.
 
 ## Verification
 

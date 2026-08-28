@@ -1470,7 +1470,7 @@
       "name": "skillify",
       "kind": "leaf",
       "lifecycle": "active",
-      "version": "4.7.0",
+      "version": "4.7.1",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",

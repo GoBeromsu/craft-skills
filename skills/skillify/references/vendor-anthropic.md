@@ -21,17 +21,16 @@ evaluation.
 plainly. Ground progress reports in observed work, not assurances. Keep the scope to the
 simplest complete solution.
 
-**Design long work as a bounded execution.** For long-running work, preserve useful intermediate
-evidence and delegate independent bounded slices when the runtime supports it. Do not ask a
-model to expose private reasoning; request inspectable outputs, decisions, and evidence instead.
+**Design long work as a bounded execution.** For long-running work, preserve useful intermediate evidence and delegate independent bounded slices only when the runtime supports it.
+Verify the result from a fresh context.
+Do not ask a model to transcribe private reasoning; request inspectable outputs, decisions, and evidence instead.
 
 ## 3. Runtime plumbing (Claude-only)
 
 - The pinned Anthropic package's runner, stream handling, throwaway command injection, and
   packaging format depend on Claude Code. They are implementation details of that runtime, not
   a portable evaluation protocol.
-- Claude adaptive-thinking controls, refusal behavior, and runtime fallback behavior are
-  Claude-specific. They stay out of universal SKILL.md instructions.
+- Claude adaptive-thinking controls, refusal behavior, fallback behavior, and send-to-user mechanics are Claude-specific. They stay out of universal SKILL.md instructions.
 - The source package's improvement loop may use interactive Claude sessions. This library does
   not import a casual-prose style or a user-interrupt loop as a universal operating pattern.
 
@@ -44,18 +43,12 @@ model to expose private reasoning; request inspectable outputs, decisions, and e
   defines runner-agnostic evaluation outcomes in [`evaluation.md`](evaluation.md).
 - **Frontmatter.** Anthropic-specific compatibility and tool fields are not part of the
   portable frontmatter contract.
-- **Interaction model.** Strong instructions and evidence-grounded progress are portable;
-  adaptive thinking, refusal/fallback tuning, and interruption mechanics are not.
+- **Interaction model.** Evidence-grounded progress, simplest-complete scope, supported delegation, fresh-context verification, and inspectable conclusions are portable. Adaptive thinking, refusal/fallback tuning, and send-to-user mechanics are not.
 
 ## 5. Absorbed into core
 
-- Baseline comparison, fresh sessions, snapshots, and representative held-out evaluation →
-  `evaluation.md` §§1 and 5.
-- Evidence-first grading; blind comparison; analyzer separation of skill versus eval defects →
-  `evaluation.md` §2.
-- Realistic queries, near-miss negatives, and trigger evaluation → `evaluation.md` §3 and
-  `contract.md` §3.
-- Brief strong instructions, evidence-grounded progress, bounded delegation, and
-  simplest-complete scope → `contract.md` §4.
-- Inspectable conclusions and evidence rather than reasoning-extraction requests →
-  `contract.md` §4.
+- Evidence-grounded progress → `contract.md` §4.
+- Simplest complete scope → `contract.md` §4.
+- Delegation only when the runtime supports it → `contract.md` §4.
+- Fresh-context verification → `evaluation.md` §1.
+- Inspectable conclusions and evidence rather than reasoning-transcription requests → `contract.md` §4.
