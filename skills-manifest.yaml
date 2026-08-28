@@ -15,6 +15,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -35,6 +37,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -70,6 +84,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -90,6 +106,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -125,6 +153,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -145,6 +175,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -180,6 +222,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -200,6 +244,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -228,13 +284,15 @@
       "name": "browser",
       "kind": "leaf",
       "lifecycle": "active",
-      "version": "1.0.2",
+      "version": "1.1.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -260,6 +318,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -295,6 +365,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -315,6 +387,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -350,6 +434,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -370,6 +456,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -405,6 +503,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -425,6 +525,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -460,6 +572,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -480,6 +594,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -515,6 +641,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -537,6 +665,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -572,6 +712,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -592,6 +734,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -627,6 +781,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -649,6 +805,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -684,6 +852,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -704,6 +874,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -739,6 +921,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -759,6 +943,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -794,6 +990,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -814,6 +1012,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -849,6 +1059,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -869,6 +1081,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -904,6 +1128,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -928,6 +1154,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -963,6 +1201,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -983,6 +1223,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -1018,6 +1270,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -1038,6 +1292,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -1073,6 +1339,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -1093,6 +1361,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -1128,6 +1408,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -1148,6 +1430,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -1176,24 +1470,26 @@
       "name": "skillify",
       "kind": "leaf",
       "lifecycle": "active",
-      "version": "4.6.0",
+      "version": "4.7.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
-        "upstream": "bstack:skills/skillify",
-        "commit": null,
+        "upstream": "https://agentskills.io/specification",
+        "commit": "69ef37e9424c0a7ea9dd2293b559e43ec8176379",
         "license": "MIT",
         "absorbed_from": [
           "bstack/skillify",
-          "openai/skills:.system/skill-creator",
-          "anthropics/skills:skill-creator",
-          "NousResearch/hermes-agent:website/docs"
+          "anthropics/skills:skill-creator@3b3fad96af16a10759d930941b4520ba0c40edae",
+          "openai/skills:.system/skill-creator@49f948faa9258a0c61caceaf225e179651397431",
+          "openai/plugins@6d99ee149c9fe3c7a55b96cab062cadc1ad36a9d"
         ]
       },
       "replacement_for": [],
@@ -1208,6 +1504,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -1243,6 +1551,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -1265,6 +1575,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -1300,6 +1622,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -1320,6 +1644,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -1355,6 +1691,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -1375,6 +1713,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -1410,6 +1760,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -1430,6 +1782,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null
@@ -1465,6 +1829,8 @@
       "compatibility": [
         "claude-code",
         "codex",
+        "cursor",
+        "grok",
         "hermes"
       ],
       "provenance": {
@@ -1487,6 +1853,18 @@
         },
         {
           "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
           "surface": "instruction-file",
           "status": "generated",
           "reason": null

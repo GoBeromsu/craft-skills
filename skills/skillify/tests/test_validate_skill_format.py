@@ -128,29 +128,63 @@ class SkillFormatValidatorTest(unittest.TestCase):
             self.assertIn("FORBIDDEN_KEY", result.stdout)
             self.assertIn("version", result.stdout)
 
-    def test_rejects_forbidden_allowed_tools_key(self) -> None:
+    def test_accepts_agent_skills_optional_frontmatter(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            legacy = GOOD_SKILL.replace(
+            optional = GOOD_SKILL.replace(
                 "metadata:\n  version: 1.0.0\n",
-                "metadata:\n  version: 1.0.0\nallowed-tools: [Bash, Read]\n",
+                "metadata:\n  version: 1.0.0\n"
+                "license: Apache-2.0\n"
+                "compatibility: Requires a POSIX shell.\n"
+                "allowed-tools: Bash Read\n",
             )
-            self._make_skill(root, "demo", legacy, GOOD_CHANGELOG)
+            self._make_skill(root, "demo", optional, GOOD_CHANGELOG)
             result = self.run_validator(root)
-            self.assertEqual(result.returncode, 1)
-            self.assertIn("FORBIDDEN_KEY", result.stdout)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-    def test_rejects_forbidden_compatibility_key(self) -> None:
+    def test_rejects_invalid_agent_skills_optional_frontmatter(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            legacy = GOOD_SKILL.replace(
-                "metadata:\n  version: 1.0.0\n",
-                "metadata:\n  version: 1.0.0\ncompatibility: claude-code, codex\n",
-            )
-            self._make_skill(root, "demo", legacy, GOOD_CHANGELOG)
-            result = self.run_validator(root)
-            self.assertEqual(result.returncode, 1)
-            self.assertIn("FORBIDDEN_KEY", result.stdout)
+            cases = [
+                ("license: []\n", "BAD_LICENSE"),
+                ("license: '   '\n", "BAD_LICENSE"),
+                ("compatibility: []\n", "BAD_COMPATIBILITY"),
+                ("compatibility: \n", "BAD_COMPATIBILITY"),
+                (f"compatibility: {'x' * 501}\n", "BAD_COMPATIBILITY"),
+                ("allowed-tools: [Bash, Read]\n", "BAD_ALLOWED_TOOLS"),
+                ("allowed-tools: \n", "BAD_ALLOWED_TOOLS"),
+            ]
+            for index, (field, finding) in enumerate(cases):
+                with self.subTest(field=field):
+                    skill = GOOD_SKILL.replace(
+                        "metadata:\n  version: 1.0.0\n",
+                        f"metadata:\n  version: 1.0.0\n{field}",
+                    )
+                    case_root = root / str(index)
+                    self._make_skill(case_root, "demo", skill, GOOD_CHANGELOG)
+                    result = self.run_validator(case_root)
+                    self.assertEqual(result.returncode, 1)
+                    self.assertIn(finding, result.stdout)
+
+    def test_rejects_cursor_and_grok_frontmatter(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for index, field in enumerate((
+                "paths: src/**\n",
+                "disable-model-invocation: true\n",
+                "when-to-use: Use for runtime-specific routing.\n",
+                "argument-hint: <request>\n",
+            )):
+                with self.subTest(field=field):
+                    skill = GOOD_SKILL.replace(
+                        "metadata:\n  version: 1.0.0\n",
+                        f"metadata:\n  version: 1.0.0\n{field}",
+                    )
+                    case_root = root / str(index)
+                    self._make_skill(case_root, "demo", skill, GOOD_CHANGELOG)
+                    result = self.run_validator(case_root)
+                    self.assertEqual(result.returncode, 1)
+                    self.assertIn("FORBIDDEN_KEY", result.stdout)
 
     def test_rejects_body_over_line_limit(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -166,6 +200,18 @@ class SkillFormatValidatorTest(unittest.TestCase):
             root = Path(tmp)
             d = self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG)
             nested = d / "child"
+            nested.mkdir()
+            (nested / "SKILL.md").write_text(GOOD_SKILL.replace("name: demo", "name: child"),
+                                             encoding="utf-8")
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("NESTED_SKILL_MD", result.stdout)
+
+    def test_rejects_nested_agent_skill_md(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            d = self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG)
+            nested = d / "agents"
             nested.mkdir()
             (nested / "SKILL.md").write_text(GOOD_SKILL.replace("name: demo", "name: child"),
                                              encoding="utf-8")

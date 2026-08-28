@@ -5,9 +5,11 @@
 Each skill package is a single directory `skills/<skill-name>/` containing at
 least `SKILL.md` + `CHANGELOG.md`. This validator enforces, per package:
 
-  1. SKILL.md frontmatter has exactly `name`, `description`, `metadata` — no
-     other top-level keys (`version`, `allowed-tools`, `compatibility` are
-     explicitly forbidden holdovers from the old 5-key shape).
+  1. SKILL.md frontmatter has required `name`, `description`, `metadata` and
+     may additionally contain Agent Skills' optional `license`,
+     `compatibility`, and `allowed-tools` keys. `allowed-tools` is an
+     experimental, implementation-dependent declaration, not a portable
+     enforcement mechanism.
   2. `name` equals the package directory name and is kebab-case.
   3. `description` is 1..1024 characters (hard bounds); a shape warning
      (non-blocking) fires under 200 or over 700 characters.
@@ -52,7 +54,14 @@ CHANGELOG_BULLET_RE = re.compile(r"^- \d{4}-\d{2}-\d{2}\b")
 CHANGE_LOG_HEADING_RE = re.compile(r"^## +Change Log\b", re.MULTILINE)
 REAL_ENV_RE = re.compile(r"(^|/)\.env(\.[A-Za-z0-9_-]+)?$")
 
-ALLOWED_TOP_KEYS = {"name", "description", "metadata"}
+ALLOWED_TOP_KEYS = {
+    "name",
+    "description",
+    "metadata",
+    "license",
+    "compatibility",
+    "allowed-tools",
+}
 BODY_LINE_LIMIT = 500
 DESCRIPTION_MIN_WARN = 200
 DESCRIPTION_MAX_WARN = 700
@@ -65,6 +74,24 @@ class Finding:
     code: str
     detail: str
     severity: str = "error"  # "error" | "warning"
+
+
+def parse_scalar(value: str) -> object:
+    """Parse the YAML scalar forms needed to distinguish strings from types."""
+    value = value.strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in "'\"":
+        return value[1:-1]
+    if value in {"null", "Null", "NULL", "~"}:
+        return None
+    if value.lower() == "true":
+        return True
+    if value.lower() == "false":
+        return False
+    if re.fullmatch(r"[-+]?\d+", value):
+        return int(value)
+    if re.fullmatch(r"[-+]?(?:\d+\.\d*|\d*\.\d+)(?:[eE][-+]?\d+)?", value):
+        return float(value)
+    return value
 
 
 def parse_frontmatter(text: str) -> "dict[str, object] | None":
@@ -93,14 +120,14 @@ def parse_frontmatter(text: str) -> "dict[str, object] | None":
             continue
         key, _, val = line.partition(":")
         key = key.strip()
-        val = val.strip().strip("'\"")
+        val = val.strip()
         if val.startswith("[") and val.endswith("]"):
             inner = val[1:-1]
-            fields[key] = [v.strip().strip("'\"") for v in inner.split(",") if v.strip()]
+            fields[key] = [parse_scalar(v) for v in inner.split(",") if v.strip()]
             i += 1
             continue
         if val != "":
-            fields[key] = val
+            fields[key] = parse_scalar(val)
             i += 1
             continue
         # Empty scalar: look ahead for an indented block (list or mapping).
@@ -112,17 +139,17 @@ def parse_frontmatter(text: str) -> "dict[str, object] | None":
                 break
             block_lines.append(nxt)
             j += 1
-        list_items = [ln.lstrip()[2:].strip().strip("'\"") for ln in block_lines if ln.lstrip().startswith("- ")]
+        list_items = [parse_scalar(ln.lstrip()[2:]) for ln in block_lines if ln.lstrip().startswith("- ")]
         if list_items and len(list_items) == len([b for b in block_lines if b.strip()]):
             fields[key] = list_items
         elif block_lines:
-            nested: dict[str, str] = {}
+            nested: dict[str, object] = {}
             for ln in block_lines:
                 stripped = ln.strip()
                 if not stripped or ":" not in stripped:
                     continue
                 nkey, _, nval = stripped.partition(":")
-                nested[nkey.strip()] = nval.strip().strip("'\"")
+                nested[nkey.strip()] = parse_scalar(nval)
             fields[key] = nested
         else:
             fields[key] = val
@@ -187,7 +214,8 @@ def check_skill(skill_dir: Path) -> list[Finding]:
     for key in sorted(extra_keys):
         findings.append(Finding(name, "FORBIDDEN_KEY",
                                 f"frontmatter key {key!r} is not allowed; only "
-                                f"name/description/metadata are"))
+                                "name/description/metadata and optional "
+                                "license/compatibility/allowed-tools are"))
 
     fm_name = fm.get("name")
     if fm_name != name:
@@ -221,6 +249,26 @@ def check_skill(skill_dir: Path) -> list[Finding]:
             findings.append(Finding(name, "NO_VERSION", "missing metadata.version"))
         elif not SEMVER_RE.match(str(version)):
             findings.append(Finding(name, "BAD_VERSION", f"{version!r} is not MAJOR.MINOR.PATCH"))
+
+    if "license" in fm and (not isinstance(fm["license"], str) or not fm["license"].strip()):
+        findings.append(Finding(name, "BAD_LICENSE",
+                                "license must be a non-empty string"))
+
+    if "compatibility" in fm:
+        compatibility = fm["compatibility"]
+        if (not isinstance(compatibility, str)
+                or not 1 <= len(compatibility) <= 500):
+            findings.append(Finding(name, "BAD_COMPATIBILITY",
+                                    "compatibility must be a string of 1..500 characters"))
+
+    if ("allowed-tools" in fm
+            and (not isinstance(fm["allowed-tools"], str) or not fm["allowed-tools"].strip())):
+        findings.append(Finding(
+            name,
+            "BAD_ALLOWED_TOOLS",
+            "allowed-tools must be a non-empty string; its semantics are experimental "
+            "and implementation-dependent",
+        ))
 
     if CHANGE_LOG_HEADING_RE.search(text):
         findings.append(Finding(name, "CHANGELOG_IN_SKILL",

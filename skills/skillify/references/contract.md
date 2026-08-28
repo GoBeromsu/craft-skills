@@ -14,13 +14,15 @@ The permanent, self-contained authoring contract for every `SKILL.md` in this li
 7. [Eval-first authoring loop](#7-eval-first-authoring-loop)
 8. [Version-bump rubric](#8-version-bump-rubric)
 9. [MECE ownership](#9-mece-ownership)
-10. [External facts](#10-external-facts)
+10. [External facts and dependencies](#10-external-facts-and-dependencies)
+11. [Core portability](#11-core-portability)
 
 ---
 
 ## 1. Frontmatter
 
-Exactly this shape — nothing else:
+Every package requires a root `SKILL.md`.
+Use this portable baseline:
 
 ```yaml
 ---
@@ -31,8 +33,10 @@ metadata:
 ---
 ```
 
-`version` as a top-level key, `allowed-tools`, and `compatibility` are forbidden.
-Only `name`, `description`, and `metadata` (holding `version`) are read by any runtime this library targets; `scripts/validate-skill-format.py` rejects any other top-level key.
+`version` is never a top-level key.
+The Agent Skills spec also permits `license`, `compatibility`, and experimental `allowed-tools`.
+Add one of those optional keys only when the package cannot meet its support boundary without it, and record the affected-runtime support caveat in that runtime's vendor lens.
+Do not add vendor-specific fields to the portable baseline.
 
 ## 2. Naming
 
@@ -67,7 +71,7 @@ trigger phrases woven in naturally>. Not for <nearest-neighbor boundary — use 
 - One default per decision, with one named escape hatch. No option menus.
 - No ALL-CAPS rigidity walls and no "MUST/NEVER/LAW" shouting — where strict adherence matters, one short clause of why is enough. A single sparing **bold** is fine.
 - Break lines only where a sentence ends — one sentence per line in paragraphs, one item per line in lists; never hard-wrap mid-sentence at a column width. Markdown renders both identically, but sentence-boundary lines read and diff cleaner. Deterministic enforcement: `scripts/reflow-sentences.py <files>` exits 1 on violations; `--fix` reflows a wrapped file in place.
-- References sit exactly one level deep (`references/*.md`); any reference over 100 lines opens with a table of contents. Templates live in `templates/`, scripts in `scripts/`. No nested `SKILL.md` anywhere inside a package — every skill is one flat directory.
+- References sit exactly one level deep (`references/*.md`); any reference over 100 lines opens with a table of contents. Templates live in `templates/`, scripts in `scripts/`. No nested `SKILL.md` anywhere inside a package — including `agents/` — every skill is one flat directory.
 - Present-tense imperative throughout; no history, no provenance credit, no vendor lock (no Claude-only frontmatter or `/plugin` instructions in the body). Use `${ENV_VAR}` placeholders, forward-slash paths, and no time-sensitive language ("new", "recently", bare dates).
 - Preserve the skill's distinctive craft — detection commands, decision tables, hard-won laws survive, compressed rather than deleted. If genuinely valuable content doesn't fit in the body, move it to `references/`; don't cut it.
 - A table the body already earns (a routing table, a gate) stays a table.
@@ -76,7 +80,7 @@ trigger phrases woven in naturally>. Not for <nearest-neighbor boundary — use 
 
 ## 5. Package parts
 
-A package is one directory: `SKILL.md` + `CHANGELOG.md`, plus whichever of these it needs.
+A package is one directory with required root `SKILL.md` and `CHANGELOG.md`, plus only the execution parts its concrete invocations need.
 
 Plan the parts from concrete examples before authoring: walk 2–3 real invocations of the workflow and ask what a fresh run would redo each time.
 Code every run would rewrite → `scripts/`.
@@ -90,13 +94,15 @@ What remains — the judgment and sequencing — is the `SKILL.md` body.
 | `references/` | Bulk knowledge consulted on demand, not on every invocation. |
 | `scripts/` | A step must be deterministic and repeatable — CI can call it for a pass/fail exit code. Not for one-off setup or judgment-driven branching. |
 | `templates/` | The skill emits a canonical artifact with a fixed shape. |
-| `assets/` | The output consumes files it never loads into context — boilerplate trees, fonts, images copied or filled into results. |
+| `assets/` | The output consumes files without loading them into context — boilerplate trees, fonts, images copied or filled into results. They are not background reference material. |
+| `agents/` | A bounded subagent role needs a charter or runtime metadata. Each file defines that role's scope, inputs, outputs, and hand-off; it is never a child skill and never contains `SKILL.md`. |
 | `tests/` | Any `scripts/` file ships with a matching test module. |
 | `evals/` | Local scratch for the eval-first loop (§7) — **gitignored, never committed**. |
 | `.env` / `.env.example` | Any credential, token, or host-specific value. Commit only `.env.example` with placeholders. |
 
+An additional directory needs a concrete execution purpose not covered by these parts; document that purpose in the package rather than using it for grouping.
 No routing-index file, no grouping subfolders, no nested per-child `SKILL.md`.
-Claude Code and Codex discover a skill from its own directory's `SKILL.md` frontmatter directly.
+Hermes, Claude Code, Codex, Cursor, and Grok-native share each package's `SKILL.md` as the portable core; put runtime-specific discovery and plumbing in their respective lenses.
 
 ## 6. CHANGELOG
 
@@ -147,9 +153,9 @@ Inside one skill package, each rule has exactly one owner: the body for always-r
 If another section needs the same rule, link to the owner instead of restating it.
 Overlapping warning sections (`Red Flags`, `Common Rationalizations`, repeated anti-pattern tables) are an anti-pattern; keep one `## Anti-patterns` registry in `SKILL.md` and let references link back or add topic-specific rules only when they do not duplicate the package-level entry.
 
-## 10. External facts
+## 10. External facts and dependencies
 
-This section owns authoring rules for mutable facts about external CLIs, APIs, services, and runtimes.
+This section owns authoring rules and package-local maintenance for mutable facts about external CLIs, APIs, services, and runtimes.
 It excludes conceptual guidance, writing guidance, and procedures that are purely local.
 
 When a fact is unknown, ambiguous, or version-dependent, consult the official primary documentation first.
@@ -157,5 +163,17 @@ Encode the resulting runtime form in the affected package, or link to the exact 
 When sources conflict, disclose the conflict where the fact is used; prefer a more-specific repository-local contract or reproducible evidence matching the target version and platform over general or stale documentation.
 Leave an unresolved fact unknown rather than inventing a value, behavior, or command.
 
+For every mutable CLI, API, service, or runtime requirement, the affected package records its name, official source URL, installed-version probe, support boundary, and release or update trigger in its `## Requirements` section or a linked reference.
+The probe is an exact safe command or API query that reports the installed or selected version; the boundary says which version range, platform, or capability the recipe supports.
+When that trigger detects an update, recheck the official documentation, rerun the affected evals, update the recipe if its runtime form changed, then bump the package version and append its CHANGELOG entry.
+Keep this maintenance beside the dependent package; do not build a global dependency inventory, background daemon, or separate update framework.
+
 Exercise applicable ambiguity, conflict, and unknown cases through the existing eval-first loop (§7), including the expected disclosure or unknown outcome.
 Do not create a fact inventory or validator for this contract.
+
+## 11. Core portability
+
+Universal `SKILL.md` recipes must work without alteration on Hermes, Claude Code, Codex, Cursor, and Grok-native runtimes.
+They may require standard tools only when the package documents them; they must not require one vendor's CLI, plugin command, frontmatter field, or proprietary tool.
+Put runtime-specific fields, installation commands, plugin metadata, and plumbing in that runtime's vendor lens.
+If a workflow cannot meet this law, make its boundary and supported runtime explicit in the relevant lens rather than presenting it as universal core guidance.
