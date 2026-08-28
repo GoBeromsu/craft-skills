@@ -145,6 +145,16 @@
       "trigger": "run this fine-tuning job on the shared lab GPU server",
       "expected_package": "craft-skills/gpu",
       "forbidden_neighbors": ["craft-skills/ml", "craft-skills/cicd", "craft-skills/backend"]
+    },
+    {
+      "trigger": "obsidian-cli로 노트를 고치고 Mermaid가 깨지지 않는지 확인해줘",
+      "expected_package": "craft-skills/obsidian",
+      "forbidden_neighbors": ["craft-skills/document", "craft-skills/defuddle", "craft-skills/aside"]
+    },
+    {
+      "trigger": "VMware Fusion guest를 VNC로 조작해줘",
+      "expected_package": "craft-skills/vmware",
+      "forbidden_neighbors": ["craft-skills/aside", "craft-skills/tailscale", "craft-skills/debug"]
     }
   ]
 }

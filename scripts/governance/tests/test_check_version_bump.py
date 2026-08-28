@@ -89,6 +89,39 @@ class CheckVersionBumpTest(unittest.TestCase):
         result = self._run()
         self.assertEqual(result.returncode, 0, result.stdout)
 
+    def test_accepts_deleted_package_removed_from_manifest(self) -> None:
+        manifest = {"schema_version": 1, "packages": [{"name": "demo"}]}
+        (self.root / "skills-manifest.yaml").write_text(json.dumps(manifest), encoding="utf-8")
+        subprocess.run(["git", "add", "skills-manifest.yaml"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-m", "add manifest"],
+            cwd=self.root,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        manifest["packages"] = []
+        (self.root / "skills-manifest.yaml").write_text(json.dumps(manifest), encoding="utf-8")
+        subprocess.run(["git", "rm", "-r", "skills/demo"], cwd=self.root, check=True, capture_output=True)
+        self._write_plugin_versions("0.5.1")
+        subprocess.run(
+            ["git", "add", "skills-manifest.yaml", ".codex-plugin", ".claude-plugin"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "commit", "-m", "delete package"],
+            cwd=self.root,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        result = self._run()
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn("demo: deleted package removed from manifest", result.stdout)
+
     def test_rejects_missing_version_bump_and_dated_changelog_entry(self) -> None:
         self._commit_change("1.0.0", "updated guidance", "- 2026-01-01 — initial release\n")
         result = self._run()

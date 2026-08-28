@@ -249,6 +249,22 @@ def _has_substantive_change(root: Path, base: str, package: str) -> bool:
     return False
 
 
+def _manifest_package_names(root: Path) -> set[str] | None:
+    manifest_path = root / "skills-manifest.yaml"
+    if not manifest_path.is_file():
+        return None
+    lines = [
+        line
+        for line in manifest_path.read_text(encoding="utf-8").splitlines()
+        if not line.lstrip().startswith("#")
+    ]
+    try:
+        payload = json.loads("\n".join(lines))
+        return {package["name"] for package in payload["packages"]}
+    except (json.JSONDecodeError, KeyError, TypeError):
+        return None
+
+
 def check(root: Path, diff_base: str) -> tuple[list[str], list[str]]:
     base = _base_commit(root, diff_base)
     violations: list[str] = []
@@ -257,11 +273,15 @@ def check(root: Path, diff_base: str) -> tuple[list[str], list[str]]:
     changed_packages = _changed_packages(root, diff_base)
     if changed_packages or _root_plugin_manifest_changed(root, diff_base):
         violations.extend(_root_plugin_violations(root, base))
+    manifest_names = _manifest_package_names(root)
     for package in sorted(changed_packages):
         skill_path = root / "skills" / package / "SKILL.md"
         current_skill = skill_path.read_text(encoding="utf-8") if skill_path.exists() else None
         base_skill = _git_show(root, base, f"skills/{package}/SKILL.md")
         if current_skill is None:
+            if manifest_names is not None and package not in manifest_names:
+                notes.append(f"{package}: deleted package removed from manifest")
+                continue
             violations.append(f"{package}: SKILL.md is missing")
             continue
 

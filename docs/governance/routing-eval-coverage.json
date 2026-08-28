@@ -16,6 +16,7 @@
     "hookify",
     "init",
     "ml",
+    "obsidian",
     "programming",
     "refactor",
     "research",
@@ -23,6 +24,7 @@
     "skillify",
     "tailscale",
     "testing",
+    "vmware",
     "write-prd",
     "write-report"
   ]

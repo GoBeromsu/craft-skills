@@ -31,14 +31,7 @@ context.
 | `hookify` | Turn a convention or best practice into local, deterministic enforcement so a violation is blocked before it happens, not corrected after. |
 | `init` | Bootstrap the craft-owned `docs/` scaffold on a fresh repo, then generate a complexity-scored hierarchical `AGENTS.md` knowledge base on a mature one, in one triaged run. |
 | `ml` | Apply ML/DL research-engineering discipline — reproducible project layout, leakage-safe dataset construction, and a training-discipline ladder — to classical ML, deep learning, fine-tuning, and vision work. |
-| `obsidian-bases` | Write, read, and optimize Obsidian Bases (`.base` files and `base` code blocks), including filters, formulas, properties, summaries, and views. |
-| `obsidian-canvas` | Create and edit Obsidian JSON Canvas (`.canvas`) files with valid nodes, edges, groups, and references. |
-| `obsidian-cli` | Operate an Obsidian vault through `obsidian-cli` with exact-path checks and write readback. |
-| `obsidian-clipper` | Create selector-verified JSON templates for the Obsidian Web Clipper. |
-| `obsidian-doctor` | Diagnose and repair Obsidian plugins, plugin-consuming templates, and plugin-driven scripts. |
-| `obsidian-markdown` | Create and reformat Obsidian Markdown with wikilinks, callouts, properties, embeds, and the operator’s house style. |
-| `obsidian-mermaid` | Author and verify Mermaid diagrams against Obsidian’s bundled renderer. |
-| `obsidian-sync` | Bootstrap, operate, and recover the headless `ob` Sync client through a staged, reversible workflow. |
+| `obsidian` | Route reusable Obsidian Markdown, Bases, Canvas, Mermaid, CLI, Web Clipper, plugin-doctor, and headless Sync work through one thick skill with selectively loaded sub-recipes. |
 | `programming` | Apply correctness-first, type-strict engineering discipline when writing or editing Python or TypeScript. |
 | `refactor` | Restructure code without changing what it does, each move backed by a detection command and threshold, gated behind a characterization-test protocol for untested legacy code. |
 | `research` | Run a decision-depth research workflow ending in a `docs/research/{slug}.md` artifact — sweep primary sources, synthesize with a citation on every claim, and state gaps and confidence, never the decision itself. |
