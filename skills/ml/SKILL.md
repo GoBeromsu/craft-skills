@@ -2,7 +2,7 @@
 name: ml
 description: Applies ML/DL research engineering discipline — reproducible project layout, leakage-safe dataset construction, and a training-discipline ladder — to classical ML, deep learning, fine-tuning, and vision work. Use when scaffolding a new ML project, asked to "build a dataset" or "데이터셋 구축", running or reviewing a "train a model" experiment, or building a "vision model" pipeline (augmentation, detection, segmentation). Not for per-file Python discipline (typing, TDD loop) — use `programming` — not for building or changing LLM-agent behavior (prompts, tools, agent evals) — use `agents` — and not for GPU/CUDA environment setup or shared-host job launch — use `gpu`.
 metadata:
-  version: 2.3.0
+  version: 2.3.1
 ---
 
 # ml
@@ -35,6 +35,7 @@ Example: labeling and splitting an image dataset that will then be trained on ma
 ## Requirements
 
 - Python: for a greenfield project, `uv` is a default for dependency locking and running; `pandas`/`polars`, `pandera` (or an equivalent schema checker), and `scikit-learn`/`torch`/`jax` are examples chosen to fit the task. In an established project, use its existing locked environment and installed tooling.
+- Runtime and framework maintenance: record the applicable [official Python documentation](https://docs.python.org/3/), `python3 --version`, the incumbent lockfile, the installed framework version from its documented in-environment probe, and the selected framework's official release source. A selected runtime or framework update requires rerunning the affected dataset, training, and GPU evaluations before reporting results.
 - `git`, `grep`, `find`, `awk`, `sha256sum` (`shasum -a 256` on macOS) for the detection commands in each reference.
 - A config format the team already uses for one-run-one-config (examples assume YAML).
 

@@ -2,7 +2,7 @@
 name: programming
 description: Guides correctness-first, type-strict Python and TypeScript implementation. Use when asked to write a `.py` or `.ts` file, scaffold a Python/TypeScript project, add strict types, assess an implementation diff for correctness or type holes, or fix a reproducible defect. Not for smell-only assessment or behavior-preserving restructuring — use refactor; not for suite-level test architecture — use testing.
 metadata:
-  version: 2.3.0
+  version: 2.3.1
 ---
 
 # programming
@@ -79,6 +79,9 @@ Use the repository's incumbent package manager, type checker, linter, test runne
 - Python: `uv`, `basedpyright` (`typeCheckingMode = "all"`), `ruff` (`select = ["ALL"]`), `pytest`.
 - TypeScript: `bun` (or `pnpm`), `tsc` (strict + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` + `verbatimModuleSyntax`), `biome`.
 - `awk` + `wc` for the fallback LOC measurement.
+- Runtime sources: [Python documentation](https://docs.python.org/3/) and [Node.js documentation](https://nodejs.org/docs/latest/api/); consult the matching installed runtime version before relying on mutable behavior.
+- Before choosing language-specific tooling, safely record `python3 --version` for Python work and `node --version` for TypeScript work. Also run the incumbent package manager's, type checker's, and test runner's documented version probe; do not substitute a guessed command when an incumbent tool lacks one.
+- When the selected runtime or any of those tools changes, repeat the language-specific evals against the new versions before trusting prior results.
 
 ## Anti-patterns
 

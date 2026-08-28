@@ -2,7 +2,7 @@
 name: defuddle
 description: Extract clean Markdown or metadata JSON from web articles and documentation pages using the Defuddle CLI, stripping navigation, ads, and boilerplate for a smaller, more focused result than a raw HTML fetch. Use when fetching a readable page (blog post, article, framework/library docs, GitHub README) for summarization or note-taking, pulling page metadata (title, author, description, domain), or converting a local HTML file to Markdown. Not for API endpoints or JSON responses (use a plain HTTP fetch) or JS-heavy SPAs that need a real browser (use a headless browser such as scrapling).
 metadata:
-  version: 1.1.0
+  version: 1.1.1
 ---
 
 # defuddle
@@ -101,7 +101,8 @@ See `references/cli-reference.md` for full option details.
 
 ## Requirements
 
-- `defuddle` CLI (by kepano) available on `PATH` or via `${DEFUDDLE_BIN}`.
+- `defuddle` CLI (by kepano) available on `PATH` or via `${DEFUDDLE_BIN}`. Official source: [Defuddle](https://github.com/kepano/defuddle). Probe the installed CLI safely with `defuddle --version`. Support boundary: this recipe supports the currently installed Defuddle major and only its officially documented `parse` capabilities used here (`--markdown`, `--json`, `-p`, `-o`, and `-l`); leave unverified capabilities unknown.
+- When a Defuddle release changes the selected major or `defuddle --version` probe result, review the official source and rerun extraction and `scrapling`-fallback evals. Update this recipe if its runtime form changed, then bump the package version and append this package's changelog entry.
 - Optional `scrapling` for the JS-heavy-SPA fallback.
 - Optional `yt-dlp` for discovering watch URLs before per-URL extraction.
 

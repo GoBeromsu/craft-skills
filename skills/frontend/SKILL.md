@@ -2,7 +2,7 @@
 name: frontend
 description: 'Routes frontend engineering through incumbent-aware rendering and design-scope decisions, then applies component-reuse layering, state-placement rules, and folder conventions. Use when building a React/Vue/Svelte page or component ("프론트엔드 구조 잡아줘"), asking "should this be a client or server component", choosing SPA vs SSR/RSC vs SSG vs islands for a new or existing app, deciding where a piece of state should live, or picking a folder convention (type-based, feature-based, layered feature-sliced) for a codebase. Not for API/server design — use api(공개 HTTP 계약)/backend(서비스 구조); not for authoring design.md itself — use document.'
 metadata:
-  version: 2.3.0
+  version: 2.3.1
 ---
 
 # frontend
@@ -60,7 +60,10 @@ When the gate applies and the document is missing, load the `document` skill's `
 
 ## Requirements
 
-A project-local package manager and dev server (`npm`/`pnpm`/`bun` + the framework's dev command) for the detection commands above and any build-output checks in `references/architectures.md`; `git`, `grep`, `find` (POSIX) for the detection commands throughout this skill and its references.
+- Node.js available for project-local tooling. Official source: [Node.js API documentation](https://nodejs.org/docs/latest/api/). Probe the selected runtime safely with `node --version`. Support boundary: this recipe supports the Node major reported by that probe and only the incumbent framework capabilities documented for the versions declared in the local manifest and lockfile.
+- Inspect incumbent package-manager and framework selections before relying on them: `test -f package.json && node -e "const p=require('./package.json'); console.log(JSON.stringify({packageManager:p.packageManager,dependencies:p.dependencies,devDependencies:p.devDependencies},null,2))"` reports their manifest declarations; `for lockfile in package-lock.json npm-shrinkwrap.json pnpm-lock.yaml yarn.lock bun.lock bun.lockb; do test -f "$lockfile" && printf '%s\n' "$lockfile"; done` reports the lockfile in use. Use the matching official framework documentation: [React](https://react.dev/reference/react), [Next.js](https://nextjs.org/docs), [Vue](https://vuejs.org/guide/introduction.html), [Svelte](https://svelte.dev/docs), or [Astro](https://docs.astro.build).
+- When the Node or incumbent framework major, package-manager lockfile, or supported capability changes, review the Node and incumbent-framework official documentation and rerun architecture, build, and visual evals. Update this recipe if its runtime form changed, then bump the package version and append this package's changelog entry.
+- A project-local package manager and dev server (`npm`/`pnpm`/`bun` + the framework's dev command) for the detection commands above and any build-output checks in `references/architectures.md`; `git`, `grep`, `find` (POSIX) for the detection commands throughout this skill and its references.
 
 ## API boundary
 
