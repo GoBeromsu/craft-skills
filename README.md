@@ -3,12 +3,8 @@
 Work-craft Agent Skills for research and engineering by Beomsu Koh.
 
 Own your craft, vendor-neutral: all 27 packages use the plain Agent Skills `SKILL.md` layout.
-The portable core contains no runtime-specific behavior; Claude Code, Codex, Hermes, Cursor,
-and Grok-native integration lives in runtime lenses and generated instruction-file adapters.
-This is a task-oriented library for software and research work — kept separate from
-[`bstack`](https://github.com/GoBeromsu/bstack)
-(personal / life / second-brain automation) so the two domains never bleed into each other's
-context.
+The portable core contains no runtime-specific behavior; Claude Code, Codex, Hermes, Cursor, and Grok-native integration lives in runtime lenses and generated instruction-file adapters.
+This is a task-oriented library for software and research work — kept separate from [`bstack`](https://github.com/GoBeromsu/bstack) (personal / life / second-brain automation) so the two domains never bleed into each other's context.
 
 ---
 
@@ -66,8 +62,7 @@ Use the Claude Code marketplace channel:
 /plugin install craft-skills@craft-skills
 ```
 
-Then invoke any of the 27 skills above by name, e.g. `api`, `ast-grep`, `defuddle`, `document`,
-`init`, `skillify`, `programming`, `research`, `write-prd`, `debug`.
+Then invoke any of the 27 skills above by name, e.g. `api`, `ast-grep`, `defuddle`, `document`, `init`, `skillify`, `programming`, `research`, `write-prd`, `debug`.
 
 ---
 
@@ -88,8 +83,7 @@ For plain Agent Skills development context, clone into a project-root `.agents/s
 git clone https://github.com/GoBeromsu/craft-skills.git .agents/skills/craft-skills
 ```
 
-The clone is optional development context; its skills have the nested layout
-`.agents/skills/craft-skills/skills/<name>/SKILL.md`.
+The clone is optional development context; its skills have the nested layout `.agents/skills/craft-skills/skills/<name>/SKILL.md`.
 
 ---
 
@@ -120,35 +114,31 @@ See `.hermes/README.md` for full deployment details.
 
 ### Cursor — documented skills directories
 
-Cursor discovers project skills in `.cursor/skills/<name>/SKILL.md`; its Agent Skills
-compatibility also recognizes `.agents/skills/<name>/SKILL.md`. Copy or link the individual
-plain skill directories there using the deployment mechanism appropriate for the project.
+Cursor discovers project skills in `.cursor/skills/<name>/SKILL.md`; its Agent Skills compatibility also recognizes `.agents/skills/<name>/SKILL.md`.
+Copy or link the individual plain skill directories there using the deployment mechanism appropriate for the project.
 No Cursor plugin manifest or CLI command is provided by this repository.
 
 ### Grok-native — documented skills or plugin configuration
 
-Grok-native discovers plain skills at `.grok/skills/<name>/SKILL.md`, or through its configured
-plugin path. Use the vendor's configured plugin mechanism for the latter; this repository does
-not invent a Grok plugin manifest or command.
+Grok-native discovers plain skills at `.grok/skills/<name>/SKILL.md`, or through its configured plugin path.
+Use the vendor's configured plugin mechanism for the latter; this repository does not invent a Grok plugin manifest or command.
 
 ### Plain Agent Skills layout
 
-Each package is a self-contained `skills/<name>/SKILL.md`. For a generic Agent Skills runtime,
-place the desired package directory at `.agents/skills/<name>/SKILL.md`. The portable core is
-the same file used by every runtime; lenses hold runtime-specific guidance.
+Each package is a self-contained `skills/<name>/SKILL.md`.
+For a generic Agent Skills runtime, place the desired package directory at `.agents/skills/<name>/SKILL.md`.
+The portable core is the same file used by every runtime; lenses hold runtime-specific guidance.
 
 ### Operational deployment verification
 
-For the approved `m1-pro` deployment, verify the discovered skill directories and runtime
-behavior only through the approved Tailscale/Orca SSH route. This is operational verification
-guidance, not a vendor install command.
+For the approved `m1-pro` deployment, verify the discovered skill directories and runtime behavior only through the approved Tailscale/Orca SSH route.
+This is operational verification guidance, not a vendor install command.
 
 ---
 
 ### Convenience Installer
 
-The repository's convenience installer prints the observed Claude Code, Codex, and Hermes
-channels:
+The repository's convenience installer prints the observed Claude Code, Codex, and Hermes channels:
 
 ```bash
 ./install.sh codex    # print the Codex plugin commands
@@ -179,8 +169,8 @@ git config core.hooksPath .githooks
 `SKIP_LOCAL_CI=1` bypasses a hook once; `SKIP_MARKETPLACES=1` skips the claude/codex CLI job.
 Individual checks can still be run directly (`claude plugin validate .`, `python3 skills/skillify/scripts/validate-skill-format.py`).
 
-Codex reads the tracked plugin tree directly. Hermes integration is covered by the isolated
-plugin install/load contract test under `scripts/governance/tests/`.
+Codex reads the tracked plugin tree directly.
+Hermes integration is covered by the isolated plugin install/load contract test under `scripts/governance/tests/`.
 
 ## License
 

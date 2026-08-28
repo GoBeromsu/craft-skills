@@ -1,31 +1,22 @@
 # craft-skills — Agent Operating Guide
 
-Engineering and research work-craft skills for any coding agent — Claude Code, Codex, Hermes,
-or a generic instruction-following agent. This is the operator's own accumulated craft, kept
-vendor-agnostic on purpose: every skill is a plain Markdown recipe, portable across runtimes
-with no lock-in to one tool's frontmatter or plugin format. Kept strictly separate from
-`bstack` (personal / life / second-brain automation) so the two domains never share context.
+Engineering and research work-craft skills for any coding agent — Claude Code, Codex, Hermes, or a generic instruction-following agent.
+This is the operator's own accumulated craft, kept vendor-agnostic on purpose: every skill is a plain Markdown recipe, portable across runtimes with no lock-in to one tool's frontmatter or plugin format.
+Kept strictly separate from `bstack` (personal / life / second-brain automation) so the two domains never share context.
 
 ## Layout
 
-A package is one flat directory: `skills/<name>/SKILL.md` plus whichever of `references/`,
-`templates/`, `scripts/`, `tests/`, `assets/`, and `CHANGELOG.md` it needs. Runtime-owned
-`agents/` directories are optional plumbing, not part of the portable core. No nested `SKILL.md` files —
-every skill is one level deep. `evals/` directories are local, gitignored scratch for the
-eval-first authoring loop; they are never committed.
+A package is one flat directory: `skills/<name>/SKILL.md` plus whichever of `references/`, `templates/`, `scripts/`, `tests/`, `assets/`, and `CHANGELOG.md` it needs.
+Runtime-owned `agents/` directories are optional plumbing, not part of the portable core.
+No nested `SKILL.md` files — every skill is one level deep.
+`evals/` directories are local, gitignored scratch for the eval-first authoring loop; they are never committed.
 
-The 27 packages (alphabetical): `agents`, `api`, `ast-grep`, `backend`, `browser`, `cicd`, `debug`,
-`defuddle`, `distil`, `document`, `frontend`, `git`, `gpu`, `guardrails`, `init`, `ml`, `obsidian`,
-`programming`, `refactor`, `research`, `security`, `skillify`,
-`tailscale`, `testing`, `vmware`, `write-prd`, `write-report`. `browser` is one flat package: it owns
-one router and exactly three references for Aside, agent-browser, and existing-session. `obsidian` is one thick
-package whose sub-recipes live under `references/`.
+The 27 packages (alphabetical): `agents`, `api`, `ast-grep`, `backend`, `browser`, `cicd`, `debug`, `defuddle`, `distil`, `document`, `frontend`, `git`, `gpu`, `guardrails`, `init`, `ml`, `obsidian`, `programming`, `refactor`, `research`, `security`, `skillify`, `tailscale`, `testing`, `vmware`, `write-prd`, `write-report`.
+`browser` is one flat package: it owns one router and exactly three references for Aside, agent-browser, and existing-session.
+`obsidian` is one thick package whose sub-recipes live under `references/`.
 
-The authoring contract — frontmatter shape, naming, description rules, body limits, CHANGELOG
-format, and the eval-first loop — lives at `skills/skillify/references/contract.md`. The
-`skillify` skill owns create/update/move/retire work and keeps the portable core neutral across
-Claude Code, Codex, Hermes, Cursor, and Grok; it accommodates optional `agents/` and `assets/`
-without admitting runtime-specific fields to the core.
+The authoring contract — frontmatter shape, naming, description rules, body limits, CHANGELOG format, and the eval-first loop — lives at `skills/skillify/references/contract.md`.
+The `skillify` skill owns create/update/move/retire work and keeps the portable core neutral across Claude Code, Codex, Hermes, Cursor, and Grok; it accommodates optional `agents/` and `assets/` without admitting runtime-specific fields to the core.
 
 ## Install matrix
 
@@ -49,13 +40,8 @@ without admitting runtime-specific fields to the core.
 
 ## Rails
 
-- Skill changes ship as branch → PR through the `skillify` skill. Edits under `skills/skillify/`
-  additionally require explicit operator approval in the current session — no enforcement hook
-  is installed for this; it is a human/agent judgment gate only.
-- Out-of-scope discoveries route immediately to a new GitHub issue with exactly one `type: X`
-  label, rather than expanding the current change to absorb them.
+- Skill changes ship as branch → PR through the `skillify` skill. Edits under `skills/skillify/` additionally require explicit operator approval in the current session — no enforcement hook is installed for this; it is a human/agent judgment gate only.
+- Out-of-scope discoveries route immediately to a new GitHub issue with exactly one `type: X` label, rather than expanding the current change to absorb them.
 - CHANGELOG bullets are one compact line: `- YYYY-MM-DD — [vX.Y.Z: ]why → what.`
-- Provenance is two-tier: per-change credit lives in the package's own `CHANGELOG.md`; the
-  current cross-skill lineage snapshot lives in `skills/PROVENANCE.md`.
-- Governance harness: `python3 scripts/governance/harness.py --config <repos.json>` where
-  `repos.json` is `{"repos":[{"name":"craft-skills","path":"<repo root>"}]}`.
+- Provenance is two-tier: per-change credit lives in the package's own `CHANGELOG.md`; the current cross-skill lineage snapshot lives in `skills/PROVENANCE.md`.
+- Governance harness: `python3 scripts/governance/harness.py --config <repos.json>` where `repos.json` is `{"repos":[{"name":"craft-skills","path":"<repo root>"}]}`.
