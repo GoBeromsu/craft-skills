@@ -2,7 +2,7 @@
 name: hookify
 description: Turns a convention or best practice into local, deterministic enforcement so a violation is blocked before it happens, not corrected after. Use when asked to force a rule locally, hookify a convention, add a pre-commit or lint guard, block edits to a read-only path, stop a risky command in-loop, or wire a Claude Code or Codex runtime hook without relying on CI. Owns the repo's core.hooksPath / .githooks pre-commit mechanism as the sole install point; git registers its git-guard there, and init routes hook-install requests to git. Not for git workflow craft itself (branching, worktrees, commit hygiene) — use git.
 metadata:
-  version: 1.2.0
+  version: 1.3.0
 ---
 
 # hookify
@@ -60,7 +60,7 @@ For mutable runtime hook, event, or tool capabilities, consult official primary 
 
 - **Claude Code runtime hook:** merge `scripts/claude-code-pretooluse-guard.sh` + `scripts/settings-hooks.example.json` into `.claude/settings.json` (detail: `references/claude-code-hooks.md`). Only `PreToolUse` blocks a side effect — `PostToolUse` cannot.
 - **Codex runtime hook:** merge `scripts/codex-hook.example.toml` into `.codex/config.toml`, reusing the same guard (detail: `references/codex-hooks.md`).
-- **lint:** add the rule to the project linter (ruff/eslint) or expose the guard as a command the agent runs mid-task.
+- **lint:** add the rule to the project linter (ruff/eslint) or expose the guard as a command the agent runs mid-task. For an architectural boundary rule — who may import whom — prefer the linter's own configuration over a bespoke script and follow `references/boundary-lint.md`; configuration is CI-native and the next person edits one file.
 - **pre-commit:** drop the guard executable into `.githooks/guards.d/` (create it if absent) and point `core.hooksPath` at `.githooks` once, via `scripts/pre-commit.sh` — see Ownership above.
 
 ### Phase 5 — Prove it red
@@ -77,6 +77,9 @@ An installed guard that has never been watched firing is unfinished. Run a viola
 - Trying to enforce a rule that can't be stated in one sentence → state it in prose first and observe until it's ready (Phase 0).
 - Writing a guard that reaches the network or a live backend → disqualify it from a blocking hook (fails G1); use a softer surface instead.
 - Trying to block a side effect from `PostToolUse` → move it to `PreToolUse`; only `PreToolUse` can block a side effect.
+- Writing a script that greps imports to check layering → express the rule in the linter's own boundary configuration; a bespoke checker is a private tool the next person has to learn and CI has to be taught to call.
+- Leaving a boundary rule in a contributor guide because reviewers will catch it → encode it in configuration and point the prose at the config file; prose has no failure mode.
+- Deleting a module a boundary contract names without updating the contract → update both in the same commit, or the checker errors on an unknown module.
 
 ## Verification
 
@@ -85,6 +88,7 @@ An installed guard that has never been watched firing is unfinished. Run a viola
 - [ ] If it's a blocking hook, all 3 gates (cheap, accurate, stable) pass.
 - [ ] The guard message states the rule and the fix in one line.
 - [ ] Proved red: a violating input was blocked and a clean input passed, both observed directly.
+- [ ] For a boundary rule, the deliberate-violation run was captured with the rule name in its output, and the enforcing command runs in CI.
 
 ## Requirements
 
