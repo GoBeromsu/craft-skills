@@ -2,7 +2,7 @@
 name: skillify
 description: Owns the full lifecycle of craft-skills skill packages — creating, updating, moving/renaming, retiring them, and absorbing frontier labs' skill-creators into vendor lenses — through an eval-first authoring loop and deterministic format validation. Use when a user says things like "make a skill", "skillify this workflow", "turn this into a skill", "update this skill", "move this skill", "absorb openai's new skill-creator", or "스킬 만들자", or when a recurring workflow correction needs to be encoded into a governing skill instead of staying in chat memory. Not for one-off project scripts or prompts with no reuse intent — those stay local to the originating project.
 metadata:
-  version: 4.4.0
+  version: 4.5.0
 ---
 
 # skillify
@@ -41,7 +41,7 @@ Before writing `SKILL.md`, draft the eval scenarios that will judge it — evals
 
 1. Draft `evals/evals.json` — about 3 realistic scenarios (prompt + expected behavior).
 2. Draft `evals/triggers.json` — 8 should-trigger + 8 near-miss should-NOT-trigger prompts pulled from sibling skills' domains.
-3. Run each scenario without the skill, then with the drafted body — the skill's value is the delta between the arms. Iterate until behavior matches. Run the 16 trigger prompts against the drafted description; tighten the "Not for X" boundary sentence wherever a near-miss would plausibly match.
+3. Run each scenario without the skill, then with the drafted body — the skill's value is the delta between the arms. Iterate until behavior matches. Run the 16 trigger prompts against the drafted description; tighten the "Not for X" boundary sentence wherever a near-miss would plausibly match. Use Grok 4.6 with `xhigh` reasoning as the default fresh-eyes judge when the Grok CLI is available; keep the judge read-only and independent from the authoring session.
 
 How to run the arms, judge with fresh eyes, read transcripts, and improve without overfitting: [`references/evaluation.md`](references/evaluation.md).
 `evals/` is local scratch — gitignored, never committed.

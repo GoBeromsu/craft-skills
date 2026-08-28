@@ -31,13 +31,14 @@ context.
 | `hookify` | Turn a convention or best practice into local, deterministic enforcement so a violation is blocked before it happens, not corrected after. |
 | `init` | Bootstrap the craft-owned `docs/` scaffold on a fresh repo, then generate a complexity-scored hierarchical `AGENTS.md` knowledge base on a mature one, in one triaged run. |
 | `ml` | Apply ML/DL research-engineering discipline — reproducible project layout, leakage-safe dataset construction, and a training-discipline ladder — to classical ML, deep learning, fine-tuning, and vision work. |
-| `obsidian-bases` | **Deprecated** — moved to [`bstack/obsidian/bases`](https://github.com/GoBeromsu/bstack); do not use for Obsidian Bases (`.base` file) work. |
-| `obsidian-canvas` | **Deprecated** — moved to [`bstack/obsidian/canvas`](https://github.com/GoBeromsu/bstack); do not use for Obsidian Canvas (`.canvas` file) work. |
-| `obsidian-cli` | **Deprecated** — moved to [`bstack/obsidian/cli`](https://github.com/GoBeromsu/bstack); do not use for Obsidian vault operations via the CLI. |
-| `obsidian-clipper` | **Deprecated** — moved to [`bstack/obsidian/clipper`](https://github.com/GoBeromsu/bstack); do not use for Obsidian Web Clipper template work. |
-| `obsidian-doctor` | **Deprecated** — moved to [`bstack/obsidian/doctor`](https://github.com/GoBeromsu/bstack); do not use for Obsidian plugin diagnosis/repair. |
-| `obsidian-markdown` | **Deprecated** — moved to [`bstack/obsidian/markdown`](https://github.com/GoBeromsu/bstack); do not use for Obsidian vault markdown / house-style work. |
-| `obsidian-mermaid` | **Deprecated** — moved to [`bstack/obsidian/mermaid`](https://github.com/GoBeromsu/bstack); do not use for Mermaid diagrams inside Obsidian. |
+| `obsidian-bases` | Write, read, and optimize Obsidian Bases (`.base` files and `base` code blocks), including filters, formulas, properties, summaries, and views. |
+| `obsidian-canvas` | Create and edit Obsidian JSON Canvas (`.canvas`) files with valid nodes, edges, groups, and references. |
+| `obsidian-cli` | Operate an Obsidian vault through `obsidian-cli` with exact-path checks and write readback. |
+| `obsidian-clipper` | Create selector-verified JSON templates for the Obsidian Web Clipper. |
+| `obsidian-doctor` | Diagnose and repair Obsidian plugins, plugin-consuming templates, and plugin-driven scripts. |
+| `obsidian-markdown` | Create and reformat Obsidian Markdown with wikilinks, callouts, properties, embeds, and the operator’s house style. |
+| `obsidian-mermaid` | Author and verify Mermaid diagrams against Obsidian’s bundled renderer. |
+| `obsidian-sync` | Bootstrap, operate, and recover the headless `ob` Sync client through a staged, reversible workflow. |
 | `programming` | Apply correctness-first, type-strict engineering discipline when writing or editing Python or TypeScript. |
 | `refactor` | Restructure code without changing what it does, each move backed by a detection command and threshold, gated behind a characterization-test protocol for untested legacy code. |
 | `research` | Run a decision-depth research workflow ending in a `docs/research/{slug}.md` artifact — sweep primary sources, synthesize with a citation on every claim, and state gaps and confidence, never the decision itself. |
@@ -45,6 +46,7 @@ context.
 | `skillify` | Own the full lifecycle of craft-skills packages — create, update, move, retire — through an eval-first authoring loop and deterministic format validation. |
 | `tailscale` | Verify and repair the Tailscale tailnet that carries cross-host work — SSH, remote process inspection, `scp` — before a dependent workflow runs, triaging failures as network-layer versus service-layer across macOS daemon variants. |
 | `testing` | Architect and audit the test suite — classify each test by taxonomy and resource-based size, place it via a decision tree, and enforce the prove-it law that every bug fix ships with a failing-then-passing test. |
+| `vmware` | Operate VMware Fusion guests through VM lifecycle checks and VNC-backed input automation. |
 | `write-prd` | Author decision-ready product requirements documents from a provided or packaged template, keeping scope, metrics, rollout, and open issues coherent. |
 | `write-report` | Scaffold and author a project's one-off canonical technical report against a single YAML frame whose depth is the enforced table of contents. |
 

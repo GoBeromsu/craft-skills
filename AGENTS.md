@@ -13,12 +13,12 @@ A package is one flat directory: `skills/<name>/SKILL.md` plus whichever of `ref
 every skill is one level deep. `evals/` directories are local, gitignored scratch for the
 eval-first authoring loop; they are never committed.
 
-The 32 packages (alphabetical): `agents`, `api`, `aside`, `ast-grep`, `backend`, `cicd`, `debug`,
+The 34 packages (alphabetical): `agents`, `api`, `aside`, `ast-grep`, `backend`, `cicd`, `debug`,
 `defuddle`, `distil`, `document`, `frontend`, `git`, `gpu`, `hookify`, `init`, `ml`, `obsidian-bases`,
 `obsidian-canvas`, `obsidian-cli`, `obsidian-clipper`, `obsidian-doctor`, `obsidian-markdown`,
-`obsidian-mermaid`, `programming`, `refactor`, `research`, `security`, `skillify`, `tailscale`, `testing`,
-`write-prd`, `write-report`. `aside` and the 7 `obsidian-*` packages are deprecated stubs — moved to
-`bstack/browser/aside` and `bstack/obsidian/<leaf>`; see each package's `SKILL.md`.
+`obsidian-mermaid`, `obsidian-sync`, `programming`, `refactor`, `research`, `security`, `skillify`,
+`tailscale`, `testing`, `vmware`, `write-prd`, `write-report`. `aside` is a deprecated stub moved to
+`bstack/browser/aside`; the Obsidian packages are active reusable craft owned here.
 
 The authoring contract — frontmatter shape, naming, description rules, body limits, CHANGELOG
 format, and the eval-first loop — lives at `skills/skillify/references/contract.md`. All skill
@@ -39,6 +39,11 @@ that contract.
 | Variable | Meaning |
 |----------|---------|
 | `CRAFT_WT_REMOTE_HOST` | Tailscale hostname for remote worktree exec (the worktree recipe now lives in the `git` skill's `references/worktree.md`; optional). |
+| `OBSIDIAN_VAULT_PATH` | Obsidian vault root resolved independently on each machine. |
+| `OBSIDIAN_CLI_PATH` | Optional path to the `obsidian-cli` or `ob` binary required by the invoking skill. |
+| `OBSIDIAN_SYNC_REMOTE_HOST` | Optional SSH host for a headless Obsidian Sync replica. |
+| `OBSIDIAN_SYNC_PROCESS_NAME` | Optional process-supervisor name for the headless Sync daemon. |
+| `PM2_LOG_DIR` | Optional pm2 log directory used by the headless Sync daemon recipe. |
 
 ## Rails
 
