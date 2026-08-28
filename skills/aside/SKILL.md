@@ -1,8 +1,8 @@
 ---
 name: aside
-description: Deprecated — moved to bstack/browser/aside; do not use for Aside AI browser automation.
+description: Deprecated redirect for Aside AI browser automation. Use when an old prompt asks to drive Aside, run an authenticated browser task, use the Aside CLI/MCP/REPL, schedule a routine, or recover a waiting Aside task; route the request to bstack/browser/aside instead. Not an executable browser skill and not for static public-page extraction.
 metadata:
-  version: 2.0.0
+  version: 2.0.1
 ---
 
 ## Deprecated

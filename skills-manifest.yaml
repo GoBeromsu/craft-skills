@@ -118,7 +118,7 @@
       "name": "aside",
       "kind": "leaf",
       "lifecycle": "deprecated",
-      "version": "2.0.0",
+      "version": "2.0.1",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
@@ -891,8 +891,8 @@
       "id": "craft-skills/obsidian-bases",
       "name": "obsidian-bases",
       "kind": "leaf",
-      "lifecycle": "deprecated",
-      "version": "2.0.0",
+      "lifecycle": "active",
+      "version": "3.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
@@ -902,13 +902,17 @@
         "hermes"
       ],
       "provenance": {
-        "upstream": null,
-        "commit": null,
-        "license": null,
-        "absorbed_from": []
+        "upstream": "https://github.com/GoBeromsu/bstack",
+        "commit": "3e0672c820d581ea7c17f7786fec97002019663f",
+        "license": "MIT",
+        "absorbed_from": [
+          "bstack/obsidian/bases"
+        ]
       },
-      "replacement_for": [],
-      "replaced_by": "bstack/obsidian/bases",
+      "replacement_for": [
+        "bstack/obsidian/bases"
+      ],
+      "replaced_by": null,
       "children": [],
       "adapters": [
         {
@@ -946,8 +950,8 @@
       "id": "craft-skills/obsidian-canvas",
       "name": "obsidian-canvas",
       "kind": "leaf",
-      "lifecycle": "deprecated",
-      "version": "2.0.0",
+      "lifecycle": "active",
+      "version": "3.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
@@ -957,13 +961,17 @@
         "hermes"
       ],
       "provenance": {
-        "upstream": null,
-        "commit": null,
-        "license": null,
-        "absorbed_from": []
+        "upstream": "https://github.com/GoBeromsu/bstack",
+        "commit": "3e0672c820d581ea7c17f7786fec97002019663f",
+        "license": "MIT",
+        "absorbed_from": [
+          "bstack/obsidian/canvas"
+        ]
       },
-      "replacement_for": [],
-      "replaced_by": "bstack/obsidian/canvas",
+      "replacement_for": [
+        "bstack/obsidian/canvas"
+      ],
+      "replaced_by": null,
       "children": [],
       "adapters": [
         {
@@ -1001,8 +1009,8 @@
       "id": "craft-skills/obsidian-cli",
       "name": "obsidian-cli",
       "kind": "leaf",
-      "lifecycle": "deprecated",
-      "version": "2.0.0",
+      "lifecycle": "active",
+      "version": "3.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
@@ -1012,13 +1020,17 @@
         "hermes"
       ],
       "provenance": {
-        "upstream": null,
-        "commit": null,
-        "license": null,
-        "absorbed_from": []
+        "upstream": "https://github.com/GoBeromsu/bstack",
+        "commit": "3e0672c820d581ea7c17f7786fec97002019663f",
+        "license": "MIT",
+        "absorbed_from": [
+          "bstack/obsidian/cli"
+        ]
       },
-      "replacement_for": [],
-      "replaced_by": "bstack/obsidian/cli",
+      "replacement_for": [
+        "bstack/obsidian/cli"
+      ],
+      "replaced_by": null,
       "children": [],
       "adapters": [
         {
@@ -1056,8 +1068,8 @@
       "id": "craft-skills/obsidian-clipper",
       "name": "obsidian-clipper",
       "kind": "leaf",
-      "lifecycle": "deprecated",
-      "version": "2.0.0",
+      "lifecycle": "active",
+      "version": "3.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
@@ -1067,13 +1079,17 @@
         "hermes"
       ],
       "provenance": {
-        "upstream": null,
-        "commit": null,
-        "license": null,
-        "absorbed_from": []
+        "upstream": "https://github.com/GoBeromsu/bstack",
+        "commit": "3e0672c820d581ea7c17f7786fec97002019663f",
+        "license": "MIT",
+        "absorbed_from": [
+          "bstack/obsidian/clipper"
+        ]
       },
-      "replacement_for": [],
-      "replaced_by": "bstack/obsidian/clipper",
+      "replacement_for": [
+        "bstack/obsidian/clipper"
+      ],
+      "replaced_by": null,
       "children": [],
       "adapters": [
         {
@@ -1111,8 +1127,8 @@
       "id": "craft-skills/obsidian-doctor",
       "name": "obsidian-doctor",
       "kind": "leaf",
-      "lifecycle": "deprecated",
-      "version": "2.0.0",
+      "lifecycle": "active",
+      "version": "3.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
@@ -1122,13 +1138,17 @@
         "hermes"
       ],
       "provenance": {
-        "upstream": null,
-        "commit": null,
-        "license": null,
-        "absorbed_from": []
+        "upstream": "https://github.com/GoBeromsu/bstack",
+        "commit": "3e0672c820d581ea7c17f7786fec97002019663f",
+        "license": "MIT",
+        "absorbed_from": [
+          "bstack/obsidian/doctor"
+        ]
       },
-      "replacement_for": [],
-      "replaced_by": "bstack/obsidian/doctor",
+      "replacement_for": [
+        "bstack/obsidian/doctor"
+      ],
+      "replaced_by": null,
       "children": [],
       "adapters": [
         {
@@ -1166,8 +1186,8 @@
       "id": "craft-skills/obsidian-markdown",
       "name": "obsidian-markdown",
       "kind": "leaf",
-      "lifecycle": "deprecated",
-      "version": "3.0.1",
+      "lifecycle": "active",
+      "version": "4.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
@@ -1177,13 +1197,17 @@
         "hermes"
       ],
       "provenance": {
-        "upstream": null,
-        "commit": null,
-        "license": null,
-        "absorbed_from": []
+        "upstream": "https://github.com/GoBeromsu/bstack",
+        "commit": "3e0672c820d581ea7c17f7786fec97002019663f",
+        "license": "MIT",
+        "absorbed_from": [
+          "bstack/obsidian/markdown"
+        ]
       },
-      "replacement_for": [],
-      "replaced_by": "bstack/obsidian/markdown",
+      "replacement_for": [
+        "bstack/obsidian/markdown"
+      ],
+      "replaced_by": null,
       "children": [],
       "adapters": [
         {
@@ -1221,8 +1245,8 @@
       "id": "craft-skills/obsidian-mermaid",
       "name": "obsidian-mermaid",
       "kind": "leaf",
-      "lifecycle": "deprecated",
-      "version": "2.0.0",
+      "lifecycle": "active",
+      "version": "3.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
@@ -1232,13 +1256,76 @@
         "hermes"
       ],
       "provenance": {
-        "upstream": null,
-        "commit": null,
-        "license": null,
-        "absorbed_from": []
+        "upstream": "https://github.com/GoBeromsu/bstack",
+        "commit": "3e0672c820d581ea7c17f7786fec97002019663f",
+        "license": "MIT",
+        "absorbed_from": [
+          "bstack/obsidian/mermaid"
+        ]
       },
-      "replacement_for": [],
-      "replaced_by": "bstack/obsidian/mermaid",
+      "replacement_for": [
+        "bstack/obsidian/mermaid"
+      ],
+      "replaced_by": null,
+      "children": [],
+      "adapters": [
+        {
+          "runtime": "claude-code",
+          "surface": "plugin-skill",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        }
+      ],
+      "validation_profile": {
+        "discovery_parity": "strict",
+        "adapter_parity": "strict",
+        "provenance_license": "strict",
+        "private_data_hygiene": "strict",
+        "deprecation": "strict",
+        "routing_eval": "smoke",
+        "install_doctor": "package",
+        "topology": "leaf"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "craft-skills/obsidian-sync",
+      "name": "obsidian-sync",
+      "kind": "leaf",
+      "lifecycle": "active",
+      "version": "4.0.0",
+      "owner_repo": "craft-skills",
+      "owner_domain": "research-development",
+      "visibility": "public",
+      "compatibility": [
+        "claude-code",
+        "codex",
+        "hermes"
+      ],
+      "provenance": {
+        "upstream": "https://github.com/GoBeromsu/bstack",
+        "commit": "3e0672c820d581ea7c17f7786fec97002019663f",
+        "license": "MIT",
+        "absorbed_from": [
+          "bstack/obsidian/sync"
+        ]
+      },
+      "replacement_for": [
+        "bstack/obsidian/sync"
+      ],
+      "replaced_by": null,
       "children": [],
       "adapters": [
         {
@@ -1497,7 +1584,7 @@
       "name": "skillify",
       "kind": "leaf",
       "lifecycle": "active",
-      "version": "4.4.0",
+      "version": "4.5.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
@@ -1615,6 +1702,61 @@
       "kind": "leaf",
       "lifecycle": "active",
       "version": "2.1.1",
+      "owner_repo": "craft-skills",
+      "owner_domain": "research-development",
+      "visibility": "public",
+      "compatibility": [
+        "claude-code",
+        "codex",
+        "hermes"
+      ],
+      "provenance": {
+        "upstream": null,
+        "commit": null,
+        "license": null,
+        "absorbed_from": []
+      },
+      "replacement_for": [],
+      "replaced_by": null,
+      "children": [],
+      "adapters": [
+        {
+          "runtime": "claude-code",
+          "surface": "plugin-skill",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        }
+      ],
+      "validation_profile": {
+        "discovery_parity": "strict",
+        "adapter_parity": "strict",
+        "provenance_license": "strict",
+        "private_data_hygiene": "strict",
+        "deprecation": "strict",
+        "routing_eval": "smoke",
+        "install_doctor": "package",
+        "topology": "leaf"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "craft-skills/vmware",
+      "name": "vmware",
+      "kind": "leaf",
+      "lifecycle": "active",
+      "version": "1.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",

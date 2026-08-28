@@ -8,9 +8,10 @@ The contract owns *what* the gate is (which files, how many cases); this referen
 1. [Baseline delta — the value measure](#1-baseline-delta--the-value-measure)
 2. [Scenario evals](#2-scenario-evals)
 3. [Trigger evals](#3-trigger-evals)
-4. [Read the transcripts, not just the outputs](#4-read-the-transcripts-not-just-the-outputs)
-5. [Improve without overfitting](#5-improve-without-overfitting)
-6. [When to go heavyweight](#6-when-to-go-heavyweight)
+4. [Fresh-eyes judge](#4-fresh-eyes-judge)
+5. [Read the transcripts, not just the outputs](#5-read-the-transcripts-not-just-the-outputs)
+6. [Improve without overfitting](#6-improve-without-overfitting)
+7. [When to go heavyweight](#7-when-to-go-heavyweight)
 
 ---
 
@@ -47,14 +48,26 @@ For the `evals/triggers.json` prompts (counts: contract §7):
 - Judge trigger-fit with fresh eyes — an agent session that has not seen the authoring conversation, given only the library's name+description lines and the probe prompt.
 - After tuning the description against failures, re-judge on prompts that were **not** used for the tuning. A description iterated against one fixed set memorizes that set; held-out prompts are what catch it.
 
-## 4. Read the transcripts, not just the outputs
+## 4. Fresh-eyes judge
+
+Use Grok 4.6 at `xhigh` reasoning effort as the default qualitative judge when the Grok CLI is available:
+
+```bash
+grok --model grok-4.6 --reasoning-effort xhigh \
+  --permission-mode plan --disable-web-search --no-subagents \
+  --verbatim --single "<blind comparison or trigger-fit prompt>"
+```
+
+Give the judge only the artifacts needed for its rubric. Do not include the author's rationale, identify which A/B arm is the candidate, or grant write-capable permissions. A missing Grok CLI degrades to another independent model or a human review; it does not justify self-judging in the authoring session.
+
+## 5. Read the transcripts, not just the outputs
 
 The run transcripts carry two signals the final artifacts hide:
 
 - **Repeated work** — when every run hand-writes the same helper or re-derives the same schema, the skill should bundle it once: code into `scripts/`, knowledge into `references/` (contract §5 owns the classification).
 - **Wasted detours** — when runs consistently burn effort on an unproductive path, find the skill sentence sending them there and cut it, then re-run. Every line of body must pull its weight; removal is an experiment that costs one eval cycle.
 
-## 5. Improve without overfitting
+## 6. Improve without overfitting
 
 The loop iterates on a handful of examples because that is fast — but the skill ships to prompts nobody drafted.
 When a run fails:
@@ -65,7 +78,7 @@ When a run fails:
 - The memorization check is §3's held-out re-judging: prompts that were not used for the tuning judge the tuned result.
 - Stop when feedback comes back clean or improvements stop being meaningful; more loops on the same three examples past that point only overfit them.
 
-## 6. When to go heavyweight
+## 7. When to go heavyweight
 
 The light loop above is the default and suffices for most packages.
 Escalate to benchmark machinery — repeated runs with mean/stddev, token/latency aggregation, blind A/B judging by an independent agent that is not told which output is which — only when two versions genuinely compete, a regression would be costly, or a claim ("44% better") needs numbers behind it.

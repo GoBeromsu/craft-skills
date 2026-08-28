@@ -35,6 +35,8 @@ only, and naming a source there fails skillify's attribution gate.
 | `research` | — | — | original (skill-library redesign) |
 | `debug` | — | — | original (skill-library redesign) |
 | `aside` | — | — | original (grounded in Aside developer docs, https://docs.aside.com/help/developers); deprecated, moved to [bstack](https://github.com/GoBeromsu/bstack) `browser/aside` |
+| `obsidian-bases`, `obsidian-canvas`, `obsidian-cli`, `obsidian-clipper`, `obsidian-doctor`, `obsidian-markdown`, `obsidian-mermaid`, `obsidian-sync` | active Obsidian craft consolidated from the former bstack area | [bstack](https://github.com/GoBeromsu/bstack) `obsidian/*` at `3e0672c` | moved and adapted |
+| `vmware` | operator VM lifecycle and VNC automation workflow | — | original |
 | `tailscale` | `tailscale` skill (v1.1.1) — tailnet-health gate, daemon-variant restart paths, OAuth-popup triage, profile/identity drift | [bstack](https://github.com/GoBeromsu/bstack) | derived |
 | `gpu` | operator incident evidence — RTX 6000 probe preflight/occupancy predicate/settings delta, a shared-host RAM-freeze post-mortem, an edge-GPU Xid incident report, HPC progressive-scaling notes; support-matrix/build/benchmark discipline from vendor and maintainer sources | [Dao-AILab/flash-attention](https://github.com/Dao-AILab/flash-attention); [pytorch RELEASE.md](https://github.com/pytorch/pytorch/blob/main/RELEASE.md); [NVIDIA DCGM diagnostics](https://docs.nvidia.com/datacenter/dcgm/latest/user-guide/dcgm-diagnostics.html); [NVIDIA GTC 2019 S9956](https://developer.download.nvidia.com/video/gputechconf/gtc/2019/presentation/s9956-best-practices-when-benchmarking-cuda-applications_V2.pdf); [stas00/ml-engineering](https://github.com/stas00/ml-engineering) | adapted |
 
