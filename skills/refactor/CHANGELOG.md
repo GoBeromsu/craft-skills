@@ -6,3 +6,4 @@
 - 2026-07-12 — v2.2.0: behavioral verification and logical-revertible-change principles needed risk-based refactoring rules → blast-radius checkpoints, cohesion-based scope, applicable smell scans, and semantic language-server routing. Provenance: lsp semantic-operation rule from docs/research/omo-analysis.md.
 - 2026-08-28 — v2.3.0: mutable tooling, LSP, and runtime facts could be stale → added official-docs-first evidence handling with conflict disclosure and unknown-safe fallback.
 - 2026-08-28 — v2.3.1: Git, language-server, and test-runner capabilities could change after evaluation → added official sources, safe version probes, and detection/characterization re-evaluation trigger.
+- 2026-08-28 — v2.3.2: dependency changes could stop after re-evaluation → require official-docs review, affected evals, recipe maintenance, package version bump, and CHANGELOG append.

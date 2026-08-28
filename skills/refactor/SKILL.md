@@ -2,7 +2,7 @@
 name: refactor
 description: "Restructures code without changing what it does — extracting functions, renaming, removing duplication, flattening nested conditionals, and other mechanical moves backed by a detection command and threshold. Use when the user says \"refactor this\", \"clean up this code\", \"리팩토링 해줘\", or \"this function is a mess\", or a named smell (long function, deep nesting, feature envy) surfaces while reading code with no intended behavior change. Gates untested legacy code behind a characterization-test protocol first. Not for diagnosing why something is broken — use debug — or for behavior-changing feature work and bug fixes, which belong to programming's red-green-refactor loop."
 metadata:
-  version: 2.3.1
+  version: 2.3.2
 ---
 
 # refactor
@@ -64,7 +64,7 @@ For mutable language-server, test, runtime, and tool behavior, consult official 
 - A test runner: `pytest` (+ `pytest-cov`) for Python, `vitest` (`--coverage`) for TypeScript. Consult each incumbent runner's official documentation for its installed version and run its documented version probe.
 - When language-server support is used, consult the incumbent server's official documentation for its installed version and run its documented version probe before relying on semantic operations.
 - Optional: `vulture` (Python) / `ts-prune` (TypeScript) for the Dead Code entry in `references/code-smells.md`.
-- When Git, the incumbent language server, or the incumbent test runner changes version or capability, rerun detection and characterization evals before trusting prior results.
+- When Git, the incumbent language server, or the incumbent test runner changes version or capability, review the applicable official documentation, rerun affected detection and characterization evals, update this recipe if needed, bump the package version, and append the CHANGELOG entry before trusting prior results.
 
 ## Common rationalizations
 
