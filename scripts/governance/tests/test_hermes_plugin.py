@@ -13,7 +13,7 @@ from typing import Final, Sequence
 
 _ROOT: Final = Path(__file__).resolve().parent.parent.parent.parent
 _PLUGIN_NAME: Final = "craft-skills"
-_PLUGIN_VERSION: Final = "0.5.4"
+_PLUGIN_VERSION: Final = "0.5.5"
 _PACKAGE_COUNT: Final = 32
 _SUBPROCESS_TIMEOUT_SECONDS: Final = 20
 _RUNTIME_PROBE: Final = "\n".join(

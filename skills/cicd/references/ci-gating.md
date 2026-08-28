@@ -20,6 +20,8 @@ Set one job identifier and display name for the branch-protection requirement, f
 
 When branch protection already names a check, preserve that name. Renaming it is a coordinated repository-policy change, not a workflow cleanup.
 
+Keep the required check as the only merge-readiness signal GitHub enforces; do not let a second, comment-declared status run alongside it (see the skill's [Anti-patterns](../SKILL.md#anti-patterns)).
+
 ## Selection implementation
 
 Use the repository's existing changed-file mechanism. It must compare the PR base and head, emit one boolean output, and match `.github/workflows/**` before any no-op decision. Keep the no-op path visible in logs, but do not invoke lint, test, build, Docker, or external deployment work from it.

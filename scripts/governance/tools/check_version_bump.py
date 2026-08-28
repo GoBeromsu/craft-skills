@@ -20,6 +20,13 @@ _ROOT_PLUGIN_MANIFESTS = (
     ".codex-plugin/plugin.json",
     ".claude-plugin/plugin.json",
 )
+# The hermes vendor bridge (see #57) reads a standalone root plugin.yaml instead of the
+# JSON manifests above; it drifted behind them silently for two release cycles (0.5.4
+# vs 0.5.5) because nothing enforced it. Check it as a standing invariant against the
+# JSON manifests rather than folding it into _ROOT_PLUGIN_MANIFESTS, since that tuple's
+# diff-gated bump checks assume a JSON manifest shape.
+_PLUGIN_YAML = "plugin.yaml"
+_PLUGIN_YAML_VERSION = re.compile(r"^version\s*:\s*(\S+)\s*$", re.MULTILINE)
 
 
 class VersionCheckError(Exception):
@@ -172,6 +179,34 @@ def _root_plugin_violations(root: Path, base: str) -> list[str]:
     return violations
 
 
+def _version_from_plugin_yaml(text: str | None) -> str | None:
+    if text is None:
+        return None
+    match = _PLUGIN_YAML_VERSION.search(text)
+    return match.group(1).strip('"\'') if match else None
+
+
+def _plugin_yaml_violations(root: Path) -> list[str]:
+    plugin_yaml_path = root / _PLUGIN_YAML
+    if not plugin_yaml_path.exists():
+        return []
+    plugin_yaml_version = _version_from_plugin_yaml(plugin_yaml_path.read_text(encoding="utf-8"))
+    if plugin_yaml_version is None or _parse_semver(plugin_yaml_version) is None:
+        return [f"{_PLUGIN_YAML}: version is not valid semver"]
+    violations: list[str] = []
+    for relative in _ROOT_PLUGIN_MANIFESTS:
+        manifest_path = root / relative
+        if not manifest_path.exists():
+            continue
+        manifest_version = _version_from_plugin(manifest_path.read_text(encoding="utf-8"))
+        if manifest_version is not None and manifest_version != plugin_yaml_version:
+            violations.append(
+                f"{_PLUGIN_YAML}: version {plugin_yaml_version} must match "
+                f"{relative} version {manifest_version}"
+            )
+    return violations
+
+
 def _dated_bullets(text: str) -> set[str]:
     return {line for line in text.splitlines() if _DATE_BULLET.match(line)}
 
@@ -218,6 +253,7 @@ def check(root: Path, diff_base: str) -> tuple[list[str], list[str]]:
     base = _base_commit(root, diff_base)
     violations: list[str] = []
     notes: list[str] = []
+    violations.extend(_plugin_yaml_violations(root))
     changed_packages = _changed_packages(root, diff_base)
     if changed_packages or _root_plugin_manifest_changed(root, diff_base):
         violations.extend(_root_plugin_violations(root, base))

@@ -1,13 +1,17 @@
 ---
 name: tailscale
-description: Verifies and repairs the Tailscale tailnet that carries cross-host work — SSH, remote process inspection, `scp` — before a dependent workflow runs, and triages failures as network-layer versus service-layer. Use when `tailscale ping` or `ssh <peer>` hangs, when a peer that should be reachable is missing from `tailscale status`, when choosing the daemon-restart path for a macOS install variant (macsys `.pkg`, Homebrew LaunchAgent, system LaunchDaemon), when a browser OAuth popup appears mid-SSH, or when switching and verifying the active tailnet profile with `tailscale switch`. Not for generic SSH problems unrelated to the tailnet.
+description: Verifies and repairs the Tailscale tailnet that carries cross-host work — SSH, remote process inspection, `scp` — before a dependent workflow runs, and triages failures as network-layer versus service-layer. Use when `tailscale ping` or `ssh <peer>` hangs, when a reachable peer is missing from `tailscale status`, when switching networks between tailnets with `tailscale switch` or listing stored profiles, when the target is a shared-in node or a tailnet you were invited to rather than own, when picking the daemon-restart path for a macOS install variant, or when a browser OAuth popup appears mid-SSH. Not for generic SSH problems unrelated to the tailnet.
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # tailscale
 
 Tailscale is the transport layer between a source-of-truth host (where work is authored) and a replica host (where it is executed). Any cross-host workflow — `ssh <replica>`, remote process inspection, `scp` of tracked config — assumes the tailnet is healthy. Verify that assumption and triage when it doesn't hold **before** invoking any dependent workflow; success is "tailnet healthy enough for the dependent workflow to proceed."
+
+One host can hold several tailnet logins at once, and `tailscale switch` is how the active network changes — `tailscale switch --list` enumerates the stored profiles, `tailscale switch <profile>` activates a different one. Only one is active at a time, and the active profile decides which peers, addresses, and MagicDNS suffix exist. A peer "missing" from `tailscale status` is far more often the wrong active profile than an offline peer.
+
+Not every reachable tailnet is the operator's to act on. Nodes shared in from another account, and tailnets the operator was *invited* to rather than owns, are **external** — see the consent gate in step 2, which is a hard stop, not a preference.
 
 Three macOS install layouts coexist, and the daemon-restart path differs across them:
 - **macsys (Tailscale.app, standalone `.pkg`)** — GUI app with the daemon embedded in the app process. Restart by quitting and relaunching the app (`osascript -e 'quit app "Tailscale"'`, then launch again).
@@ -22,6 +26,8 @@ Three macOS install layouts coexist, and the daemon-restart path differs across 
 - When migrating a host from Tailscale.app macsys to a headless `tailscaled` system daemon.
 - When documenting Serve/Funnel workflows that must not leak private tailnet topology.
 - When the active tailnet profile, a node's identity (IP/hostname), or a peer's reachability has changed since the target was last addressed.
+- When switching networks between tailnets, listing stored profiles, or deciding which of several logins owns a given node.
+- When the target is a shared-in node or lives on a tailnet the operator was invited to rather than owns.
 
 Not for generic SSH problems that do not involve the tailnet, or public-facing Funnel design beyond the dependent workflow. Never reveal Tailscale IPs (`100.x.x.x`), tailnet domains, or real hostnames in output — use neutral role labels (`source`, `replica`, `peer`) and MagicDNS names.
 
@@ -36,7 +42,24 @@ tailscale status | head -20
 
 Expect the CLI present, the local node `connected`, and the target peer in the list with `idle` or `active` status (not `offline`).
 
-### 2. Verify remote reachability before dispatching
+### 2. Classify tailnet ownership — ask before acting on a network that is not the operator's
+
+Before the first command that reaches a peer, establish who owns the target: the operator's own personal tailnet, or an **external** network — a node shared in from another account, or a tailnet the operator was invited to.
+
+```bash
+tailscale switch --list          # stored profiles; the active one is marked
+tailscale status                 # the per-peer account column names the owner
+```
+
+Compare the peer's owning account against `Self`'s, and the active tailnet against the operator's own (`references/tailnet-profile-and-identity-changes.md` §A). Then branch:
+
+- **Own personal tailnet** — proceed through the remaining steps without asking.
+- **External tailnet** — **stop and get the operator's explicit approval before running anything that reaches the peer or changes state on it** (`ssh`, `scp`, `serve`, `funnel`, remote process control, ACL or admin-console changes, `tailscale up/down` under that profile). Present what the approval covers: which tailnet, which peer, whose account owns it, and the exact command. Approval is per-task, not standing — a second task against the same external node needs a fresh ask.
+- **Cannot tell** — treat as external and ask. Ambiguity resolves toward asking, never toward proceeding.
+
+Read-only local inspection (`tailscale status`, `switch --list`, `ping`) is always allowed; it is how the classification is made. Discovery hops (`tailscale switch <profile>` → `status` → switch back) are allowed for locating a node, but must return to the profile the workflow runs on and must not be used as a way to start operating on the external tailnet.
+
+### 3. Verify remote reachability before dispatching
 
 ```bash
 tailscale ping <peer> | head -3
@@ -44,31 +67,31 @@ tailscale ping <peer> | head -3
 
 Expect a `pong from <peer>` under a few hundred ms. If ping fails, do not proceed to `ssh <peer>` — the dependent workflow will hang and waste attempts.
 
-### 3. Separate network state from service state
+### 4. Separate network state from service state
 
 If `tailscale ping <peer>` fails, the fault is at the tailnet layer. Triage on the relevant daemon using whatever out-of-band access exists (physical or screen share), and pick the restart path per install variant: quit/relaunch the app (macsys), `brew services restart tailscale` (per-user LaunchAgent), or `sudo launchctl kickstart -k system/com.tailscale.tailscaled` (system LaunchDaemon). A `sudo tailscale down && sudo tailscale up` cycle is a logical reconnect on any variant but does not restart the daemon process — use it only to renegotiate a running session, not to revive a wedged daemon.
 
 If `tailscale ping <peer>` succeeds but `ssh <peer>` fails, the fault is at the service layer (sshd, keys, agent forwarding). Do not restart tailscale — fix ssh instead.
 
-### 4. Hand off to the dependent workflow
+### 5. Hand off to the dependent workflow
 
-Only after both checks pass, invoke the downstream skill or command. The dependent workflow owns its own success criteria.
+Only after status, ownership, and reachability all pass, invoke the downstream skill or command. The dependent workflow owns its own success criteria — but it does **not** inherit permission to act on an external tailnet; that approval is granted in step 2 or not at all.
 
-### 5. Serve or Funnel only after baseline connectivity is proven
+### 6. Serve or Funnel only after baseline connectivity is proven
 
 Never open a Serve or Funnel workflow before a fresh `tailscale status` + `tailscale ping <peer>` pass. Confirm the exposed service actually responds, and give every Funnel workflow an explicit teardown step plus a verification that the exposure is closed.
 
-### 6. OAuth popup triage: classify the owner before touching Tailscale state
+### 7. OAuth popup triage: classify the owner before touching Tailscale state
 
 When a browser OAuth popup appears during Tailscale SSH or remote-agent work, determine whether it is Tailscale auth or an application launched through the Tailscale session. Inspect the URL and owning process before running `tailscale up`, deleting state, or restarting auth. App-layer OAuth residue (stale `claude.ai/oauth/authorize`, `localhost:<port>/callback` tabs) can look like a Tailscale problem when the transport is healthy — close only stale app-layer tabs and terminate only orphaned process trees; leave active terminal/tmux/agent sessions untouched (`references/oauth-popup-triage.md`).
 
 If the popup appears specifically when initiating Tailscale SSH, check whether the SSH ACL rule uses `"action": "check"`: check mode requires periodic reauth per `checkPeriod` (12h default), while `accept` admits already-authenticated tailnet users (`references/tailscale-ssh-check-mode-oauth-popup.md`). If it is the device itself needing reauth, inspect node-key expiry — trusted or hard-to-reach devices should have key expiry disabled or be authenticated as tagged devices.
 
-### 7. Reconcile profile, identity, and reachability drift before trusting a cached target
+### 8. Reconcile profile, identity, and reachability drift before trusting a cached target
 
 When a target that should be reachable is not — or the host holds more than one tailnet login — do not jump to `ssh` or a daemon restart. Branch through three checks in order, then return to the steps above:
 
-1. **Profile** — confirm the intended tailnet is active (`tailscale switch --list`, `CurrentTailnet.Name` from `tailscale status --json`). A peer missing from `tailscale status` is most often the wrong active profile, not an offline peer. When several logins exist and it is unclear which tailnet owns the node, use `tailscale switch` as a search tool: hop across the stored profiles (`tailscale switch <profile>`) and re-run `tailscale status` until the node appears, before concluding the peer is offline; switch back once it is found.
+1. **Profile** — confirm the intended tailnet is active (`tailscale switch --list`, `CurrentTailnet.Name` from `tailscale status --json`). A peer missing from `tailscale status` is most often the wrong active profile, not an offline peer. When several logins exist and it is unclear which tailnet owns the node, use `tailscale switch` as a search tool: hop across the stored profiles (`tailscale switch <profile>`) and re-run `tailscale status` until the node appears, before concluding the peer is offline; switch back once it is found. If the node turns up under an external profile, the search ends there — return to step 2 and ask before acting on it.
 2. **Identity** — confirm the address is the `Peer`, not `Self` (`tailscale status --json` → compare `Self` vs `Peer`). Addressing `Self` SSHes into the local box. Address peers by MagicDNS name and re-resolve each session; never cache a 100.x address.
 3. **Reachability** — if `tailscale ping <peer>` does not return pong, treat the peer as a **defer** condition: queue the one-shot command and run it on reconnect rather than SSHing into an unreachable node. An action against an offline peer is pending until it actually runs and is verified — never reported complete.
 
@@ -94,6 +117,12 @@ In a two-host setup, every meaningful change is authored on the source-of-truth 
 - Opening a Serve/Funnel and forgetting it → every Funnel workflow needs an explicit teardown step and a verification that the exposure is closed.
 - Resetting Tailscale auth (`tailscale up`, logout, state deletion, reinstall) on any browser OAuth popup → classify the URL and owning process first; if ping is healthy and the URL is an app OAuth flow, clean the app-layer residue instead.
 - Declaring a peer offline because it is missing from `tailscale status` → confirm the active profile first: `tailscale switch --list`, hop through stored profiles with `tailscale switch <profile>` until the node appears, and check `CurrentTailnet.Name`.
+- SSHing into a shared-in node, or one on a tailnet the operator was invited to, because it answered `tailscale ping` → reachable is not the same as authorized; classify ownership in step 2 and get explicit approval before the first command that reaches an external peer.
+- Reading "the operator has a profile for that tailnet" as permission to operate on it → a stored login proves access, not consent; the profile exists so the network can be reached when asked for, not on the agent's initiative.
+- Carrying one approval across tasks, peers, or sessions on an external tailnet → approval is per-task and names its peer and command; the next task asks again.
+- Using a discovery hop as a foothold — switching into an external profile to look for a node, then continuing to work there → switch back to the workflow's profile and ask before acting.
+- Guessing at ownership when `tailscale status` is unclear about which account owns a peer → ambiguity resolves toward asking; treat an unclassifiable target as external.
+- Leaving the host parked on a profile a discovery hop switched into → `tailscale switch` changes the active network for everything on the host, so restore the original profile once the node is found.
 - Reusing a cached 100.x address across sessions → address peers by MagicDNS name and re-resolve each session; a re-registered node gets a new address and a `-N` suffix.
 - Choosing an `ssh` target from two similarly-named nodes without checking → confirm `Self` vs `Peer` in `tailscale status --json`; `Self`'s address hits the local box.
 - Reporting an action against an offline peer as complete → offline is a defer condition; queue the one-shot command, run it when a fresh ping returns pong, verify the side effect, and report it pending until then.
@@ -110,4 +139,4 @@ In a two-host setup, every meaningful change is authored on the source-of-truth 
 - `references/troubleshooting.md` — failure-class triage and daemon-variant pitfalls.
 - `references/oauth-popup-triage.md` — distinguish Tailscale-owned auth from stale app-layer OAuth residue.
 - `references/tailscale-ssh-check-mode-oauth-popup.md` — repeated Tailscale SSH browser prompts from ACL check mode.
-- `references/tailnet-profile-and-identity-changes.md` — switch/verify the active tailnet profile, reconcile node identity and reachability drift.
+- `references/tailnet-profile-and-identity-changes.md` — switch networks between tailnet profiles, classify own-vs-external ownership and gate on consent, reconcile node identity and reachability drift.
