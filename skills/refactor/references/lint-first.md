@@ -3,12 +3,13 @@
 Making an existing package smaller and clearer by moving as much of the work as possible into linter configuration, and reserving hand judgment for what the linter cannot express.
 Configuration beats a bespoke script: it runs in CI already, and the next person edits one file rather than learning a private tool.
 The rule codes below come from one Python linter and are illustrative — consult the incumbent linter's official documentation for what each rule means and fixes in the installed version before enabling it.
+The configuration itself — how rule sets are staged, how ignores are scoped, and who owns whitespace — belongs to `guardrails`; this reference covers only how a refactor pass drives it.
 
 ## Contents
 
 - [Inputs](#inputs)
 - [Ordered steps](#ordered-steps)
-- [Autofix pitfalls](#autofix-pitfalls)
+- [Autofix review in a refactor pass](#autofix-review-in-a-refactor-pass)
 - [Success criteria](#success-criteria)
 
 ## Inputs
@@ -40,19 +41,17 @@ The rule codes below come from one Python linter and are illustrative — consul
 Two commits, not one: mechanical and judgment changes reviewed together means the judgment changes are not reviewed.
 A worked split ran 165 files at +579/−537 for the mechanical commit and 20 files at +147/−244 for the hand commit.
 
-## Autofix pitfalls
+## Autofix review in a refactor pass
 
-Each of these cost a revert in one pass, and each is invisible until the suite runs.
+Read every autofix diff against the failure classes catalogued in `guardrails`' [`references/autofix-failure-classes.md`](../../guardrails/references/autofix-failure-classes.md) before committing it.
+They are the reason step 3 commits configuration and autofix alone: each class is invisible in the diff and surfaces only when the suite runs, and a mechanical commit that has to be partly reverted is far cheaper to unpick than a mixed one.
 
-- An unused-suppression autofix stripped the *reason text* from suppression comments the repository relied on, so it was ignored globally instead.
-- An implicit-string-concatenation fix joined two adjacent literals into exactly the string a privacy scan test searched for, turning a passing scan into a failing one; keep the literal split with an inline suppression.
-- The multi-line variant of that rule flags deliberate SQL and fixture literals; scope it out per file.
-- A sorting fix reordered an export list inside a vendored, byte-pinned module and broke its mirror test; ignore that rule for vendored files.
-- A redundant-alias fix turned deliberate re-export aliases in test fixtures into unused imports; drop that rule.
-- A return-refactor fix left a dead variable behind, and a branch-merge fix produced a 155-character line — read the autofix output rather than trusting it.
-- Formatting is a separate concern: one repository had roughly 300 pre-existing unformatted files while CI ran only the checker, so a format sweep bundled into a simplification change would have buried it.
+Two constraints are specific to a refactor pass rather than to the configuration:
+
+- Keep the formatter out of it.
+  A repository with a large unformatted surface produces a format sweep big enough to bury the simplification it was bundled with; adopt the formatter separately, on the ratchet `guardrails` describes.
 - Do not stack unrelated packages.
-  When a repository-wide rule floods a package that is not the target, scope it with per-file ignores and record it as follow-up.
+  When a repository-wide rule floods a package that is not the target, scope it with a per-file ignore and record it as follow-up rather than widening the pass.
 
 ## Success criteria
 

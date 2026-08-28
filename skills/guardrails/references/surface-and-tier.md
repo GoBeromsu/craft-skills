@@ -8,7 +8,7 @@ The point of enforcement is not preventing permanent harm — it's giving an age
 |---|---|---|---|---|
 | 0 | Prose (`AGENTS.md` / `CLAUDE.md`) | Read as context before work | Nothing — prevention only | Every rule is stated here first |
 | 1 | **Agent runtime hook** (Claude Code PreToolUse/PostToolUse, Codex hook) | Immediately before/after a tool call, in-loop | Blocks the behavior itself | Forbidden-path edits, dangerous commands, read-only mutation |
-| 2 | **lint** (editor/local, continuous) | Any time, continuously | Fast feedback (advisory → autofix) | Style/quality the agent runs repeatedly |
+| 2 | **lint / formatter configuration** (editor/local, continuous) | Any time, continuously | Fast feedback (advisory → autofix) | Style/quality the agent runs repeatedly; whitespace a formatter owns |
 | 3 | **pre-commit hook** (local) | At commit time | Blocks the commit | Irreversible: secrets, direct commits to a protected branch, large blobs |
 | (backstop) | CI | After push | Blocks the merge | Whoever skipped local — not this skill's focus |
 
@@ -19,7 +19,7 @@ Tier 1 is the fastest deterministic signal — earlier than pre-commit, before t
 Given one rule, in order:
 
 1. **State it in prose first.** Put the norm in context without enforcement (tier 0). Enforcement is the backstop for where prose failed.
-2. **Pick the earliest local surface that catches it deterministically.** A violation expressed in the agent's tool behavior (edited path, command) → tier 1. File-content quality → tier 2 (lint). Irreversible only once committed → tier 3.
+2. **Pick the earliest local surface that catches it deterministically.** A violation expressed in the agent's tool behavior (edited path, command) → tier 1. File-content quality expressible as a rule, or whitespace → tier 2 (lint or formatter configuration). Irreversible only once committed → tier 3.
 3. **Author and install a starter guard.** Make sure the message states the violated rule and the fix *clearly*.
 4. **Prove it blocks, for real.** Run a violating input → blocked, a clean input → passes, and watch both happen directly. An installed guard nobody has seen fire is unfinished.
 
@@ -51,5 +51,5 @@ So:
 
 - **Claude Code runtime hook:** register a matcher + command per event (`PreToolUse`, etc.) under `hooks` in `settings.json`. The command receives the tool-call JSON on stdin and blocks on violation. Detail and examples: `references/claude-code-hooks.md`; starters: `scripts/`.
 - **Codex runtime hook:** Codex CLI's hook/notify mechanism. Detail: `references/codex-hooks.md`.
-- **lint:** add the rule to the project's linter (ruff/eslint, …), or wrap a domain rule in a guard script exposed as a command the agent runs during work.
+- **lint / formatter configuration:** add the rule to the project's linter (ruff/eslint, …) or its formatter, staging rule sets by measured hit count and scoping ignores per file — see `lint-config.md`, and read every autofix diff against `autofix-failure-classes.md`. Wrap a domain rule the linter cannot express in a guard script exposed as a command the agent runs during work.
 - **pre-commit:** this skill owns `core.hooksPath` as the single install point — `scripts/pre-commit.sh` is the committed dispatcher. It runs every executable file in `.githooks/guards.d/` in lexical order and carries no rule logic itself; a guard registers by dropping an executable script there, never by setting `core.hooksPath` itself.
