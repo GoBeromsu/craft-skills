@@ -2,12 +2,12 @@
 name: skillify
 description: Owns the full lifecycle of craft-skills skill packages — creating, updating, moving/renaming, retiring them, and absorbing frontier labs' skill-creators into vendor lenses — through an eval-first authoring loop and deterministic format validation. Use when a user says things like "make a skill", "skillify this workflow", "turn this into a skill", "update this skill", "move this skill", "absorb openai's new skill-creator", or "스킬 만들자", or when a recurring workflow correction needs to be encoded into a governing skill instead of staying in chat memory. Not for one-off project scripts or prompts with no reuse intent — those stay local to the originating project.
 metadata:
-  version: 4.6.0
+  version: 4.7.0
 ---
 
 # skillify
 
-Turns a repeated workflow into a well-formed craft-skills package — `SKILL.md` + `CHANGELOG.md`, plus whatever `references/`, `scripts/`, `templates/`, `assets/`, or `tests/` it needs — and owns that package's lifecycle afterward.
+Turns a repeated workflow into a well-formed craft-skills package — required `SKILL.md` + `CHANGELOG.md`, plus the execution parts it needs — and owns that package's lifecycle afterward.
 Success looks like: the package passes both Layer-1 validators, its description triggers correctly and only on the intended prompts, and its [delivery follows the lifecycle flow](references/lifecycle.md#6-branch--commit--pr).
 The core contract stays vendor-agnostic; what any one runtime needs lives in that vendor's lens.
 
@@ -34,7 +34,7 @@ A request to absorb an upstream skill-creator is its own mode — go straight to
 
 Before writing anything, walk 2–3 concrete invocations of the workflow and classify what a fresh run would redo each time into package parts — repeated code → `scripts/`, re-derived knowledge → `references/`, fixed artifact shapes → `templates/`, output-consumed files → `assets/` (the planning walk and parts table: `references/contract.md` §5).
 Then match each remaining step's freedom to its fragility (contract §4): prose where judgment rules, an exact script where the step is fragile and order-sensitive.
-For mutable external CLI, API, service, or runtime facts, apply the [official-docs-first contract](references/contract.md#10-external-facts) before encoding or linking the runtime form in the affected package.
+For mutable external CLI, API, service, or runtime facts, apply the [official-docs-first dependency contract](references/contract.md#10-external-facts-and-dependencies) before encoding or linking the runtime form in the affected package.
 
 ## Eval-first authoring loop (the quality gate)
 
@@ -47,11 +47,12 @@ Before writing `SKILL.md`, draft the eval scenarios that will judge it — evals
 How to run the arms, judge with fresh eyes, read transcripts, and improve without overfitting: [`references/evaluation.md`](references/evaluation.md).
 `evals/` is local scratch — gitignored, never committed.
 Full contract: `references/contract.md §7`.
-Include relevant ambiguity, conflict, and unknown cases in that existing loop per [§10](references/contract.md#10-external-facts); do not add an inventory or validator.
+Include relevant ambiguity, conflict, unknown, and dependency-update cases in that existing loop per [§10](references/contract.md#10-external-facts-and-dependencies); do not add an inventory, daemon, or validator.
 
 ## Author the package
 
-Frontmatter is exactly `name`, `description`, `metadata.version` — nothing else.
+Use the portable baseline frontmatter: `name`, `description`, and `metadata.version`.
+Add spec keys `license`, `compatibility`, or experimental `allowed-tools` only when the package truly requires them; document the runtime support caveat in the relevant vendor lens rather than making them a universal requirement.
 Name is kebab-case and equals the directory: verb-first for a skill the user explicitly triggers, a plain noun for a skill that supplies ambient domain context.
 Description is third person, states what + when, weaves in 3–6 real trigger phrases, writes against undertriggering, and adds a "Not for X" line when a sibling overlaps.
 Body targets 150 lines, hard-caps at 500; move depth to `references/*.md`.
@@ -63,12 +64,16 @@ Full rules: `references/contract.md`.
 Every frontier lab distills how skills are best made for its models into its own skill-creator.
 The universal lessons are already merged into this package's core files; each lens holds one vendor's distinctive emphases, runtime plumbing, and recorded divergences from this library's contract.
 
-| Lens | Read when |
-|------|-----------|
-| [`references/vendor-openai.md`](references/vendor-openai.md) | Targeting the Codex runtime, or consulting OpenAI's scaffold-first discipline. |
-| [`references/vendor-anthropic.md`](references/vendor-anthropic.md) | Targeting Claude Code / claude.ai, or driving Anthropic's eval and description-optimization machinery. |
-| [`references/vendor-hermes.md`](references/vendor-hermes.md) | Targeting the Hermes runtime, or borrowing its experience-capture (`/learn`) flow. |
+| Lens | Read when | Official source |
+|------|-----------|-----------------|
+| [`references/vendor-openai.md`](references/vendor-openai.md) | Targeting the Codex runtime, or consulting OpenAI's scaffold-first discipline. | [OpenAI model guide](https://developers.openai.com/api/docs/guides/latest-model) |
+| [`references/vendor-anthropic.md`](references/vendor-anthropic.md) | Targeting Claude Code / claude.ai, or driving Anthropic's eval and description-optimization machinery. | [Anthropic prompting guide](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5) |
+| [`references/vendor-hermes.md`](references/vendor-hermes.md) | Targeting the Hermes runtime, or borrowing its experience-capture (`/learn`) flow. | [Hermes skill guide](https://github.com/NousResearch/hermes-agent/tree/main/website/docs/user-guide/skills) |
+| [`references/vendor-cursor.md`](references/vendor-cursor.md) | Targeting Cursor, including its skill discovery and packaging conventions. | [Cursor skills docs](https://prod.cursor.com/docs/skills) |
+| [`references/vendor-grok.md`](references/vendor-grok.md) | Targeting Grok-native skills, plugins, or marketplaces. | [xAI skills and plugins docs](https://docs.x.ai/build/features/skills-plugins-marketplaces) |
 
+Core recipes must run unchanged on Hermes, Claude Code, Codex, Cursor, and Grok-native runtimes; a universal recipe never requires a single vendor's tool.
+Vendor fields, commands, plugin metadata, and other runtime plumbing stay in the matching lens.
 When a lab ships a new or updated skill-creator, run the [absorption protocol](references/vendor-absorption.md): universal lessons merge into core with provenance, plumbing stays in the lens, and disagreements are recorded — never silently imported.
 
 ## Lifecycle

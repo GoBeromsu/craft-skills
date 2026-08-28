@@ -9,7 +9,8 @@ with no lock-in to one tool's frontmatter or plugin format. Kept strictly separa
 ## Layout
 
 A package is one flat directory: `skills/<name>/SKILL.md` plus whichever of `references/`,
-`templates/`, `scripts/`, `tests/`, and `CHANGELOG.md` it needs. No nested `SKILL.md` files —
+`templates/`, `scripts/`, `tests/`, `assets/`, and `CHANGELOG.md` it needs. Runtime-owned
+`agents/` directories are optional plumbing, not part of the portable core. No nested `SKILL.md` files —
 every skill is one level deep. `evals/` directories are local, gitignored scratch for the
 eval-first authoring loop; they are never committed.
 
@@ -21,9 +22,10 @@ one router and exactly three references for Aside, agent-browser, and Chrome. `o
 package whose sub-recipes live under `references/`.
 
 The authoring contract — frontmatter shape, naming, description rules, body limits, CHANGELOG
-format, and the eval-first loop — lives at `skills/skillify/references/contract.md`. All skill
-create/update/move/retire work routes through the `skillify` skill; nothing here duplicates
-that contract.
+format, and the eval-first loop — lives at `skills/skillify/references/contract.md`. The
+`skillify` skill owns create/update/move/retire work and keeps the portable core neutral across
+Claude Code, Codex, Hermes, Cursor, and Grok; it accommodates optional `agents/` and `assets/`
+without admitting runtime-specific fields to the core.
 
 ## Install matrix
 

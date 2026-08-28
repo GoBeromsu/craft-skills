@@ -1,8 +1,8 @@
 ---
 name: browser
-description: Routes live-browser work across Aside, agent-browser, and an existing Chrome session. Use when a request says "Use Aside to inspect my logged-in dashboard", "inspect my signed-in dashboard", "open this in Chrome", "click this button", "fill out this form", "use agent-browser", or "브라우저로 열어줘" and the page needs login, JavaScript, or multi-step interaction. Not for static public extraction — use defuddle — or plain JSON API responses — use an HTTP client.
+description: Routes live-browser work across Aside, agent-browser, and an existing authenticated browser session. Use when a request says "Use Aside to inspect my logged-in dashboard", "inspect my signed-in dashboard", "open this in my browser", "click this button", "fill out this form", "use agent-browser", or "브라우저로 열어줘" and the page needs login, JavaScript, or multi-step interaction. Not for static public extraction — use defuddle — or plain JSON API responses — use an HTTP client.
 metadata:
-  version: 1.0.2
+  version: 1.1.0
 ---
 
 # Browser
@@ -14,13 +14,13 @@ Success means the selected backend reaches the intended account and target read 
 
 - [Aside procedure](references/aside.md) covers the Aside CLI, MCP, REPL, and in-app task controls.
 - [agent-browser procedure](references/agent-browser.md) covers dedicated-instance automation.
-- [Chrome procedure](references/chrome.md) covers the user's existing authenticated Chrome session.
+- [Existing-session procedure](references/existing-session.md) covers the user's current authenticated browser surface.
 
 ## Route and preflight
 
-Classify the request as read-only or potentially mutating, record a user-named backend, and record whether the user's existing authenticated Chrome session is mandatory.
-Use the explicitly named backend first.
-When no backend is named and an existing Chrome session is mandatory, use Chrome.
+Classify the request as read-only or potentially mutating, record an explicitly requested browser tool, and record whether an existing authenticated browser session is required.
+The explicitly user-requested tool wins; do not silently substitute another backend.
+When no tool is requested and an existing authenticated browser session is required, use existing-session.
 Otherwise use Aside.
 
 Before setup, capture the observable baseline for the candidate: processes, instances, tabs, tasks, selected profile, intended account/session, task-required state, and unrelated active work exposed by the supported surface.
@@ -35,9 +35,9 @@ Complete preflight by proving installation, connection, the intended account/ses
 A healthy tool alone is insufficient.
 Permit target-site mutation only after all four checks pass.
 
-For a default Aside startup failure, try agent-browser and then Chrome, repeating baseline, setup, and preflight for each candidate.
+For a default Aside startup failure, try agent-browser and then existing-session, repeating baseline, setup, and preflight for each candidate.
 Do not silently replace an explicitly requested backend.
-Do not replace required existing-Chrome-session work with a different account or identity.
+Do not replace required existing-session work with a different account or identity.
 
 ## Aside connection-hang recovery
 

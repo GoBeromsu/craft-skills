@@ -2,47 +2,60 @@
 
 ## 1. Source
 
-`anthropics/skills` → `skills/skill-creator` — SKILL.md, `scripts/` (`run_loop.py`, `run_eval.py`, `improve_description.py`, `generate_report.py`, `package_skill.py`, `aggregate_benchmark.py`, `quick_validate.py`, `eval-viewer/`), `agents/` (`grader.md`, `comparator.md`, `analyzer.md`), `references/schemas.md`.
+Retrieved 2026-08-28:
 
-## 2. What this lab illuminates
+- [`anthropics/skills` at `3b3fad96af16a10759d930941b4520ba0c40edae`](https://github.com/anthropics/skills/tree/3b3fad96af16a10759d930941b4520ba0c40edae), especially `skills/skill-creator`, its evaluation and benchmark scripts, and `agents/grader.md`, `agents/comparator.md`, and `agents/analyzer.md`.
+- [Prompting Claude Fable 5](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5).
 
-**Quality is measured behavior.**
-Structural lint is table stakes; what matters is the delta between the with-skill and without-skill arms on real runs.
-A skill nobody measured is a skill nobody knows works.
+## 2. Portable lesson
 
-**The description is an optimizable artifact.**
-A closed loop — measure trigger rate on labeled should/should-not queries, propose a structurally different description, repeat — treats triggering as an empirical property, not a writing style.
-False triggers and missed triggers are both scored.
+**Quality is measured behavior.** Compare a skill run with an appropriate baseline on realistic
+tasks. Use held-out cases where practical; a structural pass alone cannot establish usefulness.
 
-**Overfitting is the expected failure mode, so the harness blinds itself.**
-Queries are split train/test (stratified, seeded); the improver only ever sees train results; the best iteration is picked by held-out test score.
-The improvement prompt explicitly forbids repeating prior attempts.
+**Separate grading, comparison, and diagnosis.** A grader checks evidence against explicit
+expectations, a blind comparator assesses competing outputs without knowing their arm, and an
+analyzer distinguishes a skill defect from an eval defect. This division reduces self-confirming
+evaluation.
 
-**Distrust the judge and the eval alike.**
-The grader puts the burden of proof on the expectation — uncertain means FAIL — rejects superficial passes (right filename, wrong content), and doubles as an eval critic that flags gameable assertions ("a hallucinated document that happens to mention the right name would also pass").
-The comparator judges A/B blind, never told which skill produced which output.
-The analyzer separates "fix the skill" findings from "fix the eval" findings.
+**Give brief, strong instructions.** State the task, constraints, and completion evidence
+plainly. Ground progress reports in observed work, not assurances. Keep the scope to the
+simplest complete solution.
 
-## 3. Runtime plumbing (targeting Claude Code)
+**Design long work as a bounded execution.** For long-running work, preserve useful intermediate
+evidence and delegate independent bounded slices when the runtime supports it. Do not ask a
+model to expose private reasoning; request inspectable outputs, decisions, and evidence instead.
 
-- Trigger testing shells out to `claude -p <query> --output-format stream-json --include-partial-messages`, injects the description under test as a throwaway uniquely-named `.claude/commands/*.md`, and watches the stream for a `Skill`/`Read` tool-use naming it. Reuses the calling session's Claude Code auth (strips the `CLAUDECODE` env var to permit nesting).
-- Loop knobs — Anthropic's own calibration, configurable rather than law: trigger threshold 0.5, 3 runs per query, 0.4 holdout, max 5 iterations, ~10 parallel workers.
-- `improve_description.py` baked-in craft: imperative voice ("Use this skill for…"), user intent over implementation, distinctive against sibling skills, ~100–200 words, ≤ 1024 chars with an auto-shorten safety net.
-- `quick_validate.py`: same limits as OpenAI's fork plus one extra allowed frontmatter key, `compatibility` (optional, ≤ 500 chars).
-- `package_skill.py` zips a skill into a `.skill` file — validates first, refuses on failure, strips `evals/`, `__pycache__`, `.DS_Store` from the distributable.
-- `agents/*.md` are subagent prompt files (grader / blind comparator / analyzer); `schemas.md` locks the artifact formats (`grading.json`, `benchmark.json`, `history.json` version lineage, `comparison.json`, `analysis.json`); `eval-viewer/` is a zero-dependency local HTML review server for human-in-the-loop passes.
+## 3. Runtime plumbing (Claude-only)
+
+- The pinned Anthropic package's runner, stream handling, throwaway command injection, and
+  packaging format depend on Claude Code. They are implementation details of that runtime, not
+  a portable evaluation protocol.
+- Claude adaptive-thinking controls, refusal behavior, and runtime fallback behavior are
+  Claude-specific. They stay out of universal SKILL.md instructions.
+- The source package's improvement loop may use interactive Claude sessions. This library does
+  not import a casual-prose style or a user-interrupt loop as a universal operating pattern.
 
 ## 4. Divergences from this library
 
-- **Eval artifacts as durable citizens.** Anthropic persists schema'd eval history (version lineage, benchmark aggregates) alongside the skill; this library keeps `evals/` as gitignored local scratch (contract §7). The methodology — measure, hold out, blind — is kept; the artifact bureaucracy is not, at this library's scale.
-- **Frontmatter surface.** Anthropic admits `license`, `allowed-tools`, `compatibility`; the contract fixes exactly three keys (contract §1).
-- **Executor coupling.** The whole harness assumes the Claude Code CLI as the eval runner; this library's [`evaluation.md`](evaluation.md) states the same loop runner-agnostically so evals run on any runtime.
+- **Eval artifacts.** Anthropic persists schema'd benchmark and history artifacts alongside a
+  skill. This library keeps `evals/` as gitignored local scratch (`contract.md` §7), while
+  retaining the measurement discipline.
+- **Executor coupling.** Anthropic's scripts assume its CLI and session protocol; this library
+  defines runner-agnostic evaluation outcomes in [`evaluation.md`](evaluation.md).
+- **Frontmatter.** Anthropic-specific compatibility and tool fields are not part of the
+  portable frontmatter contract.
+- **Interaction model.** Strong instructions and evidence-grounded progress are portable;
+  adaptive thinking, refusal/fallback tuning, and interruption mechanics are not.
 
 ## 5. Absorbed into core
 
-- Baseline-delta arms, fresh sessions, snapshot-before-update → `evaluation.md` §1.
-- Assertion discipline — objective script checks, gameable and both-arms-pass assertions discriminate nothing, flaky verdicts signal under-specification → `evaluation.md` §2.
-- Trigger-eval mechanics — messy realistic queries, near-miss negatives, undertriggering asymmetry, fresh-eyes judging, held-out re-judging → `evaluation.md` §3 and `contract.md` §3.
-- Transcript reading (repeated work → bundle a script; wasted detours → cut prose) → `evaluation.md` §4.
-- Anti-overfitting (generalize from feedback; held-out prompts judge the result) → `evaluation.md` §5.
-- Imperative, user-intent-first description craft was already `contract.md` §3 — confirmed, not re-added.
+- Baseline comparison, fresh sessions, snapshots, and representative held-out evaluation →
+  `evaluation.md` §§1 and 5.
+- Evidence-first grading; blind comparison; analyzer separation of skill versus eval defects →
+  `evaluation.md` §2.
+- Realistic queries, near-miss negatives, and trigger evaluation → `evaluation.md` §3 and
+  `contract.md` §3.
+- Brief strong instructions, evidence-grounded progress, bounded delegation, and
+  simplest-complete scope → `contract.md` §4.
+- Inspectable conclusions and evidence rather than reasoning-extraction requests →
+  `contract.md` §4.

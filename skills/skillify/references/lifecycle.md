@@ -48,12 +48,20 @@ mkdir -p "$SKILL_DIR"
 
 1. Draft `evals/evals.json` + `evals/triggers.json` (contract §7) before writing `SKILL.md`.
 2. Author `SKILL.md` (contract §1–§4) and seed `CHANGELOG.md` with the first dated bullet.
-3. Add `references/`, `scripts/`, `templates/`, `tests/`, `.env.example` only as the package-parts table (contract §5) calls for them.
-4. Validate (see `references/runtime-hygiene.md` for the script invocations), then follow the delivery flow (§6).
+3. Add `references/`, `scripts/`, `assets/`, optional `agents/`, `templates/`, `tests/`, and `.env.example` only as the package-parts table (contract §5) calls for them; keep `evals/` local and gitignored.
+4. For each mutable external dependency, record its official source, installed-version probe, support boundary, and update trigger beside this package (contract §10).
+5. Validate (see `references/runtime-hygiene.md` for the script invocations), then follow the delivery flow (§6).
 
 ## 3. Update
 
 Patch `SKILL.md` and/or `references/`, bump `metadata.version` per the version-bump rubric (contract §8), append one `CHANGELOG.md` bullet, validate, then follow the delivery flow (§6).
+
+### Maintain declared dependencies
+
+For each mutable dependency declared under the contract's [external-facts and dependencies rules](contract.md#10-external-facts-and-dependencies), run its installed-version probe when its release or update trigger fires.
+On a detected update, recheck the linked official documentation before trusting the prior recipe.
+Rerun the eval cases affected by that dependency, update the recipe and its support boundary when needed, then bump the package version and append the CHANGELOG entry.
+Keep this loop in the dependent package; do not centralize it in an inventory, daemon, or framework.
 
 ### Record a correction
 
