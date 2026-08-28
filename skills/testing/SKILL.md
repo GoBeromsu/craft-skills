@@ -2,7 +2,7 @@
 name: testing
 description: Architects and audits project test suites by selecting the cheapest layer that proves behavior and contract risk, then placing tests and fixtures for a fast, deterministic suite. Use when choosing test placement, organizing fixtures, adding an integration or e2e test, designing contract coverage, or triaging flaky suites. Not for isolated function-level red-green-refactor TDD — use programming; not for diagnosing a currently failing test — use debug; not for ML or agent eval methodology — use ml or agents.
 metadata:
-  version: 2.2.2
+  version: 2.3.0
 ---
 
 # testing
@@ -20,6 +20,7 @@ Builds and maintains a test suite under one discipline: confidence first, speed 
 | A contract check (independently-deployed sides agreeing on a request/response shape) | `references/integration.md` — contract is an integration-sized technique |
 | A property check (generated inputs proving an invariant over a large/infinite space) | Core rules below — property is a unit-sized technique |
 | Naming, DAMP-over-DRY, determinism, assertion-quality detail and detection commands | `references/conventions.md` |
+| Auditing an existing suite for tests that cannot fail — host-sticky tests, silent skips, doc-existence assertions, log-string or private-attribute proxies | `references/conventions.md` |
 
 Property and contract are techniques layered onto a taxonomy kind below, not a fourth or fifth kind: a property test is still a unit test that generates its inputs instead of hand-picking them; a contract test is still an integration test that checks shape instead of full behavior.
 
@@ -67,12 +68,18 @@ Review each reported commit for behavior evidence instead of treating output as 
 
 ## Core conventions (detail and detection commands in `references/conventions.md`)
 
+A suite is only worth its runtime if each test can fail for the reason it names, so an audit asks that of every test before it asks about coverage.
 A test name states the behavior as Given/When/Then (`test_given_empty_cart_when_checkout_then_rejects`), never the implementation. Test code favors DAMP (readable repetition) over DRY: a factory returning a fresh instance beats a shared mutable fixture; a builder with sensible defaults and explicit overrides beats one giant shared fixture file every test partially depends on. No `sleep`, wall-clock read, or unseeded randomness inside a unit/small test — each is a flake built in on day one. Every test asserts something specific about behavior; a test incapable of failing proves nothing.
 
 ## Anti-patterns
 
 - Wrapping every database test in an outer rollback when the application owns commits, rollbacks, or transaction-local RLS state → inspect transaction ownership and choose truncate or a per-test schema/database when the wrapper cannot preserve real behavior.
 - Running a generic or full demo seed to prepare production QA → create prerequisites through the application API or a narrow idempotent bootstrap; broad seed/reset remains limited to a proven dedicated disposable non-production target.
+- Skipping a default-suite test when a gitignored asset, optional binary, build flag, or sibling checkout is absent → mark it `integration`/`heavy`/`real_stack` and deselect it deliberately; a conditional skip disappears on a fresh worktree and the suite passes while proving less.
+- Asserting that a document exists or contains a heading string → assert what the document instructs by executing its commands or queries; the existence test passes when the doc is wrong and fails when it is reworded.
+- Asserting against captured log text or a private attribute as a stand-in for behavior → assert the rendered record or the public result, and confirm any lint suppression names a rule the linter actually enables.
+- Replacing a wait-for-condition with a fixed `sleep` → wait on the condition; the sleep defers the race rather than resolving it.
+- Shipping a guard test without ever seeing it fail → delete the guard, watch the test go red, restore it, and record that in the change description.
 
 ## Requirements
 
