@@ -2,7 +2,7 @@
 name: api
 description: "Defines and evolves public HTTP API contracts while preserving published incumbent behavior. Use when asked to design the public REST contract for a resource, document an endpoint contract, choose API pagination or error shapes, standardize a greenfield REST API, or API 계약을 설계할 때. Not for service structure or persistence — use backend; client rendering or state — use frontend; or transport-level test design — use testing."
 metadata:
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # api
@@ -15,7 +15,9 @@ Inspect the repository's published API before choosing a convention. Record its 
 
 Change a published contract only in an explicitly scoped version or migration. State the affected clients, compatibility behavior, rollout or deprecation path, and how clients verify the transition. Do not call an undocumented or unobserved surface greenfield.
 
-For a greenfield API or an explicitly new version, apply the defaults in [conventions.md](references/conventions.md). That reference owns URL, DTO, naming, and pagination rules. Apply [error-contract.md](references/error-contract.md) for failure behavior; it owns the greenfield problem shape, codes, mapping, and sanitization.
+For a greenfield API or an explicitly new version, apply the defaults in [conventions.md](references/conventions.md). That reference owns URL, DTO, naming, and pagination rules, plus the drift audit for an incumbent surface, method completeness, and the client-side normalizer. Apply [error-contract.md](references/error-contract.md) for failure behavior; it owns the greenfield problem shape, codes, mapping, sanitization, and the single-discriminator rule.
+
+When two components inside one system agree on a shape by convention — an HTTP path hard-coded on both sides, or a file one writes and another parses — read [interface-ownership.md](references/interface-ownership.md). It owns provider-and-consumer ownership and the round-trip contract test that catches drift; `testing` owns where that test lives and how it is sized.
 
 ## Verification
 
@@ -24,7 +26,11 @@ For a greenfield API or an explicitly new version, apply the defaults in [conven
 - [ ] Any public-contract change names its version or migration scope and client-compatibility note.
 - [ ] New or explicitly versioned surfaces follow the relevant convention and error references.
 - [ ] Exercise representative success, empty or next-page, expected-failure, and sanitized unexpected-failure scenarios through the contract boundary.
+- [ ] Structured errors use exactly one discriminator key across the surface, and the drift greps in `references/conventions.md` return only allowlisted exceptions.
+- [ ] Media routes answer `HEAD` with the same headers as `GET` and zero bytes, verified by request rather than assumed from the framework.
+- [ ] Every success envelope has a client normalizer that rejects an unknown shape, with a test that fails on one; no result is cast into its type.
+- [ ] Any implicit interface between two components has a named provider, a named consumer, and a round-trip contract test.
 
 ## Boundaries
 
-Route service structure, database migration strategy, ORM selection, and persistence implementation to `backend`. Route UI data fetching, rendering, and client state to `frontend`. Route test taxonomy and fixture strategy to `testing`; this skill owns the contract those tests exercise.
+Route service structure, database migration strategy, ORM selection, and persistence implementation to `backend`. Route UI data fetching, rendering, and client state to `frontend`; this skill owns only the wire shape a client parses and the normalizer that rejects an unknown one. Route test taxonomy and fixture strategy to `testing`; this skill owns the contract those tests exercise. Route making a convention mechanically enforced — a lint rule, a boundary check, a pre-commit guard — to `hookify`.
