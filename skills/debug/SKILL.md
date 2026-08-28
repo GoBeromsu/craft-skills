@@ -2,7 +2,7 @@
 name: debug
 description: 'Diagnoses a failing program under a hypothesis-driven loop: reproduce the failure before theorizing, log observed facts separately from inferences, hold competing hypotheses until the cheapest probe discriminates between them, and confirm the mechanism with instrumentation before any fix lands. Use when a test or command fails for an unclear reason, a bug needs bisecting to the commit or input that caused it, a failure only reproduces intermittently, or asked to find out why something is broken ("이거 왜 안 되는지 찾아줘"). Not for restructuring working code (use refactor), suite-level test architecture (use testing), or triaging a vulnerability class (use security).'
 metadata:
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # debug
@@ -23,11 +23,32 @@ Diagnose why code is broken under one loop: establish observed evidence, log fac
 
 Escape hatch: reproduction is genuinely too expensive or too flaky to pin down (a rare race, a third-party outage) — timebox the search, act on the best-evidenced hypothesis, and say explicitly in the report which assumption stands unconfirmed.
 
+## Count from durable artefacts, not logs
+
+Absence in a log is not evidence of absence in the system.
+A success path frequently emits no log line at all, so "nothing since boot" in a failure log can sit alongside a store holding 99 completed records; only counting the artefacts settles it.
+Before treating any count as evidence, pin what produced it: the exact build under test, the data directory actually mounted — a wrong mount once measured a three-day-old directory as empty — the depth of any work queue, since a draining backlog looks identical to new traffic, and the process restart count, since a restart resets in-memory state and masks the defect being hunted.
+Re-check the restart count at the end of the window; if it moved, the measurement is void.
+
+When existing signals cannot discriminate, the gap is usually attribution rather than volume.
+A decision the system cannot explain is a decision nobody can triage: one detector fired 572 events per hour across 13 inputs and accumulated 8,060 artefacts that no one could act on, because each record stored a null trace id, a null policy id, a null module id, a null evidence link, and no score.
+So when adding instrumentation, persist for every automated decision the score, the threshold applied, the policy or model identity, and a link to the evidence artefact it produced.
+Make success countable rather than only emitting failures, and delete any counter nothing reads — one incremented on every dropped unit and read nowhere made a silent drop look identical to a healthy stream.
+`programming` owns log level, placement, and structured-field style; this skill owns what has to be recoverable afterwards.
+
 ## Hand-offs
 
 - The fix needs restructuring beyond the minimal patch (extract, rename, deduplicate) → `refactor`.
 - The regression test's placement in the suite (unit vs. integration, fixture scope) → `testing`.
 - The root cause is a vulnerability class (injection, auth bypass, secret exposure), not a defect → `security`.
+
+## Anti-patterns
+
+- Concluding an event never happened because its log has no entry → count the durable artefacts; a success path often logs nothing.
+- Reading counts from a running system without first pinning the build, mount, queue depth, and restart count → a wrong mount, a draining backlog, or a mid-window restart each produce a confident wrong number.
+- Adding a counter or trace field that nothing reads → drop it or wire it to a consumer; an unread counter makes a silent failure look healthy.
+- Recording that an automated decision fired without its score, threshold, deciding policy, and evidence link → persist all four, or the event cannot be triaged later.
+- Waiting passively for a long measurement window to end → wait in an active loop that terminates in the final count, or the run is abandoned unfinished.
 
 ## Requirements
 
