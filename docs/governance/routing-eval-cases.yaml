@@ -157,7 +157,7 @@
       "forbidden_neighbors": ["craft-skills/browser", "craft-skills/tailscale", "craft-skills/debug"]
     },
     {
-      "trigger": "Use Aside to inspect my logged-in dashboard",
+      "trigger": "Use Aside to open my logged-in dashboard and click this button",
       "expected_package": "craft-skills/browser",
       "forbidden_neighbors": ["craft-skills/defuddle", "craft-skills/obsidian", "craft-skills/vmware"]
     },

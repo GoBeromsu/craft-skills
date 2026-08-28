@@ -1,7 +1,7 @@
 {
   "name": "craft-skills",
   "description": "Work-craft Claude Code skills across 27 packages for research, engineering, browser automation, Obsidian, and write-prd product requirements by Beomsu Koh",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "author": {
     "name": "Beomsu Koh"
   },
