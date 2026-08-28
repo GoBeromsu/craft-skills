@@ -1,8 +1,8 @@
 ---
 name: browser
-description: Routes live-browser work across Aside, agent-browser, and an existing Chrome session. Use when a request says "open this in Chrome", "click this button", "fill out this form", "use agent-browser", "use Aside", or "브라우저로 열어줘" and the page needs login, JavaScript, or multi-step interaction. Not for static public extraction — use defuddle — or plain JSON API responses — use an HTTP client.
+description: Routes live-browser work across Aside, agent-browser, and an existing Chrome session. Use when a request says "Use Aside to inspect my logged-in dashboard", "inspect my signed-in dashboard", "open this in Chrome", "click this button", "fill out this form", "use agent-browser", or "브라우저로 열어줘" and the page needs login, JavaScript, or multi-step interaction. Not for static public extraction — use defuddle — or plain JSON API responses — use an HTTP client.
 metadata:
-  version: 1.0.1
+  version: 1.0.2
 ---
 
 # Browser
