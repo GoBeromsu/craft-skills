@@ -2,7 +2,7 @@
 name: testing
 description: Architects and audits project test suites by selecting the cheapest layer that proves behavior and contract risk, then placing tests and fixtures for a fast, deterministic suite. Use when choosing test placement, organizing fixtures, adding an integration or e2e test, designing contract coverage, or triaging flaky suites. Not for isolated function-level red-green-refactor TDD — use programming; not for diagnosing a currently failing test — use debug; not for ML or agent eval methodology — use ml or agents.
 metadata:
-  version: 2.2.0
+  version: 2.2.1
 ---
 
 # testing
@@ -76,4 +76,17 @@ A test name states the behavior as Given/When/Then (`test_given_empty_cart_when_
 
 ## Requirements
 
-Python: `pytest`, `pytest-randomly` (order-dependency flake detection), `hypothesis` for property tests. TypeScript: `vitest`, `fast-check` for property tests. Any stack: `grep`, `find`, `git` for the detection commands above and in `references/`. For any other stack, keep the rules unchanged and swap in that stack's incumbent test runner, order-randomization plugin, and property-testing library.
+Use the target package's incumbent runner, order-randomization mechanism, and property-testing library; do not assume that every package uses Python, TypeScript, or any particular command-line tool.
+
+| Component | Official project docs | Package-local version probe |
+|---|---|---|
+| pytest runner | [pytest](https://docs.pytest.org/) | `python -m pytest --version` |
+| pytest-randomly order randomizer | [pytest-randomly](https://github.com/pytest-dev/pytest-randomly) | `python -c "from importlib.metadata import version; print(version('pytest-randomly'))"` |
+| Hypothesis property library | [Hypothesis](https://hypothesis.readthedocs.io/) | `python -c "from importlib.metadata import version; print(version('hypothesis'))"` |
+| Vitest runner | [Vitest](https://vitest.dev/) | `./node_modules/.bin/vitest --version` |
+| fast-check property library | [fast-check](https://fast-check.dev/) | `node -p "require('fast-check/package.json').version"` |
+
+Run a listed probe only when its component is installed and selected by the target package; otherwise use the repository's documented package-local equivalent and its official project docs.
+Do not install a dependency or fall back to a global executable merely to probe it.
+Derive the support boundary from the target package's lockfile and current test configuration, including the selected execution form; when either does not establish a component or capability, leave it unknown and stop rather than inventing support.
+When a selected release changes or a probe changes, review its official docs, re-derive that boundary, and rerun the applicable taxonomy, order-dependency, and property-test evals before updating this recipe.

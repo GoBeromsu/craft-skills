@@ -2,7 +2,7 @@
 name: git
 description: 'Guides version-control craft: a ground-truth and incumbent-style detection gate before the first git mutation, the atomic-commit `git add -p` split protocol, commit/branch/PR conventions matched to the repo''s own history, and non-interactive-safe history surgery (fixup, reword, split, scripted bisect, undo). Use when committing a change ("commit this", "커밋해줘"), rebasing or squashing history, sizing a PR, recovering from a broken rebase, or running "git wt" to create an isolated worktree with the git-guard rails. Not for hook-enforcement mechanics (runtime/lint/pre-commit guard authoring) — that belongs to hookify.'
 metadata:
-  version: 2.2.0
+  version: 2.2.1
 ---
 
 # git
@@ -45,6 +45,16 @@ fi
 ## Mutable Git and forge facts
 
 For Git-version, hosting-forge, hook, or remote-policy behavior, consult official primary documentation first. Disclose conflicts; a more-specific repository-local contract or reproducible result for the target Git version, platform, and remote overrides general or stale docs. Keep unresolved behavior unknown and stop or use the safe read-only path—never invent a command, flag, permission, or provider capability.
+
+## Dependency maintenance
+
+Treat Git as a package-local dependency. Consult [the official Git documentation](https://git-scm.com/docs) before changing guidance, and record the installed capability boundary with:
+
+```bash
+git --version
+```
+
+Support only behavior verified for the incumbent repository, installed Git version, platform, and remote; do not promote a newer documented feature into the recipe until that boundary supports it. When an upstream Git release changes a documented behavior used here, or a capability probe changes what this command reports, re-run the worktree and history-safety evaluations before releasing the package update.
 
 ## Repo-style detection
 
