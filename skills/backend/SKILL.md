@@ -2,7 +2,7 @@
 name: backend
 description: Routes backend service engineering through an architecture-detection gate — layered, vertical-slice, or hexagonal — then applies dependency-direction rules, persistence choices, and folder conventions. Use when building a backend service or designing the service layer for a new endpoint, setting up production-fidelity local database development, deciding whether a service should be layered or hexagonal, choosing Prisma or preserving an incumbent ORM, adding a repository or use case to an existing service, or reviewing folder structure for architecture drift (e.g. "백엔드 구조 잡아줘"). Not for public HTTP API contracts — use api; not for UI rendering work — use frontend.
 metadata:
-  version: 3.1.1
+  version: 3.2.0
 ---
 
 # backend
@@ -57,6 +57,7 @@ Use this gate before choosing an architecture or creating service folders. Small
 - `grep`, `find`: POSIX; used by every detection command in this skill and its references.
 - Greenfield Python services may start with FastAPI + Pydantic v2 + `uv`; greenfield TypeScript services may start with Express or Nest + zod + strict `tsc`. These are defaults, not migration directives; `programming` owns per-file discipline for both.
 - Every incumbent service, in any language, keeps its observed framework, validation library, package manager, and stack conventions unless an explicit migration scope says otherwise.
+- For mutable framework, ORM, provider, or runtime facts, consult official primary docs first and disclose conflicts; only more-specific repo-local contracts or matching-version/platform reproducible evidence may override general or stale docs. Otherwise the fact is unknown: do not invent behavior.
 
 ## Boundaries
 

@@ -2,7 +2,7 @@
 name: agents
 description: 'Builds and changes LLM-agent systems — prompts, tool schemas and selection, and context/tracing wiring — under an eval-first discipline: prove a behavior change against a versioned eval set before shipping and version prompts as code. Use when building a new agent ("에이전트 만들어줘"), writing or editing a system prompt ("prompt engineering"), tightening a tool schema or changing how an agent selects a tool, setting up an LLM eval or golden set, or wiring RAG/session memory/trace logging. Not for authoring or managing skills in this library (use `skillify`) or for tool allowlists, permissions, execution controls, or consumption caps (use `security`).'
 metadata:
-  version: 2.1.0
+  version: 2.2.0
 ---
 
 # agents
@@ -44,6 +44,10 @@ A prompt is source code. Keep a small, local prompt with its implementation; ext
 ### LLM output is untrusted input
 
 A completion, a tool-call argument, a generated query — whatever the model produces carries no more trust than the least-trusted content that fed into generating it. This skill owns the behavior contract; `security` owns validation, allowlists, permissions, execution controls, and consumption caps. Before shipping code that acts on model output, load the `security` skill for its parse/validate/limit pattern.
+
+### Runtime facts are verified
+
+When an agent, model API, SDK, eval runner, or hosted service depends on an unknown, ambiguous, or version-dependent fact, consult its official primary documentation first. Disclose conflicting evidence; a target-specific repo-local contract or reproducible evidence on the matching version and platform outranks general or stale documentation. An unresolved fact stays unknown: stop the dependent behavior or use its established safe fallback, never invent an endpoint, option, or capability.
 
 ## Hand-offs
 

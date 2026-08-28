@@ -2,7 +2,7 @@
 name: hookify
 description: Turns a convention or best practice into local, deterministic enforcement so a violation is blocked before it happens, not corrected after. Use when asked to force a rule locally, hookify a convention, add a pre-commit or lint guard, block edits to a read-only path, stop a risky command in-loop, or wire a Claude Code or Codex runtime hook without relying on CI. Owns the repo's core.hooksPath / .githooks pre-commit mechanism as the sole install point; git registers its git-guard there, and init routes hook-install requests to git. Not for git workflow craft itself (branching, worktrees, commit hygiene) — use git.
 metadata:
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # hookify
@@ -55,6 +55,8 @@ Any failure → non-blocking lint warning while it is observed; graduate when me
 Copy `scripts/guard-skeleton.py` and narrow it to exactly one rule. A guard reads its target (path or content) from stdin or args, and on violation exits non-zero with the rule and the exact fix on one stderr line — a vague reason gets bypassed. For a nontrivial parsing or content guard, add focused red/green regression tests around the decision boundary; do not broaden them into a full application suite. The same guard is reused unmodified across tiers 1, 2, and 3.
 
 ### Phase 4 — Install at the surface
+
+For mutable runtime hook, event, or tool capabilities, consult official primary docs first and disclose conflicts; a more-specific local contract or matching-version/platform reproducible evidence may override general or stale docs. Unresolved capability stays unknown: do not invent surfaces; use a known supported surface or stop.
 
 - **Claude Code runtime hook:** merge `scripts/claude-code-pretooluse-guard.sh` + `scripts/settings-hooks.example.json` into `.claude/settings.json` (detail: `references/claude-code-hooks.md`). Only `PreToolUse` blocks a side effect — `PostToolUse` cannot.
 - **Codex runtime hook:** merge `scripts/codex-hook.example.toml` into `.codex/config.toml`, reusing the same guard (detail: `references/codex-hooks.md`).

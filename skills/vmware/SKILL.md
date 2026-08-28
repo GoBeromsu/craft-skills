@@ -2,7 +2,7 @@
 name: vmware
 description: Automates a VMware Fusion VM on Apple Silicon through VNC keystroke and mouse input when vmrun's guest-exec is unavailable — an empty guest password, an encrypted vTPM VM, or any headless GUI task in the guest console. Use when a VNC capture keeps coming back black, vncdotool hangs or drops the connection on a key like `;`, a vmx edit reverts after Fusion restarts, a VM shows as "locked" and won't start, VMware Tools install needs a UAC prompt driven through, or vmrun/VIX fails with "guest OS does not support empty passwords". Not for browser-based web automation — use `aside` — and not for tailnet/SSH connectivity between hosts — use `tailscale`.
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # vmware
@@ -31,6 +31,10 @@ Load the reference that matches the task before acting — each owns one slice o
 - **Closing the console window suspends the VM, it doesn't power it off.** Expect a CD device to come back disconnected and `getGuestIPAddress` to lag after the next resume — both have known fixes, not new bugs. Detail: `vmx-lifecycle.md` §3, `troubleshooting.md` §3–§4.
 - **`DecryptWithPadding` noise on every VIX call against an encrypted VM is benign.** Before treating a steady stream of it as an intrusion or concurrency bug, check whether a background watcher is polling `vmrun` on a timer — that's almost always the actual source. Prefer a passive, log-tailing watcher over one that re-polls `vmrun`. Detail: `troubleshooting.md` §1.
 - **Verify guest state by reading it back, not by assuming the command landed.** After typing a command or a credential-adjacent field, capture and read the result — a dropped keystroke from a `KEYMAP` gap produces plausible-looking but wrong output. Cross-check network state against the host's own DHCP lease file when `vmrun` guestinfo lags. Detail: `troubleshooting.md` §4–§5.
+
+## Mutable VMware/VNC/runtime facts
+
+Consult official VMware, `vmrun`/VIX, or `vncdotool` documentation for the installed version and platform first and disclose conflicts. A more-specific repository-local VM contract or matching-version/platform reproducible evidence may override general or stale docs; otherwise keep the fact unknown, never invent support, commands, or workarounds, and stop without changing VM state.
 
 ## Requirements
 

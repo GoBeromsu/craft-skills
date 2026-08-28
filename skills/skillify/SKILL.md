@@ -2,7 +2,7 @@
 name: skillify
 description: Owns the full lifecycle of craft-skills skill packages — creating, updating, moving/renaming, retiring them, and absorbing frontier labs' skill-creators into vendor lenses — through an eval-first authoring loop and deterministic format validation. Use when a user says things like "make a skill", "skillify this workflow", "turn this into a skill", "update this skill", "move this skill", "absorb openai's new skill-creator", or "스킬 만들자", or when a recurring workflow correction needs to be encoded into a governing skill instead of staying in chat memory. Not for one-off project scripts or prompts with no reuse intent — those stay local to the originating project.
 metadata:
-  version: 4.5.0
+  version: 4.6.0
 ---
 
 # skillify
@@ -34,6 +34,7 @@ A request to absorb an upstream skill-creator is its own mode — go straight to
 
 Before writing anything, walk 2–3 concrete invocations of the workflow and classify what a fresh run would redo each time into package parts — repeated code → `scripts/`, re-derived knowledge → `references/`, fixed artifact shapes → `templates/`, output-consumed files → `assets/` (the planning walk and parts table: `references/contract.md` §5).
 Then match each remaining step's freedom to its fragility (contract §4): prose where judgment rules, an exact script where the step is fragile and order-sensitive.
+For mutable external CLI, API, service, or runtime facts, apply the [official-docs-first contract](references/contract.md#10-external-facts) before encoding or linking the runtime form in the affected package.
 
 ## Eval-first authoring loop (the quality gate)
 
@@ -46,6 +47,7 @@ Before writing `SKILL.md`, draft the eval scenarios that will judge it — evals
 How to run the arms, judge with fresh eyes, read transcripts, and improve without overfitting: [`references/evaluation.md`](references/evaluation.md).
 `evals/` is local scratch — gitignored, never committed.
 Full contract: `references/contract.md §7`.
+Include relevant ambiguity, conflict, and unknown cases in that existing loop per [§10](references/contract.md#10-external-facts); do not add an inventory or validator.
 
 ## Author the package
 

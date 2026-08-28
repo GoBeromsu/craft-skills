@@ -2,7 +2,7 @@
 name: refactor
 description: "Restructures code without changing what it does — extracting functions, renaming, removing duplication, flattening nested conditionals, and other mechanical moves backed by a detection command and threshold. Use when the user says \"refactor this\", \"clean up this code\", \"리팩토링 해줘\", or \"this function is a mess\", or a named smell (long function, deep nesting, feature envy) surfaces while reading code with no intended behavior change. Gates untested legacy code behind a characterization-test protocol first. Not for diagnosing why something is broken — use debug — or for behavior-changing feature work and bug fixes, which belong to programming's red-green-refactor loop."
 metadata:
-  version: 2.2.0
+  version: 2.3.0
 ---
 
 # refactor
@@ -52,6 +52,10 @@ Before touching structure: a test suite exists for the path and is green right n
 - When symbol safety matters, prefer language-server diagnostics, definition, references, or rename over text search; check server status first and restore it before relying on textual results when it is unavailable.
 - File-size ceiling (250 pure LOC) and its escape hatches → `programming`; this skill owns function-level size, not file-level.
 - Turning any rule here into an enforced lint/hook/pre-commit check → `hookify`.
+
+## Mutable tool and LSP facts
+
+For mutable language-server, test, runtime, and tool behavior, consult official primary documentation for the installed version and platform first. Disclose conflicts rather than silently choosing a source. A more-specific repository-local contract or reproducible evidence for the matching version and platform may override general or stale documentation. Unresolved support stays unknown: do not invent a command or semantic operation; stop or use the repository's verified fallback.
 
 ## Requirements
 

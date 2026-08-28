@@ -10,3 +10,4 @@
 - 2026-06-13 — no worktree workflow or branch-guard automation existed → initial release: git-guard scripts, git wt <issue#>, self-install, Tailscale extension.
 - 2026-07-06 — v2.0.1: contract adopted a single anti-patterns registry → merged Red Flags + Common Rationalizations into ## Anti-patterns.
 - 2026-07-12 — v2.1.0: audit applied truth over memory and one logical, reversible change boundaries → resolves only real comparison bases, preserves unrelated dirty work, and keeps history/blame requests read-only. Provenance: docs/research/omo-analysis.md (git-master).
+- 2026-08-28 — mutable Git and forge behavior needs grounded runtime handling → v2.2.0 official-docs-first evidence rule with conflict disclosure and safe unknown outcomes.

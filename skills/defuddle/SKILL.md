@@ -2,7 +2,7 @@
 name: defuddle
 description: Extract clean Markdown or metadata JSON from web articles and documentation pages using the Defuddle CLI, stripping navigation, ads, and boilerplate for a smaller, more focused result than a raw HTML fetch. Use when fetching a readable page (blog post, article, framework/library docs, GitHub README) for summarization or note-taking, pulling page metadata (title, author, description, domain), or converting a local HTML file to Markdown. Not for API endpoints or JSON responses (use a plain HTTP fetch) or JS-heavy SPAs that need a real browser (use a headless browser such as scrapling).
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # defuddle
@@ -10,6 +10,10 @@ metadata:
 ## Overview
 
 Defuddle (by kepano) extracts article content from web pages and returns clean Markdown. It strips away navigation, ads, sidebars, and boilerplate — producing smaller, more focused content than a raw HTML fetch. It is a strong default web-content extractor for readable pages.
+
+## Runtime fact verification
+
+Before relying on mutable Defuddle CLI behavior, options, or gateway/service availability, consult official Defuddle documentation first. Disclose conflicting evidence. A more-specific repository-local contract or reproducible evidence for the matching CLI version and platform overrides general or stale documentation. If the fact remains unknown, do not invent a command or capability: use only the established extraction path, or safely stop and report the unknown.
 
 ## When to Use
 

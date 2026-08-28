@@ -1,1 +1,2 @@
 - 2026-07-12 — Structural-search requests → added the ast-grep syntax-aware search and safe replacement ladder. Provenance: teaching structure from docs/research/omo-analysis.md.
+- 2026-08-28 — v1.1.0: version-dependent ast-grep behavior could produce unsafe guesses → require official-docs-first verification and explicit uncertainty handling.

@@ -2,7 +2,7 @@
 name: programming
 description: Guides correctness-first, type-strict Python and TypeScript implementation. Use when asked to write a `.py` or `.ts` file, scaffold a Python/TypeScript project, add strict types, assess an implementation diff for correctness or type holes, or fix a reproducible defect. Not for smell-only assessment or behavior-preserving restructuring — use refactor; not for suite-level test architecture — use testing.
 metadata:
-  version: 2.2.0
+  version: 2.3.0
 ---
 
 # programming
@@ -67,6 +67,10 @@ For every reproducible defect, retain a failing-first regression test at the def
 ## Logging decisions
 
 When adding logs, follow the project's established logging practice. Choose the level by the consumer's need, place logs at decisions rather than every step, and keep messages stable while putting variable context in structured fields.
+
+## Mutable tooling and runtime facts
+
+For mutable language, LSP, test-runner, package-manager, and runtime behavior, consult the official primary documentation for the installed version and platform first. Disclose conflicts rather than silently choosing a source. A more-specific repository-local contract or reproducible evidence for the matching version and platform may override general or stale documentation. Unresolved support stays unknown: use no guessed command or claimed capability, and stop or use the repository's verified fallback.
 
 ## Requirements
 

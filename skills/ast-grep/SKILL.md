@@ -2,7 +2,7 @@
 name: ast-grep
 description: Routes syntax-aware structural search and replacement through ast-grep. Use when asked to find every call site of a function, match a function declaration, search JavaScript or TypeScript syntax, replace a code shape safely, or locate a particular AST node. Not for behavior-preserving restructuring (use refactor) or writing new code (use programming).
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # ast-grep
@@ -12,6 +12,8 @@ Search and replace code by syntax-tree shape rather than text bytes. Done means 
 ## Requirements
 
 Start with `command -v ast-grep || command -v sg`. Use the binary that resolves. When neither resolves, install ast-grep through the environment's package manager or its official distribution, then retry. Until it is available, use plain text search as a deliberately approximate fallback; do not claim structural matches from it.
+
+When ast-grep CLI behavior, flags, rule syntax, or runtime support is unknown, ambiguous, or version-dependent, consult official ast-grep documentation first. Disclose conflicts; a repo-local contract for the target or reproducible evidence on the matching version and platform outranks general or stale docs. Leave unresolved facts unknown: stop the dependent structural operation or use the stated approximate fallback, never invent a command, flag, or capability.
 
 ## Decision test
 

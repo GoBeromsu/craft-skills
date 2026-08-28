@@ -34,7 +34,7 @@ only, and naming a source there fails skillify's attribution gate.
 | `write-prd` | operator-supplied PRD template | — | original (template supplied by operator) |
 | `research` | — | — | original (skill-library redesign) |
 | `debug` | — | — | original (skill-library redesign) |
-| `aside` | — | — | original (grounded in Aside developer docs, https://docs.aside.com/help/developers); deprecated, moved to [bstack](https://github.com/GoBeromsu/bstack) `browser/aside` |
+| `browser` | craft `aside` lineage; browser router and Aside, agent-browser, and Chrome references | [Aside developer docs](https://docs.aside.com/help/developers); [vercel-labs/agent-browser](https://github.com/vercel-labs/agent-browser); [bstack](https://github.com/GoBeromsu/bstack) `skills/browser/*` at `d3e291c802e35f940047f93be6b4838a0d1269df` | moved and adapted |
 | `obsidian` | thick package consolidating Markdown, Bases, Canvas, Mermaid, CLI, Clipper, doctor, and headless Sync sub-recipes | [bstack](https://github.com/GoBeromsu/bstack) `obsidian/*` at `3e0672c` | moved and adapted |
 | `vmware` | operator VM lifecycle and VNC automation workflow | — | original |
 | `tailscale` | `tailscale` skill (v1.1.1) — tailnet-health gate, daemon-variant restart paths, OAuth-popup triage, profile/identity drift | [bstack](https://github.com/GoBeromsu/bstack) | derived |

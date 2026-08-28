@@ -5,3 +5,4 @@
 - 2026-07-06 — v2.0.0: realign to vendor-official authoring contract → spec-minimal frontmatter, what+when description, boundaries in Hand-offs, refs get ToCs.
 - 2026-07-06 — v2.0.1: contract adopted a single anti-patterns registry → merged Red Flags + Common Rationalizations into ## Anti-patterns.
 - 2026-07-12 — v2.1.0: reachability-scoped supply-chain review, evidence-only review boundaries, and adversarial guard-retention principles needed explicit ownership → scoped routing, review/fix separation, and regression-proven removal of trust-boundary guards. Provenance: remove-ai-slops transfer from docs/research/omo-analysis.md.
+- 2026-08-28 — v2.2.0: mutable audit-tool and framework facts need runtime evidence handling → official-docs-first conflict disclosure, specific-evidence precedence, and safe unknowns without invented commands or capabilities.
