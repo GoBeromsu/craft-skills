@@ -31,6 +31,7 @@ Do not ask a model to transcribe private reasoning; request inspectable outputs,
   packaging format depend on Claude Code. They are implementation details of that runtime, not
   a portable evaluation protocol.
 - Claude adaptive-thinking controls, refusal behavior, fallback behavior, and send-to-user mechanics are Claude-specific. They stay out of universal SKILL.md instructions.
+- Fable-only API behavior stays in this lens and never enters universal SKILL.md instructions.
 - The source package's improvement loop may use interactive Claude sessions. This library does
   not import a casual-prose style or a user-interrupt loop as a universal operating pattern.
 
@@ -48,7 +49,7 @@ Do not ask a model to transcribe private reasoning; request inspectable outputs,
 ## 5. Absorbed into core
 
 - Evidence-grounded progress → `contract.md` §4.
-- Simplest complete scope → `contract.md` §4.
+- Implement only what the requested outcome requires; no speculative features, refactors, or abstractions. Do not add fallbacks or validation for impossible internal states; validate system boundaries. Keep complete end-to-end behavior. → `contract.md` §4.
 - Delegation only when the runtime supports it → `contract.md` §4.
 - Fresh-context verification → `evaluation.md` §1.
 - Inspectable conclusions and evidence rather than reasoning-transcription requests → `contract.md` §4.
