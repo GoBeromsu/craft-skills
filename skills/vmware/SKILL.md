@@ -1,8 +1,8 @@
 ---
 name: vmware
-description: Automates a VMware Fusion VM on Apple Silicon through VNC keystroke and mouse input when vmrun's guest-exec is unavailable — an empty guest password, an encrypted vTPM VM, or any headless GUI task in the guest console. Use when a VNC capture keeps coming back black, vncdotool hangs or drops the connection on a key like `;`, a vmx edit reverts after Fusion restarts, a VM shows as "locked" and won't start, VMware Tools install needs a UAC prompt driven through, or vmrun/VIX fails with "guest OS does not support empty passwords". Not for browser-based web automation — use `aside` — and not for tailnet/SSH connectivity between hosts — use `tailscale`.
+description: Automates a VMware Fusion VM on Apple Silicon through VNC keystroke and mouse input when vmrun's guest-exec is unavailable — an empty guest password, an encrypted vTPM VM, or any headless GUI task in the guest console. Use when a VNC capture keeps coming back black, vncdotool hangs or drops the connection on a key like `;`, a vmx edit reverts after Fusion restarts, a VM shows as "locked" and won't start, VMware Tools install needs a UAC prompt driven through, or vmrun/VIX fails with "guest OS does not support empty passwords". Not for browser-based web automation — use `browser` — and not for tailnet/SSH connectivity between hosts — use `tailscale`.
 metadata:
-  version: 1.1.0
+  version: 1.1.1
 ---
 
 # vmware
@@ -56,7 +56,7 @@ Consult official VMware, `vmrun`/VIX, or `vncdotool` documentation for the insta
 ## Boundaries
 
 This skill owns getting input into, and state out of, a VMware Fusion guest console on Apple Silicon.
-It does not cover browser automation inside a guest or on the host (`aside`), or cross-host connectivity used to reach a remote hypervisor (`tailscale`) — load those instead once the target is a web page or a different machine rather than this guest's own console.
+It does not cover browser automation inside a guest or on the host (`browser`), or cross-host connectivity used to reach a remote hypervisor (`tailscale`) — load those instead once the target is a web page or a different machine rather than this guest's own console.
 
 ## Verification
 
