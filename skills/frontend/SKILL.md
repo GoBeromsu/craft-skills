@@ -2,7 +2,7 @@
 name: frontend
 description: 'Routes frontend engineering through incumbent-aware rendering and design-scope decisions, then applies component-reuse layering, state-placement rules, and folder conventions. Use when building a React/Vue/Svelte page or component ("프론트엔드 구조 잡아줘"), asking "should this be a client or server component", choosing SPA vs SSR/RSC vs SSG vs islands for a new or existing app, deciding where a piece of state should live, or picking a folder convention (type-based, feature-based, layered feature-sliced) for a codebase. Not for API/server design — use api(공개 HTTP 계약)/backend(서비스 구조); not for authoring design.md itself — use document.'
 metadata:
-  version: 2.2.0
+  version: 2.3.0
 ---
 
 # frontend
@@ -10,6 +10,10 @@ metadata:
 Frontend code is correct relative to its rendering model and incumbent UI system: establish the relevant evidence before structural work, then shape components, state, and folders to match. Success looks like a known rendering decision for architecture work, documented design-system changes, and verification that reflects the user-facing result.
 
 Four rendering models recur: **SPA** (empty HTML shell, browser renders everything client-side), **SSR/RSC** (server produces markup per request; RSC lets some components run server-only), **SSG** (every page built once, before any request), and **islands** (static HTML by default, a named few components hydrate in the browser). Full rules per model live in `references/architectures.md`.
+
+## Runtime fact verification
+
+Before relying on mutable framework, CLI, or rendering-runtime behavior, consult the official documentation for the incumbent framework first. Disclose conflicting evidence. A more-specific repository-local contract or reproducible evidence for the matching framework version and platform overrides general or stale documentation. If the fact remains unknown, do not invent a command or capability: preserve the incumbent architecture and safely stop or defer the unsupported change.
 
 ## Phase 0 — rendering and design routing
 

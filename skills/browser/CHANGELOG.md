@@ -1,0 +1,1 @@
+- 2026-08-28 — v1.0.0: the deprecated `aside` redirect fragmented browser guidance → consolidated its lineage and browser procedures into the active `browser` package. Provenance: former `craft-skills/aside` history and `bstack/skills/browser/*` at `d3e291c`.

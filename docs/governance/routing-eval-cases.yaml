@@ -149,12 +149,27 @@
     {
       "trigger": "obsidian-cli로 노트를 고치고 Mermaid가 깨지지 않는지 확인해줘",
       "expected_package": "craft-skills/obsidian",
-      "forbidden_neighbors": ["craft-skills/document", "craft-skills/defuddle", "craft-skills/aside"]
+      "forbidden_neighbors": ["craft-skills/document", "craft-skills/defuddle", "craft-skills/browser"]
     },
     {
       "trigger": "VMware Fusion guest를 VNC로 조작해줘",
       "expected_package": "craft-skills/vmware",
-      "forbidden_neighbors": ["craft-skills/aside", "craft-skills/tailscale", "craft-skills/debug"]
+      "forbidden_neighbors": ["craft-skills/browser", "craft-skills/tailscale", "craft-skills/debug"]
+    },
+    {
+      "trigger": "Use Aside to inspect my logged-in dashboard",
+      "expected_package": "craft-skills/browser",
+      "forbidden_neighbors": ["craft-skills/defuddle", "craft-skills/obsidian", "craft-skills/vmware"]
+    },
+    {
+      "trigger": "Submit this form in my existing Chrome tab",
+      "expected_package": "craft-skills/browser",
+      "forbidden_neighbors": ["craft-skills/frontend", "craft-skills/api", "craft-skills/testing"]
+    },
+    {
+      "trigger": "Use agent-browser to capture a JavaScript app snapshot",
+      "expected_package": "craft-skills/browser",
+      "forbidden_neighbors": ["craft-skills/defuddle", "craft-skills/research", "craft-skills/frontend"]
     }
   ]
 }

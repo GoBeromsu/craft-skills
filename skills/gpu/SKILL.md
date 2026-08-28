@@ -2,7 +2,7 @@
 name: gpu
 description: Applies GPU environment and resource discipline — probe the hardware before choosing any install, budget the host before launching any job — to CUDA/PyTorch setup, attention-backend builds, and GPU job launches. Use when setting up CUDA or PyTorch on a new GPU machine, asked to "install flash attention", debugging "torch.cuda.is_available() returns False", "CUDA out of memory", or "no kernel image is available", sizing VRAM, running a training/inference job on a shared GPU host or HPC, or working on Apple Silicon (MPS, M-series). Not for training methodology, datasets, or evaluation discipline — use `ml` — and not for serving a model behind an API — use `backend`.
 metadata:
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # gpu
@@ -33,6 +33,10 @@ python3 -c "import torch; print(torch.__version__, torch.version.cuda, torch.cud
 ```
 
 Four facts come out: the GPU's compute capability, the driver's CUDA ceiling, the host's free RAM/disk/cores, and what the current torch build actually supports. Every decision below consumes these facts; none of them may be assumed. On Apple Silicon there is no `nvidia-smi` — run the MPS probe in `references/apple-silicon.md` instead; the same kinds of facts come out.
+
+## Mutable compatibility facts
+
+For driver, CUDA, wheel, backend, or toolchain support, consult official vendor or maintainer matrices/docs first. Disclose conflicts; a more-specific repository-local contract or reproducible result for the target GPU, OS, driver, and package versions overrides general or stale docs. Keep unresolved support unknown and do not install, launch, or invent a command or capability.
 
 ## Core rules
 

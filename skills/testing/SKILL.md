@@ -2,7 +2,7 @@
 name: testing
 description: Architects and audits project test suites by selecting the cheapest layer that proves behavior and contract risk, then placing tests and fixtures for a fast, deterministic suite. Use when choosing test placement, organizing fixtures, adding an integration or e2e test, designing contract coverage, or triaging flaky suites. Not for isolated function-level red-green-refactor TDD — use programming; not for diagnosing a currently failing test — use debug; not for ML or agent eval methodology — use ml or agents.
 metadata:
-  version: 2.1.1
+  version: 2.2.0
 ---
 
 # testing
@@ -48,6 +48,10 @@ Before adding a fixture, builder, or helper, reuse the repository's established 
 For a reproducible behavior defect, start with the smallest failing reproduction at its natural layer (usually unit; integration when the defect lives at a boundary). Confirm it fails for the reported reason, then let the fix make it pass and ship the regression test with the fix.
 
 When the behavior cannot yet be reproduced or isolated, do not invent a failing test. Record that evidence limitation and retain the strongest available evidence, such as logs, a captured scenario, or monitored production behavior; turn it into a regression test when reproduction becomes possible.
+
+## Mutable test-tool/runtime facts
+
+Consult the deployed tool's official primary documentation first and disclose conflicts. A more-specific repository-local contract or matching-version/platform reproducible evidence may override general or stale docs; otherwise keep the fact unknown, never invent support or commands, and retain the verified configuration or stop the change.
 
 ### Advisory commit scan
 

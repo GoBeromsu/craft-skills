@@ -5,6 +5,7 @@
     "api",
     "ast-grep",
     "backend",
+    "browser",
     "cicd",
     "debug",
     "defuddle",

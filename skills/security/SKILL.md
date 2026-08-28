@@ -2,7 +2,7 @@
 name: security
 description: Finds and fixes vulnerabilities in code the user owns across web, API, and LLM surfaces, mapping every trust boundary first and triaging by production reachability and severity second. Use when asked for a security review, "is this safe to ship," "check for vulnerabilities," or "보안 점검," when auditing secrets hygiene or dependency risk, or when reviewing a PR or feature for security regressions before release. Not for building or changing LLM-agent systems themselves (use `agents`) or for installing the enforcement hook, lint, or pre-commit that closes a finding permanently (use `hookify`); this skill finds and fixes, it never attacks.
 metadata:
-  version: 2.1.0
+  version: 2.2.0
 ---
 
 # security
@@ -43,6 +43,10 @@ find . -maxdepth 3 \( -iname "*controller*" -o -iname "routes*" -o -iname "*view
 grep -rnE "anthropic|openai|langchain" --include="*.py" --include="*.ts" --include="*.js" . \
   | grep -v node_modules | head -5
 ```
+
+## Mutable audit and framework facts
+
+For audit-tool output, framework security behavior, and version-dependent remediation, consult the tool or framework's official primary documentation first. Disclose any conflict with observed behavior or other sources; a more-specific repository-local contract or reproducible evidence for the target version and platform overrides general or stale documentation. Keep an unresolved fact unknown and fail safely: do not certify the control, recommend a version-specific fix, or run a destructive remediation until it is confirmed. Never invent an audit command, flag, framework default, or security capability.
 
 ## Action boundary
 

@@ -2,7 +2,7 @@
 name: cicd
 description: "Designs CI/CD changes that preserve the repository's delivery topology and make releases observable and reversible. Use when asked to set up the PR pipeline and deployment for this repo, configure CI/CD, add a deployment pipeline, define required CI checks, design release rollback, or 배포 파이프라인을 설계할 때. Not for service architecture or persistence — use backend; test-suite design — use testing; or commit and PR mechanics — use git."
 metadata:
-  version: 1.2.0
+  version: 1.3.0
 ---
 
 # cicd
@@ -12,6 +12,8 @@ Design delivery changes from repository evidence, not a preferred stack. A pipel
 ## Incumbent topology gate
 
 Before editing workflows or deployment files, identify the CI provider and required-check names, image distribution path, orchestrator and deployment target, immutable release resolver, and the owner that performs deployment. Inspect existing configuration, branch protection or equivalent policy, runtime manifests, and recent successful release evidence. Preserve those incumbents unless the task explicitly migrates them.
+
+For mutable CI-provider, deployment-platform, orchestrator, or runtime facts, consult official primary docs first and disclose conflicts; only more-specific repo-local contracts or matching-version/platform reproducible evidence may override general or stale docs. Otherwise the fact is unknown: do not invent behavior.
 
 For a greenfield repository, select and document those five topology decisions before writing pipeline files. Keep stable required checks available for every PR when the hosting provider supports them; make their no-op and full-check paths observable. Fail closed on release inputs, retain build and runtime evidence, and use a recovery action that does not destroy durable state.
 

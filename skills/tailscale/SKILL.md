@@ -2,7 +2,7 @@
 name: tailscale
 description: Verifies and repairs the Tailscale tailnet that carries cross-host work — SSH, remote process inspection, `scp` — before a dependent workflow runs, and triages failures as network-layer versus service-layer. Use when `tailscale ping` or `ssh <peer>` hangs, when a reachable peer is missing from `tailscale status`, when switching networks between tailnets with `tailscale switch` or listing stored profiles, when the target is a shared-in node or a tailnet you were invited to rather than own, when picking the daemon-restart path for a macOS install variant, or when a browser OAuth popup appears mid-SSH. Not for generic SSH problems unrelated to the tailnet.
 metadata:
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # tailscale
@@ -12,6 +12,10 @@ Tailscale is the transport layer between a source-of-truth host (where work is a
 One host can hold several tailnet logins at once, and `tailscale switch` is how the active network changes — `tailscale switch --list` enumerates the stored profiles, `tailscale switch <profile>` activates a different one. Only one is active at a time, and the active profile decides which peers, addresses, and MagicDNS suffix exist. A peer "missing" from `tailscale status` is far more often the wrong active profile than an offline peer.
 
 Not every reachable tailnet is the operator's to act on. Nodes shared in from another account, and tailnets the operator was *invited* to rather than owns, are **external** — see the consent gate in step 2, which is a hard stop, not a preference.
+
+## Mutable CLI and daemon facts
+
+For Tailscale CLI syntax, daemon behavior, install layout, and control-plane state, consult official Tailscale documentation first. Disclose conflicts with observed behavior or other sources; a more-specific repository-local contract or reproducible evidence for the installed version and platform overrides general or stale documentation. Keep an unresolved fact unknown and fail safely: stop before state-changing or peer-reaching work rather than guessing. Never invent a Tailscale command, flag, daemon behavior, or capability.
 
 Three macOS install layouts coexist, and the daemon-restart path differs across them:
 - **macsys (Tailscale.app, standalone `.pkg`)** — GUI app with the daemon embedded in the app process. Restart by quitting and relaunching the app (`osascript -e 'quit app "Tailscale"'`, then launch again).

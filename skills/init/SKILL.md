@@ -2,7 +2,7 @@
 name: init
 description: Bootstraps a repository's craft docs scaffold or generates a complexity-scored, hierarchical AGENTS.md knowledge base for a mature one. Use when initializing repo docs folders ("init this repo", "bootstrap craft conventions"), deep-initing a codebase ("deep init", "generate AGENTS.md", "map this codebase"), or setting up the docs structure; uses a sequential cartography path on runtimes without agent fan-out. Not for authoring docs content, ADRs, README, or architecture decisions (use the `document` skill) or installing git-guard hooks (use the `git` skill).
 metadata:
-  version: 3.1.0
+  version: 3.2.0
 ---
 
 # init
@@ -54,6 +54,8 @@ echo "git-guard: core.hooksPath = $(git config core.hooksPath 2>/dev/null || ech
 ```
 
 ### Cartography runtime branch
+
+For mutable runtime fan-out or tool capabilities, consult official primary docs first and disclose conflicts; a more-specific local contract or matching-version/platform reproducible evidence may override general or stale docs. Unresolved capability stays unknown: do not invent surfaces; use the sequential path.
 
 Classify the runtime before Phases 1–4:
 

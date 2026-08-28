@@ -17,7 +17,7 @@ context.
 |-------|---------|
 | `agents` | Build and change LLM-agent systems — prompts, tool schemas, context/tracing wiring — under an eval-first discipline that proves a behavior change against a versioned eval set before shipping. |
 | `api` | Define contract-first public HTTP APIs with stable resource URLs, DTO-only success payloads, pagination, and diagnosable sanitized failures. |
-| `aside` | **Deprecated** — moved to [`bstack/browser/aside`](https://github.com/GoBeromsu/bstack); do not use for Aside AI browser automation. |
+| `browser` | Route browser work to Aside first, except when an explicit tool or an existing Chrome session is required; enforce safety preflight, recovery, and cleanup. |
 | `ast-grep` | Search and replace code by syntax-tree shape with ast-grep, validating parseable patterns and inspecting a dry-run before mutation. |
 | `backend` | Route backend engineering through an architecture-detection gate (layered / vertical-slice / hexagonal), then apply dependency-direction rules, persistence choices, and per-framework folder conventions. |
 | `cicd` | Design inexpensive, reliable PR validation and reversible Jenkins Compose deployment pipelines with deployment-server-owned image builds. |

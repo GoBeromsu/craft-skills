@@ -2,7 +2,7 @@
 name: ml
 description: Applies ML/DL research engineering discipline — reproducible project layout, leakage-safe dataset construction, and a training-discipline ladder — to classical ML, deep learning, fine-tuning, and vision work. Use when scaffolding a new ML project, asked to "build a dataset" or "데이터셋 구축", running or reviewing a "train a model" experiment, or building a "vision model" pipeline (augmentation, detection, segmentation). Not for per-file Python discipline (typing, TDD loop) — use `programming` — not for building or changing LLM-agent behavior (prompts, tools, agent evals) — use `agents` — and not for GPU/CUDA environment setup or shared-host job launch — use `gpu`.
 metadata:
-  version: 2.2.0
+  version: 2.3.0
 ---
 
 # ml
@@ -30,6 +30,7 @@ Example: labeling and splitting an image dataset that will then be trained on ma
 - **Split before you fit anything.** Train/validation/test separate before any statistic is computed from the data — scaling, imputation, vocabulary, augmentation parameters. `references/datasets.md` gives the three leakage classes and their detection commands.
 - **A baseline exists before a novel approach is judged.** "Better than the majority-class/linear/frozen-pretrained baseline," not "better than nothing." `references/training.md` covers the discipline ladder in full.
 - **The test set is touched once** — reported at the end, never inside a tuning loop.
+- **Mutable library/runtime facts.** For framework APIs, installation, compatibility, or runtime behavior, consult the library's official documentation first. Disclose conflicts; a more-specific local contract or reproducible evidence for the matching library version and platform may override general or stale documentation. If unresolved, leave it unknown and stop or use the applicable safe fallback — never invent a capability or command.
 
 ## Requirements
 

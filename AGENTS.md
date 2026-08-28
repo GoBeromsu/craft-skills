@@ -13,11 +13,12 @@ A package is one flat directory: `skills/<name>/SKILL.md` plus whichever of `ref
 every skill is one level deep. `evals/` directories are local, gitignored scratch for the
 eval-first authoring loop; they are never committed.
 
-The 27 packages (alphabetical): `agents`, `api`, `aside`, `ast-grep`, `backend`, `cicd`, `debug`,
+The 27 packages (alphabetical): `agents`, `api`, `ast-grep`, `backend`, `browser`, `cicd`, `debug`,
 `defuddle`, `distil`, `document`, `frontend`, `git`, `gpu`, `hookify`, `init`, `ml`, `obsidian`,
 `programming`, `refactor`, `research`, `security`, `skillify`,
-`tailscale`, `testing`, `vmware`, `write-prd`, `write-report`. `aside` is a deprecated stub moved to
-`bstack/browser/aside`; `obsidian` is one thick package whose sub-recipes live under `references/`.
+`tailscale`, `testing`, `vmware`, `write-prd`, `write-report`. `browser` is one flat package: it owns
+one router and exactly three references for Aside, agent-browser, and Chrome. `obsidian` is one thick
+package whose sub-recipes live under `references/`.
 
 The authoring contract — frontmatter shape, naming, description rules, body limits, CHANGELOG
 format, and the eval-first loop — lives at `skills/skillify/references/contract.md`. All skill

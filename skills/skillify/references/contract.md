@@ -14,6 +14,7 @@ The permanent, self-contained authoring contract for every `SKILL.md` in this li
 7. [Eval-first authoring loop](#7-eval-first-authoring-loop)
 8. [Version-bump rubric](#8-version-bump-rubric)
 9. [MECE ownership](#9-mece-ownership)
+10. [External facts](#10-external-facts)
 
 ---
 
@@ -145,3 +146,16 @@ Ask: "does a caller already using this skill need to change anything?" → MAJOR
 Inside one skill package, each rule has exactly one owner: the body for always-read routing or gates, a reference for deep topic rules, a script for deterministic checks, and `CHANGELOG.md` for history.
 If another section needs the same rule, link to the owner instead of restating it.
 Overlapping warning sections (`Red Flags`, `Common Rationalizations`, repeated anti-pattern tables) are an anti-pattern; keep one `## Anti-patterns` registry in `SKILL.md` and let references link back or add topic-specific rules only when they do not duplicate the package-level entry.
+
+## 10. External facts
+
+This section owns authoring rules for mutable facts about external CLIs, APIs, services, and runtimes.
+It excludes conceptual guidance, writing guidance, and procedures that are purely local.
+
+When a fact is unknown, ambiguous, or version-dependent, consult the official primary documentation first.
+Encode the resulting runtime form in the affected package, or link to the exact official source when reproducing it would be brittle or excessive.
+When sources conflict, disclose the conflict where the fact is used; prefer a more-specific repository-local contract or reproducible evidence matching the target version and platform over general or stale documentation.
+Leave an unresolved fact unknown rather than inventing a value, behavior, or command.
+
+Exercise applicable ambiguity, conflict, and unknown cases through the existing eval-first loop (§7), including the expected disclosure or unknown outcome.
+Do not create a fact inventory or validator for this contract.
