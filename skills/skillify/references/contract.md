@@ -67,6 +67,8 @@ trigger phrases woven in naturally>. Not for <nearest-neighbor boundary — use 
 - 150 lines is the target for a leaf skill; 500 lines is the hard ceiling the validator enforces. When the draft runs long, move depth to `references/*.md` — don't trim useful material, relocate it.
 - Structure: title → 1–2 sentence purpose with success criteria → the workflow/decision content → boundaries/hand-offs. Cut preamble and restated-obvious practice — an agent is already competent; only add context it doesn't already have.
 - Outcome over process: state the goal and constraints. Give numbered steps only where the exact sequence matters (a fragile or deterministic operation) — prose for judgment calls, scripts for mechanics.
+- Keep instructions lean and single-owned: state the action, its autonomy boundary, and any required approval at the owner; link from every other location. Report progress through observable evidence and decisions, not private chain-of-thought, and never ask a user to reveal or transcribe internal reasoning.
+- Delegate independent lanes when the runtime supports delegation; keep dependent decisions with their owner and specify the hand-off evidence.
 - Match freedom to fragility. High freedom (prose heuristics) where many routes are valid and context decides; medium freedom (a preferred pattern with parameters) where one way is better but variation is fine; low freedom (an exact script, few knobs) where the operation is fragile and order-sensitive. A narrow bridge gets guardrails; an open field gets a compass — the wrong choice either straitjackets judgment or lets a fragile step wobble.
 - One default per decision, with one named escape hatch. No option menus.
 - No ALL-CAPS rigidity walls and no "MUST/NEVER/LAW" shouting — where strict adherence matters, one short clause of why is enough. A single sparing **bold** is fine.
@@ -165,8 +167,9 @@ Leave an unresolved fact unknown rather than inventing a value, behavior, or com
 
 For every mutable CLI, API, service, or runtime requirement, the affected package records its name, official source URL, installed-version probe, support boundary, and release or update trigger in its `## Requirements` section or a linked reference.
 The probe is an exact safe command or API query that reports the installed or selected version; the boundary says which version range, platform, or capability the recipe supports.
-When that trigger detects an update, recheck the official documentation, rerun the affected evals, update the recipe if its runtime form changed, then bump the package version and append its CHANGELOG entry.
+For a selected dependency/runtime release or a changed probe/capability, that trigger requires official-documentation review and affected evals, then update the recipe if its runtime form changed, bump the package version, and append its CHANGELOG entry.
 Keep this maintenance beside the dependent package; do not build a global dependency inventory, background daemon, or separate update framework.
+This contract applies to skillify immediately and to every other package when it is next touched or its own dependency trigger fires; do not create mass churn to retrofit untouched packages.
 
 Exercise applicable ambiguity, conflict, and unknown cases through the existing eval-first loop (§7), including the expected disclosure or unknown outcome.
 Do not create a fact inventory or validator for this contract.

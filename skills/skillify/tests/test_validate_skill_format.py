@@ -99,6 +99,48 @@ class SkillFormatValidatorTest(unittest.TestCase):
             self.assertEqual(result.returncode, 1)
             self.assertIn("NAME_NOT_KEBAB_CASE", result.stdout)
 
+    def test_accepts_name_at_64_character_limit(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            name = "a" * 64
+            skill = GOOD_SKILL.replace("name: demo", f"name: {name}")
+            self._make_skill(root, name, skill, GOOD_CHANGELOG)
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_rejects_name_over_64_character_limit(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            name = "a" * 65
+            skill = GOOD_SKILL.replace("name: demo", f"name: {name}")
+            self._make_skill(root, name, skill, GOOD_CHANGELOG)
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("NAME_TOO_LONG", result.stdout)
+
+    def test_rejects_non_string_metadata_values(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            cases = (
+                "  labels: [one, two]\n",
+                "  labels:\n    - one\n    - two\n",
+                "  source: {owner: team}\n",
+                "  source:\n    owner: team\n",
+                "  enabled: true\n",
+                "  priority: 1\n",
+            )
+            for index, value in enumerate(cases):
+                with self.subTest(value=value):
+                    skill = GOOD_SKILL.replace(
+                        "  version: 1.0.0\n",
+                        f"  version: 1.0.0\n{value}",
+                    )
+                    case_root = root / str(index)
+                    self._make_skill(case_root, "demo", skill, GOOD_CHANGELOG)
+                    result = self.run_validator(case_root)
+                    self.assertEqual(result.returncode, 1)
+                    self.assertIn("BAD_METADATA", result.stdout)
+
     def test_rejects_changelog_without_dated_bullet(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
