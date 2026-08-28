@@ -1,6 +1,6 @@
 {
   "name": "craft-skills",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "description": "Work-craft Codex skills across 27 packages — research, debugging, documentation, browser automation, Obsidian craft, git craft, structural AST search, write-prd product requirements, API/CI-CD/frontend/backend/ML/agent engineering, testing, refactoring, security triage, and skill authoring.",
   "author": {
     "name": "Beomsu Koh"
