@@ -2,7 +2,7 @@
 name: testing
 description: Architects and audits project test suites by selecting the cheapest layer that proves behavior and contract risk, then placing tests and fixtures for a fast, deterministic suite. Use when choosing test placement, organizing fixtures, adding an integration or e2e test, designing contract coverage, or triaging flaky suites. Not for isolated function-level red-green-refactor TDD — use programming; not for diagnosing a currently failing test — use debug; not for ML or agent eval methodology — use ml or agents.
 metadata:
-  version: 2.2.1
+  version: 2.2.2
 ---
 
 # testing
@@ -89,4 +89,4 @@ Use the target package's incumbent runner, order-randomization mechanism, and pr
 Run a listed probe only when its component is installed and selected by the target package; otherwise use the repository's documented package-local equivalent and its official project docs.
 Do not install a dependency or fall back to a global executable merely to probe it.
 Derive the support boundary from the target package's lockfile and current test configuration, including the selected execution form; when either does not establish a component or capability, leave it unknown and stop rather than inventing support.
-When a selected release changes or a probe changes, review its official docs, re-derive that boundary, and rerun the applicable taxonomy, order-dependency, and property-test evals before updating this recipe.
+When a selected release changes or a probe changes, complete an official-documentation recheck and re-derive that boundary; then rerun affected taxonomy, order-dependency, and property-test evals; update this recipe if needed; bump the package version; and append the CHANGELOG entry.
