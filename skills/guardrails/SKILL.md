@@ -1,11 +1,11 @@
 ---
-name: hookify
-description: Turns a convention or best practice into local, deterministic enforcement so a violation is blocked before it happens, not corrected after. Use when asked to force a rule locally, hookify a convention, add a pre-commit or lint guard, block edits to a read-only path, stop a risky command in-loop, or wire a Claude Code or Codex runtime hook without relying on CI. Owns the repo's core.hooksPath / .githooks pre-commit mechanism as the sole install point; git registers its git-guard there, and init routes hook-install requests to git. Not for git workflow craft itself (branching, worktrees, commit hygiene) — use git.
+name: guardrails
+description: Turns a convention or best practice into local, deterministic enforcement so a violation is blocked before it happens, not corrected after. Use when asked to force a rule locally, add a guardrail for a convention, add a pre-commit or lint guard, block edits to a read-only path, stop a risky command in-loop, or wire a Claude Code or Codex runtime hook without relying on CI. Owns the repo's core.hooksPath / .githooks pre-commit mechanism as the sole install point; git registers its git-guard there, and init routes hook-install requests to git. Not for git workflow craft itself (branching, worktrees, commit hygiene) — use git.
 metadata:
-  version: 1.3.0
+  version: 2.0.0
 ---
 
-# hookify
+# guardrails
 
 Turn one convention into a local, deterministic block so a violation is caught *before* it happens, not fixed after. CI is only a backstop for whoever skipped local — the enforcement itself runs in-loop.
 
@@ -24,7 +24,7 @@ Not now: the rule is still drifting or noisy (fails the 3-gate check below) — 
 
 ## Ownership: core.hooksPath / .githooks
 
-hookify is the sole owner of the repo's `core.hooksPath` / `.githooks` pre-commit mechanism. It installs `.githooks/pre-commit` as a dispatcher (`scripts/pre-commit.sh`) that runs every executable file in `.githooks/guards.d/` in lexical order and carries no rule logic itself. Any other skill or hand-authored check registers by dropping an executable into `.githooks/guards.d/` — never by pointing `core.hooksPath` elsewhere or shipping a competing `pre-commit` file. `init` routes hook-install requests to `git`; `git` registers its git-guard through this dispatcher. Two owners for the same hooksPath is how installs collide; guards.d is the one place that changes.
+guardrails is the sole owner of the repo's `core.hooksPath` / `.githooks` pre-commit mechanism. It installs `.githooks/pre-commit` as a dispatcher (`scripts/pre-commit.sh`) that runs every executable file in `.githooks/guards.d/` in lexical order and carries no rule logic itself. Any other skill or hand-authored check registers by dropping an executable into `.githooks/guards.d/` — never by pointing `core.hooksPath` elsewhere or shipping a competing `pre-commit` file. `init` routes hook-install requests to `git`; `git` registers its git-guard through this dispatcher. Two owners for the same hooksPath is how installs collide; guards.d is the one place that changes.
 
 ## Core Process
 
@@ -38,7 +38,7 @@ Follow the ladder in `references/surface-and-tier.md`. In short:
 
 1. State it in prose first (tier 0) — enforcement is the backstop for where prose failed.
 2. Pick the earliest local surface that catches it deterministically: a violation visible in tool behavior (edited path, command) → tier-1 runtime hook; file-content quality → tier-2 lint; irreversible only once committed → tier-3 pre-commit.
-3. CI backstops whoever skipped local — it isn't hookify's focus.
+3. CI backstops whoever skipped local — it isn't this skill's focus.
 
 ### Phase 2 — 3-gate graduation check
 

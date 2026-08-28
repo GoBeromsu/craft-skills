@@ -15,7 +15,7 @@ every skill is one level deep. `evals/` directories are local, gitignored scratc
 eval-first authoring loop; they are never committed.
 
 The 27 packages (alphabetical): `agents`, `api`, `ast-grep`, `backend`, `browser`, `cicd`, `debug`,
-`defuddle`, `distil`, `document`, `frontend`, `git`, `gpu`, `hookify`, `init`, `ml`, `obsidian`,
+`defuddle`, `distil`, `document`, `frontend`, `git`, `gpu`, `guardrails`, `init`, `ml`, `obsidian`,
 `programming`, `refactor`, `research`, `security`, `skillify`,
 `tailscale`, `testing`, `vmware`, `write-prd`, `write-report`. `browser` is one flat package: it owns
 one router and exactly three references for Aside, agent-browser, and existing-session. `obsidian` is one thick

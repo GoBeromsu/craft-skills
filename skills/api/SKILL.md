@@ -2,7 +2,7 @@
 name: api
 description: "Defines and evolves public HTTP API contracts while preserving published incumbent behavior. Use when asked to design the public REST contract for a resource, document an endpoint contract, choose API pagination or error shapes, standardize a greenfield REST API, or API 계약을 설계할 때. Not for service structure or persistence — use backend; client rendering or state — use frontend; or transport-level test design — use testing."
 metadata:
-  version: 1.2.0
+  version: 1.2.1
 ---
 
 # api
@@ -33,4 +33,4 @@ When two components inside one system agree on a shape by convention — an HTTP
 
 ## Boundaries
 
-Route service structure, database migration strategy, ORM selection, and persistence implementation to `backend`. Route UI data fetching, rendering, and client state to `frontend`; this skill owns only the wire shape a client parses and the normalizer that rejects an unknown one. Route test taxonomy and fixture strategy to `testing`; this skill owns the contract those tests exercise. Route making a convention mechanically enforced — a lint rule, a boundary check, a pre-commit guard — to `hookify`.
+Route service structure, database migration strategy, ORM selection, and persistence implementation to `backend`. Route UI data fetching, rendering, and client state to `frontend`; this skill owns only the wire shape a client parses and the normalizer that rejects an unknown one. Route test taxonomy and fixture strategy to `testing`; this skill owns the contract those tests exercise. Route making a convention mechanically enforced — a lint rule, a boundary check, a pre-commit guard — to `guardrails`.

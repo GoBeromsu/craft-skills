@@ -3,9 +3,9 @@
 #
 # Scaffolds the guard scripts into the TARGET repo and registers the pre-commit
 # checks as .githooks/guards.d/ entries — the composable convention owned by
-# the `hookify` skill (issue #29: hookify is the sole owner of core.hooksPath
+# the `guardrails` skill (issue #29: guardrails is the sole owner of core.hooksPath
 # and .githooks/pre-commit; this installer never writes either). Also installs
-# .githooks/pre-push directly, since hookify has no push-time surface to
+# .githooks/pre-push directly, since guardrails has no push-time surface to
 # collide with. This is the single entry point the `worktree` reference (git
 # skill) and `init` skill delegate to.
 #
@@ -39,7 +39,7 @@ for f in lib.sh assert-not-main.sh check-freshness.sh deny-assets.sh wt.sh setup
   fi
 done
 
-# 2. Pre-commit checks -> .githooks/guards.d/ (copy if absent). hookify's own
+# 2. Pre-commit checks -> .githooks/guards.d/ (copy if absent). guardrails's own
 #    dispatcher runs every executable here in lexical order; this installer
 #    never writes .githooks/pre-commit and never touches core.hooksPath.
 for g in 10-assert-not-main.sh 20-deny-assets.sh 30-check-freshness.sh; do
@@ -52,7 +52,7 @@ for g in 10-assert-not-main.sh 20-deny-assets.sh 30-check-freshness.sh; do
 done
 
 # 3. pre-push hook -> .githooks/ (copy if absent). Installed directly, not via
-#    guards.d — hookify owns pre-commit only, so there is no push-time surface
+#    guards.d — guardrails owns pre-commit only, so there is no push-time surface
 #    to collide with here.
 if [ -f ".githooks/pre-push" ]; then
   echo "Skipped (exists): .githooks/pre-push"

@@ -1,8 +1,8 @@
 ---
 name: security
-description: Finds and fixes vulnerabilities in code the user owns across web, API, and LLM surfaces, mapping every trust boundary first and triaging by production reachability and severity second. Use when asked for a security review, "is this safe to ship," "check for vulnerabilities," or "보안 점검," when auditing secrets hygiene or dependency risk, or when reviewing a PR or feature for security regressions before release. Not for building or changing LLM-agent systems themselves (use `agents`) or for installing the enforcement hook, lint, or pre-commit that closes a finding permanently (use `hookify`); this skill finds and fixes, it never attacks.
+description: Finds and fixes vulnerabilities in code the user owns across web, API, and LLM surfaces, mapping every trust boundary first and triaging by production reachability and severity second. Use when asked for a security review, "is this safe to ship," "check for vulnerabilities," or "보안 점검," when auditing secrets hygiene or dependency risk, or when reviewing a PR or feature for security regressions before release. Not for building or changing LLM-agent systems themselves (use `agents`) or for installing the enforcement hook, lint, or pre-commit that closes a finding permanently (use `guardrails`); this skill finds and fixes, it never attacks.
 metadata:
-  version: 2.3.0
+  version: 2.3.1
 ---
 
 # security
@@ -86,7 +86,7 @@ Reachability, not a demonstrated exploit, drives the tree — a finding with cle
 ## Hand-offs
 
 - Building or changing an LLM-agent system itself — a new agent, prompt authoring, eval sets — is owned by `agents`; this skill finds and fixes vulnerabilities in what's already built, including prompt injection, tool-permission scope, and consumption guards in agent/LLM code (`references/llm.md`).
-- Turning a finding into enforced prevention — a pre-commit hook, a CI lint gate, a runtime guard — is owned by `hookify`.
+- Turning a finding into enforced prevention — a pre-commit hook, a CI lint gate, a runtime guard — is owned by `guardrails`.
 - The parse-don't-validate typed-boundary idiom referenced in PHASE 0 step 2 is owned by `programming`; this skill states the security requirement, `programming` owns the implementation pattern.
 - Offensive tooling, exploit development, penetration-testing infrastructure, and probing systems the user does not own or hold written authorization to test are out of scope entirely — this skill finds and fixes, it never attacks.
 

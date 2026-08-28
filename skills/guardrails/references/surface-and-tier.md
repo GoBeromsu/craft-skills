@@ -10,7 +10,7 @@ The point of enforcement is not preventing permanent harm — it's giving an age
 | 1 | **Agent runtime hook** (Claude Code PreToolUse/PostToolUse, Codex hook) | Immediately before/after a tool call, in-loop | Blocks the behavior itself | Forbidden-path edits, dangerous commands, read-only mutation |
 | 2 | **lint** (editor/local, continuous) | Any time, continuously | Fast feedback (advisory → autofix) | Style/quality the agent runs repeatedly |
 | 3 | **pre-commit hook** (local) | At commit time | Blocks the commit | Irreversible: secrets, direct commits to a protected branch, large blobs |
-| (backstop) | CI | After push | Blocks the merge | Whoever skipped local — not hookify's focus |
+| (backstop) | CI | After push | Blocks the merge | Whoever skipped local — not this skill's focus |
 
 Tier 1 is the fastest deterministic signal — earlier than pre-commit, before the agent has *done* the thing. It's the end of local enforcement.
 
@@ -52,4 +52,4 @@ So:
 - **Claude Code runtime hook:** register a matcher + command per event (`PreToolUse`, etc.) under `hooks` in `settings.json`. The command receives the tool-call JSON on stdin and blocks on violation. Detail and examples: `references/claude-code-hooks.md`; starters: `scripts/`.
 - **Codex runtime hook:** Codex CLI's hook/notify mechanism. Detail: `references/codex-hooks.md`.
 - **lint:** add the rule to the project's linter (ruff/eslint, …), or wrap a domain rule in a guard script exposed as a command the agent runs during work.
-- **pre-commit:** hookify owns `core.hooksPath` as the single install point — `scripts/pre-commit.sh` is the committed dispatcher. It runs every executable file in `.githooks/guards.d/` in lexical order and carries no rule logic itself; a guard registers by dropping an executable script there, never by setting `core.hooksPath` itself.
+- **pre-commit:** this skill owns `core.hooksPath` as the single install point — `scripts/pre-commit.sh` is the committed dispatcher. It runs every executable file in `.githooks/guards.d/` in lexical order and carries no rule logic itself; a guard registers by dropping an executable script there, never by setting `core.hooksPath` itself.

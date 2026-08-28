@@ -2,12 +2,10 @@
 
 Cross-skill lineage registry: the source skill(s) each craft-skills skill derives from.
 
-This table is the **current at-a-glance snapshot**. The dated, per-change detail — *what* was
-adapted and *when* — lives in each skill's `CHANGELOG.md` `Provenance:` clause; this registry links
-back to it the way `architecture.md` links to ADRs without restating them.
+This table is the **current at-a-glance snapshot**.
+The dated, per-change detail — *what* was adapted and *when* — lives in each skill's `CHANGELOG.md` `Provenance:` clause; this registry links back to it the way `architecture.md` links to ADRs without restating them.
 
-Provenance never lives in `SKILL.md` (body or frontmatter): the recipe is present-tense imperative
-only, and naming a source there fails skillify's attribution gate.
+Provenance never lives in `SKILL.md` (body or frontmatter): the recipe is present-tense imperative only, and naming a source there fails skillify's attribution gate.
 
 ## Registry
 
@@ -28,7 +26,7 @@ only, and naming a source there fails skillify's attribution gate.
 | `git` | ground-truth command block; repo-style detection; `references/worktree.md` git-guard scripts (6) | code-yeongyu/lazycodex (MIT) `git-master`; eldercare-fall-ai | adapted (scripts vendored) |
 | `security` | threat-model-first workflow; dependency-audit triage; LLM hardening rules; the untrusted-CI fork-trust boundary and policy mutation tests | addyosmani/agent-skills; OWASP Top 10 for LLM Applications; operator-supplied `omc-learned` skills, backed up at `~/seeon-backups/omc-learned-backup-20260828T105212Z/` (measured against SeniorAILab/SeeON-edge) `security-and-hardening` | adapted |
 | `skillify` | two-layer discipline; skill-anatomy format SSOT; compact-name style; vendor lenses + absorption protocol (degrees-of-freedom, reusable-parts planning, baseline-delta evals, experience-capture flow) | [Agent Skills specification](https://agentskills.io/specification) ([agentskills/agentskills](https://github.com/agentskills/agentskills/tree/69ef37e9424c0a7ea9dd2293b559e43ec8176379) at `69ef37e9424c0a7ea9dd2293b559e43ec8176379`); [anthropics/skills](https://github.com/anthropics/skills/tree/3b3fad96af16a10759d930941b4520ba0c40edae) `skill-creator` at `3b3fad96af16a10759d930941b4520ba0c40edae`; deprecated [openai/skills](https://github.com/openai/skills/tree/49f948faa9258a0c61caceaf225e179651397431) creator at `49f948faa9258a0c61caceaf225e179651397431`; current [openai/plugins](https://github.com/openai/plugins/tree/6d99ee149c9fe3c7a55b96cab062cadc1ad36a9d) at `6d99ee149c9fe3c7a55b96cab062cadc1ad36a9d`; [OpenAI latest-model / Sol prompting](https://developers.openai.com/api/docs/guides/latest-model); [Claude Fable prompting](https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5); [Cursor Agent Skills](https://prod.cursor.com/docs/skills); [Grok Skills, Plugins & Marketplaces](https://docs.x.ai/build/features/skills-plugins-marketplaces); NousResearch/hermes-agent; gstack (Garry Tan); addyosmani/agent-skills; code-yeongyu/lazycodex | adapted |
-| `hookify` | hook patterns/philosophy; Claude Code hooks model; git `core.hooksPath` convention; import-boundary enforcement as linter configuration | Yeachan-Heo/oh-my-claudecode, Claude Code hooks docs; operator-supplied `omc-learned` skills, backed up at `~/seeon-backups/omc-learned-backup-20260828T105212Z/` (measured against SeniorAILab/SeeON-edge) `code-review-and-quality` | adapted |
+| `guardrails` | hook patterns/philosophy; Claude Code hooks model; git `core.hooksPath` convention; import-boundary enforcement as linter configuration; linter/formatter configuration ownership and the autofix failure classes | Yeachan-Heo/oh-my-claudecode, Claude Code hooks docs; operator-supplied `omc-learned` skills, backed up at `~/seeon-backups/omc-learned-backup-20260828T105212Z/` (measured against SeniorAILab/SeeON-edge) `code-review-and-quality`; craft-skills `refactor` lint-first pass | adapted |
 | `init` | — | — | original |
 | `write-report` | — | — | original (promoted from a project-local skill) |
 | `write-prd` | operator-supplied PRD template | — | original (template supplied by operator) |
@@ -52,6 +50,5 @@ only, and naming a source there fails skillify's attribution gate.
 When a skill is created or materially re-sourced:
 
 1. Add or update its row above (the current snapshot).
-2. Add a dated `Provenance:` clause to that skill's `CHANGELOG.md` bullet (the per-change detail):
-   `- YYYY-MM-DD — <why> → <what>. Provenance: <what was taken> from [name](url).` (a local source uses its plain path)
+2. Add a dated `Provenance:` clause to that skill's `CHANGELOG.md` bullet (the per-change detail): `- YYYY-MM-DD — <why> → <what>. Provenance: <what was taken> from [name](url).` (a local source uses its plain path)
 3. Never put the attribution in `SKILL.md` — body or frontmatter.
