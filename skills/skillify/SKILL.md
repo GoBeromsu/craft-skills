@@ -2,7 +2,7 @@
 name: skillify
 description: Owns the full lifecycle of craft-skills skill packages — creating, updating, moving/renaming, retiring them, and absorbing frontier labs' skill-creators into vendor lenses — through an eval-first authoring loop and deterministic format validation. Use when a user says things like "make a skill", "skillify this workflow", "turn this into a skill", "update this skill", "move this skill", "absorb openai's new skill-creator", or "스킬 만들자", or when a recurring workflow correction needs to be encoded into a governing skill instead of staying in chat memory. Not for one-off project scripts or prompts with no reuse intent — those stay local to the originating project.
 metadata:
-  version: 4.8.0
+  version: 4.8.1
 ---
 
 # skillify
@@ -55,7 +55,7 @@ Use the portable baseline frontmatter: `name`, `description`, and `metadata.vers
 Add spec keys `license`, `compatibility`, or experimental `allowed-tools` only when the package truly requires them; document the runtime support caveat in the relevant vendor lens rather than making them a universal requirement.
 Name is kebab-case and equals the directory: verb-first for a skill the user explicitly triggers, a plain noun for a skill that supplies ambient domain context.
 Description is third person, states what + when, weaves in 3–6 real trigger phrases, writes against undertriggering, and adds a "Not for X" line when a sibling overlaps.
-Body targets 150 lines, hard-caps at 500; move depth to `references/*.md`.
+Body targets 150 lines, hard-caps at 500; move depth to files in `references/`.
 Keep package content MECE: each rule has one owning section or reference, and nearby locations link to it instead of restating it.
 Full rules: `references/contract.md`.
 

@@ -2,7 +2,7 @@
 name: init
 description: Bootstraps a repository's craft docs scaffold or generates a complexity-scored, hierarchical AGENTS.md knowledge base for a mature one. Use when initializing repo docs folders ("init this repo", "bootstrap craft conventions"), deep-initing a codebase ("deep init", "generate AGENTS.md", "map this codebase"), or setting up the docs structure; uses a sequential cartography path on runtimes without agent fan-out. Not for authoring docs content, ADRs, README, or architecture decisions (use the `document` skill) or installing git-guard hooks (use the `git` skill).
 metadata:
-  version: 3.2.0
+  version: 3.2.1
 ---
 
 # init
@@ -15,7 +15,7 @@ without overwriting them, then emit the git-guard diagnostic below. A docs-only 
 Phase 0 and stops. A cartography request runs Phases 1–4; run Phase 0 first only when the caller
 also asks for the docs scaffold. Do not turn a bootstrap request into codebase mapping.
 
-This file routes; the procedures live in `references/phase-*.md` — read the selected procedure
+This file routes; the phase procedures live in `references/` — read the selected procedure
 when you reach it.
 
 ## Requirements
