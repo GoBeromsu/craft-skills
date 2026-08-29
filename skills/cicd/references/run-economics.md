@@ -1,6 +1,7 @@
 # Run economics
 
 How to make a pipeline faster without losing the gate.
+This worked recipe assumes GitHub Actions and GitHub required-check contexts; apply its provider-neutral measurement and partition invariants elsewhere, but derive triggers, cancellation, aggregation, and protection updates from the selected provider's official documentation.
 Every rule here is a correction to generic advice that measurement contradicted; the measurements are kept so the reasoning can be re-derived rather than trusted.
 
 ## Contents
@@ -15,7 +16,7 @@ Every rule here is a correction to generic advice that measurement contradicted;
 | Generic advice | What measurement showed |
 |---|---|
 | "Slow pipeline? Cache dependencies first." | Dependency sync was 21 s and the model fetch 1 s of a 19m37s job; the test suite was 18m27s, or 94 %. Cache-first optimises the wrong 3 %. |
-| Cache with the platform's cache action | On a pull-request-triggered workflow the cache is a fork-write supply-chain path into later trusted runs. Owned by `security`'s untrusted-CI reference. |
+| Cache with the platform's cache action | GitHub scopes pull-request-created caches to that pull request's merge ref, but pull requests may read eligible base/default caches. Measure the saving, keep secrets out, and verify event/ref visibility through `security`'s untrusted-CI reference. |
 | Trigger on both push and pull request | That runs every pull request twice. Fixing it alone halved the bill before any parallelism. |
 | Use path filters to skip unrelated jobs | A path filter on a **required** check means it never reports, so the pull request is blocked forever. Only safe on non-required workflows. |
 | Split into parallel jobs | Correct — but branch protection's required contexts are job names. Split without updating them and the default branch silently loses its gate. |

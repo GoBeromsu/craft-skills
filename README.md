@@ -63,7 +63,7 @@ Use the Claude Code marketplace channel:
 /plugin install craft-skills@craft-skills
 ```
 
-Then invoke any of the 29 skills above by name, e.g. `api`, `ast-grep`, `defuddle`, `design`, `document`, `init`, `skillify`, `programming`, `research`, `write-prd`, `debug`.
+Then invoke any of the 28 skills above by name, e.g. `api`, `ast-grep`, `defuddle`, `design`, `document`, `init`, `skillify`, `programming`, `research`, `write-prd`, `debug`.
 
 ---
 

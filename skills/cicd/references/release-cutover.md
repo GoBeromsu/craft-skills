@@ -1,6 +1,7 @@
 # Release cutover
 
 Turning a verified commit into a named, reproducible artefact, getting that exact artefact running, and proving from durable evidence that it is what runs.
+This worked recipe assumes GitHub Releases, registry-published container images, and Docker Compose on the deployment host; preserve its immutable-release and evidence invariants on other topologies without copying its provider-specific commands.
 A release is not real because a tag exists; it is real once the live stack resolves to the released digest.
 
 ## Contents

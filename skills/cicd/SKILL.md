@@ -21,7 +21,11 @@ For a greenfield repository, select and document those five topology decisions b
 
 Use [ci-gating.md](references/ci-gating.md) only when the selected CI provider is GitHub Actions and a required PR check is in scope. Use [pipeline-safety.md](references/pipeline-safety.md) only when the selected topology is Jenkins on the deployment server with local Docker Compose builds and no registry. Do not transfer either recipe's provider or runtime specifics to another topology.
 
-Use [run-economics.md](references/run-economics.md) when a pipeline is too slow, or when splitting, sharding, or adding a required check — it owns measure-before-optimising, duplicate-run removal, shard exact-cover assertions, the aggregate gate job, and moving branch-protection contexts in the same change. Use [release-cutover.md](references/release-cutover.md) when cutting a tagged release, swapping the running artefact, or proving from durable evidence that the live stack runs the released digest. Fork-trust, action pinning, workflow permissions, and policy mutation tests belong to `security`; this skill sequences the pipeline those rules constrain.
+Use [run-economics.md](references/run-economics.md) only when the selected provider is GitHub Actions and a pipeline is too slow, or when splitting, sharding, or adding a required check.
+For another provider, retain its generic measure-first, one-run, exact-cover, and stable-gate invariants but derive the syntax and protection mechanism from that provider's current official documentation.
+Use [release-cutover.md](references/release-cutover.md) only when the selected topology uses GitHub Releases, registry-published images, and Docker Compose on the deployment host.
+For another release topology, retain its immutable-input, version-carrier, digest, pre-swap, recovery, and durable-measurement invariants without copying its GitHub or Compose procedure.
+Fork-trust, action pinning, workflow permissions, and policy mutation tests belong to `security`; this skill sequences the pipeline those rules constrain.
 
 ## Verification
 

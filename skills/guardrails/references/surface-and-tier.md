@@ -28,7 +28,7 @@ Given one rule, in order:
 A hook is an **amplifier**. It only amplifies the quality of whatever check runs inside it — the concept itself carries no quality. A good rule becomes inevitable; a bad one becomes a tax on every firing. A blocking hook (tier 1 or 3) is a **graduation, not a starting point.** Put a rule behind one only once it passes all three gates:
 
 - **G1 — Cheap:** the check is fast and doesn't depend on external state (network, live backend).
-- **G2 — Accurate:** near-zero false positives. **If the guard itself needs a test suite, it has already become application code** — the wrong tier. Drop it to a softer surface.
+- **G2 — Accurate:** near-zero false positives. Add focused red/green decision-boundary tests for nontrivial parsing or content guards. If proving the guard instead requires an application-scale integration suite or external state, it has become application code — the wrong tier. Drop it to a softer surface.
 - **G3 — Stable:** the structure being enforced has stopped drifting. If the rule is still evolving, keep it as a non-blocking lint warning or in prose, and observe.
 
 Any single failure disqualifies it from a blocking hook. *Observe* it on an earlier/softer surface until it's proven cheap, accurate, and stable — then graduate it.

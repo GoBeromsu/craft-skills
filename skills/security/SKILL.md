@@ -2,7 +2,7 @@
 name: security
 description: Finds and fixes vulnerabilities in code the user owns across web, API, and LLM surfaces, mapping every trust boundary first and triaging by production reachability and severity second. Use when asked for a security review, "is this safe to ship," "check for vulnerabilities," or "보안 점검," when auditing secrets hygiene or dependency risk, or when reviewing a PR or feature for security regressions before release. Not for building or changing LLM-agent systems themselves (use `agents`) or for installing the enforcement hook, lint, or pre-commit that closes a finding permanently (use `guardrails`); this skill finds and fixes, it never attacks.
 metadata:
-  version: 2.3.1
+  version: 2.3.2
 ---
 
 # security
@@ -115,7 +115,7 @@ Reachability, not a demonstrated exploit, drives the tree — a finding with cle
 - Leaving a known exploitable path live "to see what happens" instead of mitigating it immediately → mitigate the path immediately (disable the route, rotate the secret, add a gateway rule).
 - Gating a required CI job behind a job-level `if:` so it skips on untrusted events → gate each token consumer inside the job and assert the gates with a count; a skipped required check reports success to branch protection.
 - Interpolating a `${{ }}` expression into a `run:` body because the value looks trusted → pass it through `env:` and reference the shell variable; the inlined form is the template-injection shape people copy.
-- Restoring or exporting a dependency cache on a pull-request-triggered workflow to speed it up → measure what the cache actually saves first; a fork-writable cache key is a permanent path into later trusted runs.
+- Treating a pull-request cache as either a trusted secret store or a default-branch poisoning path → GitHub scopes PR-created caches to the pull-request merge ref; keep secrets out, document accessible scopes, and verify the selected event and cache action against current official docs.
 - Relaxing a policy assertion to make room for a workflow change → extend the allowlist deliberately and keep the guarantee; a recorded policy decision goes back to its owner instead.
 - Adding a policy test with no case that fails when the policy is violated → ship the mutation case with it; a green suite over an unfalsifiable policy proves nothing.
 

@@ -1489,7 +1489,7 @@
       "name": "security",
       "kind": "leaf",
       "lifecycle": "active",
-      "version": "2.3.1",
+      "version": "2.3.2",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
