@@ -1,144 +1,169 @@
 # Frontend Folder Conventions
 
-A folder convention is a contract about import direction: which directories may import from which others. Pick one convention per app and enforce its import direction — a folder tree with no enforced direction accumulates cycles silently.
+A folder convention is useful only when it communicates ownership and constrains imports. Preserve an incumbent convention; for new or structurally failing applications, prefer a framework shell with cohesive product slices and explicit public APIs.
 
 ## Contents
 
-- [Hard rules](#hard-rules)
-- [Decision table (MECE)](#decision-table-mece)
+- [Decision table](#decision-table)
 - [Type-based](#type-based)
 - [Feature-based](#feature-based)
-- [Layered feature-sliced](#layered-feature-sliced)
-- [Monorepo / repo-topology rule](#monorepo--repo-topology-rule)
+- [Framework shell and feature-sliced layers](#framework-shell-and-feature-sliced-layers)
+- [React and Vite mapping](#react-and-vite-mapping)
+- [Next.js App Router mapping](#nextjs-app-router-mapping)
+- [Public APIs and dependency direction](#public-apis-and-dependency-direction)
+- [Controlled promotion](#controlled-promotion)
+- [Review procedure](#review-procedure)
 - [Incumbent-respect clause](#incumbent-respect-clause)
 - [Hand-offs](#hand-offs)
 
-## Hard rules
+## Decision table
 
-| Concern | Do | Never |
+| Convention | Fits when | Contract |
 |---|---|---|
-| Convention choice | Pick one of type-based / feature-based / layered feature-sliced per app | Mix two conventions in one app with no stated migration |
-| Import direction | Follow the chosen convention's direction rule on every new file | Add an import that violates the direction "just this once" |
-| New app scaffold | Apply the default recommendation below | Copy whatever convention the last project used regardless of route count |
+| Type-based | Small, low-domain app where technical buckets remain easy to navigate | Name folders by technical kind; acknowledge weak product ownership. |
+| Feature-based | Product capabilities are the main unit of change | Colocate UI, model, and API by capability; expose deliberate cross-feature contracts. |
+| Layered feature-sliced | Import direction, domain ranks, and team boundaries need stronger enforcement | Framework shell composes lower product layers; slices are isolated by default. |
 
-## Decision table (MECE)
-
-| Convention | Choose when | Absolute rules | Folder shape |
-|---|---|---|---|
-| Type-based | Small app, few routes (roughly < 10), team of 1-3 | Every file's folder is named after its technical kind, not its feature | `components/`, `hooks/`, `pages/`, `services/`, `utils/` |
-| Feature-based | Medium-to-large app (roughly ≥ 10 routes), multiple teams or clear feature boundaries | Each feature folder is self-contained (its own components/hooks/api calls); cross-feature imports go through a stated shared layer only | `features/<name>/{components,hooks,api}`, `shared/` |
-| Layered feature-sliced | Large app needing strict enforcement of both feature boundaries and architectural layers | Six layers (`app`, `pages`, `widgets`/`features`, `entities`, `shared`) import strictly downward; a layer never imports from a layer above it or from a sibling at the same layer without going through `shared` | `app/`, `pages/`, `features/`, `entities/`, `shared/` |
-
-**Default recommendation:** feature-based for an app with more than roughly 10 routes; type-based below that threshold. Apply the default at route count 1 in a new project — do not wait for the app to outgrow type-based before migrating, since the migration cost grows with every file added under the wrong convention.
+Route count is a signal, not policy. Team/domain ownership, change locality, import cycles, and navigation cost decide when a simple convention has failed. Do not mix conventions during an unrelated feature; propose migration separately.
 
 ## Type-based
 
-**Absolute rules:**
-- Folder name is the technical kind of the file (`components/`, `hooks/`, `services/`), never a feature name.
-- Acceptable only while the app is small enough that "everything imports from everything" has not yet become a navigation cost. Re-evaluate against the route-count threshold as the app grows.
+Typical shape: `components/`, `hooks/`, `pages/`, `services/`, `types/`, `utils/`.
 
-**Detect: route count, to sanity-check the convention still fits.**
-
-```bash
-find src/pages src/app -maxdepth 2 -type f \( -name 'page.tsx' -o -name '*.route.tsx' \) 2>/dev/null | wc -l
-```
-
-Reading: a type-based app with a route count printed above ~10 has outgrown the convention; plan the migration to feature-based rather than continuing to add routes to a flat `pages/`.
+- Use while the codebase is genuinely small and cohesive.
+- Name focused libraries by purpose (`date/`, `currency/`, `validation/`) rather than allowing `utils/` to become an unowned dump.
+- Keep route-specific code close to its route even if the top-level structure remains type-based.
+- When one product change repeatedly touches many distant technical buckets, record that as evidence for a separately scoped feature-based migration.
 
 ## Feature-based
 
-**Absolute rules:**
-- A feature folder owns its own components, hooks, and API calls — another feature never reaches into `features/other-feature/components/` directly.
-- Genuinely shared code lives in `shared/` (or `common/` by project convention), and `shared/` has a stated admission rule (see the rule-of-three note below) — it does not become a second dumping ground for anything not yet placed.
-
-**Detect: a cross-feature import bypassing `shared/`.**
-
-```bash
-grep -rlE "from ['\"](\.\./)+features/[a-zA-Z0-9_-]+/" src/features 2>/dev/null \
-  | while read -r f; do
-      owner=$(echo "$f" | sed -E 's#.*features/([^/]+)/.*#\1#')
-      grep -oE "features/[a-zA-Z0-9_-]+/" "$f" | grep -v "features/$owner/"
-    done
+```text
+src/
+  app/
+  features/
+    checkout/
+      ui/
+      model/
+      api/
+      index.ts
+  shared/
 ```
 
-Any output → a file inside one feature imports from a different feature's internal path → move the shared piece to `shared/` (after a rule-of-three check) or expose it through that feature's own public entry point instead of a deep import.
+- A feature owns one meaningful user capability.
+- Another feature does not deep-import its `ui/`, `model/`, `api/`, or `lib/` internals.
+- Route-private code remains route-private until reuse is demonstrated.
+- `shared` admits only business-neutral or deliberately stable cross-context contracts with named ownership.
 
-**SMELL:**
+A feature folder is not proof of a boundary. Its imports and supported exports must enforce the same ownership.
+
+## Framework shell and feature-sliced layers
+
+Current FSD documents seven historical layers: App, Processes, Pages, Widgets, Features, Entities, and Shared. Processes is deprecated, leaving six non-deprecated layers. Projects may omit layers that add no value; current guidance also treats Widgets as optional and often unnecessary. Source: [FSD layers](https://fsd.how/docs/reference/layers/).
+
+| Rank, high to low | Responsibility |
+|---|---|
+| App / framework shell | Bootstrap, routing, providers, global runtime concerns |
+| Pages | Route/screen compositions when not already absorbed by the framework router |
+| Widgets, optional | Large reusable page blocks; omit when Features/Pages express ownership better |
+| Features | Reused user capabilities and interactions |
+| Entities | Stable product/domain concepts and their model/UI/API |
+| Shared | Business-neutral UI, integrations, config, and focused libraries |
+
+A layer contains slices partitioned by product meaning; a slice contains technical-purpose segments such as `ui`, `model`, `api`, and `lib`. Segment names are local details, not global root buckets. Sources: [slices and segments](https://fsd.how/docs/reference/slices-segments/) and [public API](https://fsd.how/docs/reference/public-api/).
+
+Dependency rule: a slice may import lower layers, its own internals, and only documented exceptions. Lower layers never import higher layers. Same-layer slices do not import one another by default.
+
+## React and Vite mapping
+
+For a confirmed React SPA using Vite or equivalent browser tooling, this mapping applies only when feature-sliced folders are incumbent or separately approved:
+
+```text
+src/
+  app/                 # main, router, providers, error boundary, global-style entry
+  pages/               # route composition when the incumbent router uses it
+  widgets/             # optional
+  features/
+  entities/
+  shared/
+```
+
+Vite owns build integration, not route semantics. Preserve the incumbent router and aliases. Omit unused layers; do not scaffold empty directories to appear compliant. For a coherent route-colocated, `modules/`, or type-based incumbent, retain its paths and map shell/domain/shared responsibilities logically. Do not add parallel `features/`, `entities/`, or `shared/` roots during an unrelated feature. The example does not authorize relocating `src/main.*`, router/provider registration, or the global-style entry.
+
+## Next.js App Router mapping
+
+For an App Router project where feature-sliced product folders are incumbent or separately approved:
+
+```text
+src/
+  app/                 # Next route shell; absorbs FSD App and Pages responsibilities
+  features/
+  entities/
+  shared/
+```
+
+This is an incumbent-friendly FSD subset, not canonical FSD Next topology. Next `app/` owns route segments, layouts, loading/error boundaries, metadata, and route composition. Product slices live as siblings. Do not create a second `app` or parallel `pages` router.
+
+The canonical [FSD Next.js guide](https://fsd.how/docs/guides/tech/with-nextjs/) keeps the framework `app/` beside prefixed `_app` and `_pages` layers. Preserve that structure when incumbent or adopt it only through an explicit architecture change. Never silently migrate between the canonical and one-shell mappings.
+
+In either mapping, server/client module graphs remain an additional boundary: client entries cannot expose server-only internals. For a coherent route-colocated, `modules/`, or type-based Next incumbent, preserve those physical paths and apply the same dependency/public-API rules there. Do not introduce FSD-shaped siblings merely because the framework uses one `app` shell.
+
+## Public APIs and dependency direction
+
+Evaluate dependency legality first. If an edge is upward or forbidden between peer slices, importing through `index.ts` does not make it valid.
+
+For a legal external consumer:
+
+- Export only supported capabilities from the slice root or incumbent package entry.
+- Import slice internals relatively from within the same slice; do not route internal imports back through the public barrel.
+- Prefer explicit exports over wildcard exports.
+- Avoid one application-wide barrel and broad `shared/ui` re-export trees; they can create cycles, unnecessary transforms, and accidental surfaces.
+- Use environment-specific entries such as `index.server.ts` only when one surface would expose server-only code to a client graph.
+- Check type-only imports and aliases too; they still express architectural coupling even when erased at runtime.
+
+FSD documents a narrow Entities-layer `@x` exception for entities that genuinely contain or must refactor with one another. Keep the default same-layer ban. Use `@x` only when the relationship is explicit, limited to the named consumer, and maintained as one refactor unit; do not generalize it to Features or arbitrary peers.
+
+Example legal consumer:
 
 ```ts
-// features/checkout/summary.ts
-import { formatPrice } from "../../features/catalog/pricing";
+import { CheckoutForm } from "@/features/checkout";
 ```
 
-**CLEAN:**
+Deep import to reject:
 
 ```ts
-// features/checkout/summary.ts
-import { formatPrice } from "@/shared/format";
+import { CheckoutForm } from "@/features/checkout/ui/internal/CheckoutForm";
 ```
 
-**Rule of three for `shared/` admission:** the first time a piece of logic looks reusable across features, leave it in its originating feature. The second time another feature needs the same logic, note the duplication. The third time, promote it to `shared/` with a named owner. Promoting on the first occurrence produces a `shared/` shaped around one feature's assumptions.
+## Controlled promotion
 
-## Layered feature-sliced
+Use this ladder:
 
-**Absolute rules:**
-- Layers, from outermost to innermost: `app` (app-wide setup, providers, routing) → `pages` (route compositions) → `widgets`/`features` (self-contained UI blocks with logic) → `entities` (business domain models and their UI) → `shared` (framework-agnostic, business-agnostic utilities and UI primitives).
-- Import direction is strictly downward: a layer imports only from itself or a layer below it. A `shared` module never imports from `entities`, `features`, `pages`, or `app`.
-- Same-layer imports (a `feature` importing another `feature`) are treated the same as an upward import — banned; route the dependency down through `entities` or `shared` instead.
+1. Keep the first implementation inside its route or owning feature.
+2. When another consumer appears, compare semantics and expected reason to change; do not extract on visual similarity alone.
+3. Review promotion after three real consumers, but treat three as a trigger rather than automatic approval.
+4. Promote only when the target layer is legal, ownership is named, the API is narrow, and regression coverage protects all consumers.
+5. Rewrite consumers to the supported API and remove obsolete/deep paths in the same change. Do not leave compatibility barrels.
 
-**Detect: an upward or same-layer import violating the layer order.**
+An Entity requires one stable domain meaning across higher-level capabilities. A Shared module must be business-neutral or an intentionally stable cross-context contract. Small duplicated presentation can be cheaper than a wrong shared abstraction.
 
-```bash
-rank() {
-  case "$1" in
-    shared) echo 1 ;;
-    entities) echo 2 ;;
-    features|widgets) echo 3 ;;
-    pages) echo 4 ;;
-    app) echo 5 ;;
-  esac
-}
-for f in $(find src -type f \( -name '*.ts' -o -name '*.tsx' \)); do
-  from_layer=$(echo "$f" | grep -oE '/(shared|entities|features|widgets|pages|app)/' | head -1 | tr -d '/')
-  [ -z "$from_layer" ] && continue
-  from_rank=$(rank "$from_layer")
-  grep -oE "from ['\"](\.\./)+(shared|entities|features|widgets|pages|app)/" "$f" 2>/dev/null \
-    | grep -oE '(shared|entities|features|widgets|pages|app)' \
-    | while read -r to_layer; do
-        to_rank=$(rank "$to_layer")
-        [ "$to_rank" -ge "$from_rank" ] && echo "$f: $from_layer -> $to_layer"
-      done
-done
-```
+## Review procedure
 
-Any line printed → a file in `from_layer` imports a module ranked at or above its own layer → the import direction is violated; move the dependency down or restructure which layer owns the logic.
-
-## Monorepo / repo-topology rule
-
-A manifests repository (Kubernetes/kustomize configuration only) carries zero application source. An application repository never embeds cluster manifests beyond its own `deploy/` directory.
-
-**Detect: application source living inside what should be a manifests-only repository.**
-
-```bash
-find . -name '*.py' -o -name '*.ts' -o -name '*.tsx' | grep -v -E '(^\./scripts/|node_modules)'
-```
-
-Any match inside a repository whose purpose is kustomize/manifests-only → flag; application logic belongs in its own source repository, not the deploy repository.
-
-**Detect: an application repository embedding cluster manifests outside its own `deploy/` directory.**
-
-```bash
-find . -iname '*.yaml' -o -iname '*.yml' | xargs grep -l '^kind: ' 2>/dev/null | grep -v -E '^\./deploy/'
-```
-
-Any match outside `./deploy/` in an application repository → cluster manifests are leaking into application source control at the wrong path; move them under the repo's own `deploy/` directory or into the separate manifests repository.
+1. Identify the framework shell and incumbent convention.
+2. Map changed files to route, feature, entity, or shared ownership.
+3. Inspect actual imports with the project's TypeScript/lint/workspace tooling; regex examples are hints, not proof.
+4. Reject upward and forbidden peer edges before reviewing barrels.
+5. Inspect public exports, internal deep imports, cycles, aliases, and server/client graph crossings.
+6. For moved code, verify every consumer and delete obsolete paths.
+7. Record any convention migration as a separate plan with its own build, route, and behavior verification.
 
 ## Incumbent-respect clause
 
-Detect the project's existing convention (type-based, feature-based, or layered feature-sliced) by inspecting the top-level `src/` structure before adding a file. Follow that convention for every edit. Apply the default recommendation only to a new project or a new, independently-routed app in a monorepo; never migrate an existing app's folder convention as a side effect of an unrelated feature change — propose the migration as its own change.
+Follow the existing convention when it has coherent ownership and enforceable imports. A flat unowned bucket is evidence of missing architecture, but it is not permission for a feature request to migrate the whole application. Add the smallest local boundary and separately propose structural migration.
 
 ## Hand-offs
 
-- Which layer inside `features/`/`widgets/` a given component belongs to (primitive vs. composed vs. feature-bound) → `components.md` in this skill.
-- Server-cache vs. global-store placement inside `shared/`/`entities/` → `state.md` in this skill.
-- Per-file import/module discipline (barrel files, circular-import detection at the file level) → `programming`.
+- Runtime shell and server/client rules → [`architectures.md`](architectures.md).
+- Component abstraction and supported props → [`components.md`](components.md).
+- State ownership inside slices → [`state.md`](state.md).
+- CSS locality and token/style ownership → [`css.md`](css.md).
+- Per-file TypeScript and circular-import discipline → `programming`.
