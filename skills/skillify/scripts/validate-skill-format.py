@@ -41,6 +41,7 @@ validate-runtime-hygiene.py — keep the two concerns separate.
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import subprocess
 import sys
@@ -72,6 +73,7 @@ NAME_MAX_LENGTH = 64
 PREFIX = "MUST USE "
 DELIMITER = ". "
 ANY_TOKEN = re.compile(r"(?<![A-Za-z0-9_])ANY(?![A-Za-z0-9_])")
+ALL_CAPS_DIRECTIVE_LOOKALIKE = re.compile(r"^MUST(?![A-Za-z0-9])")
 
 
 @dataclass
@@ -85,13 +87,23 @@ class Finding:
 def parse_scalar(value: str) -> object:
     """Parse the YAML scalar forms needed to distinguish strings from types."""
     value = value.strip()
-    if len(value) >= 2 and value[0] == value[-1] and value[0] in "'\"":
-        return value[1:-1]
+    if len(value) >= 2 and value[0] == value[-1] == '"':
+        try:
+            return json.loads(value)
+        except json.JSONDecodeError:
+            return None
+    if len(value) >= 2 and value[0] == value[-1] == "'":
+        return value[1:-1].replace("''", "'")
     if value.startswith("[") and value.endswith("]"):
         inner = value[1:-1]
         return [parse_scalar(item) for item in inner.split(",") if item.strip()]
     if value.startswith("{") and value.endswith("}"):
         return {}
+    if re.fullmatch(r"[>|][+-]?", value):
+        return None
+    comment = re.search(r"[ \t]+#", value)
+    if comment is not None:
+        value = value[:comment.start()].rstrip()
     if value in {"null", "Null", "NULL", "~"}:
         return None
     if value.lower() == "true":
@@ -111,6 +123,11 @@ def validate_description_directive(description: str) -> tuple[str, str] | None:
     if prefix_count > 1:
         return "MULTIPLE_MUST_USE", "description has multiple exact 'MUST USE ' prefixes"
     if prefix_count == 0:
+        if ALL_CAPS_DIRECTIVE_LOOKALIKE.search(description):
+            return "BAD_MUST_USE_LOOKALIKE", (
+                "leading all-caps MUST/USE lookalikes are reserved; use the exact "
+                "'MUST USE <clause>. <remainder>' grammar or ordinary sentence case"
+            )
         if ANY_TOKEN.search(description):
             return "MISPLACED_DIRECTIVE_ANY", (
                 "standalone uppercase ANY requires a valid MUST USE directive"
@@ -124,11 +141,16 @@ def validate_description_directive(description: str) -> tuple[str, str] | None:
         return "BAD_MUST_USE_CLAUSE", (
             "MUST USE directive needs a nonempty clause and remainder separated by '. '"
         )
-    clause = description[len(PREFIX):delimiter_index].strip()
-    remainder = description[delimiter_index + len(DELIMITER):].strip()
-    if not clause or not remainder:
+    clause = description[len(PREFIX):delimiter_index]
+    remainder = description[delimiter_index + len(DELIMITER):]
+    if (
+        not clause
+        or not remainder
+        or clause != clause.strip()
+        or remainder != remainder.strip()
+    ):
         return "BAD_MUST_USE_CLAUSE", (
-            "MUST USE directive needs a nonempty clause and remainder separated by '. '"
+            "MUST USE directive needs canonical nonempty clause and remainder spacing around '. '"
         )
     if ANY_TOKEN.search(remainder):
         return "MISPLACED_DIRECTIVE_ANY", (

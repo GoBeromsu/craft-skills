@@ -2,7 +2,7 @@
 name: skillify
 description: Owns the full lifecycle of craft-skills skill packages — creating, updating, moving/renaming, retiring them, and absorbing frontier labs' skill-creators into vendor lenses — through an eval-first authoring loop and deterministic format validation. Use when a user says things like "make a skill", "skillify this workflow", "turn this into a skill", "update this skill", "move this skill", "absorb openai's new skill-creator", or "스킬 만들자", or when a recurring workflow correction needs to be encoded into a governing skill instead of staying in chat memory. Not for one-off project scripts or prompts with no reuse intent — those stay local to the originating project.
 metadata:
-  version: 4.9.0
+  version: 4.9.1
 ---
 
 # skillify
@@ -45,7 +45,8 @@ Before writing `SKILL.md`, draft the eval scenarios that will judge it — evals
 3. Run each scenario without the skill, then with the drafted body — the skill's value is the delta between the arms. Iterate until behavior matches. Run the 16 trigger prompts against the drafted description; tighten the "Not for X" boundary sentence wherever a near-miss would plausibly match. Use a fresh, blind, read-only capable model or human independent from the authoring session as the fresh-eyes judge.
 
 For a leading routing directive, freeze the 16 trigger cases before tuning as 6+6 tuning and 2+2 held-out cases.
-Promote only when the candidate repairs a baseline miss, preserves every baseline success, routes 8/8 positives, produces 0/8 negative false positives, and passes all 4 held-outs.
+Record the runtime, judge, and real discovery/index surface, then repeat the frozen corpus across every supported runtime that consumes the shared description.
+Promote only when the candidate repairs a baseline miss, preserves every baseline success, routes 8/8 positives, produces 0/8 negative false positives, and passes all 4 held-outs on every recorded runtime surface.
 When the baseline is perfect, ship the capability without self-applying the directive.
 
 How to run the arms, judge with fresh eyes, read transcripts, and improve without overfitting: [`references/evaluation.md`](references/evaluation.md).
@@ -60,7 +61,7 @@ Add spec keys `license`, `compatibility`, or experimental `allowed-tools` only w
 Name is kebab-case and equals the directory: verb-first for a skill the user explicitly triggers, a plain noun for a skill that supplies ambient domain context.
 Description is third person, states what + when, weaves in 3–6 real trigger phrases, writes against undertriggering, and adds a "Not for X" line when a sibling overlaps.
 Default to ordinary prose.
-Use contract §3's exact leading `MUST USE <bounded ownership clause>. ` form only when frozen baseline-delta trigger evidence demonstrates explicit included intents, excluded sibling edges, at least one repaired miss, and no regression; lexical validity alone never proves MECE.
+Use contract §3's exact leading `MUST USE <bounded ownership clause>. ` form only when frozen baseline-delta trigger evidence across supported runtime discovery surfaces demonstrates explicit included intents, excluded sibling edges, at least one repaired miss, and no regression; lexical validity alone never proves MECE.
 Body targets 150 lines, hard-caps at 500; move depth to files in `references/`.
 Keep package content MECE: each rule has one owning section or reference, and nearby locations link to it instead of restating it.
 Full rules: `references/contract.md`.

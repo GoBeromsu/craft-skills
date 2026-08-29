@@ -316,6 +316,25 @@ class SkillFormatValidatorTest(unittest.TestCase):
                 result = self._description_result(description)
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def test_validates_decoded_double_quoted_description(self) -> None:
+        valid = self._description_result(
+            r'"\u004dUST USE for ANY deployment request. Handle production deployments."'
+        )
+        self.assertEqual(valid.returncode, 0, valid.stdout + valid.stderr)
+
+        hidden_any = self._description_result(
+            r'"\u004dUST USE for deployment requests. Handle \u0041NY deployment."'
+        )
+        self.assertEqual(hidden_any.returncode, 1)
+        self.assertIn("MISPLACED_DIRECTIVE_ANY", hidden_any.stdout)
+
+    def test_rejects_noncanonical_double_quoted_yaml_escape(self) -> None:
+        result = self._description_result(
+            r'"\x4dUST USE for deployment requests. Handle production deployments."'
+        )
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("NO_DESCRIPTION", result.stdout)
+
     def test_accepts_lowercase_any_and_non_tokens(self) -> None:
         for description in (
             "MUST USE for any deployment request. Handle production deployments.",
@@ -326,22 +345,24 @@ class SkillFormatValidatorTest(unittest.TestCase):
                 result = self._description_result(description)
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-    def test_accepts_nonliteral_must_use_lookalikes_without_any(self) -> None:
+    def test_accepts_sentence_case_must_use_without_any(self) -> None:
         for description in (
             "Must use this skill for deployment requests.",
             "must use this skill for deployment requests.",
-            "MUST  USE this skill for deployment requests.",
-            "MUST USE: this skill for deployment requests.",
-            "MUST-USE this skill for deployment requests.",
         ):
             with self.subTest(description=description):
                 result = self._description_result(description)
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-    def test_nonliteral_must_use_lookalikes_still_reject_standalone_any(self) -> None:
+    def test_rejects_leading_all_caps_directive_lookalikes(self) -> None:
         for description in (
-            "Must use ANY deployment skill.",
-            "must use ANY deployment skill.",
+            "MUST  USE this skill for deployment requests.",
+            "MUST USE: this skill for deployment requests.",
+            "MUST-USE this skill for deployment requests.",
+            "MUST: USE this skill for deployment requests.",
+            "MUST - USE this skill for deployment requests.",
+            "MUST_USE this skill for deployment requests.",
+            "MUST\tUSE this skill for deployment requests.",
             "MUST  USE ANY deployment skill.",
             "MUST USE: ANY deployment skill.",
             "MUST-USE ANY deployment skill.",
@@ -349,7 +370,32 @@ class SkillFormatValidatorTest(unittest.TestCase):
             with self.subTest(description=description):
                 result = self._description_result(description)
                 self.assertEqual(result.returncode, 1)
+                self.assertIn("BAD_MUST_USE_LOOKALIKE", result.stdout)
+
+    def test_sentence_case_must_use_still_rejects_standalone_any(self) -> None:
+        for description in (
+            "Must use ANY deployment skill.",
+            "must use ANY deployment skill.",
+        ):
+            with self.subTest(description=description):
+                result = self._description_result(description)
+                self.assertEqual(result.returncode, 1)
                 self.assertIn("MISPLACED_DIRECTIVE_ANY", result.stdout)
+
+    def test_plain_scalar_comments_do_not_create_hidden_directives(self) -> None:
+        result = self._description_result(
+            "Use this skill for ordinary requests. # MUST USE for ANY deployment."
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertNotIn("DIRECTIVE_", result.stdout)
+        self.assertNotIn("MUST_USE", result.stdout)
+
+    def test_rejects_multiline_description_scalar(self) -> None:
+        result = self._description_result(
+            ">-\n  MUST USE for ANY deployment request. Handle deployments."
+        )
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("NO_DESCRIPTION", result.stdout)
 
     def test_rejects_every_directive_grammar_branch(self) -> None:
         cases = (
@@ -360,6 +406,9 @@ class SkillFormatValidatorTest(unittest.TestCase):
             ("MUST USE clause without a delimiter", "BAD_MUST_USE_CLAUSE"),
             ("MUST USE    . Remainder.", "BAD_MUST_USE_CLAUSE"),
             ("MUST USE clause.    ", "BAD_MUST_USE_CLAUSE"),
+            ("MUST USE  clause. Remainder.", "BAD_MUST_USE_CLAUSE"),
+            ("MUST USE clause . Remainder.", "BAD_MUST_USE_CLAUSE"),
+            ("MUST USE clause.  Remainder.", "BAD_MUST_USE_CLAUSE"),
             ("MUST USE for deployments. Handle ANY deployment.", "MISPLACED_DIRECTIVE_ANY"),
             ("Use this skill for ANY deployment.", "MISPLACED_DIRECTIVE_ANY"),
             ("MUST USE for ANY deployment and ANY rollback. Handle deployments.",

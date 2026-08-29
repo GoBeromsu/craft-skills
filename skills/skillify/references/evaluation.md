@@ -59,7 +59,9 @@ The optional `MUST USE <bounded ownership clause>. ` form in contract §3 needs 
 4. Run the current description on the 12 tuning cases and record every success, miss, and false positive.
 5. Tune only against those 12 cases, then freeze the candidate before consulting held-out verdicts.
 6. Give a fresh blind read-only judge the final baseline and candidate surfaces, keeping cited verdict evidence separate from the authored labels.
-7. Promote the directive only when it repairs at least one baseline miss, preserves every baseline success, routes 8/8 positives correctly, produces 0/8 negative false positives, and passes all 4 held-out cases.
+7. Record the runtime, model or human judge, and the actual discovery/index surface used for every verdict.
+8. Repeat the frozen corpus across every supported runtime that consumes the universal description; an unavailable runtime blocks universal promotion and keeps the ordinary description.
+9. Promote the directive only when it repairs at least one baseline miss, preserves every baseline success, routes 8/8 positives correctly, produces 0/8 negative false positives, and passes all 4 held-out cases on every recorded runtime surface.
 
 Uncertain, uncited, or flaky judgments fail the gate.
 A perfect baseline does not justify self-application; the general directive capability may still ship.
@@ -69,6 +71,7 @@ Scenario review also confirms that body prose gained neither directive syntax no
 ## 4. Fresh-eyes judge
 
 Use a capable model or human in a fresh context, independent from the authoring session, as the qualitative judge.
+Record the exact runtime, model or human identity, and discovery surface so the verdict proves only the environment that actually produced it.
 Keep the judge read-only through enforced tool or permission controls rather than prompt intent alone.
 Give it only the artifacts needed for the rubric: do not include the author's rationale or identify which A/B arm is the candidate.
 Require cited evidence for the verdict, and treat missing evidence or uncertain judgment as failure rather than letting the authoring session self-judge.

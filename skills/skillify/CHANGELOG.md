@@ -46,3 +46,4 @@
 - 2026-08-29 — v4.8.1: a wildcard support-file token made Hermes request a literal missing path → name the references directory without a glob.
 - 2026-08-30 — v4.8.2: the post-v4.8.1 merge still needed the `hookify` naming correction → carried [contract.md](references/contract.md) §2's `guardrails` example forward.
 - 2026-08-30 — v4.9.0: MECE skill domains needed stronger discovery signals without turning lexical shape into semantic proof → permit one optional leading `MUST USE` description clause with bounded `ANY`, enforce its exact shape deterministically, require frozen baseline-delta trigger evidence for semantic use, and keep body prose outside the exception.
+- 2026-08-30 — v4.9.1: quoted YAML escapes and normalized padding could bypass the directive grammar → validate decoded canonical scalars and reject noncanonical escapes or whitespace with regression coverage.
