@@ -102,6 +102,42 @@ class LifecyclePruneTests(unittest.TestCase):
             with contextlib.redirect_stderr(io.StringIO()):
                 self.assertEqual(lifecycle_prune.main([str(root), "--accept", "anything"]), 2)
 
+    def test_acceptance_not_offered_by_current_evidence_is_refused(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            owned = root / "stale.md"
+            owned.write_bytes(b"stale managed bytes")
+            os.chmod(owned, 0o640)
+            snapshot = snapshot_for(root, [stale_row("stale.md", owned.read_bytes())])
+            committed = lifecycle_core.canonical_json(snapshot, pretty=True)
+            (root / ".agents-map.json").write_bytes(committed)
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                self.assertEqual(lifecycle_prune.main([str(root), "--accept", "P-REMOVE-STALE-FILE-deadbeefcafe"]), 2)
+            self.assertIn("prune-blocked", stderr.getvalue())
+            self.assertEqual(owned.read_bytes(), b"stale managed bytes")
+            self.assertEqual((root / ".agents-map.json").read_bytes(), committed)
+
+    def test_no_accepted_deletion_is_a_reporting_no_op(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            owned = root / "stale.md"
+            owned.write_bytes(b"stale managed bytes")
+            os.chmod(owned, 0o640)
+            snapshot = snapshot_for(root, [stale_row("stale.md", owned.read_bytes())])
+            committed = lifecycle_core.canonical_json(snapshot, pretty=True)
+            (root / ".agents-map.json").write_bytes(committed)
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                self.assertEqual(lifecycle_prune.main([str(root)]), 0)
+            report = json.loads(stdout.getvalue())
+            self.assertTrue(report["no_op"])
+            self.assertEqual(report["effects"], [])
+            self.assertEqual([proposal["path"] for proposal in report["proposals"]], ["stale.md"])
+            self.assertEqual(owned.read_bytes(), b"stale managed bytes")
+            self.assertEqual((root / ".agents-map.json").read_bytes(), committed)
+            self.assertFalse((root / ".agents-map.transaction.json").exists())
+
     def test_accepted_prune_deletes_product_and_commits_row_removal(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

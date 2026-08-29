@@ -14,7 +14,9 @@ from lifecycle_core import plan_prune, validate_ownership_snapshot
 _SNAPSHOT = ".agents-map.json"
 
 
-def _emit(value: dict, stream: object = sys.stdout) -> None:
+def _emit(value: dict, stream: object | None = None) -> None:
+    if stream is None:
+        stream = sys.stdout
     print(json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")), file=stream)
 
 
@@ -44,7 +46,7 @@ def _snapshot(root: Path) -> dict:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Prune only stale regions proven managed by the ownership snapshot.")
     parser.add_argument("root", nargs="?", default=".", help="repository root (default: current directory)")
-    parser.add_argument("--accept", action="append", default=[], metavar="ID", required=True)
+    parser.add_argument("--accept", action="append", default=[], metavar="ID")
     args = parser.parse_args(argv)
     try:
         root = _root(args.root)
@@ -55,6 +57,16 @@ def main(argv: list[str] | None = None) -> int:
         plan = plan_prune(root, snapshot, set(args.accept))
         if not isinstance(plan, dict) or not isinstance(plan.get("effects"), list):
             raise ValueError("prune planning returned an invalid result")
+        # An acceptance that the current evidence no longer offers is stale consent:
+        # refuse it instead of committing a snapshot the operator never approved.
+        unmatched = sorted(set(args.accept) - {proposal["id"] for proposal in plan["proposals"]})
+        if unmatched:
+            raise ValueError("accepted proposal is not offered by current evidence: " + ", ".join(unmatched))
+        if not plan["effects"]:
+            # The default is no accepted deletion: report the offered proposals and
+            # leave every byte, mode, and the committed snapshot untouched.
+            _emit({"operation": "prune", "exit_code": 0, "phase": "complete", "effects": [], "no_op": True, "proposals": plan["proposals"]})
+            return 0
         result = apply(root, plan["effects"], set(args.accept), snapshot_payload=plan["snapshot"], operation="prune")
         if not isinstance(result, dict):
             raise ValueError("transaction application returned an invalid result")
