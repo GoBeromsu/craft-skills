@@ -2,7 +2,7 @@
 name: document
 description: Routes repository documentation into a six-type ontology and authors canonical artifacts. Use when asked to "record this decision", "where does this spec go", "update the README", "draft the project CHANGELOG", "comment-the-why", or "write a design.md". Not for repository docs scaffolding (use init), conducting research (use research), technical reports (use write-report), or API-surface comments.
 metadata:
-  version: 3.1.0
+  version: 3.1.1
 ---
 
 # document
@@ -38,7 +38,7 @@ Pick the primary question a task answers and route by that row — the ontology 
 | Decide how to comment code (comment-the-why) | `references/inline-comments.md` | — |
 | Write or update `design.md` / design tokens | `references/design.md` | `templates/design.md` |
 | Map the system (`architecture.md`) | see architecture.md section below | `templates/architecture.md` |
-| File research, a spec, a plan, a rule, or an archived source | ontology table above | matching `templates/*.md` |
+| File research, a spec, a plan, a rule, or an archived source | ontology table above | matching file in `templates/` |
 
 No documentation task should dead-end here — every repo-level artifact and every ontology artifact has an exit row.
 
