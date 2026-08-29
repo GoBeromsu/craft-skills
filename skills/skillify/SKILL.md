@@ -2,7 +2,7 @@
 name: skillify
 description: Owns the full lifecycle of craft-skills skill packages — creating, updating, moving/renaming, retiring them, and absorbing frontier labs' skill-creators into vendor lenses — through an eval-first authoring loop and deterministic format validation. Use when a user says things like "make a skill", "skillify this workflow", "turn this into a skill", "update this skill", "move this skill", "absorb openai's new skill-creator", or "스킬 만들자", or when a recurring workflow correction needs to be encoded into a governing skill instead of staying in chat memory. Not for one-off project scripts or prompts with no reuse intent — those stay local to the originating project.
 metadata:
-  version: 4.7.2
+  version: 4.8.0
 ---
 
 # skillify
@@ -42,7 +42,7 @@ Before writing `SKILL.md`, draft the eval scenarios that will judge it — evals
 
 1. Draft `evals/evals.json` — about 3 realistic scenarios (prompt + expected behavior).
 2. Draft `evals/triggers.json` — 8 should-trigger + 8 near-miss should-NOT-trigger prompts pulled from sibling skills' domains.
-3. Run each scenario without the skill, then with the drafted body — the skill's value is the delta between the arms. Iterate until behavior matches. Run the 16 trigger prompts against the drafted description; tighten the "Not for X" boundary sentence wherever a near-miss would plausibly match. Use Grok 4.6 with `xhigh` reasoning as the default fresh-eyes judge when the Grok CLI is available; keep the judge read-only and independent from the authoring session.
+3. Run each scenario without the skill, then with the drafted body — the skill's value is the delta between the arms. Iterate until behavior matches. Run the 16 trigger prompts against the drafted description; tighten the "Not for X" boundary sentence wherever a near-miss would plausibly match. Use a fresh, blind, read-only capable model or human independent from the authoring session as the fresh-eyes judge.
 
 How to run the arms, judge with fresh eyes, read transcripts, and improve without overfitting: [`references/evaluation.md`](references/evaluation.md).
 `evals/` is local scratch — gitignored, never committed.
@@ -71,6 +71,7 @@ Put portable lessons in the single core owner that governs them; each lens holds
 | [`references/vendor-hermes.md`](references/vendor-hermes.md) | Targeting the Hermes runtime, or borrowing its experience-capture (`/learn`) flow. | [Hermes skill guide](https://github.com/NousResearch/hermes-agent/tree/main/website/docs/user-guide/skills) |
 | [`references/vendor-cursor.md`](references/vendor-cursor.md) | Targeting Cursor, including its skill discovery and packaging conventions. | [Cursor skills docs](https://prod.cursor.com/docs/skills) |
 | [`references/vendor-grok.md`](references/vendor-grok.md) | Targeting Grok-native skills, plugins, or marketplaces. | [xAI skills and plugins docs](https://docs.x.ai/build/features/skills-plugins-marketplaces) |
+| [`references/vendor-gjc.md`](references/vendor-gjc.md) | Orchestrating skill authoring with GJC's built-in profiles, Ralplan, and Ultragoal while keeping output portable. | [GJC SDK application guide](https://github.com/Yeachan-Heo/gajae-code/blob/main/docs/sdk-app-guide.md) |
 
 Core recipes must run unchanged on Hermes, Claude Code, Codex, Cursor, and Grok-native runtimes; a universal recipe never requires a single vendor's tool.
 Vendor fields, commands, plugin metadata, and other runtime plumbing stay in the matching lens.
@@ -93,8 +94,7 @@ Follow the [branch → commit → PR delivery flow](references/lifecycle.md#6-br
 
 - `python3` — official source: https://docs.python.org/3/; safe probe: `python3 --version`; support boundary: Python 3.10+ for Layer-1 validators.
 - `gh` — official source: https://cli.github.com/manual/; safe probe: `gh --version`; support boundary: current `gh pr create`, `gh pr checks`, and `gh pr merge` command surfaces for the delivery flow.
-- Dependency trigger — a selected dependency/runtime release or a changed probe/capability requires official-documentation review and affected evals before updating this package.
-The dependency contract applies to skillify immediately; apply it to another package when that package is next touched or when its own dependency trigger fires. Do not create mass churn or a global inventory.
+- Dependency trigger — a selected dependency/runtime release or a changed probe/capability requires official-documentation review and affected evals before updating this package. The dependency contract applies to skillify immediately; apply it to another package when that package is next touched or when its own dependency trigger fires. Do not create mass churn or a global inventory.
 
 ## Anti-patterns
 

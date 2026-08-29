@@ -51,15 +51,11 @@ For the `evals/triggers.json` prompts (counts: contract §7):
 
 ## 4. Fresh-eyes judge
 
-Use Grok 4.6 at `xhigh` reasoning effort as the default qualitative judge when the Grok CLI is available:
-
-```bash
-grok --model grok-4.6 --reasoning-effort xhigh \
-  --permission-mode plan --disable-web-search --no-subagents \
-  --verbatim --single "<blind comparison or trigger-fit prompt>"
-```
-
-Give the judge only the artifacts needed for its rubric. Do not include the author's rationale, identify which A/B arm is the candidate, or grant write-capable permissions. A missing Grok CLI degrades to another independent model or a human review; it does not justify self-judging in the authoring session.
+Use a capable model or human in a fresh context, independent from the authoring session, as the qualitative judge.
+Keep the judge read-only through enforced tool or permission controls rather than prompt intent alone.
+Give it only the artifacts needed for the rubric: do not include the author's rationale or identify which A/B arm is the candidate.
+Require cited evidence for the verdict, and treat missing evidence or uncertain judgment as failure rather than letting the authoring session self-judge.
+When GJC orchestrates authoring, follow the fixed-profile and workflow boundary in [`vendor-gjc.md`](vendor-gjc.md); that route does not prescribe a second GJC profile as the judge.
 
 ## 5. Read the transcripts, not just the outputs
 
