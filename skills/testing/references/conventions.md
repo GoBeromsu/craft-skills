@@ -8,6 +8,7 @@ This reference owns test quality, lifecycle evidence, audit decisions, and suite
 - [Evidence and oracles](#evidence-and-oracles)
 - [New and modified tests](#new-and-modified-tests)
 - [Audits](#audits)
+- [Static audit leads](#static-audit-leads)
 - [Test-first and characterization quality](#test-first-and-characterization-quality)
 - [Readable deterministic tests](#readable-deterministic-tests)
 - [Suite health and quarantine](#suite-health-and-quarantine)
@@ -75,6 +76,20 @@ Historical `unavailable` evidence requires separate obsolete, duplicate, or rema
 Search results and static patterns are review leads only.
 
 Do not use assertion tokens, filenames, or source-test cardinality as pass/fail gates.
+
+## Static audit leads
+
+Use static searches to identify candidates, then apply the audit record and counterfactual evidence; a match never decides retain, rewrite, delete, or add by itself.
+
+- Search for host-layout pins and silent skips such as `Path.home()`, literal `/tmp` paths, `skipif`, `importorskip`, or unconditional skip calls.
+- Search documentation tests for existence, heading, or substring assertions that never execute the documented instruction.
+- Search for log-text, private-attribute, or lint-suppression assertions used as proxies for public behavior.
+
+Replace host-layout pins with runner-provided per-test paths and put every global side channel behind a shared fixture. Do not condition a default-suite test on a gitignored asset, optional binary, build flag, or sibling checkout: deliberately mark and select the required heavier environment instead.
+
+Replace document-existence or heading assertions with executable checks of the instruction. Replace captured log-text or private-attribute proxies with a structured record or public result; confirm any lint suppression corresponds to an enabled rule.
+
+For a new guard, `observed` evidence may be a disposable removal of the guard that makes the test red, followed by restoration. A fixed sleep remains a nondiagnostic wait; wait for the condition or event instead.
 
 ## Test-first and characterization quality
 

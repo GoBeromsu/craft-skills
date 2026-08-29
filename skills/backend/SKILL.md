@@ -2,7 +2,7 @@
 name: backend
 description: Routes backend service engineering through an architecture-detection gate — layered, vertical-slice, or hexagonal — then applies dependency-direction rules, persistence choices, and folder conventions. Use when building a backend service or designing the service layer for a new endpoint, setting up production-fidelity local database development, deciding whether a service should be layered or hexagonal, choosing Prisma or preserving an incumbent ORM, adding a repository or use case to an existing service, or reviewing folder structure for architecture drift (e.g. "백엔드 구조 잡아줘"). Not for public HTTP API contracts — use api; not for UI rendering work — use frontend.
 metadata:
-  version: 3.2.0
+  version: 3.3.0
 ---
 
 # backend
@@ -50,6 +50,7 @@ Use this gate before choosing an architecture or creating service folders. Small
    | Vertical-slice service | `references/vertical-slice.md` |
    | Hexagonal service | `references/hexagonal.md` |
    | Any service choosing a database engine or ORM, database role, major version, or destructive target | `references/persistence.md` |
+   | A service declaring one schema version canonical and retiring the migration ledger that reached it | `references/schema-retirement.md` |
    | Any service creating folders | `references/folders.md` |
 
 ## Requirements
@@ -75,6 +76,10 @@ Not for: public HTTP API contracts, response shapes, or REST conventions (`api` 
 - A feature slice importing another slice's internals outside `shared/` → import only through `shared/` or a public interface, never another slice's internals.
 - Two or more architecture-triad folders (`controllers/`+`services/`+`repositories/` alongside `domain/`+`ports/`+`adapters/`) coexisting in one service → keep exactly one pattern per service; flag mixed-pattern drift instead of layering a third pattern on top.
 - Resetting, truncating, or seeding through whichever database URL is available → preserve the runtime application role and privileged migration/admin role split, then require repository-owned proof that the target is a dedicated disposable non-production target; an ambiguous URL or environment name stops destructive work.
+- Deleting a migration path without tracing what actually creates a fresh database → replace the creation path first; the one-shot service that "migrates" is often the only thing that creates a new installation, and its removal fails only at the next deployment.
+- Keeping a migrator that replays every historical step to build a database whose schema is already declared canonical → replace it with a bootstrap that creates, verifies, or refuses, and make refusal on an unrecognized version the loud path.
+- Removing modules a dependency contract names without updating the contract in the same commit → the contract checker errors on an unknown module rather than passing.
+- Treating a large deletion of migration tests as coverage neutral → the retired tests are often the bulk of the database coverage; add the bootstrap smoke as a real test.
 
 ## Verification
 
@@ -83,4 +88,5 @@ Not for: public HTTP API contracts, response shapes, or REST conventions (`api` 
 - [ ] The matching reference file was read before structural changes.
 - [ ] No dependency-direction violation — the grep commands in the loaded reference return no unexplained hits.
 - [ ] Database engine, detected production major, role separation, and destructive-target proof follow `references/persistence.md`; public API contracts were defined through the `api` skill.
+- [ ] A schema-ledger retirement replaced the creation path before deleting it, kept the operator-facing service and entrypoint names, and updated the import and topology contracts in the same change (`references/schema-retirement.md`).
 - [ ] Folder shape matches `references/folders.md` for the established or chosen architecture.

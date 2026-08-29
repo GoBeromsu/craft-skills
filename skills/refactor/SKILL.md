@@ -2,7 +2,7 @@
 name: refactor
 description: "Restructures code without changing what it does — extracting functions, renaming, removing duplication, flattening nested conditionals, and other mechanical moves backed by a detection command and threshold. Use when the user says \"refactor this\", \"clean up this code\", \"리팩토링 해줘\", or \"this function is a mess\", or a named smell (long function, deep nesting, feature envy) surfaces while reading code with no intended behavior change. Gates untested legacy code behind a characterization-test protocol first. Not for diagnosing why something is broken — use debug — or for behavior-changing feature work and bug fixes, which belong to programming's red-green-refactor loop."
 metadata:
-  version: 2.3.2
+  version: 2.5.0
 ---
 
 # refactor
@@ -48,10 +48,11 @@ Before touching structure: a test suite exists for the path and is green right n
 
 - Which smell, which detect command, which threshold → `references/code-smells.md`.
 - Which mechanical move fixes which smell, with worked Python/TypeScript examples → `references/catalog.md`.
+- Shrinking a whole package rather than one function — measure candidate linter rule sets, enable what pays, autofix, then hand-simplify what lint cannot express → `references/lint-first.md`. Prefer linter configuration to a bespoke script, and keep the mechanical and judgment commits separate.
 - A one-shot terminal scan across a whole directory → `scripts/detect-smells.sh <dir>` when the stated refactor concerns a smell class the script can detect (a reporter, always exits 0 — review relevant findings; false-positive profile documented per rule). Route it by the skill package's own directory, not the target project's cwd, since the agent's cwd at invocation time is the project being scanned: `bash <skill-dir>/scripts/detect-smells.sh <target-dir>`.
 - When symbol safety matters, prefer language-server diagnostics, definition, references, or rename over text search; check server status first and restore it before relying on textual results when it is unavailable.
 - File-size ceiling (250 pure LOC) and its escape hatches → `programming`; this skill owns function-level size, not file-level.
-- Turning any rule here into an enforced lint/hook/pre-commit check → `hookify`.
+- Turning any rule here into an enforced lint/hook/pre-commit check → `guardrails`.
 
 ## Mutable tool and LSP facts
 
@@ -64,6 +65,7 @@ For mutable language-server, test, runtime, and tool behavior, consult official 
 - A test runner: `pytest` (+ `pytest-cov`) for Python, `vitest` (`--coverage`) for TypeScript. Consult each incumbent runner's official documentation for its installed version and run its documented version probe.
 - When language-server support is used, consult the incumbent server's official documentation for its installed version and run its documented version probe before relying on semantic operations.
 - Optional: `vulture` (Python) / `ts-prune` (TypeScript) for the Dead Code entry in `references/code-smells.md`.
+- The repository's incumbent linter when `references/lint-first.md` applies. Consult its official documentation for the installed version before enabling a rule set, run its documented version probe, and support only rule behavior verified for that version; a linter release that changes a rule's fix behavior re-triggers the re-evaluation below.
 - When Git, the incumbent language server, or the incumbent test runner changes version or capability, review the applicable official documentation, rerun affected detection and characterization evals, update this recipe if needed, bump the package version, and append the CHANGELOG entry before trusting prior results.
 
 ## Common rationalizations
@@ -75,6 +77,8 @@ For mutable language-server, test, runtime, and tool behavior, consult official 
 | "No time for characterization tests, I already know what it does." | That certainty is exactly the guess this protocol replaces with a pinned assertion. |
 | "Two duplicates is basically three, I'll extract now." | Rule of three means three — the second occurrence is too early to know the right shape. |
 | "Tests still pass, so the commit is one change." | Passing tests don't prove that; check whether any assertion's expected value moved before assuming so. |
+| "The linter's autofix is mechanical, so it needs no review." | Autofixes have flipped tests by stripping suppression reasons, joining literals a scan searched for, and reordering a byte-pinned export list — the failure classes `guardrails` catalogues. Read the diff and run the suite. |
+| "A quick script that greps for this is faster than configuring the linter." | The script is a private tool CI must be taught to call and the next person must learn; configuration is already wired in. |
 
 ## Verification
 
@@ -83,3 +87,4 @@ For mutable language-server, test, runtime, and tool behavior, consult official 
 - [ ] No commit mixes a structural change with a changed test assertion (checked with the detection command above).
 - [ ] Any applicable smell fixed cites its `references/code-smells.md` entry and the detect command's result.
 - [ ] Scope stayed within the stated task; anything spotted-but-out-of-scope was flagged, not fixed inline.
+- [ ] For a lint-first pass: candidate rule sets were counted before being enabled, autofixes landed in their own commit ahead of the hand edits, and every reverted autofix is recorded as a scoped ignore with its reason.

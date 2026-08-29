@@ -2,7 +2,7 @@
 name: testing
 description: Designs, improves, and audits test suites around behavior and risk, independent oracles, counterfactual evidence, deterministic diagnosis, and cost. Use for generated-test review, unit/component/integration/e2e or smoke placement, test-suite health, flaky-test policy, fixtures, and test audits. Not for production-code red-green implementation, which belongs to programming; diagnosis or repair of one currently failing or intermittent test, which belongs to debug; structural-change characterization, which belongs to refactor; or ML and agent evaluation methodology, which belongs to ml and agents.
 metadata:
-  version: 2.3.0
+  version: 2.4.0
 ---
 
 # testing
