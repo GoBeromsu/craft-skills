@@ -14,12 +14,13 @@ A package is one flat directory: `skills/<name>/SKILL.md` plus whichever of `ref
 every skill is one level deep. `evals/` directories are local, gitignored scratch for the
 eval-first authoring loop; they are never committed.
 
-The 27 packages (alphabetical): `agents`, `api`, `ast-grep`, `backend`, `browser`, `cicd`, `debug`,
-`defuddle`, `distil`, `document`, `frontend`, `git`, `gpu`, `hookify`, `init`, `ml`, `obsidian`,
+The 28 packages (alphabetical): `agents`, `api`, `ast-grep`, `backend`, `browser`, `cicd`, `debug`,
+`defuddle`, `design`, `distil`, `document`, `frontend`, `git`, `gpu`, `hookify`, `init`, `ml`, `obsidian`,
 `programming`, `refactor`, `research`, `security`, `skillify`,
 `tailscale`, `testing`, `vmware`, `write-prd`, `write-report`. `browser` is one flat package: it owns
 one router and exactly three references for Aside, agent-browser, and existing-session. `obsidian` is one thick
-package whose sub-recipes live under `references/`.
+package whose sub-recipes live under `references/`. `design` owns root `DESIGN.md`, UX/UI judgment,
+bad-UX audits, and rendered evidence.
 
 The authoring contract — frontmatter shape, naming, description rules, body limits, CHANGELOG
 format, and the eval-first loop — lives at `skills/skillify/references/contract.md`. The

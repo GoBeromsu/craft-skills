@@ -1,7 +1,7 @@
 {
   "name": "craft-skills",
-  "description": "Vendor-neutral work-craft Agent Skills across 27 packages for Claude Code research, engineering, browser automation, Obsidian, and product requirements.",
-  "version": "0.10.11",
+  "description": "Vendor-neutral work-craft Agent Skills across 28 packages for Claude Code UI/UX design, research, engineering, browser automation, Obsidian, and product requirements.",
+  "version": "0.10.12",
   "author": {
     "name": "Beomsu Koh"
   },
