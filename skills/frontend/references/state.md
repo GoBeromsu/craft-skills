@@ -1,153 +1,160 @@
 # Frontend State Placement
 
-Every piece of frontend state belongs to exactly one of five kinds. Classify a piece of state before deciding where it lives — placing it correctly the first time is cheaper than migrating it once a component tree has grown around the wrong choice.
+State has one authoritative owner. Classify a value before choosing a Hook, URL parameter, provider, store, query cache, or server boundary; duplicated representations drift.
 
 ## Contents
 
-- [Hard rules](#hard-rules)
-- [The taxonomy (MECE)](#the-taxonomy-mece)
+- [Five state kinds](#five-state-kinds)
 - [Classification flow](#classification-flow)
-- [The iron rule: server data is never copied into a global store](#the-iron-rule-server-data-is-never-copied-into-a-global-store)
-- [URL state — the shareability test](#url-state--the-shareability-test)
-- [Form state](#form-state)
-- [Global-store scope check](#global-store-scope-check)
+- [State ownership in slices](#state-ownership-in-slices)
+- [Server-cache state](#server-cache-state)
+- [URL state](#url-state)
+- [Form and local state](#form-and-local-state)
+- [Global UI state](#global-ui-state)
+- [React and Vite placement](#react-and-vite-placement)
+- [Next.js placement](#nextjs-placement)
+- [Derived state and hydration](#derived-state-and-hydration)
+- [Verification](#verification)
 - [Incumbent-respect clause](#incumbent-respect-clause)
 - [Hand-offs](#hand-offs)
 
-## Hard rules
+## Five state kinds
 
-| Concern | Do | Never |
+| Kind | Authoritative owner | Examples |
 |---|---|---|
-| Server-fetched data | Keep it in a server-cache layer (a query cache library, or the framework's server-rendered data) | Copy it into a global UI store via `useEffect` + `setState` |
-| State a URL could describe | Put it in the URL (query params, route params) | Duplicate it in component or global state, letting the two drift out of sync |
-| Cross-cutting UI-only state | Put it in a small, purpose-scoped global store | Reach for one monolithic global store for every piece of state regardless of kind |
-| Ephemeral form input | Keep it local to the form until submit | Push every keystroke into a global store |
+| Server-cache | Backend plus incumbent server/query cache | Products, user profile, orders |
+| URL | Route/query parameters | Filter, tab, search, pagination |
+| Form | Form instance until submit | Draft fields, validation errors |
+| Global UI | Small purpose-scoped client owner | Theme, active modal, sidebar state |
+| Local | Closest component owning the interaction | Hover, disclosure, transient selection |
 
-## The taxonomy (MECE)
-
-| Kind | Lives in | Never do |
-|---|---|---|
-| Server-cache state | A dedicated server-cache layer (query-cache library, or server-rendered props in SSR/RSC) — data whose source of truth is the backend | Copy it into component state or a global UI store "for convenience"; the copy goes stale the moment the server value changes |
-| Global UI state | A small, purpose-scoped store (theme, active modal, sidebar-collapsed) — state with no backend source of truth that many unrelated components read | Store server data here, or create one store per app for everything regardless of scope |
-| Local state | The component that owns the interaction (`useState`/`useReducer` or framework equivalent) — state no sibling or ancestor needs | Lift it to global scope "in case something else needs it later" before a second consumer actually exists |
-| URL state | Query params or route params — state a user should be able to bookmark, share, or navigate back to (filters, selected tab, pagination page, search query) | Keep it in memory-only state, breaking back-navigation and link-sharing |
-| Form state | A form-scoped state container (local state or a form library) — in-progress input before submission | Sync every keystroke into global or server state before the user submits |
+Do not classify a value by the library already used to hold it. A Redux/Zustand/Context key can still be misplaced server, URL, form, or local state.
 
 ## Classification flow
 
-Run this before writing a `useState`, store slice, or query hook:
-
-```
-Does the value come from the backend (a fetch/query/mutation)?
-  yes → server-cache state (query-cache layer or server-rendered props)
+```text
+Does the value come from backend authority?
+  yes → server-cache state
   no  ↓
-Should a copied URL reproduce this value on load?
-  yes → URL state (query/route params)
+Should a copied URL reproduce it?
+  yes → URL state
   no  ↓
-Is this in-progress input before a form submit?
-  yes → form state (local to the form)
+Is it unsubmitted form input or form validation?
+  yes → form state
   no  ↓
-Do 2+ unrelated components need to read or write this?
-  yes → global UI state (purpose-scoped store)
-  no  → local state (owned by the one component)
+Do unrelated branches genuinely coordinate it?
+  yes → purpose-scoped global UI state
+  no  → local state at the closest owner
 ```
 
-## The iron rule: server data is never copied into a global store
+Then ask whether the value is computable from existing props/state. If yes, derive it during render instead of storing another state variable.
 
-Server-fetched data has exactly one source of truth: the server. The moment it is copied into a general-purpose global store (a Redux/Zustand/Context slice named after an API resource), two copies exist and one of them silently goes stale — the store copy does not know when the server value changes, gets invalidated, or gets refetched by another part of the app.
+## State ownership in slices
 
-**Detect: the `useEffect` + `setState`-from-fetch pattern.**
+- Route adapters own URL parsing/serialization and pass typed values downward or expose a narrow route/feature API.
+- A feature owns local/form state for its user capability.
+- An Entity can expose stable client-side domain behavior or server-cache access, but it does not mirror the backend database into a global store.
+- Cache infrastructure lives in the incumbent lower-level integration; feature/entity APIs expose domain-specific query/mutation operations.
+- Shared primitives own only interaction state needed to implement their semantic contract.
 
-```bash
-grep -rlE 'useEffect' --include='*.tsx' --include='*.ts' src \
-  | xargs grep -lE 'set[A-Z][A-Za-z]*\(.*\b(await|then)\b' 2>/dev/null
-```
+State exports obey the dependency rules in [`folders.md`](folders.md). A public entry narrows a legal dependency; it does not authorize a peer/upward import.
 
-Reading: a file matching both patterns is a candidate for the smell — a component manually fetching in `useEffect` and pushing the result into local or (worse) global state instead of using a server-cache layer. Not every match is a violation (a component-local fetch for a genuinely one-off, uncached read can be legitimate); confirm the fetched data is not also read by other unrelated components before flagging.
+## Server-cache state
 
-**Detect: a global store slice named after an API resource.**
+Server data has backend authority. Do not copy it into component or global UI state through an effect merely to make it easier to read.
 
-```bash
-grep -rlE "create(Store|Slice)|defineStore" --include='*.ts' --include='*.tsx' src/store src/stores 2>/dev/null \
-  | xargs grep -liE '(users?|orders?|products?|posts?|customers?)(Slice|Store)' 2>/dev/null
-```
+Prefer the incumbent framework/server/query-cache representation. After a mutation, update or invalidate through that same owner. A one-off client fetch can be valid, but it still needs one staleness/error/retry owner rather than an additional store copy.
 
-Any match → a store slice named after a backend resource is very likely a server-data mirror; move that data to the project's server-cache layer and keep the store slice (if it survives) to only the UI-only state genuinely related to that resource (e.g. `isUsersPanelOpen`, never `users`).
-
-**SMELL:**
+Smell:
 
 ```tsx
 const [users, setUsers] = useState<User[]>([]);
-useEffect(() => {
-  fetchUsers().then(setUsers);
-}, []);
-// `users` is now a second, unsynchronized copy of server truth
+useEffect(() => { fetchUsers().then(setUsers); }, []);
 ```
 
-**CLEAN:**
+Prefer a framework server read or incumbent query API whose cache owns freshness. Do not add a query library when the framework/incumbent stack already meets the requirement.
 
-```tsx
-const { data: users } = useQuery({ queryKey: ["users"], queryFn: fetchUsers });
-// server-cache layer owns staleness, refetch, and cache invalidation
-```
+## URL state
 
-## URL state — the shareability test
+Use the shareability test: should refresh, a copied link, and back/forward navigation reproduce this value? If yes, encode it once in route/query parameters.
 
-Before placing a piece of UI state in memory, ask: "if a user copies the current URL and opens it in a new tab, should this state be present?" If yes, it is URL state — a selected filter, an open tab, a pagination page, a search query. If no (a hover state, a mid-drag position, an unsaved draft), it is local state.
+- Parse and validate external URL input.
+- Choose canonical defaults and omit redundant parameters when appropriate.
+- Avoid keeping a synchronized memory copy.
+- Preserve navigation semantics: replace for transient refinements only when history should not grow; push when the user expects a navigable state.
 
-**Detect: a filter/tab/page value held only in component state with no corresponding URL param.**
+## Form and local state
 
-```bash
-grep -rlE 'useState.*\b(filter|tab|page|sort)\b' --include='*.tsx' src \
-  | xargs grep -L 'useSearchParams\|useRouter\|URLSearchParams' 2>/dev/null
-```
+Keep unsubmitted input inside the form. Submit the validated result through the owning mutation boundary. A multi-step draft can justify a form-scoped provider/store; it does not justify an application-wide general store.
 
-Grey zone — judge by whether the value genuinely affects what the user sees on load. A file matching (state named like a filter/tab/page, but no URL-param hook nearby) is worth a manual check, not an automatic fix.
+Keep transient interaction state at the closest component. Lift it only to the closest common owner when siblings coordinate. A custom Hook reuses behavior, not one shared state instance.
 
-**SMELL:**
+## Global UI state
 
-```tsx
-const [tab, setTab] = useState("overview"); // lost on refresh, unshareable
-```
+Use a small purpose-scoped owner only when unrelated branches coordinate client-only state with no URL/backend authority. Name the scope (`theme`, `commandPalette`, `notifications`) instead of accumulating one application store.
 
-**CLEAN:**
+Providers should be as deep as practical. A high provider can enlarge render and, in Next.js, client-module boundaries. Do not introduce a second store library for one new scope.
 
-```tsx
-const [params, setParams] = useSearchParams();
-const tab = params.get("tab") ?? "overview"; // shareable, survives refresh
-```
+## React and Vite placement
 
-## Form state
+For a confirmed browser SPA:
 
-Keep in-progress form input local to the form (via local state or a form library) until submission. Only the submitted, validated result crosses into server-cache state (as a mutation) or global state (rare — a multi-step wizard's cross-step draft can justify a scoped store, never the app's general-purpose store).
+- Use the incumbent router for URL state.
+- Use the incumbent query/cache mechanism for server data.
+- Keep form and local state inside the owning feature/component.
+- Persist to browser storage only when the product requires persistence; version/validate the stored shape and handle unavailable storage.
+- Measure render behavior before adding selectors or memoization.
 
-**Detect: a form input writing directly into a global store on every keystroke.**
+Vite does not decide state ownership. Build tooling and state architecture are separate contracts.
 
-```bash
-grep -rlE 'onChange=\{.*\bset[A-Z][A-Za-z]*\(' --include='*.tsx' src \
-  | xargs grep -l "from ['\"].*store['\"]" 2>/dev/null
-```
+## Next.js placement
 
-Any match → an `onChange` handler calls a global-store setter directly → confirm the field is genuinely cross-component-visible while being typed (rare); otherwise move it to form-local state and commit to the store only on submit.
+For an incumbent App Router project, verify behavior against the installed Next version:
 
-## Global-store scope check
+- Prefer server reads in Server Components when data does not require browser-interactive fetching.
+- Keep authorization and secrets in server-only modules and send minimal serializable data to client leaves.
+- Use client caches only for genuinely client-interactive/live data or an established incumbent cache contract.
+- Keep non-serializable/browser state below `'use client'`.
+- Do not copy a server-rendered snapshot into a global client store by effect.
+- Do not read `window`, storage, media queries, or browser-only values during server render. Initialize deterministically, then synchronize through the smallest client boundary when necessary.
+- Do not encode cache/revalidation APIs from branch-head docs without matching-version evidence from `SKILL.md` Requirements.
 
-A single global store accumulating unrelated keys (`theme`, `cart`, `currentUserDraft`, `notifications`, `selectedRowIds`) is a sign that server-cache and local state have been funneled into it by default rather than by classification.
+## Derived state and hydration
 
-**Detect: distinct top-level keys in the project's global store definition (approximate — inspect the printed list by hand).**
+Remove these duplication patterns:
 
-```bash
-grep -oE '^\s*[a-zA-Z_][a-zA-Z0-9_]*:' src/store/index.ts src/store/*.ts 2>/dev/null | sort -u
-```
+- State that can be calculated from props or existing state.
+- Effects that mirror props into state or run event-specific behavior.
+- URL values duplicated in component/global state.
+- Server snapshots copied into client stores.
+- Several booleans representing one finite status; use one explicit status union.
+- Browser persistence read during server render, producing server/client markup differences.
 
-Grey zone — no fixed count threshold. Judge each key against the taxonomy above: a key that is really server-cache or form-local data misplaced in the global store is the actual defect, not the key count itself.
+Handle user events in event handlers. Use effects only to synchronize with an external system. Reset conceptual identity with an appropriate key or owner boundary rather than cascaded reset effects.
+
+## Verification
+
+Exercise the behavior belonging to the state kind:
+
+| Kind | Checks |
+|---|---|
+| Server-cache | Loading/error/empty, mutation invalidation, stale/refetch behavior, authorization boundary |
+| URL | Refresh, copied link, back/forward, invalid/missing parameters |
+| Form | Validation, submit, reset, error recovery, multi-step persistence if required |
+| Global UI | Isolation between scopes, provider placement, persistence if required |
+| Local | Remount/reset identity, sibling coordination, no unrelated rerenders where measured |
+| Next boundary | Serialization, hydration warnings, server-only/client import safety |
+
+Use real production behavior for performance claims. A documentation-only evaluation verifies the prescribed collection method and marks runtime numbers N/A.
 
 ## Incumbent-respect clause
 
-Detect the project's existing state-management library (Redux, Zustand, Jotai, React Query/TanStack Query, Context) and use it for new state of the matching kind. Apply this taxonomy to classify *which* kind new state is; do not introduce a second global-store library into a project that already has one, and do not migrate existing state to a new kind as a side effect of an unrelated feature change.
+Use the incumbent router, form, query/cache, and store mechanisms for the matching state kind. Apply this taxonomy to new work; do not migrate existing state or add a second library as a side effect. Record misclassified legacy state for a separately scoped correction.
 
 ## Hand-offs
 
-- Whether a piece of state belongs to a server component or a client leaf → `architectures.md` in this skill.
-- Which layer (primitive/composed/feature) owns a piece of local state → `components.md` in this skill.
-- Per-file type discipline for store slices and reducers → `programming`.
+- Server/client rendering boundary → [`architectures.md`](architectures.md).
+- Slice and public API ownership → [`folders.md`](folders.md).
+- Controlled/uncontrolled component APIs → [`components.md`](components.md).
+- Persisted theme/token styling → [`css.md`](css.md).
+- Store/reducer type discipline → `programming`.
