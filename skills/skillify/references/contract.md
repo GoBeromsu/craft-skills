@@ -53,6 +53,12 @@ Shape:
 trigger phrases woven in naturally>. Not for <nearest-neighbor boundary — use Y>.
 ```
 
+- The default is ordinary prose in the shape above.
+- A skill with evidence-backed, mutually exclusive routing ownership may instead begin its parsed description with exactly `MUST USE <bounded ownership clause>. `, followed by the complete ordinary description shape above.
+- The optional directive is a narrow language: the exact case-sensitive `MUST USE ` prefix starts at character zero, occurs once, and the first ASCII `. ` ends a nonempty clause before a nonempty ordinary remainder.
+- A standalone uppercase `ANY` — bounded by ASCII alphanumeric/underscore adjacency — may occur at most once inside that clause and nowhere else in the description.
+- Semantic boundedness means explicit inclusion edges plus exclusion or hand-off edges for the nearest sibling domains; it is not a finite enumeration, and passing the lexical validator never proves MECE ownership or routing quality.
+- Nonliteral forms such as `Must use`, `MUST  USE`, `MUST USE:`, and `MUST-USE` are ordinary prose, not fuzzy directive attempts.
 - Third person ("Routes…", "Scaffolds…", "Owns…"), never "I" / "You".
 - Both *what* the skill does and *when* to use it are present; the primary use case leads the sentence.
 - Trigger phrases are real things a user types, embedded in prose — never a bare quoted list, never keyword stuffing.
@@ -72,7 +78,7 @@ trigger phrases woven in naturally>. Not for <nearest-neighbor boundary — use 
 - Delegate independent lanes when the runtime supports delegation; keep dependent decisions with their owner and specify the hand-off evidence.
 - Match freedom to fragility. High freedom (prose heuristics) where many routes are valid and context decides; medium freedom (a preferred pattern with parameters) where one way is better but variation is fine; low freedom (an exact script, few knobs) where the operation is fragile and order-sensitive. A narrow bridge gets guardrails; an open field gets a compass — the wrong choice either straitjackets judgment or lets a fragile step wobble.
 - One default per decision, with one named escape hatch. No option menus.
-- No ALL-CAPS rigidity walls and no "MUST/NEVER/LAW" shouting — where strict adherence matters, one short clause of why is enough. A single sparing **bold** is fine.
+- No ALL-CAPS rigidity walls and no "MUST/NEVER/LAW" shouting in body prose — where strict adherence matters, one short clause of why is enough. The description-only routing exception in §3 never authorizes a body directive. A single sparing **bold** is fine.
 - Break lines only where a sentence ends — one sentence per line in paragraphs, one item per line in lists; never hard-wrap mid-sentence at a column width. Markdown renders both identically, but sentence-boundary lines read and diff cleaner. Deterministic enforcement: `scripts/reflow-sentences.py <files>` exits 1 on violations; `--fix` reflows a wrapped file in place.
 - References sit exactly one level deep (`references/*.md`); any reference over 100 lines opens with a table of contents. Templates live in `templates/`, scripts in `scripts/`. No nested `SKILL.md` anywhere inside a package — including `agents/` — every skill is one flat directory.
 - Present-tense imperative throughout; no history, no provenance credit, no vendor lock (no Claude-only frontmatter or `/plugin` instructions in the body). Use `${ENV_VAR}` placeholders, forward-slash paths, and no time-sensitive language ("new", "recently", bare dates).
@@ -135,6 +141,10 @@ Before authoring a package, draft (in the local, gitignored `evals/` directory):
 Run each scenario without the skill, then with the drafted `SKILL.md`; the skill's value is the delta between the two arms, not the with-skill output alone.
 Iterate the body until behavior matches `expected_behavior`.
 Run the 16 trigger prompts against the drafted `description`; any near-miss that would plausibly match tightens the "Not for X" boundary sentence (§3).
+Before using the optional §3 directive, freeze those 16 trigger prompts as 6 should-trigger plus 6 should-NOT-trigger tuning cases and 2+2 held-out cases.
+Tune without consulting the held-out verdicts, then freeze the candidate and judge it blind.
+The directive is eligible only when it repairs at least one baseline miss, preserves every baseline success, routes all 8 positives correctly, produces zero false positives across all 8 negatives, and passes all 4 held-out cases.
+A perfect baseline ships the general capability without self-applying the directive because no routing delta exists.
 How to run the arms, judge with fresh eyes, read transcripts, and iterate without overfitting: `references/evaluation.md`.
 These artifacts are temporal working notes, not a package part — never commit them.
 

@@ -13,7 +13,8 @@ least `SKILL.md` + `CHANGELOG.md`. This validator enforces, per package:
   2. `name` equals the package directory name, is kebab-case, and is <= 64
      characters.
   3. `description` is 1..1024 characters (hard bounds); a shape warning
-     (non-blocking) fires under 200 or over 700 characters.
+     (non-blocking) fires under 200 or over 700 characters. Its optional
+     routing directive is checked for parsed shape only, never semantic proof.
   4. `metadata.version` is present and is semver `MAJOR.MINOR.PATCH`.
   5. SKILL.md body (everything after the frontmatter block) is <= 500 lines.
   6. No SKILL.md is nested anywhere inside the package below the top-level one
@@ -68,6 +69,9 @@ DESCRIPTION_MIN_WARN = 200
 DESCRIPTION_MAX_WARN = 700
 DESCRIPTION_HARD_MAX = 1024
 NAME_MAX_LENGTH = 64
+PREFIX = "MUST USE "
+DELIMITER = ". "
+ANY_TOKEN = re.compile(r"(?<![A-Za-z0-9_])ANY(?![A-Za-z0-9_])")
 
 
 @dataclass
@@ -99,6 +103,42 @@ def parse_scalar(value: str) -> object:
     if re.fullmatch(r"[-+]?(?:\d+\.\d*|\d*\.\d+)(?:[eE][-+]?\d+)?", value):
         return float(value)
     return value
+
+
+def validate_description_directive(description: str) -> tuple[str, str] | None:
+    """Return one routing-directive shape finding, without semantic inference."""
+    prefix_count = description.count(PREFIX)
+    if prefix_count > 1:
+        return "MULTIPLE_MUST_USE", "description has multiple exact 'MUST USE ' prefixes"
+    if prefix_count == 0:
+        if ANY_TOKEN.search(description):
+            return "MISPLACED_DIRECTIVE_ANY", (
+                "standalone uppercase ANY requires a valid MUST USE directive"
+            )
+        return None
+    if not description.startswith(PREFIX):
+        return "MISPLACED_MUST_USE", "exact 'MUST USE ' prefix must start at character 0"
+
+    delimiter_index = description.find(DELIMITER, len(PREFIX))
+    if delimiter_index == -1:
+        return "BAD_MUST_USE_CLAUSE", (
+            "MUST USE directive needs a nonempty clause and remainder separated by '. '"
+        )
+    clause = description[len(PREFIX):delimiter_index].strip()
+    remainder = description[delimiter_index + len(DELIMITER):].strip()
+    if not clause or not remainder:
+        return "BAD_MUST_USE_CLAUSE", (
+            "MUST USE directive needs a nonempty clause and remainder separated by '. '"
+        )
+    if ANY_TOKEN.search(remainder):
+        return "MISPLACED_DIRECTIVE_ANY", (
+            "standalone uppercase ANY is allowed only in the directive clause"
+        )
+    if len(ANY_TOKEN.findall(clause)) > 1:
+        return "DIRECTIVE_ANY_LIMIT", (
+            "MUST USE directive clause may contain at most one standalone uppercase ANY"
+        )
+    return None
 
 
 def parse_frontmatter(text: str) -> "dict[str, object] | None":
@@ -264,6 +304,12 @@ def check_skill(skill_dir: Path) -> list[Finding]:
         findings.append(Finding(name, "DESCRIPTION_LONG",
                                 f"{len(str(desc))} > {DESCRIPTION_MAX_WARN} chars (shape warning)",
                                 severity="warning"))
+
+    if isinstance(desc, str) and desc:
+        directive_finding = validate_description_directive(desc)
+        if directive_finding is not None:
+            code, detail = directive_finding
+            findings.append(Finding(name, code, detail))
 
     metadata = fm.get("metadata")
     if not isinstance(metadata, dict):
