@@ -1560,7 +1560,7 @@
       "name": "skillify",
       "kind": "leaf",
       "lifecycle": "active",
-      "version": "4.8.2",
+      "version": "4.9.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",

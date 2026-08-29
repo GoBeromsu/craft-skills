@@ -287,6 +287,140 @@ class SkillFormatValidatorTest(unittest.TestCase):
             self.assertIn("DESCRIPTION_TOO_LONG", result.stdout)
 
     # ------------------------------------------------------------------
+    # parsed description routing-directive grammar
+    # ------------------------------------------------------------------
+
+    def _description_result(self, description: str, *args: str) -> subprocess.CompletedProcess[str]:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        root = Path(tmp.name)
+        skill = GOOD_SKILL.replace(
+            "Does a demo thing end to end. Use when the user asks for a demo, wants a demo run, or says demo this for me please right now.",
+            description,
+        )
+        self._make_skill(root, "demo", skill, GOOD_CHANGELOG)
+        return self.run_validator(root, *args)
+
+    def test_description_without_directive_tokens_remains_compatible(self) -> None:
+        result = self._description_result("Use this skill for ordinary requests.")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertNotIn("DIRECTIVE_", result.stdout)
+        self.assertNotIn("MUST_USE", result.stdout)
+
+    def test_accepts_valid_directive_with_and_without_any(self) -> None:
+        for description in (
+            "MUST USE for deployment requests. Handle production deployments.",
+            "MUST USE for ANY deployment request. Handle production deployments.",
+        ):
+            with self.subTest(description=description):
+                result = self._description_result(description)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_accepts_lowercase_any_and_non_tokens(self) -> None:
+        for description in (
+            "MUST USE for any deployment request. Handle production deployments.",
+            "MUST USE for ANYTHING and ANY_1. Handle production deployments.",
+            "MUST USE for API and CI requests. Handle production deployments.",
+        ):
+            with self.subTest(description=description):
+                result = self._description_result(description)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_accepts_nonliteral_must_use_lookalikes_without_any(self) -> None:
+        for description in (
+            "Must use this skill for deployment requests.",
+            "must use this skill for deployment requests.",
+            "MUST  USE this skill for deployment requests.",
+            "MUST USE: this skill for deployment requests.",
+            "MUST-USE this skill for deployment requests.",
+        ):
+            with self.subTest(description=description):
+                result = self._description_result(description)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_nonliteral_must_use_lookalikes_still_reject_standalone_any(self) -> None:
+        for description in (
+            "Must use ANY deployment skill.",
+            "must use ANY deployment skill.",
+            "MUST  USE ANY deployment skill.",
+            "MUST USE: ANY deployment skill.",
+            "MUST-USE ANY deployment skill.",
+        ):
+            with self.subTest(description=description):
+                result = self._description_result(description)
+                self.assertEqual(result.returncode, 1)
+                self.assertIn("MISPLACED_DIRECTIVE_ANY", result.stdout)
+
+    def test_rejects_every_directive_grammar_branch(self) -> None:
+        cases = (
+            ("MUST USE first clause. Remainder. MUST USE second clause. Remainder.",
+             "MULTIPLE_MUST_USE"),
+            ("Use this skill. MUST USE for deployment requests. Handle deployments.",
+             "MISPLACED_MUST_USE"),
+            ("MUST USE clause without a delimiter", "BAD_MUST_USE_CLAUSE"),
+            ("MUST USE    . Remainder.", "BAD_MUST_USE_CLAUSE"),
+            ("MUST USE clause.    ", "BAD_MUST_USE_CLAUSE"),
+            ("MUST USE for deployments. Handle ANY deployment.", "MISPLACED_DIRECTIVE_ANY"),
+            ("Use this skill for ANY deployment.", "MISPLACED_DIRECTIVE_ANY"),
+            ("MUST USE for ANY deployment and ANY rollback. Handle deployments.",
+             "DIRECTIVE_ANY_LIMIT"),
+        )
+        for description, code in cases:
+            with self.subTest(description=description):
+                result = self._description_result(description)
+                self.assertEqual(result.returncode, 1)
+                self.assertIn(code, result.stdout)
+
+    def test_directive_finding_precedence(self) -> None:
+        cases = (
+            # MULTIPLE_MUST_USE outranks every lower directive finding.
+            ("Use MUST USE first clause. MUST USE second clause.", "MULTIPLE_MUST_USE"),
+            ("MUST USE no delimiter ANY MUST USE second directive.", "MULTIPLE_MUST_USE"),
+            ("MUST USE clause. ANY MUST USE second directive.", "MULTIPLE_MUST_USE"),
+            ("MUST USE ANY and ANY. Remainder. MUST USE second directive.", "MULTIPLE_MUST_USE"),
+            # MISPLACED_MUST_USE outranks BAD_MUST_USE_CLAUSE,
+            # MISPLACED_DIRECTIVE_ANY, and DIRECTIVE_ANY_LIMIT.
+            ("Use this. MUST USE no delimiter", "MISPLACED_MUST_USE"),
+            ("Use ANY. MUST USE clause. Remainder.", "MISPLACED_MUST_USE"),
+            ("Use this. MUST USE ANY and ANY. Remainder.", "MISPLACED_MUST_USE"),
+            # BAD_MUST_USE_CLAUSE outranks the two ANY findings.
+            ("MUST USE no delimiter ANY", "BAD_MUST_USE_CLAUSE"),
+            ("MUST USE no delimiter ANY ANY", "BAD_MUST_USE_CLAUSE"),
+            # MISPLACED_DIRECTIVE_ANY outranks DIRECTIVE_ANY_LIMIT.
+            ("MUST USE ANY and ANY. Remainder ANY", "MISPLACED_DIRECTIVE_ANY"),
+        )
+        for description, code in cases:
+            with self.subTest(description=description):
+                result = self._description_result(description)
+                self.assertEqual(result.returncode, 1)
+                self.assertIn(code, result.stdout)
+                for other_code in {
+                    "MULTIPLE_MUST_USE",
+                    "MISPLACED_MUST_USE",
+                    "BAD_MUST_USE_CLAUSE",
+                    "MISPLACED_DIRECTIVE_ANY",
+                    "DIRECTIVE_ANY_LIMIT",
+                } - {code}:
+                    self.assertNotIn(other_code, result.stdout)
+
+    def test_directive_violation_is_advisory_when_requested(self) -> None:
+        result = self._description_result(
+            "MUST USE for ANY deployment and ANY rollback. Handle deployments.",
+            "--advisory",
+        )
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("DIRECTIVE_ANY_LIMIT", result.stdout)
+
+    def test_body_uppercase_any_does_not_affect_description(self) -> None:
+        skill = GOOD_SKILL + "\nANY MUST USE appears only in the body.\n"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._make_skill(root, "demo", skill, GOOD_CHANGELOG)
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertNotIn("MISPLACED_DIRECTIVE_ANY", result.stdout)
+
+    # ------------------------------------------------------------------
     # diff-base scoping regression
     # ------------------------------------------------------------------
 

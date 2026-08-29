@@ -49,6 +49,23 @@ For the `evals/triggers.json` prompts (counts: contract §7):
 - Judge trigger-fit with fresh eyes — an agent session that has not seen the authoring conversation, given only the library's name+description lines and the probe prompt.
 - After tuning the description against failures, re-judge on prompts that were **not** used for the tuning. A description iterated against one fixed set memorizes that set; held-out prompts are what catch it.
 
+### Evidence gate for a leading routing directive
+
+The optional `MUST USE <bounded ownership clause>. ` form in contract §3 needs behavioral evidence because its lexical shape cannot prove MECE ownership.
+
+1. Author and label exactly 8 should-trigger and 8 should-NOT-trigger cases in `evals/triggers.json`.
+2. Assign stable IDs and freeze the prompts, labels, and split before candidate tuning: 6+6 tuning cases and 2+2 held-out cases.
+3. Record the frozen file hash; a justified corpus correction restarts the baseline and tuning cycle.
+4. Run the current description on the 12 tuning cases and record every success, miss, and false positive.
+5. Tune only against those 12 cases, then freeze the candidate before consulting held-out verdicts.
+6. Give a fresh blind read-only judge the final baseline and candidate surfaces, keeping cited verdict evidence separate from the authored labels.
+7. Promote the directive only when it repairs at least one baseline miss, preserves every baseline success, routes 8/8 positives correctly, produces 0/8 negative false positives, and passes all 4 held-out cases.
+
+Uncertain, uncited, or flaky judgments fail the gate.
+A perfect baseline does not justify self-application; the general directive capability may still ship.
+The evidence must quote the proposed ownership class and identify its explicit included intents plus excluded or handed-off nearest-sibling intents.
+Scenario review also confirms that body prose gained neither directive syntax nor repeated caps-lock rigidity.
+
 ## 4. Fresh-eyes judge
 
 Use a capable model or human in a fresh context, independent from the authoring session, as the qualitative judge.
@@ -70,7 +87,7 @@ The loop iterates on a handful of examples because that is fast — but the skil
 When a run fails:
 
 - Generalize the lesson before encoding it. Ask what class of prompt fails, not what patch makes this one pass.
-- Prefer explaining why over adding constraints; a rule the model understands transfers to unseen cases, a bare directive does not. Piling on caps-lock rigidity is the signature of overfitting (style rules: contract §4).
+- Prefer explaining why over adding constraints; a rule the model understands transfers to unseen cases, a bare directive does not. The contract §3 routing clause is an evidence-gated discovery signal, not permission to pile caps-lock rigidity into body prose.
 - For a stubborn failure, change the frame — a different metaphor, a different working pattern — rather than adding one more rule per failed run. Reframes are cheap to try and occasionally land something great.
 - The memorization check is §3's held-out re-judging: prompts that were not used for the tuning judge the tuned result.
 - Stop when feedback comes back clean or improvements stop being meaningful; more loops on the same three examples past that point only overfit them.

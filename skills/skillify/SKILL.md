@@ -2,7 +2,7 @@
 name: skillify
 description: Owns the full lifecycle of craft-skills skill packages — creating, updating, moving/renaming, retiring them, and absorbing frontier labs' skill-creators into vendor lenses — through an eval-first authoring loop and deterministic format validation. Use when a user says things like "make a skill", "skillify this workflow", "turn this into a skill", "update this skill", "move this skill", "absorb openai's new skill-creator", or "스킬 만들자", or when a recurring workflow correction needs to be encoded into a governing skill instead of staying in chat memory. Not for one-off project scripts or prompts with no reuse intent — those stay local to the originating project.
 metadata:
-  version: 4.8.2
+  version: 4.9.0
 ---
 
 # skillify
@@ -44,6 +44,10 @@ Before writing `SKILL.md`, draft the eval scenarios that will judge it — evals
 2. Draft `evals/triggers.json` — 8 should-trigger + 8 near-miss should-NOT-trigger prompts pulled from sibling skills' domains.
 3. Run each scenario without the skill, then with the drafted body — the skill's value is the delta between the arms. Iterate until behavior matches. Run the 16 trigger prompts against the drafted description; tighten the "Not for X" boundary sentence wherever a near-miss would plausibly match. Use a fresh, blind, read-only capable model or human independent from the authoring session as the fresh-eyes judge.
 
+For a leading routing directive, freeze the 16 trigger cases before tuning as 6+6 tuning and 2+2 held-out cases.
+Promote only when the candidate repairs a baseline miss, preserves every baseline success, routes 8/8 positives, produces 0/8 negative false positives, and passes all 4 held-outs.
+When the baseline is perfect, ship the capability without self-applying the directive.
+
 How to run the arms, judge with fresh eyes, read transcripts, and improve without overfitting: [`references/evaluation.md`](references/evaluation.md).
 `evals/` is local scratch — gitignored, never committed.
 Full contract: `references/contract.md §7`.
@@ -55,6 +59,8 @@ Use the portable baseline frontmatter: `name`, `description`, and `metadata.vers
 Add spec keys `license`, `compatibility`, or experimental `allowed-tools` only when the package truly requires them; document the runtime support caveat in the relevant vendor lens rather than making them a universal requirement.
 Name is kebab-case and equals the directory: verb-first for a skill the user explicitly triggers, a plain noun for a skill that supplies ambient domain context.
 Description is third person, states what + when, weaves in 3–6 real trigger phrases, writes against undertriggering, and adds a "Not for X" line when a sibling overlaps.
+Default to ordinary prose.
+Use contract §3's exact leading `MUST USE <bounded ownership clause>. ` form only when frozen baseline-delta trigger evidence demonstrates explicit included intents, excluded sibling edges, at least one repaired miss, and no regression; lexical validity alone never proves MECE.
 Body targets 150 lines, hard-caps at 500; move depth to files in `references/`.
 Keep package content MECE: each rule has one owning section or reference, and nearby locations link to it instead of restating it.
 Full rules: `references/contract.md`.
@@ -101,6 +107,7 @@ Follow the [branch → commit → PR delivery flow](references/lifecycle.md#6-br
 - Authoring before `evals/evals.json` + `evals/triggers.json` exist → evals judge behavior and trigger-fit first; tests lock in behavior only once proven.
 - A longer, descriptive skill name "for clarity" → the name is a compact handle; discoverability lives in the description's trigger phrases.
 - A description written as an abstract capability blurb → weave in real user trigger phrases.
+- Caps-lock used to compensate for weak or overlapping routing boundaries → either prove the single leading description directive with bounded sibling edges and frozen trigger delta, or keep ordinary prose; the exception never applies to body prose.
 - A nested `SKILL.md` anywhere inside a package → every skill is one flat directory.
 - An operator correction left in chat memory → record it via the three-way split before the session ends (`references/lifecycle.md §3`).
 - Duplicated overlapping guidance inside one package → apply `references/contract.md` §9; link to the owner instead of restating the rule.
@@ -112,6 +119,7 @@ Follow the [branch → commit → PR delivery flow](references/lifecycle.md#6-br
 
 - [ ] [Layer-1 validators](references/runtime-hygiene.md#2-validator-playbook) pass
 - [ ] `evals/` scenarios ran clean and the 16 trigger prompts route correctly
+- [ ] Any leading routing directive has a frozen 6+6 tuning / 2+2 held-out split, repairs a baseline miss without regression, and cites bounded inclusion/exclusion evidence
 - [ ] [Version and CHANGELOG requirements](references/contract.md#6-changelog) are met
 - [ ] [Secret hygiene](references/runtime-hygiene.md#1-per-skill-secrets-rule) is met
 - [ ] Any absorbed upstream is fully recorded — lens sections 1–5, CHANGELOG `Provenance:`, `skills/PROVENANCE.md` row, manifest `absorbed_from` ([protocol §6](references/vendor-absorption.md#6-record-and-deliver))
