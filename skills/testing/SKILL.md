@@ -1,99 +1,98 @@
 ---
 name: testing
-description: Architects and audits project test suites by selecting the cheapest layer that proves behavior and contract risk, then placing tests and fixtures for a fast, deterministic suite. Use when choosing test placement, organizing fixtures, adding an integration or e2e test, designing contract coverage, or triaging flaky suites. Not for isolated function-level red-green-refactor TDD — use programming; not for diagnosing a currently failing test — use debug; not for ML or agent eval methodology — use ml or agents.
+description: Designs, improves, and audits test suites around behavior and risk, independent oracles, counterfactual evidence, deterministic diagnosis, and cost. Use for generated-test review, unit/component/integration/e2e or smoke placement, test-suite health, flaky-test policy, fixtures, and test audits. Not for production-code red-green implementation, which belongs to programming; diagnosis or repair of one currently failing or intermittent test, which belongs to debug; structural-change characterization, which belongs to refactor; or ML and agent evaluation methodology, which belongs to ml and agents.
 metadata:
-  version: 2.3.0
+  version: 2.4.0
 ---
 
 # testing
 
-Builds and maintains a test suite under one discipline: confidence first, speed second, coverage third. Choose evidence for the behavior and contract risk at the cheapest credible layer, then place it so the suite stays fast and deterministic. `programming` owns isolated function-level red-green-refactor TDD; this skill owns suite placement, fixtures, resource layers, and cross-boundary coverage.
+A valuable test names behavior or risk, uses an independent oracle, has lifecycle-appropriate counterfactual evidence, survives behavior-preserving refactors, is deterministic and diagnostic, and adds unique suite value proportional to cost.
 
-## Gate — read the matching reference before writing a test
+## Test다운 Test admission contract
 
-| Task | Read |
+Admit, retain, rewrite, delete, or add a test only after answering these six questions.
+
+1. What behavior, contract, invariant, failure mode, or user risk does it name?
+2. What independent oracle establishes the expected outcome?
+3. What lifecycle-appropriate counterfactual evidence supports the claim?
+4. Does it survive a behavior-preserving refactor rather than encode implementation topology?
+5. Does it control state, time, randomness, ordering, and waits well enough to diagnose a failure?
+6. What distinct residual risk justifies its cost over existing cheaper evidence?
+
+Choose the cheapest credible evidence scope that exposes the named risk.
+
+## Workflow and references
+
+Read this file for every testing task and read the matching reference before changing tests.
+
+| Work | Read |
 |---|---|
-| Any test task (always) | Core rules below |
-| Test-file location, fixture scope, test data builders | `references/structure.md` |
-| Crosses a process boundary you or a container manage (DB, cache, queue, another internal service) | `references/integration.md` |
-| Drives the real app through its user-visible interface (browser, CLI) | `references/e2e.md` |
-| A contract check (independently-deployed sides agreeing on a request/response shape) | `references/integration.md` — contract is an integration-sized technique |
-| A property check (generated inputs proving an invariant over a large/infinite space) | Core rules below — property is a unit-sized technique |
-| Naming, DAMP-over-DRY, determinism, assertion-quality detail and detection commands | `references/conventions.md` |
-| Auditing an existing suite for tests that cannot fail — host-sticky tests, silent skips, doc-existence assertions, log-string or private-attribute proxies | `references/conventions.md` |
+| New test, modified test, audit, oracle, counterfactual evidence, determinism, suite health, or quarantine | `references/conventions.md` |
+| Location, incumbent layout, fixture scope, or builders | `references/structure.md` |
+| Database, cache, queue, service boundary, contract, fake, seam, or mock | `references/integration.md` |
+| Browser, CLI, user journey, startup wiring, selector, wait, or smoke | `references/e2e.md` |
 
-Property and contract are techniques layered onto a taxonomy kind below, not a fourth or fifth kind: a property test is still a unit test that generates its inputs instead of hand-picking them; a contract test is still an integration test that checks shape instead of full behavior.
+For a new or behavior-changed test, require an observed red for the named reason in its disposable consumer before production implementation.
 
-## Taxonomy × resource size
+For an audit, classify evidence as `observed`, `safely demonstrable`, or `unavailable` as defined in `references/conventions.md`.
 
-Taxonomy names what a test verifies; resource size names what it costs — these are orthogonal axes, not one label. A test can be "unit" in taxonomy and "medium" in size if it touches a local sqlite file.
+Do not delete a historical test from unavailable evidence alone.
 
-| Kind | Scope | Typical cost | Choose when |
-|---|---|---|---|
-| Unit | single function/class, no I/O | milliseconds | it catches the logic or invariant regression credibly |
-| Integration | crosses one process boundary (DB, cache, queue, another service) | usually under a second | the contract or adapter behavior needs that boundary |
-| E2E | drives the real app through its real interface | seconds | a critical user journey cannot be proved credibly at a cheaper layer |
+Use retain, rewrite, delete, or add as the audit decision rather than preserving tests by count, filename, source adjacency, or assertion tokens.
 
-| Size | May touch | Avoid unless the risk needs it |
+## Evidence scopes and resource size
+
+Evidence scope names what the test proves and resource size names what it consumes.
+
+| Scope | Evidence | Use when |
 |---|---|---|
-| Small | single process, CPU + memory only | disk I/O, network, subprocess, `sleep` |
-| Medium | localhost I/O (local DB, local file, loopback socket) | any other host, real network egress |
-| Large | network, multiple real services | — |
+| Unit | A focused behavior or invariant behind a stable public seam | The risk is credible without assembled collaborators or I/O |
+| Component | Behavior of a composed in-process component and its real collaborators | Assembly, configuration, or collaboration is the distinct risk |
+| Integration | A boundary contract with a real dependency or faithful substitute | Database, protocol, adapter, or independently deployed boundary semantics are the risk |
+| E2E | A user-visible outcome through the real application interface | A critical journey leaves material residual risk after cheaper evidence |
 
-Choose the cheapest layer that catches the regression. Logic with no I/O usually belongs in unit/small; a boundary you own (DB, cache, queue) often needs integration/medium; a third-party boundary can use an integration fake or a contract test. Use e2e/large for a user-visible flow through the real app when lower layers leave material risk. The pyramid ratio is a sanity check, not a target.
+| Resource size | Typical resources |
+|---|---|
+| Small | CPU and memory in one process |
+| Medium | Local database, file system, loopback, or one managed local dependency |
+| Large | Browser, networked services, or multiple real processes |
 
-Before adding a fixture, builder, or helper, reuse the repository's established test pattern when it fits. A bug report is a symptom: test the shared upstream behavior that protects all callers rather than only the reported path.
+Smoke is a portfolio purpose that proves narrow startup or wiring viability.
 
-## Reproducible behavior defects
+Smoke is not an evidence scope, a size, a quota, or a substitute for a critical journey.
 
-For a reproducible behavior defect, start with the smallest failing reproduction at its natural layer (usually unit; integration when the defect lives at a boundary). Confirm it fails for the reported reason, then let the fix make it pass and ship the regression test with the fix.
+Flaky is a suite-health defect, not a test kind or a reason to hide a failure.
 
-When the behavior cannot yet be reproduced or isolated, do not invent a failing test. Record that evidence limitation and retain the strongest available evidence, such as logs, a captured scenario, or monitored production behavior; turn it into a regression test when reproduction becomes possible.
+Property and contract are techniques applied within an evidence scope.
 
-## Mutable test-tool/runtime facts
+## Ownership and handoffs
 
-Consult the deployed tool's official primary documentation first and disclose conflicts. A more-specific repository-local contract or matching-version/platform reproducible evidence may override general or stale docs; otherwise keep the fact unknown, never invent support or commands, and retain the verified configuration or stop the change.
+Testing supplies risk, oracle, scope, test-quality review, placement, audit decisions, suite policy, quarantine policy, and post-fix suite health.
 
-### Advisory commit scan
+`programming` owns production-code red-green implementation and returns pass evidence after testing supplies the failing test or test design.
 
-This filename-based scan is a review lead, not proof: tests may live under nonstandard names and a test-file touch may not cover the defect.
+`debug` owns reproduction, diagnosis, and repair of a specific currently failing or intermittent test and returns diagnosis and fix evidence before testing resumes quarantine or health decisions.
 
-```bash
-git log --oneline -20 --grep="fix" -i | cut -d' ' -f1 | while read -r sha; do
-  git diff-tree --no-commit-id --name-only -r "$sha" | grep -qEi 'test|spec' || echo "$sha: review evidence for this fix"
-done
-```
+`refactor` owns characterization before structural change and hands characterization tests to testing for quality and placement review.
 
-Review each reported commit for behavior evidence instead of treating output as a pass/fail gate.
-
-## Core conventions (detail and detection commands in `references/conventions.md`)
-
-A suite is only worth its runtime if each test can fail for the reason it names, so an audit asks that of every test before it asks about coverage.
-A test name states the behavior as Given/When/Then (`test_given_empty_cart_when_checkout_then_rejects`), never the implementation. Test code favors DAMP (readable repetition) over DRY: a factory returning a fresh instance beats a shared mutable fixture; a builder with sensible defaults and explicit overrides beats one giant shared fixture file every test partially depends on. No `sleep`, wall-clock read, or unseeded randomness inside a unit/small test — each is a flake built in on day one. Every test asserts something specific about behavior; a test incapable of failing proves nothing.
+Do not turn unknown incumbent output into a permanent golden master without an independent contract, invariant, reference, or explicit approval.
 
 ## Anti-patterns
 
-- Wrapping every database test in an outer rollback when the application owns commits, rollbacks, or transaction-local RLS state → inspect transaction ownership and choose truncate or a per-test schema/database when the wrapper cannot preserve real behavior.
-- Running a generic or full demo seed to prepare production QA → create prerequisites through the application API or a narrow idempotent bootstrap; broad seed/reset remains limited to a proven dedicated disposable non-production target.
-- Skipping a default-suite test when a gitignored asset, optional binary, build flag, or sibling checkout is absent → mark it `integration`/`heavy`/`real_stack` and deselect it deliberately; a conditional skip disappears on a fresh worktree and the suite passes while proving less.
-- Asserting that a document exists or contains a heading string → assert what the document instructs by executing its commands or queries; the existence test passes when the doc is wrong and fails when it is reworded.
-- Asserting against captured log text or a private attribute as a stand-in for behavior → assert the rendered record or the public result, and confirm any lint suppression names a rule the linter actually enables.
-- Replacing a wait-for-condition with a fixed `sleep` → wait on the condition; the sleep defers the race rather than resolving it.
-- Shipping a guard test without ever seeing it fail → delete the guard, watch the test go red, restore it, and record that in the change description.
+- Source-to-test 1:1 mappings, missing-sibling claims, filename-touch proof, assertion-token gates, coverage quotas, or pyramid quotas substitute topology or counting for evidence.
+- Generated tests that only repeat implementation details, mock returns, private calls, or unreviewed snapshots lack an independent oracle.
+- A project-internal mock that returns the expected answer tests its own configuration rather than the behavior under test.
+- Fixed sleeps, unbounded retries, unseeded randomness, shared mutable state, and order-dependent data make failures nondiagnostic.
+- Duplicating smoke and e2e coverage without a distinct residual risk wastes suite budget.
+- Deleting from `unavailable` evidence alone discards protection without proof.
+- Wrapping database tests in rollback when application-owned transactions or transaction-local RLS are part of the path masks production behavior.
+- Using broad seeds, resets, or privileged cleanup without proving a dedicated disposable non-production target risks real data.
 
-## Requirements
+## Portable runtime facts
 
-Use the target package's incumbent runner, order-randomization mechanism, and property-testing library; do not assume that every package uses Python, TypeScript, or any particular command-line tool.
+Use the target package's incumbent runner, order-randomization mechanism, and property-testing library.
 
-| Component | Official project docs | Package-local version probe |
-|---|---|---|
-| pytest runner | [pytest](https://docs.pytest.org/) | `python -m pytest --version` |
-| pytest-randomly order randomizer | [pytest-randomly](https://github.com/pytest-dev/pytest-randomly) | `python -c "from importlib.metadata import version; print(version('pytest-randomly'))"` |
-| Hypothesis property library | [Hypothesis](https://hypothesis.readthedocs.io/) | `python -c "from importlib.metadata import version; print(version('hypothesis'))"` |
-| Vitest runner | [Vitest](https://vitest.dev/) | `./node_modules/.bin/vitest --version` |
-| fast-check property library | [fast-check](https://fast-check.dev/) | `node -p "require('fast-check/package.json').version"` |
+Consult the deployed tool's official primary documentation and the repository's matching-version configuration before claiming support.
 
-Run a listed probe only when its component is installed and selected by the target package; otherwise use the repository's documented package-local equivalent and its official project docs.
-Do not install a dependency or fall back to a global executable merely to probe it.
-Derive the support boundary from the target package's lockfile and current test configuration, including the selected execution form; when either does not establish a component or capability, leave it unknown and stop rather than inventing support.
-When a selected release changes or a probe changes, complete an official-documentation recheck and re-derive that boundary; then rerun affected taxonomy, order-dependency, and property-test evals; update this recipe if needed; bump the package version; and append the CHANGELOG entry.
+Do not install dependencies, assume a global executable, or invent a command when the target package does not establish it.

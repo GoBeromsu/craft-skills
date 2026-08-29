@@ -260,6 +260,11 @@
       "trigger": "Write a technical report about the usability study",
       "expected_package": "craft-skills/write-report",
       "forbidden_neighbors": ["craft-skills/design", "craft-skills/document", "craft-skills/research"]
+    },
+    {
+      "trigger": "Audit these AI-generated tests for tautologies and cases that cannot fail",
+      "expected_package": "craft-skills/testing",
+      "forbidden_neighbors": ["craft-skills/programming", "craft-skills/debug", "craft-skills/refactor"]
     }
   ]
 }
