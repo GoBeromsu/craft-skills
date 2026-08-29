@@ -1,6 +1,6 @@
 ---
 name: frontend
-description: 'Routes frontend engineering through incumbent-aware rendering, framework-shell, domain-slice, component, state, CSS, and dependency decisions. Use when building a React/Vue/Svelte page or component ("프론트엔드 구조 잡아줘"), organizing React + Vite or Next.js App Router folders, deciding server versus client components, improving component reuse, placing state, choosing CSS Modules/Tailwind/CSS-in-JS, defining design tokens, or measuring frontend bundle and CSS performance. Not for API/server contracts — use api/backend; not for authoring design.md or updating a skill package — use document or skillify.'
+description: 'Routes frontend engineering through incumbent-aware rendering, ownership, reuse, state, CSS, and performance decisions. Use when building or reorganizing a React/Vue/Svelte UI ("프론트엔드 구조 잡아줘"); choosing a React + Vite or Next.js shell, folder/public-API, or server/client boundary; improving component reuse or state ownership; selecting CSS Modules/Tailwind/CSS-in-JS and token structure; or setting frontend dependency, bundle, and CSS performance strategy. Not for public API/server contracts — use api/backend; design-document authoring — document; TypeScript-only implementation/refactoring — programming/refactor; test-suite implementation — testing; skill-package updates — skillify.'
 metadata:
   version: 2.4.0
 ---
