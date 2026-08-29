@@ -2,7 +2,7 @@
 name: programming
 description: Guides correctness-first, type-strict Python and TypeScript implementation. Use when asked to write a `.py` or `.ts` file, scaffold a Python/TypeScript project, add strict types, assess an implementation diff for correctness or type holes, or fix a reproducible defect. Not for smell-only assessment or behavior-preserving restructuring — use refactor; not for suite-level test architecture — use testing.
 metadata:
-  version: 2.3.2
+  version: 2.3.3
 ---
 
 # programming
@@ -18,7 +18,7 @@ Load only the references the task needs before touching code; a one-off script d
 | Any implementation or code edit | `references/workflow.md` — understand → plan → change → verify → report, and the completion contract |
 | `.py`, `.pyi`, or Python task | `references/python.md` — tooling table, iron list, data-modeling map |
 | `.ts`, `.tsx`, `.mts`, `.cts`, or TypeScript task | `references/typescript.md` — tooling table, iron list, tsconfig flags; load `references/typescript/clean-code.md` when naming, function shape, or structure is in scope |
-| Smell-only review | Route to `refactor`; it owns `references/code-smells.md` and the resulting restructuring |
+| Smell-only review | Route to `refactor`; it owns the code-smell catalog and the resulting restructuring |
 
 ## Write only what the task needs
 

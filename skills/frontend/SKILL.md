@@ -2,7 +2,7 @@
 name: frontend
 description: 'Routes frontend engineering through incumbent-aware rendering and design-scope decisions, then applies component-reuse layering, state-placement rules, and folder conventions. Use when building a React/Vue/Svelte page or component ("프론트엔드 구조 잡아줘"), asking "should this be a client or server component", choosing SPA vs SSR/RSC vs SSG vs islands for a new or existing app, deciding where a piece of state should live, or picking a folder convention (type-based, feature-based, layered feature-sliced) for a codebase. Not for API/server design — use api(공개 HTTP 계약)/backend(서비스 구조); not for authoring design.md itself — use document.'
 metadata:
-  version: 2.3.1
+  version: 2.3.2
 ---
 
 # frontend
@@ -56,7 +56,7 @@ Before a change to rendering architecture, a design system, tokens, or a materia
 test -f docs/design.md && echo "design.md present" || echo "MISSING — document this structural design change before implementation"
 ```
 
-When the gate applies and the document is missing, load the `document` skill's `references/design.md` and scaffold `docs/design.md` from its `templates/design.md`; this skill does not own the 7-section structure, lifecycle, or staleness/anti-generic detection — `document` does. Record a changed rendering decision, token, primitive, or material visual result in that document with its implementation.
+When the gate applies and the document is missing, load `document`, use its design-document reference and template to scaffold `docs/design.md`; this skill does not own the 7-section structure, lifecycle, or staleness/anti-generic detection — `document` does. Record a changed rendering decision, token, primitive, or material visual result in that document with its implementation.
 
 ## Requirements
 

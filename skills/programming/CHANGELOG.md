@@ -10,3 +10,4 @@
 - 2026-08-28 — v2.3.0: mutable language-tooling and runtime facts could be stale → added official-docs-first evidence handling with conflict disclosure and unknown-safe fallback.
 - 2026-08-28 — v2.3.1: selected Python/Node runtimes and incumbent tools could change after evaluation → added official runtime sources, safe version probes, and language-specific re-evaluation trigger.
 - 2026-08-28 — v2.3.2: dependency changes could stop after re-evaluation → require official-docs review, affected evals, recipe maintenance, package version bump, and CHANGELOG append.
+- 2026-08-29 — v2.3.3: refactor's code-smell path was parsed as a programming-local support file by Hermes → route to the owning catalog without a false local path.
