@@ -56,9 +56,12 @@ trigger phrases woven in naturally>. Not for <nearest-neighbor boundary — use 
 - The default is ordinary prose in the shape above.
 - A skill with evidence-backed, mutually exclusive routing ownership may instead begin its parsed description with exactly `MUST USE <bounded ownership clause>. `, followed by the complete ordinary description shape above.
 - The optional directive is a narrow language: the exact case-sensitive `MUST USE ` prefix starts at character zero, occurs once, and the first ASCII `. ` ends a nonempty clause before a nonempty ordinary remainder.
+- Double-quoted descriptions use JSON-compatible escapes; the validator decodes that scalar before checking the directive and rejects YAML-only escape forms so encoded letters cannot bypass the grammar.
+- Clause and remainder text carry no leading or trailing padding beyond the single delimiter space.
 - A standalone uppercase `ANY` — bounded by ASCII alphanumeric/underscore adjacency — may occur at most once inside that clause and nowhere else in the description.
 - Semantic boundedness means explicit inclusion edges plus exclusion or hand-off edges for the nearest sibling domains; it is not a finite enumeration, and passing the lexical validator never proves MECE ownership or routing quality.
-- Nonliteral forms such as `Must use`, `MUST  USE`, `MUST USE:`, and `MUST-USE` are ordinary prose, not fuzzy directive attempts.
+- Sentence-case forms such as `Must use` remain ordinary prose.
+- Any description beginning with the standalone all-caps token `MUST` is reserved for the exact grammar; lookalikes such as `MUST  USE`, `MUST USE:`, `MUST-USE`, `MUST: USE`, `MUST - USE`, or `MUST_USE` are invalid because they exert directive pressure without passing the evidence gate.
 - Third person ("Routes…", "Scaffolds…", "Owns…"), never "I" / "You".
 - Both *what* the skill does and *when* to use it are present; the primary use case leads the sentence.
 - Trigger phrases are real things a user types, embedded in prose — never a bare quoted list, never keyword stuffing.
@@ -144,6 +147,7 @@ Run the 16 trigger prompts against the drafted `description`; any near-miss that
 Before using the optional §3 directive, freeze those 16 trigger prompts as 6 should-trigger plus 6 should-NOT-trigger tuning cases and 2+2 held-out cases.
 Tune without consulting the held-out verdicts, then freeze the candidate and judge it blind.
 The directive is eligible only when it repairs at least one baseline miss, preserves every baseline success, routes all 8 positives correctly, produces zero false positives across all 8 negatives, and passes all 4 held-out cases.
+A universal directive records the runtime, model or human judge, and actual discovery/index surface for every supported runtime that consumes the shared description; an unavailable or failing runtime keeps the description in ordinary prose rather than weakening the gate.
 A perfect baseline ships the general capability without self-applying the directive because no routing delta exists.
 How to run the arms, judge with fresh eyes, read transcripts, and iterate without overfitting: `references/evaluation.md`.
 These artifacts are temporal working notes, not a package part — never commit them.
