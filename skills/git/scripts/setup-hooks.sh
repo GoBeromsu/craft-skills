@@ -3,11 +3,11 @@
 #   - registers the `git wt` alias      (simple worktree front door)
 #   - chmod +x all hooks, guards.d entries, and guard scripts
 #
-# Deliberately does NOT set core.hooksPath: hookify is the sole owner of that
+# Deliberately does NOT set core.hooksPath: guardrails is the sole owner of that
 # setting and of .githooks/pre-commit (issue #29). The three checks registered
 # into .githooks/guards.d/ by install.sh stay inert until core.hooksPath points
-# at .githooks — wire that by installing hookify in this repo, or by hand if
-# this repo doesn't use hookify: git config core.hooksPath .githooks
+# at .githooks — wire that by installing guardrails in this repo, or by hand if
+# this repo doesn't use guardrails: git config core.hooksPath .githooks
 #
 # Safe to re-run — git config is idempotent, chmod on already-executable files is a no-op.
 set -eu
@@ -38,6 +38,6 @@ printf '[git-guard] pre-push hook   : .githooks/pre-push\n'
 if [ "$hooks_path" = ".githooks" ]; then
   printf '[git-guard] core.hooksPath  = .githooks (already active — checks will fire)\n'
 else
-  printf '[git-guard] core.hooksPath  is not ".githooks" yet — install hookify, or run: git config core.hooksPath .githooks\n'
+  printf '[git-guard] core.hooksPath  is not ".githooks" yet — install guardrails, or run: git config core.hooksPath .githooks\n'
 fi
 printf '[git-guard] setup complete  — run `git wt <name>` to create a worktree.\n'

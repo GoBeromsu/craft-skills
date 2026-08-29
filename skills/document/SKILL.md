@@ -1,8 +1,8 @@
 ---
 name: document
-description: Routes repository documentation into a six-type ontology and authors canonical artifacts. Use when asked to "record this decision", "where does this spec go", "update the README", "draft the project CHANGELOG", "comment-the-why", or "write a design.md". Not for repository docs scaffolding (use init), conducting research (use research), technical reports (use write-report), or API-surface comments.
+description: Routes repository documentation into a six-type ontology and authors canonical artifacts. Use when asked to "record this decision", "where does this spec go", "update the README", "draft the project CHANGELOG", or "comment-the-why". Not for repository docs scaffolding (use init), conducting research (use research), technical reports (use write-report), API-surface comments, or DESIGN.md, visual direction, UX audits, and design-system work (use design).
 metadata:
-  version: 3.1.1
+  version: 4.0.0
 ---
 
 # document
@@ -36,11 +36,14 @@ Pick the primary question a task answers and route by that row — the ontology 
 | Write or update the repository README | `references/readme.md` | `templates/readme.md` |
 | Write the project-level CHANGELOG / release notes | `references/changelog.md` | `templates/changelog.md` |
 | Decide how to comment code (comment-the-why) | `references/inline-comments.md` | — |
-| Write or update `design.md` / design tokens | `references/design.md` | `templates/design.md` |
 | Map the system (`architecture.md`) | see architecture.md section below | `templates/architecture.md` |
 | File research, a spec, a plan, a rule, or an archived source | ontology table above | matching file in `templates/` |
 
 No documentation task should dead-end here — every repo-level artifact and every ontology artifact has an exit row.
+
+### Nearest-neighbor boundary
+
+`design` owns `DESIGN.md`, visual direction, UX audits, and design-system work; route those requests there.
 
 **References vs research:** a references file is a verbatim static copy of an external document; a research file is your own synthesis. Never merge them.
 

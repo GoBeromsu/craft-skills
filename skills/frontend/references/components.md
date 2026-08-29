@@ -1,131 +1,144 @@
 # Frontend Component Reuse
 
-A component earns reuse by its position in a strict dependency hierarchy, not by how many props it accepts. Dependencies point downward only — a lower layer never imports from a higher one.
+A reusable component is a stable semantic contract, not JSX moved into a shared folder. Keep business behavior in its owning slice, prefer native/incumbent primitives, and promote only after real consumers demonstrate one reason to change.
 
 ## Contents
 
-- [Hard rules](#hard-rules)
-- [The 3-layer hierarchy](#the-3-layer-hierarchy)
-- [Props-API rules](#props-api-rules)
-- [Colocation rule](#colocation-rule)
+- [Hierarchy and ownership](#hierarchy-and-ownership)
+- [Reusable component API strategy](#reusable-component-api-strategy)
+- [Composition choices](#composition-choices)
+- [Controlled and uncontrolled state](#controlled-and-uncontrolled-state)
+- [Accessibility and semantic contracts](#accessibility-and-semantic-contracts)
+- [Public surface and promotion](#public-surface-and-promotion)
+- [Framework boundaries](#framework-boundaries)
+- [Colocation and verification](#colocation-and-verification)
 - [Incumbent-respect clause](#incumbent-respect-clause)
 - [Hand-offs](#hand-offs)
 
-## Hard rules
+## Hierarchy and ownership
 
-| Concern | Do | Never |
+| Component kind | Owns | May depend on |
 |---|---|---|
-| Dependency direction | Import only from your own layer or a layer below it | Import from a higher layer (a primitive importing a feature component) |
-| Boolean props | Collapse ≥3 related booleans into one variant enum | Let a component grow a fourth independent boolean prop |
-| Extraction timing | Extract a shared component on the third duplication (rule of three) | Extract on the first or second occurrence "in case it's needed again" |
-| Test/story colocation | Keep a component's test and story file next to its source file | Centralize all tests in a separate mirror tree disconnected from the component |
+| Primitive / design system | Semantic control and finite token-driven variants | Existing design tokens and platform behavior |
+| Composed / pattern | Reusable interaction shape without product authority | Primitives and focused shared libraries |
+| Feature-bound | Product workflow, route/data integration, analytics | Lower reusable components and owning slice internals |
 
-## The 3-layer hierarchy
+This component hierarchy does not replace architectural layers. A primitive belongs in an eligible shared/design-system owner; a product-specific composition remains in its route or feature even when it uses primitives.
 
-| Layer | Owns | Depends on | Example |
-|---|---|---|---|
-| Primitives / design system | The smallest visual building blocks; every visual variant traces to a `design.md` token | Nothing project-specific — only the design system's own tokens | `Button`, `Input`, `Checkbox`, `Card` |
-| Composed / patterns | Combinations of primitives into a reusable interaction shape, still content-agnostic | Primitives only | `FormField` (label + input + error), `Modal`, `DataTable` |
-| Feature-bound | Business-specific composition wired to real data and routes | Primitives and composed components | `CheckoutSummary`, `UserProfileCard` |
+A lower reusable component never imports routing, authorization, analytics, product fetching, or feature internals. If it must, the component is feature-bound or its contract is wrong.
 
-**Detect: an upward or sideways dependency violation — a primitive or composed component importing from `features/`.**
+## Reusable component API strategy
 
-```bash
-grep -rlE "from ['\"](\.\./)*features/" src/components/ui src/components/patterns 2>/dev/null
+Choose in order:
+
+1. Use the semantic HTML element or incumbent primitive when it already satisfies behavior and accessibility.
+2. Add a wrapper only for a stable design/product contract, not merely to shorten JSX.
+3. Model behavior with explicit named props and a finite `variant`/`size` vocabulary.
+4. Use discriminated unions when modes are mutually exclusive so invalid combinations cannot compile.
+5. Keep styling extension narrow: the incumbent `className` pattern and documented CSS custom properties are usually sufficient.
+6. Add refs, polymorphism, or imperative handles only for demonstrated focus/measurement/integration consumers.
+
+Prefer:
+
+```tsx
+type NoticeProps =
+  | { variant: "info"; message: string }
+  | { variant: "action"; message: string; actionLabel: string; onAction(): void };
 ```
 
-Any file printed → a lower layer depends on a higher one → the dependency direction is inverted; move the feature-specific logic out of the primitive/composed component, or move the component itself down to `features/` if it was never actually generic.
+Avoid independent booleans that encode contradictory modes:
 
-**Detect: the same check, generalized (adjust the higher-layer glob to the project's actual feature directory name).**
-
-```bash
-grep -rlE "from ['\"](\.\./)*(features|pages|routes)/" src/components/{ui,primitives,patterns,composed} 2>/dev/null
+```tsx
+<Notice isInfo isAction isDismissible />
 ```
 
-## Props-API rules
+Do not make arbitrary `style`, render-hook, or internal DOM props the primary design API. Every escape hatch becomes a supported contract and weakens refactorability.
 
-- **Boolean explosion → variant enum.** A component with 3 or more independent boolean props is really encoding a small set of variants; collapse them into one `variant` (or `size`, `state`) enum prop instead.
+## Composition choices
 
-  **Detect:**
+| Need | Prefer |
+|---|---|
+| Static visual composition | `children` or named slots |
+| Coordinated subparts sharing component-owned context | Compound components with a small documented context |
+| Parent computes data that the caller must render | Render prop |
+| Cross-tree product state | An explicit state owner, not child inspection/cloning |
 
-  ```bash
-  find src/components -name '*.tsx' -print0 2>/dev/null \
-    | xargs -0 grep -HoE '^\s*(is|has|show|use)[A-Z][A-Za-z]*\??:\s*boolean' \
-    | awk -F: '{print $1}' | sort | uniq -c | awk '$1>=3'
-  ```
+Avoid inspecting or cloning children to infer product behavior; data flow becomes implicit and fragile. Define components at module scope so identity and local state survive parent renders. Declare `lazy()` components at module scope as well.
 
-  Reading: 3+ boolean-shaped props on one component signature (grouped by file, approximate — the command scans per-line, cross-check by file manually) → collapse to an enum.
+## Controlled and uncontrolled state
 
-  **SMELL:**
+Choose one ownership model first:
 
-  ```tsx
-  function Button({ isPrimary, isSecondary, isDanger, isGhost }: ButtonProps) { /* … */ }
-  ```
+- Controlled: caller owns `value`/`open`/`selected` and receives `onValueChange` or equivalent.
+- Uncontrolled: component owns state and accepts `defaultValue`/`defaultOpen`.
 
-  **CLEAN:**
+Support both only when real consumers require both. Document precedence, callback timing, reset behavior, and transitions between modes; do not switch ownership after mount silently. Keep transient hover, focus-visible, draft, and disclosure state local unless another component genuinely coordinates it.
 
-  ```tsx
-  type ButtonVariant = "primary" | "secondary" | "danger" | "ghost";
-  function Button({ variant }: { variant: ButtonVariant }) { /* … */ }
-  ```
+For coordinated components, place one source of truth at the closest common owner. A custom Hook reuses logic; separate callers still receive separate state instances unless they share an external owner.
 
-- **Children over render-prop, unless the child genuinely needs arguments.** Default to passing `children` for static composition. Reach for a render-prop (`children: (arg: T) => ReactNode`) only when the parent must hand the child computed data it cannot otherwise access (a list item's index, a measured dimension).
+## Accessibility and semantic contracts
 
-  ```tsx
-  // children — no argument needed, prefer this shape
-  <Card><CardTitle>Plan</CardTitle></Card>
+A reusable API includes:
 
-  // render-prop — justified only because the parent owns `index`
-  <VirtualList items={rows}>{(row, index) => <Row data={row} pos={index} />}</VirtualList>
-  ```
+- Correct native role and element before ARIA recreation.
+- Accessible name, description, error, and required/disabled semantics.
+- Keyboard operation, focus order, focus restoration, and visible focus.
+- Stable list identity from data; never random keys or reorderable array indices.
+- Reduced-motion, forced-colors, zoom/reflow, and touch target behavior when applicable.
+- Events that expose semantic values rather than leaking internal DOM structure.
 
-- **No premature extraction — rule of three applies to components too.** The first time a JSX shape repeats, leave it inline. The second time, note the duplication. The third time, extract to a shared component. Extracting after one occurrence produces an abstraction shaped around a single caller's needs, which the second caller then has to fight.
+A visually reusable custom control that loses native keyboard or form behavior is not reusable. Verify semantics in the rendered surface, not only TypeScript types or a story snapshot.
 
-  **Detect (approximate — near-duplicate JSX blocks worth a manual look):**
+## Public surface and promotion
 
-  ```bash
-  grep -rhoE '<[A-Z][A-Za-z]*' src/pages src/features 2>/dev/null | sort | uniq -c | sort -rn | awk '$1>=3'
-  ```
+Treat the third similar consumer as a review trigger, not an automatic extraction.
 
-  A JSX tag name appearing 3+ times across different feature files is a candidate for promotion to a composed component — confirm by hand that the usages are structurally similar, not just the same primitive used differently each time.
+Promotion requires:
 
-Grey zone — judge by whether the three occurrences share the *same reason to change*. Three components that happen to look alike today but serve unrelated features are coincidental duplication, not a shared abstraction; extracting them couples features that should stay independent. Only extract when a future change to one occurrence would legitimately need to change all three.
+- Multiple real consumers with the same semantics and expected reason to change.
+- A legal lower-layer owner and a named maintainer.
+- A narrow explicit export surface and no feature-specific knowledge.
+- Contract coverage for variants, behavior, accessibility, and current consumers.
+- Consumer imports rewritten to the supported entry and obsolete deep paths removed.
 
-## Colocation rule
+Keep two small copies when they represent different contexts. Similar appearance does not prove one domain meaning.
 
-A component's test file and story file (if the project uses a story format) live next to its source file, not in a separate mirror tree:
+## Framework boundaries
 
-```
-components/patterns/FormField/
-├── FormField.tsx
-├── FormField.test.tsx
-└── FormField.stories.tsx
-```
+### React and Vite
 
-**Detect: a test file living outside its component's directory.**
+Assume browser execution after the application is confirmed as an SPA. Keep reusable components pure; derive render values rather than mirroring them in effects. Split heavy optional UI only after a production profile shows meaningful initial cost.
 
-```bash
-find src/components -name '*.test.tsx' -o -name '*.test.ts' | while read -r f; do
-  comp="$(dirname "$f")/$(basename "$f" | sed 's/\.test\././')"
-  test -f "$comp" || echo "orphan test: $f"
-done
-```
+### Next.js App Router
 
-Any line printed → the test has no colocated component source at the same path → either the component moved and the test did not, or the test was placed in a mirror tree; move it beside its component.
+Keep reusable presentation server-compatible by default. Add `'use client'` only to the smallest module requiring state, effects, event handlers, custom Hooks, or browser APIs. Props crossing the server/client boundary must be serializable; keep callbacks inside the client island. A component may need a server-rendered shell plus a small client controller rather than making the whole tree client-only.
+
+Never export server-only fetching/authorization from an entry consumed by client components.
+
+## Colocation and verification
+
+Keep source, contract tests, and stories/examples together using incumbent naming. Stories are examples, not assertions.
+
+Verify applicable branches:
+
+- Semantic element, accessible name, keyboard/focus, disabled/error states.
+- Every finite variant and discriminated mode.
+- Controlled and uncontrolled ownership, callbacks, reset, and invalid transitions.
+- Consumer-visible rendering and layout across relevant viewports/themes.
+- Server render and client hydration/serialization where applicable.
+- Public entry imports and absence of old deep paths.
+
+Production profiling precedes `memo`, `useMemo`, and `useCallback`. Memoization is an optimization, not a correctness mechanism; remove effect chains and unstable ownership before adding caches.
 
 ## Incumbent-respect clause
 
-Detect the project's existing component layering (its folder names for primitives/composed/feature layers vary: `ui/` vs `primitives/`, `patterns/` vs `composed/`) and follow that naming for edits. Apply the 3-layer hierarchy strictly to new components; never relabel or move an existing codebase's component tree into this shape as a side effect of an unrelated feature change — propose that reorganization separately.
-
-A codebase with no layering at all (every component in one flat `components/` directory) is not an incumbent convention to preserve — it is the absence of one. Apply the 3-layer hierarchy to new components added to that codebase even while the existing flat directory stays untouched.
-
-Note the drift in the work notes or final report rather than silently reorganizing the existing tree.
+Use the project's current primitive library, naming, test/story format, and styling API. A flat unowned component directory is missing layering, but reorganizing it is a separate change. Apply the smallest correct owner to new work and record broader drift.
 
 ## Hand-offs
 
-- Which rendering model a component belongs to (server vs. client leaf) → `architectures.md` in this skill.
-- Where a component's data comes from (props vs. store vs. server cache) → `state.md` in this skill.
-- Per-file TypeScript discipline (prop typing, exhaustiveness) → `programming`.
-- Component-level test structure and coverage → `testing`.
-- Rendering untrusted content inside a component (raw HTML injection, XSS escape hatches) → `security`.
-- New token, primitive, or pattern introduced by a component change → update `design.md` in the same commit (gate + detection command owned by `document`, stated in this skill's `SKILL.md`).
+- Architectural ranks, slice APIs, and promotion → [`folders.md`](folders.md).
+- Server/client and rendering boundaries → [`architectures.md`](architectures.md).
+- State classification → [`state.md`](state.md).
+- CSS variants, tokens, and delivery → [`css.md`](css.md).
+- Type-level API discipline → `programming`; component testing depth → `testing`; untrusted rendering → `security`.
+- New token meaning, primitive, or material design decision → `document` and the `docs/design.md` gate in `SKILL.md`.

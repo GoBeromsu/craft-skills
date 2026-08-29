@@ -40,8 +40,8 @@ Do not add vendor-specific fields to the portable baseline.
 
 ## 2. Naming
 
-- **Verb-first** for a skill the user explicitly triggers by naming the action it performs (`refactor`, `init`, `skillify`, `hookify`, `write-report`).
-- **Plain noun** for a skill that supplies ambient domain context rather than being invoked by a verb (`programming`, `frontend`, `backend`, `ml`, `agents`, `git`, `security`, `testing`).
+- **Verb-first** for a skill the user explicitly triggers by naming the action it performs (`refactor`, `init`, `skillify`, `write-report`).
+- **Plain noun** for a skill that names the domain or surface it governs rather than an action (`programming`, `frontend`, `backend`, `ml`, `agents`, `git`, `guardrails`, `security`, `testing`).
 - Kebab-case, matches the directory exactly, no more than two tokens, no `-skill` / `-tool` / `-helper` suffix (the package is already a skill).
 
 ## 3. Description

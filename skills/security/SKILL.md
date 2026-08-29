@@ -1,8 +1,8 @@
 ---
 name: security
-description: Finds and fixes vulnerabilities in code the user owns across web, API, and LLM surfaces, mapping every trust boundary first and triaging by production reachability and severity second. Use when asked for a security review, "is this safe to ship," "check for vulnerabilities," or "보안 점검," when auditing secrets hygiene or dependency risk, or when reviewing a PR or feature for security regressions before release. Not for building or changing LLM-agent systems themselves (use `agents`) or for installing the enforcement hook, lint, or pre-commit that closes a finding permanently (use `hookify`); this skill finds and fixes, it never attacks.
+description: Finds and fixes vulnerabilities in code the user owns across web, API, and LLM surfaces, mapping every trust boundary first and triaging by production reachability and severity second. Use when asked for a security review, "is this safe to ship," "check for vulnerabilities," or "보안 점검," when auditing secrets hygiene or dependency risk, or when reviewing a PR or feature for security regressions before release. Not for building or changing LLM-agent systems themselves (use `agents`) or for installing the enforcement hook, lint, or pre-commit that closes a finding permanently (use `guardrails`); this skill finds and fixes, it never attacks.
 metadata:
-  version: 2.2.0
+  version: 2.3.2
 ---
 
 # security
@@ -13,7 +13,7 @@ Find and fix vulnerabilities in your own systems under one discipline: **map eve
 
 Do not propose a fix before this gate.
 
-1. Enumerate every ingress channel the feature or codebase under review exposes: user input (forms, query params, headers), webhooks, file uploads, LLM output (tool-call arguments, model completions, retrieved documents), and third-party API responses.
+1. Enumerate every ingress channel the feature or codebase under review exposes: user input (forms, query params, headers), webhooks, file uploads, LLM output (tool-call arguments, model completions, retrieved documents), third-party API responses, and any CI workflow triggered by a pull request — that workflow runs fork-authored code on this repository's runner, so it is an ingress channel like any other.
 2. Give each ingress point a parse / validate / limit decision — parse it into a typed value at the boundary, validate it against a schema, and cap its size/rate. An ingress point with none of the three is a gap.
 3. Name the assets at risk: credentials, personal data, payment data, availability, another tenant's data.
 4. Write a one-line abuse case for each top flow — "attacker submits X through channel Y to achieve Z." This turns severity triage into something concrete instead of abstract.
@@ -23,6 +23,7 @@ Do not propose a fix before this gate.
    | Web UI / frontend rendering | `references/web.md` |
    | API / server-side handler | `references/api.md` |
    | LLM-powered feature (agent, prompt, retrieval-augmented generation (RAG), tool use) | `references/llm.md` |
+   | CI workflow that runs on a pull request, or any change to its permissions, registry login, image push, cache export, or artifact upload | `references/untrusted-ci.md` |
    | Full audit, or dependency, build, credential, or supply-chain reachability | `references/secrets-supply-chain.md` |
    A review can route to more than one reference — a web app with an LLM feature reads `web.md`, `api.md`, and `llm.md`. Read `secrets-supply-chain.md` and run its relevant audit commands only when its routing row applies.
 Preserve trust-boundary validation and error handling; remove either only when an adversarial regression test proves it redundant.
@@ -85,7 +86,7 @@ Reachability, not a demonstrated exploit, drives the tree — a finding with cle
 ## Hand-offs
 
 - Building or changing an LLM-agent system itself — a new agent, prompt authoring, eval sets — is owned by `agents`; this skill finds and fixes vulnerabilities in what's already built, including prompt injection, tool-permission scope, and consumption guards in agent/LLM code (`references/llm.md`).
-- Turning a finding into enforced prevention — a pre-commit hook, a CI lint gate, a runtime guard — is owned by `hookify`.
+- Turning a finding into enforced prevention — a pre-commit hook, a CI lint gate, a runtime guard — is owned by `guardrails`.
 - The parse-don't-validate typed-boundary idiom referenced in PHASE 0 step 2 is owned by `programming`; this skill states the security requirement, `programming` owns the implementation pattern.
 - Offensive tooling, exploit development, penetration-testing infrastructure, and probing systems the user does not own or hold written authorization to test are out of scope entirely — this skill finds and fixes, it never attacks.
 
@@ -112,6 +113,11 @@ Reachability, not a demonstrated exploit, drives the tree — a finding with cle
 - Implementing authorization as "is authenticated" instead of "is authenticated AND permitted for this specific object" → check both authentication and object-level permission on every access.
 - Reporting a finding with the real secret value pasted in instead of redacted → redact every secret value before it appears in a report.
 - Leaving a known exploitable path live "to see what happens" instead of mitigating it immediately → mitigate the path immediately (disable the route, rotate the secret, add a gateway rule).
+- Gating a required CI job behind a job-level `if:` so it skips on untrusted events → gate each token consumer inside the job and assert the gates with a count; a skipped required check reports success to branch protection.
+- Interpolating a `${{ }}` expression into a `run:` body because the value looks trusted → pass it through `env:` and reference the shell variable; the inlined form is the template-injection shape people copy.
+- Treating a pull-request cache as either a trusted secret store or a default-branch poisoning path → GitHub scopes PR-created caches to the pull-request merge ref; keep secrets out, document accessible scopes, and verify the selected event and cache action against current official docs.
+- Relaxing a policy assertion to make room for a workflow change → extend the allowlist deliberately and keep the guarantee; a recorded policy decision goes back to its owner instead.
+- Adding a policy test with no case that fails when the policy is violated → ship the mutation case with it; a green suite over an unfalsifiable policy proves nothing.
 
 ## Verification
 
@@ -121,4 +127,5 @@ Reachability, not a demonstrated exploit, drives the tree — a finding with cle
 - [ ] Every finding cites `file:line` evidence and the detection command that surfaced it.
 - [ ] No real secret value appears anywhere in the report — redacted placeholders only.
 - [ ] A dependency audit (`npm audit` / `pip-audit` / the uv-native command in `references/secrets-supply-chain.md`) ran and its output was reviewed when dependency, build, credential, or supply-chain reachability was in scope.
+- [ ] Every workflow policy in scope carries a mutation test that fails when the property is removed (`references/untrusted-ci.md`).
 - [ ] Every applied fix is proven closed by a test or a re-run of the same detection command showing a pass.
