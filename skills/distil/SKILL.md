@@ -2,7 +2,7 @@
 name: distil
 description: Distils transferable rules and conventions from an external source — a well-crafted repo, an engineering article, an AGENTS.md, or a third-party skill — and lands them in this library under the authoring contract with provenance recorded. Use when the user says "파쿠리", "distil the rules from this repo", "absorb this skill", or "pull the conventions out of this article", or hands over a link worth mining. Not for authoring a skill from your own workflow or shipping the final package — the landing routes through skillify; not for open-ended investigation of a question — use research; not for summarizing a source with no intent to land rules in the library.
 metadata:
-  version: 1.1.0
+  version: 1.1.1
 ---
 
 # distil
@@ -67,7 +67,7 @@ per decision, no history, no attribution in the body. Then choose its landing fo
 |-------------------|--------------|
 | A whole workflow this library lacks | New skill draft → `skillify` create mode (new package starts at 1.0.0 — the external version history does not transfer). |
 | A sharper rule for an existing skill | Body rule or `## Anti-patterns` entry → `skillify` update mode on the owning package. |
-| Bulk knowledge worth re-consulting | `references/*.md` distillate in the owning package, rewritten to reference voice. |
+| Bulk knowledge worth re-consulting | `references/` distillate in the owning package, rewritten to reference voice. |
 
 Document the mapping — every candidate rule, its landing form, and keep/drop recommendation —
 before routing it to its owner.
