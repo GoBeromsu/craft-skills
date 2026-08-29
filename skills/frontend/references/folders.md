@@ -117,7 +117,7 @@ For a legal external consumer:
 - Import slice internals relatively from within the same slice; do not route internal imports back through the public barrel.
 - Prefer explicit exports over wildcard exports.
 - Avoid one application-wide barrel and broad `shared/ui` re-export trees; they can create cycles, unnecessary transforms, and accidental surfaces.
-- Use environment-specific entries such as `index.server.ts` only when one surface would expose server-only code to a client graph.
+- Use environment-specific entries only when one surface would expose server-only code to a client graph. Keep a client-safe default entry such as `index.ts` and a server-only entry such as `index.server.ts`; neither entry re-exports the other. Client consumers import only the client-safe surface, and server consumers name the server surface explicitly.
 - Check type-only imports and aliases too; they still express architectural coupling even when erased at runtime.
 
 FSD documents a narrow Entities-layer `@x` exception for entities that genuinely contain or must refactor with one another. Keep the default same-layer ban. Use `@x` only when the relationship is explicit, limited to the named consumer, and maintained as one refactor unit; do not generalize it to Features or arbitrary peers.

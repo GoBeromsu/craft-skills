@@ -85,7 +85,7 @@ This is an incumbent-friendly FSD subset, not the canonical FSD Next mapping. It
 - Pages and layouts remain Server Components by default when the installed Next version supports App Router semantics.
 - Put `'use client'` on the smallest interactive entry. Everything imported by that entry belongs to the client graph, so a high boundary can enlarge shipped JavaScript.
 - Fetch and authorize server data in server-only modules or an incumbent data-access boundary. Pass minimal serializable values to client leaves.
-- Keep server-only and client-safe exports separate when one public entry would leak environment-specific code; an `index.server.ts`-style entry is valid only when supported and needed.
+- Keep server-only and client-safe exports separate when one public entry would leak environment-specific code; the complete entrypoint contract is owned by [`folders.md#public-apis-and-dependency-direction`](folders.md#public-apis-and-dependency-direction).
 - Route groups/private folders organize routing and colocation; they do not enforce product-module boundaries.
 - Keep global CSS at the framework-supported root entry. Colocate route-private and component styles without turning route files into global selector patches.
 - Use the installed Next build/analyzer surfaces for server/client and route output. Do not mix Vite into a Next application.

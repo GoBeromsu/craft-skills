@@ -82,12 +82,12 @@ Centralize the API base, path/version prefix, proxy, and BFF boundary once per a
 ## Anti-patterns
 
 - Framework shell contains checkout/catalog/user business logic → move behavior to its route or slice and keep the shell as composition.
-- Root `components/`, `hooks/`, `types/`, or `utils/` becomes the primary product architecture → colocate by capability or retain a separately documented small-app convention (`folders.md`).
-- Upward, forbidden peer-slice, or deep internal import → fix dependency direction first, then import a narrow public API (`folders.md`).
-- First similar implementation moves to `shared` → keep it local until semantics, consumers, ownership, and regression coverage justify promotion (`folders.md`).
-- Primitive knows routing, fetching, authorization, or analytics; component API grows boolean matrices → restore a semantic reusable contract (`components.md`).
-- Derived data, URL state, or server data is mirrored through effects/global stores → return it to its single owner (`state.md`).
-- Global selectors, duplicated tokens, competing styling systems, or `!important` escalation spread across features → restore scoped ownership and the incumbent cascade (`css.md`).
+- Root `components/`, `hooks/`, `types/`, or `utils/` becomes the primary product architecture → colocate by capability or retain a separately documented small-app convention ([`folders.md`](references/folders.md)).
+- Upward, forbidden peer-slice, or deep internal import → fix dependency direction first, then import a narrow public API ([`folders.md`](references/folders.md)).
+- First similar implementation moves to `shared` → keep it local until semantics, consumers, ownership, and regression coverage justify promotion ([`folders.md`](references/folders.md)).
+- Primitive knows routing, fetching, authorization, or analytics; component API grows boolean matrices → restore a semantic reusable contract ([`components.md`](references/components.md)).
+- Derived data, URL state, or server data is mirrored through effects/global stores → return it to its single owner ([`state.md`](references/state.md)).
+- Global selectors, duplicated tokens, competing styling systems, or `!important` escalation spread across features → restore scoped ownership and the incumbent cascade ([`css.md`](references/css.md)).
 - Version-blind install/upgrade advice → inspect the manifest, lockfile, and matching-version evidence first.
 - Memoization, chunking, critical CSS, preload, or client-boundary changes lack a production baseline → measure before and after or make no optimization claim.
 
