@@ -22,14 +22,69 @@
       "forbidden_neighbors": ["craft-skills/document", "craft-skills/programming", "craft-skills/git"]
     },
     {
+      "trigger": "init this repository",
+      "expected_package": "craft-skills/init",
+      "forbidden_neighbors": ["craft-skills/document", "craft-skills/git", "craft-skills/skillify"]
+    },
+    {
+      "trigger": "deep-init this codebase with AGENTS instructions",
+      "expected_package": "craft-skills/init",
+      "forbidden_neighbors": ["craft-skills/document", "craft-skills/programming", "craft-skills/git"]
+    },
+    {
+      "trigger": "map repository conventions into AGENTS.md",
+      "expected_package": "craft-skills/init",
+      "forbidden_neighbors": ["craft-skills/document", "craft-skills/distil", "craft-skills/git"]
+    },
+    {
+      "trigger": "audit an existing AGENTS lifecycle",
+      "expected_package": "craft-skills/init",
+      "forbidden_neighbors": ["craft-skills/security", "craft-skills/document", "craft-skills/git"]
+    },
+    {
+      "trigger": "audit AGENTS lifecycle drift",
+      "expected_package": "craft-skills/init",
+      "forbidden_neighbors": ["craft-skills/debug", "craft-skills/document", "craft-skills/git"]
+    },
+    {
+      "trigger": "prune accepted stale managed AGENTS artifacts",
+      "expected_package": "craft-skills/init",
+      "forbidden_neighbors": ["craft-skills/document", "craft-skills/refactor", "craft-skills/git"]
+    },
+    {
+      "trigger": "verify AGENTS coverage across this repository",
+      "expected_package": "craft-skills/init",
+      "forbidden_neighbors": ["craft-skills/testing", "craft-skills/document", "craft-skills/git"]
+    },
+    {
+      "trigger": "scaffold documentation for this repository",
+      "expected_package": "craft-skills/document",
+      "forbidden_neighbors": ["craft-skills/init", "craft-skills/write-report", "craft-skills/write-prd"]
+    },
+    {
+      "trigger": "write the README for this repository",
+      "expected_package": "craft-skills/document",
+      "forbidden_neighbors": ["craft-skills/init", "craft-skills/write-report", "craft-skills/write-prd"]
+    },
+    {
+      "trigger": "write an ADR for this repository",
+      "expected_package": "craft-skills/document",
+      "forbidden_neighbors": ["craft-skills/init", "craft-skills/write-report", "craft-skills/design"]
+    },
+    {
+      "trigger": "install git hooks for this repository",
+      "expected_package": "craft-skills/git",
+      "forbidden_neighbors": ["craft-skills/init", "craft-skills/guardrails", "craft-skills/cicd"]
+    },
+    {
       "trigger": "git worktree",
       "expected_package": "craft-skills/git",
       "forbidden_neighbors": ["craft-skills/init", "craft-skills/programming", "bstack/task"]
     },
     {
       "trigger": "pre-commit hook guard",
-      "expected_package": "craft-skills/guardrails",
-      "forbidden_neighbors": ["craft-skills/programming", "craft-skills/init", "craft-skills/git"]
+      "expected_package": "craft-skills/git",
+      "forbidden_neighbors": ["craft-skills/programming", "craft-skills/init", "craft-skills/guardrails"]
     },
     {
       "trigger": "configure the linter rule set and formatter for this repo",

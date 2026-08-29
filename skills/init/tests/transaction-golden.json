@@ -1,0 +1,76 @@
+{
+  "basis": {
+    "operation": "map",
+    "snapshot": {
+      "action": "replace",
+      "path": ".agents-map.json",
+      "post_exists": true,
+      "post_mode": 420,
+      "post_sha256": "7b4885e223b1267708298723e215e7d5439d1bec2693034603cc8c63a28ddbab",
+      "pre_exists": true,
+      "pre_mode": 420,
+      "pre_sha256": "c5d130e87e377f65c0f77eda3629f01de137de88cd3b0a181aa1b6fda001afdc"
+    },
+    "targets": [
+      {
+        "action": "create",
+        "path": "AGENTS.md",
+        "post_exists": true,
+        "post_mode": 420,
+        "post_sha256": "a193b6b19136a5d20848d7d8047ef8215f38216959d8cb48aad9514be20b7807",
+        "pre_exists": false,
+        "pre_mode": null,
+        "pre_sha256": null
+      },
+      {
+        "action": "replace",
+        "path": "packages/api/AGENTS.md",
+        "post_exists": true,
+        "post_mode": 416,
+        "post_sha256": "b67f35dec43c3718d834a770ebe91e7740703875591ddb079807b1497d489f13",
+        "pre_exists": true,
+        "pre_mode": 416,
+        "pre_sha256": "6072b394871f2405d485c7238a0e9d58542adb0048faf236e82ecaf211388704"
+      },
+      {
+        "action": "delete",
+        "path": "packages/legacy/AGENTS.md",
+        "post_exists": false,
+        "post_mode": null,
+        "post_sha256": null,
+        "pre_exists": true,
+        "pre_mode": 420,
+        "pre_sha256": "8d0196ae8a353e44adcae0c121517685a0b12428e25898bf7a4bf2c02c2fbdca"
+      }
+    ]
+  },
+  "derived_paths": {
+    "journal_next_path": ".agents-map.transaction.json.844e5ec7e0db.next",
+    "snapshot": {
+      "apply_path": ".agents-map.json.craft-init-v4-844e5ec7e0db.apply",
+      "post_recovery_path": ".agents-map.json.craft-init-v4-844e5ec7e0db.post",
+      "pre_recovery_path": ".agents-map.json.craft-init-v4-844e5ec7e0db.pre"
+    },
+    "targets": [
+      {
+        "apply_path": ".AGENTS.md.craft-init-v4-844e5ec7e0db.apply",
+        "post_recovery_path": ".AGENTS.md.craft-init-v4-844e5ec7e0db.post",
+        "pre_recovery_path": null
+      },
+      {
+        "apply_path": "packages/api/.AGENTS.md.craft-init-v4-844e5ec7e0db.apply",
+        "post_recovery_path": "packages/api/.AGENTS.md.craft-init-v4-844e5ec7e0db.post",
+        "pre_recovery_path": "packages/api/.AGENTS.md.craft-init-v4-844e5ec7e0db.pre"
+      },
+      {
+        "apply_path": "packages/legacy/.AGENTS.md.craft-init-v4-844e5ec7e0db.apply",
+        "post_recovery_path": null,
+        "pre_recovery_path": "packages/legacy/.AGENTS.md.craft-init-v4-844e5ec7e0db.pre"
+      }
+    ]
+  },
+  "identity_bytes_utf8": "{\"operation\":\"map\",\"snapshot\":{\"action\":\"replace\",\"path\":\".agents-map.json\",\"post_exists\":true,\"post_mode\":420,\"post_sha256\":\"7b4885e223b1267708298723e215e7d5439d1bec2693034603cc8c63a28ddbab\",\"pre_exists\":true,\"pre_mode\":420,\"pre_sha256\":\"c5d130e87e377f65c0f77eda3629f01de137de88cd3b0a181aa1b6fda001afdc\"},\"targets\":[{\"action\":\"create\",\"path\":\"AGENTS.md\",\"post_exists\":true,\"post_mode\":420,\"post_sha256\":\"a193b6b19136a5d20848d7d8047ef8215f38216959d8cb48aad9514be20b7807\",\"pre_exists\":false,\"pre_mode\":null,\"pre_sha256\":null},{\"action\":\"replace\",\"path\":\"packages/api/AGENTS.md\",\"post_exists\":true,\"post_mode\":416,\"post_sha256\":\"b67f35dec43c3718d834a770ebe91e7740703875591ddb079807b1497d489f13\",\"pre_exists\":true,\"pre_mode\":416,\"pre_sha256\":\"6072b394871f2405d485c7238a0e9d58542adb0048faf236e82ecaf211388704\"},{\"action\":\"delete\",\"path\":\"packages/legacy/AGENTS.md\",\"post_exists\":false,\"post_mode\":null,\"post_sha256\":null,\"pre_exists\":true,\"pre_mode\":420,\"pre_sha256\":\"8d0196ae8a353e44adcae0c121517685a0b12428e25898bf7a4bf2c02c2fbdca\"}]}",
+  "initial_journal_utf8": "{\n  \"intended_snapshot_sha256\": \"7b4885e223b1267708298723e215e7d5439d1bec2693034603cc8c63a28ddbab\",\n  \"operation\": \"map\",\n  \"phase\": \"preparing\",\n  \"recovery_from_phase\": null,\n  \"schema_version\": 1,\n  \"snapshot\": {\n    \"action\": \"replace\",\n    \"apply_path\": \".agents-map.json.craft-init-v4-844e5ec7e0db.apply\",\n    \"path\": \".agents-map.json\",\n    \"post_exists\": true,\n    \"post_mode\": 420,\n    \"post_recovery_path\": \".agents-map.json.craft-init-v4-844e5ec7e0db.post\",\n    \"post_sha256\": \"7b4885e223b1267708298723e215e7d5439d1bec2693034603cc8c63a28ddbab\",\n    \"pre_exists\": true,\n    \"pre_mode\": 420,\n    \"pre_recovery_path\": \".agents-map.json.craft-init-v4-844e5ec7e0db.pre\",\n    \"pre_sha256\": \"c5d130e87e377f65c0f77eda3629f01de137de88cd3b0a181aa1b6fda001afdc\",\n    \"state\": \"pending\"\n  },\n  \"targets\": [\n    {\n      \"action\": \"create\",\n      \"apply_path\": \".AGENTS.md.craft-init-v4-844e5ec7e0db.apply\",\n      \"path\": \"AGENTS.md\",\n      \"post_exists\": true,\n      \"post_mode\": 420,\n      \"post_recovery_path\": \".AGENTS.md.craft-init-v4-844e5ec7e0db.post\",\n      \"post_sha256\": \"a193b6b19136a5d20848d7d8047ef8215f38216959d8cb48aad9514be20b7807\",\n      \"pre_exists\": false,\n      \"pre_mode\": null,\n      \"pre_recovery_path\": null,\n      \"pre_sha256\": null,\n      \"state\": \"pending\"\n    },\n    {\n      \"action\": \"replace\",\n      \"apply_path\": \"packages/api/.AGENTS.md.craft-init-v4-844e5ec7e0db.apply\",\n      \"path\": \"packages/api/AGENTS.md\",\n      \"post_exists\": true,\n      \"post_mode\": 416,\n      \"post_recovery_path\": \"packages/api/.AGENTS.md.craft-init-v4-844e5ec7e0db.post\",\n      \"post_sha256\": \"b67f35dec43c3718d834a770ebe91e7740703875591ddb079807b1497d489f13\",\n      \"pre_exists\": true,\n      \"pre_mode\": 416,\n      \"pre_recovery_path\": \"packages/api/.AGENTS.md.craft-init-v4-844e5ec7e0db.pre\",\n      \"pre_sha256\": \"6072b394871f2405d485c7238a0e9d58542adb0048faf236e82ecaf211388704\",\n      \"state\": \"pending\"\n    },\n    {\n      \"action\": \"delete\",\n      \"apply_path\": \"packages/legacy/.AGENTS.md.craft-init-v4-844e5ec7e0db.apply\",\n      \"path\": \"packages/legacy/AGENTS.md\",\n      \"post_exists\": false,\n      \"post_mode\": null,\n      \"post_recovery_path\": null,\n      \"post_sha256\": null,\n      \"pre_exists\": true,\n      \"pre_mode\": 420,\n      \"pre_recovery_path\": \"packages/legacy/.AGENTS.md.craft-init-v4-844e5ec7e0db.pre\",\n      \"pre_sha256\": \"8d0196ae8a353e44adcae0c121517685a0b12428e25898bf7a4bf2c02c2fbdca\",\n      \"state\": \"pending\"\n    }\n  ],\n  \"transaction_id\": \"844e5ec7e0dba0dae0568fa84bbafd2337786b8b2521d930db6b9b9dc8c5da95\"\n}\n",
+  "prefix": "844e5ec7e0db",
+  "transaction_id": "844e5ec7e0dba0dae0568fa84bbafd2337786b8b2521d930db6b9b9dc8c5da95"
+}

@@ -1,5 +1,6 @@
 # Changelog
 
+- 2026-08-30 — v4.0.0: BREAKING — init now owns only the AGENTS lifecycle: bare `init` immediately maps/deep-inits, `init map` is identical, audit/prune stay explicit, and docs bootstrap plus `--create-new` are removed rather than selected interactively.
 - 2026-06-13 — v1.0.0: no docs/ bootstrap existed → scaffolds docs/ ontology + ADR index, delegates architecture/README to document, wires git-guard.
 - 2026-06-17 — v1.1.0: governance lacked shared config resolution → added a governance-config resolver + GitHub label installer/verifier scripts.
 - 2026-06-17 — v1.1.0: issue triage lacked a Type label + auto-label enforcement → added an issue Type template + fail-closed auto-label workflow.

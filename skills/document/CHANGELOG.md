@@ -13,3 +13,4 @@
 - 2026-07-12 — v3.1.0: automatic relocation and first-commit plan freezing risked changing user work → made both explicit-request contracts and added ulw-plan's concrete-path, acceptance, happy/failure QA steps.
 - 2026-08-29 — v3.1.1: a wildcard support-file token made Hermes request a literal missing path → name the templates directory without a glob.
 - 2026-08-29 — v4.0.0: document owned design-system documents and lifecycle → moved ownership to design. BREAKING.
+- 2026-08-30 — v4.0.1: repository documentation scaffolding belongs to document, not init.

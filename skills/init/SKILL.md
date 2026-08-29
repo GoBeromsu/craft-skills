@@ -1,108 +1,115 @@
 ---
 name: init
-description: Bootstraps a repository's craft docs scaffold or generates a complexity-scored, hierarchical AGENTS.md knowledge base for a mature one. Use when initializing repo docs folders ("init this repo", "bootstrap craft conventions"), deep-initing a codebase ("deep init", "generate AGENTS.md", "map this codebase"), or setting up the docs structure; uses a sequential cartography path on runtimes without agent fan-out. Not for authoring docs content, ADRs, README, or architecture decisions (use the `document` skill) or installing git-guard hooks (use the `git` skill).
+description: Maps a repository into a maintained hierarchical AGENTS.md knowledge base. Use when asked to "init this repo" for AGENTS, deep-init a codebase, generate or update AGENTS.md, map repository conventions, audit an existing AGENTS lifecycle, or prune accepted stale managed AGENTS artifacts. Not for package-manager or plugin initialization, docs scaffolding or authoring (use `document`), or git-hook installation (use `git`).
 metadata:
-  version: 3.2.2
+  version: 4.0.0
 ---
 
 # init
 
-`init` selects an outcome, not a fixed phase ceremony.
-**Bootstrap** creates the craft-owned `docs/` scaffold; **cartography** generates or updates a hierarchical `AGENTS.md` map.
+`init` owns the AGENTS lifecycle only: map, read-only audit, and guarded prune.
+AGENTS.md is canonical.
+CLAUDE.md may be an adapter only when its bytes are exactly `b"@AGENTS.md\n"`.
+Do not scaffold documentation, author document content, initialize packages, or install git hooks.
 
-Both outcomes share only these prerequisites: inspect the requested outcome and existing files without overwriting them, then emit the git-guard diagnostic below.
-A docs-only request runs Phase 0 and stops.
-A cartography request runs Phases 1–4; run Phase 0 first only when the caller also asks for the docs scaffold.
-Do not turn a bootstrap request into codebase mapping.
+Read the linked procedure when its phase is reached.
+The lifecycle state and transaction rules are owned by [state contract](references/state-contract.md).
+Loader classification evidence is owned by [loading contract](references/loading-contract.md).
+Those contracts are linked here, not restated or weakened.
 
-This file routes; the phase procedures live in `references/` — read the selected procedure when you reach it.
+## Invocation
 
-## Requirements
+| Invocation | Valid flags | Behavior |
+|---|---|---|
+| `init` or `init [map flags]` | `--max-depth=N`, `--claude-shim=keep\|on\|off`, repeated `--accept=ID` | Map/deep-init. |
+| `init map` or `init map [map flags]` | Exactly the same map flags | Exact equivalent of bare init. |
+| `init audit` | none | Read-only JSON inspection. |
+| `init prune` | repeated `--accept=ID` | Remove only accepted stale managed artifacts. |
 
-- `git`, POSIX `sh`, standard coreutils (`find`, `awk`, `sed`, `wc`).
-- Optional: `ast-grep` (`sg`) for symbol/reference inventory when no LSP/codegraph is available (fallback is `grep`/`find`). LSP and codegraph tooling are optional; absent → explore/`grep` fallback with centrality marked "unmeasured".
+Normalize an omitted operation to `map` before flag validation, preflight, proposals, journal handling, or effects.
+Bare and explicit map must use one normalized request and one map path.
+They have identical defaults, diagnostics, proposals, reports, transaction behavior, target results, snapshots, and exit classes.
+`audit` and `prune` always require their explicit tokens.
 
-## Flags (cartography engine)
+`--max-depth` is an integer from 1 through 32 and defaults to 3.
+It limits scoring and placement only, never discovery, coverage, existing-instruction chains, or journal inspection.
+`--claude-shim=keep` uses the last valid snapshot policy, or `off` when no valid snapshot exists.
+Legacy `--create-new`, unknown operations, malformed values, duplicate or conflicting operations, and cross-operation flags exit 2 before target temporary files or journal creation.
+Bare init is valid and never selects a bootstrap outcome, audit, or prune.
 
-```
-init                 # Select the requested bootstrap or cartography outcome; update existing AGENTS.md only for cartography
-init --create-new    # Read existing AGENTS.md → remove all → regenerate from scratch
-init --max-depth=N   # Limit directory depth for cartography (default: 3)
-```
+The dispatcher is the executable form of that table and passes every remaining argument through unchanged:
 
-## Route the run
-
-### 1. Choose the requested outcome
-
-| Request outcome | Procedure |
-|---|---|
-| Craft docs scaffold only | Run Phase 0 — Ontology graft. |
-| Hierarchical `AGENTS.md` map | Run Phases 1–4 — Cartography. |
-| Both scaffold and map | Run Phase 0, then Phases 1–4. |
-
-### 2. Shared prerequisite — git-guard diagnostic notice
-
-init installs no enforcement rails of its own — git-guard belongs to the `git` skill and self-installs there on first `git wt` use.
-A missing guard should stay visible, not silently assumed; emit one line at start:
-
-```bash
-echo "git-guard: core.hooksPath = $(git config core.hooksPath 2>/dev/null || echo '<unset — the git skill installs it on first git wt use>')"
+```sh
+python3 skills/init/scripts/init.py [map|audit|prune] [repository] [flags ...]
 ```
 
-### Cartography runtime branch
+## Route
 
-For mutable runtime fan-out or tool capabilities, consult official primary docs first and disclose conflicts; a more-specific local contract or matching-version/platform reproducible evidence may override general or stale docs.
-Unresolved capability stays unknown: do not invent surfaces; use the sequential path.
+1. Run map for bare `init`, map flags without an operation, or explicit `init map`.
+2. Run audit only for explicit `init audit`.
+3. Run prune only for explicit `init prune`.
 
-Classify the runtime before Phases 1–4:
+Map and prune preserve the state contract's preflight, ownership, proposal, transaction, recovery, durability, and snapshot-last rules.
+Audit structurally reads state without importing map or prune effects and writes only JSON stdout.
+Map and prune must not create a journal until validation, preflight, and required evidence-bound acceptances succeed.
 
-- **Agent-spawn runtime** — Claude Code (`Task`) or Codex (`multi_agent_v1`): Phase 1 fans out concurrent exploration scaled to uncertainty and risk; Phase 3 can generate subdir files in parallel.
-- **Single-agent runtime** — Hermes / generic: run Phase 1 investigations sequentially via `Bash` + `Grep` + `Glob` (+ `ast-grep` if present), then generate Phase 3 files one at a time.
+## Map procedure
 
-LSP/codegraph are optional in both branches; absent → explore/`grep`/`ast-grep` fallback, centrality "unmeasured".
+Run these phases in order:
 
-### Cartography phases
+| Phase | Procedure | Responsibility |
+|---|---|---|
+| 1 — Discovery | [phase-1-discovery.md](references/phase-1-discovery.md) | Build deterministic, evidence-grounded repository inventory. |
+| 2 — Scoring | [phase-2-scoring.md](references/phase-2-scoring.md) | Choose root and eligible placements from the inventory. |
+| 3 — Reconcile | [phase-3-reconcile.md](references/phase-3-reconcile.md) | Compute canonical managed content, ownership, proposals, and mutations. |
+| 4 — Verify | [phase-4-verify.md](references/phase-4-verify.md) | Verify applied state, coverage, snapshot, and completion. |
 
-Run these in order because each feeds the next:
+The shared core computes normalization, inventory, scoring, topology, findings, proposals, mutation bases, and transaction identity before effects.
+Map/prune effects are isolated from that pure core.
+The execution fan-out class controls only how independent discovery work is scheduled.
+The loader class is separate evidence about runtime instruction loading and remains unknown without an applicable sentinel probe.
+Never infer loader behavior from fan-out capability, source inspection, directory placement, or a root fallback.
 
-| Phase | File | What it does |
-|-------|------|--------------|
-| **1 — Discovery** | `references/phase-1-discovery.md` | Explore + structure + LSP/codegraph code map + existing files; scale investigation to uncertainty and risk. |
-| **2 — Scoring** | `references/phase-2-scoring.md` | Weighted complexity matrix → `AGENTS_LOCATIONS` (root always; >15 create; 8-15 if distinct; <8 skip). |
-| **3 — Generate** | `references/phase-3-generate.md` | Root AGENTS.md (full treatment + provenance stamp + `## DOCS & DECISIONS` graft link), then scored subdirs. Existence rule: `Edit` if present, `Write` if new. |
-| **4 — Review** | `references/phase-4-review.md` | Dedup-vs-parent and line-budget review. |
+## Safety and canonicality
 
-### Cartography scope guard
+Before working on a path, read every `AGENTS.md` from repository root through that path's directory in order.
+The nearest instruction wins on conflict.
+Every non-excluded first-party regular-file target and every AGENTS file on each root-to-directory chain is inventoried at any depth without following symlinks.
+Unreadable, truncated, special, symlinked, or unclassified paths are non-clean.
+Root fallback is an instruction rule, not loader evidence.
+Complete coverage is independent from placement depth.
 
-Phases 1–4 map **code** directories.
-Exclude the `docs/` ontology that Phase 0 seeded — never map the documentation scaffold back onto itself.
+Existing content is never silently adopted, overwritten, or deleted.
+Map retains stale owned artifacts until prune receives the required evidence-bound acceptance.
+Prune never adopts unrelated content while re-baselining observation.
+Only exact CLAUDE shim content may be adopted without a substantive consolidation proposal.
 
 ## Completion report
 
-End every run with one explicit outcome report: selected branch; docs scaffold action; files created or updated; and, for cartography, runtime path, centrality measured/unmeasured, directories analyzed, and managed-block action.
-Mark inapplicable fields `n/a` and name any unavailable evidence rather than omitting it.
+Report the normalized operation, runtime execution class, loader evidence class, coverage and placement results, proposals or acceptances, state/snapshot result, and unavailable evidence.
+For map, identify bare or explicit spelling only as input syntax; do not imply distinct behavior.
+For audit, report findings without target writes.
+For prune, report only accepted removals.
 
 ## Boundaries
 
 | Responsibility | Owner |
 |---|---|
-| Scaffold craft-owned `docs/` folders/files (Phase 0) and generate the hierarchical AGENTS.md map (Phases 1-4) | **init** (this skill) |
-| Author root README content or substantive content inside `docs/` (ADRs, architecture decisions, …) | `document` skill |
-| Install and manage git-hook enforcement (git-guard) | `git` skill — init only emits the diagnostic notice |
-| Scaffold consumer plugin manifests (`.claude-plugin`, etc.) | out of scope for init |
+| AGENTS map, audit, prune, canonicality, snapshots, and lifecycle state | **init** |
+| Documentation scaffolding, README, ADRs, and substantive docs content | `document` |
+| Git hooks and enforcement rails | `git` |
+| Package, plugin, or ecosystem initialization | Outside init |
 
-## Idempotency & Safety Rails
+## Requirements
 
-- Phase 0 is fully idempotent — re-running a bootstrapped repo writes nothing, only status notices.
-- Phase 3 never `Write`s over an existing `AGENTS.md` — `Edit` existing, `Write` new.
-- The Development Flow managed block is the **only** existing content init may replace, and it logs the replacement.
+- `python3` — official source: <https://docs.python.org/3/>; safe probe: `python3 --version`; support boundary: Python 3.10+ for the dispatcher, lifecycle scripts, and package tests.
+- Dependency trigger — a selected Python release or a changed probe result requires official-documentation review and rerunning `python3 -m unittest discover -s skills/init/tests -p 'test_*.py'` before trusting the prior recipe.
 
 ## Anti-patterns
 
-- Inlining the scoring matrix, generation templates, or phase procedures into this file → keep them in `references/`; this file stays at triage depth.
-- Discarding incumbent docs or repository instructions in favor of a generic template → `Edit` existing files, `Write` only new ones.
-- Assuming `Task`/fan-out on a single-agent runtime → run the sequential single-agent path (`Bash` + `Grep` + `Glob`, one file at a time) instead.
-- Emitting a confident centrality number when neither LSP nor codegraph was available → mark centrality "unmeasured" instead.
-- Leaving a legacy hard-rail managed block in place → replace it and log the replacement — the only existing content init may overwrite.
-- Claiming init installs governance/enforcement → git-guard installation belongs to the `git` skill; init only emits the diagnostic notice.
-- Creating or requiring ADRs when the user did not explicitly ask for ADRs → keep `docs/decisions/README.md` as an empty destination/index and hand off decision-record authoring to `document`.
+- Treating bare init as a selector or requiring `init map` for ordinary mapping → normalize bare init to map.
+- Adding a second map implementation for explicit syntax → use the single normalized map path.
+- Restoring docs bootstrap, Phase 0, or `--create-new` → keep those routes removed.
+- Letting placement depth hide first-party coverage or instruction discovery → inventory independently at all depths.
+- Using fan-out, source inspection, or root fallback as loader proof → retain unknown without probe evidence.
+- Writing from audit or importing apply effects into audit → preserve structural read-only inspection.

@@ -35,6 +35,21 @@
       "trigger": "RSS feed digest",
       "expected_package": "bstack/rss",
       "forbidden_neighbors": ["bstack/publish", "bstack/second-brain", "oh-my-secondbrain/core/retrieve"]
+    },
+    {
+      "trigger": "shallow init this repository with AGENTS.md",
+      "expected_package": "craft-skills/init",
+      "forbidden_neighbors": ["craft-skills/document", "craft-skills/git", "bstack/task"]
+    },
+    {
+      "trigger": "deep-init this monorepo into AGENTS instructions",
+      "expected_package": "craft-skills/init",
+      "forbidden_neighbors": ["craft-skills/document", "craft-skills/git", "oh-my-secondbrain/core/wiki"]
+    },
+    {
+      "trigger": "map legacy AGENTS.md instructions in this repository",
+      "expected_package": "craft-skills/init",
+      "forbidden_neighbors": ["craft-skills/document", "craft-skills/git", "bstack/task"]
     }
   ]
 }

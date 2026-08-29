@@ -1,54 +1,48 @@
-# Phase 2 — Scoring & Location Decision
+# Phase 2 — Scoring and Placement
 
-Phase 2 turns the merged project model from Phase 1 into a concrete list of directories that
-warrant their own `AGENTS.md`. It is pure decision logic — no files are written here.
+Phase 2 is pure deterministic decision logic.
+It consumes the Phase 1 inventory and produces eligible AGENTS placement decisions without writing files, changing ownership, or reducing complete coverage.
 
-## Scoring matrix
+## Candidate facts
 
-Score each candidate directory by summing `weight × (1 if the factor clears its high threshold else
-partial/0)`. The weights are load-bearing — centrality and file count dominate by design.
+Score each inventoried directory in stable normalized-path order.
+Use only recorded evidence for file count, subdirectory count, code ratio, local configuration, module boundary, symbol density, export count, and reference centrality.
+An unavailable or unmeasured fact contributes zero and remains explicitly marked unmeasured.
+Do not infer counts from naming, placement depth, fan-out class, or loader class.
 
-| Factor | Weight | High threshold | Source |
-|--------|--------|----------------|--------|
-| File count | 3× | >20 | bash |
-| Subdir count | 2× | >5 | bash |
-| Code ratio | 2× | >70% | bash |
-| Unique patterns | 1× | Has own config | explore |
-| Module boundary | 2× | Has `index.ts` / `__init__.py` | bash |
-| Symbol density | 2× | >30 symbols | LSP / codegraph |
-| Export count | 2× | >10 exports | LSP / codegraph |
-| Reference centrality | 3× | >20 refs | LSP / codegraph |
+| Factor | Weight | High threshold | Evidence |
+|---|---:|---|---|
+| File count | 3 | More than 20 | Structural inventory |
+| Subdirectory count | 2 | More than 5 | Structural inventory |
+| Code ratio | 2 | More than 70% | Structural inventory |
+| Unique patterns | 1 | Own configuration | Direct repository evidence |
+| Module boundary | 2 | Entry boundary such as `index.ts` or `__init__.py` | Structural inventory |
+| Symbol density | 2 | More than 30 symbols | LSP, codegraph, or recorded fallback |
+| Export count | 2 | More than 10 exports | LSP, codegraph, or recorded fallback |
+| Reference centrality | 3 | More than 20 references | LSP, codegraph, or recorded fallback |
 
-When centrality is **unmeasured** (no LSP/codegraph — see phase-1 fallback), score the three
-LSP/codegraph rows (symbol density, export count, reference centrality) from the `ast-grep`/explore
-inventory where possible, and otherwise treat them as 0 — never invent a centrality number. Record
-that the score was computed on the degraded path so the report can flag it.
+For each factor, add its full weight when its high threshold is met.
+Otherwise add zero unless the state contract defines an evidence-backed partial value.
+Record every contributing fact and any degraded centrality evidence with the candidate.
 
-## Decision rules
+## Placement rules
 
-| Score | Action |
-|-------|--------|
-| **Root (`.`)** | **Always create** |
-| **>15** | Create `AGENTS.md` |
-| **8–15** | Create **if** it is a distinct domain (own conventions/boundary the parent does not cover) |
-| **<8** | Skip — the parent `AGENTS.md` covers it |
+The repository root is always a placement.
+For every other directory, apply these rules after complete inventory:
 
-The root is unconditional; this is what keeps the engine useful even on a shallow/fresh repo, where
-every subdir scores <8 and the run collapses to a single root map. That degraded-but-valid outcome
-is expected on the bootstrap path, not a failure.
+| Score | Decision |
+|---|---|
+| More than 15 | Place AGENTS.md. |
+| 8 through 15 | Place only when direct evidence shows a distinct domain or local convention the parent cannot cover. |
+| Less than 8 | No placement; inherited instructions remain available through the chain. |
+
+`max_depth` defaults to 3 and bounds scoring and placement eligibility only.
+It does not bound discovery, inventory, root-to-directory instruction chains, coverage counters, existing instruction inspection, ownership observation, or audit findings.
+An arbitrarily deep target can therefore be covered by inherited instructions even when it is not eligible for a local placement.
 
 ## Output
 
-Emit an explicit location list for Phase 3 to consume:
-
-```
-AGENTS_LOCATIONS = [
-  { path: ".",         type: "root" },
-  { path: "src/hooks", score: 18, reason: "high complexity" },
-  { path: "src/api",   score: 12, reason: "distinct domain" }
-]
-```
-
-**Cartography scope:** exclude the `docs/` ontology scaffold that Phase 0 just seeded — the code
-map describes code directories, not the documentation rails. Mapping `docs/` back onto itself is
-circular and adds no signal.
+Emit a stable `AGENTS_LOCATIONS` decision list containing the root and each approved local placement.
+Each entry records normalized path, score, decision reason, direct evidence, inherited instruction chain, and whether centrality was measured or unmeasured.
+Emit the independent complete-coverage inventory and counters for reconciliation and verification.
+Do not represent absence of a local placement as absence of coverage.
