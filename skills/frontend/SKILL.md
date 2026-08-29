@@ -1,8 +1,8 @@
 ---
 name: frontend
-description: 'Routes frontend engineering through incumbent-aware rendering, ownership, reuse, state, CSS, and performance decisions. Use when building or reorganizing a React/Vue/Svelte UI ("프론트엔드 구조 잡아줘"); choosing a React + Vite or Next.js shell, folder/public-API, or server/client boundary; improving component reuse or state ownership; selecting CSS Modules/Tailwind/CSS-in-JS and token structure; or setting frontend dependency, bundle, and CSS performance strategy. Not for public API/server contracts — use api/backend; design-document authoring — document; TypeScript-only implementation/refactoring — programming/refactor; test-suite implementation — testing; skill-package updates — skillify.'
+description: 'Routes frontend engineering through incumbent-aware rendering, ownership, reuse, state, CSS, and performance decisions. Use when building or reorganizing a React/Vue/Svelte UI ("프론트엔드 구조 잡아줘"); choosing a React + Vite or Next.js shell, folder/public-API, or server/client boundary; improving component reuse or state ownership; selecting CSS Modules/Tailwind/CSS-in-JS and token structure; or setting frontend dependency, bundle, and CSS performance strategy. Not for material visual/UX judgment or DESIGN.md — use design; public API/server contracts — use api/backend; TypeScript-only work — use programming/refactor; test suites — use testing; skill updates — use skillify.'
 metadata:
-  version: 2.4.0
+  version: 3.0.0
 ---
 
 # frontend
@@ -56,9 +56,11 @@ These are logical owners, not mandatory folder names. Map them onto a coherent i
 
 Keep code route- or feature-private first. Promote it only when multiple real consumers share semantics and a reason to change, then expose the smallest environment-safe public API and remove obsolete deep paths in the same change. Exact import and promotion rules live in `references/folders.md`.
 
-## The design.md gate
+## Design judgment handoff
 
-Before a rendering-architecture, design-system, token-meaning, or material visual change, read or update `docs/design.md` through `document`. A small interaction fix, route-private style correction, or use of an existing primitive proceeds without inventing a design-document task. `frontend` owns implementation placement and verification; `document` owns the design document's structure and lifecycle.
+Call `design` only when work changes what users perceive, understand, decide, or can accomplish, or changes reusable visual/interaction language, tokens, primitives, cross-state/cross-viewport presentation, or accessibility experience.
+`design` owns `DESIGN.md` and the design judgment; `frontend` implements approved design decisions.
+Keep rendering architecture, established-system implementation, faithful use of existing primitives, small fixes, CSS regressions, state placement, components, folders, and API boundaries within `frontend`.
 
 ## Requirements
 
@@ -101,3 +103,4 @@ Centralize the API base, path/version prefix, proxy, and BFF boundary once per a
 - [ ] CSS computed states, responsive/forced-colors/reduced-motion behavior, visual stability, and route delivery were checked where applicable.
 - [ ] Production measurements use the same collection method for baseline and candidate and record source, delta, project threshold, and interpretation. Mark unavailable consumer telemetry N/A; never fabricate it.
 - [ ] Visual work captures relevant states and viewports after the final edit; diff numbers direct review attention but do not decide correctness alone.
+- [ ] `design` was called only for material visual/UX judgment; implementation stayed in `frontend`, and `DESIGN.md` ownership stayed in `design`.

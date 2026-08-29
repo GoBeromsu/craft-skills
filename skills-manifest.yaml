@@ -630,11 +630,82 @@
     },
     {
       "schema_version": 1,
+      "id": "craft-skills/design",
+      "name": "design",
+      "kind": "leaf",
+      "lifecycle": "active",
+      "version": "1.0.0",
+      "owner_repo": "craft-skills",
+      "owner_domain": "research-development",
+      "visibility": "public",
+      "compatibility": [
+        "claude-code",
+        "codex",
+        "cursor",
+        "grok",
+        "hermes"
+      ],
+      "provenance": {
+        "upstream": "https://github.com/google-labs-code/design.md",
+        "commit": "9bf8eae67128b6cc55ad9bf86665767deb4c11cd",
+        "license": "Apache-2.0",
+        "absorbed_from": [
+          "craft-skills/document"
+        ]
+      },
+      "replacement_for": [],
+      "replaced_by": null,
+      "children": [],
+      "adapters": [
+        {
+          "runtime": "claude-code",
+          "surface": "plugin-skill",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        }
+      ],
+      "validation_profile": {
+        "discovery_parity": "strict",
+        "adapter_parity": "strict",
+        "provenance_license": "strict",
+        "private_data_hygiene": "strict",
+        "deprecation": "strict",
+        "routing_eval": "smoke",
+        "install_doctor": "package",
+        "topology": "leaf"
+      }
+    },
+    {
+      "schema_version": 1,
       "id": "craft-skills/document",
       "name": "document",
       "kind": "leaf",
       "lifecycle": "active",
-      "version": "3.1.1",
+      "version": "4.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
@@ -705,7 +776,7 @@
       "name": "frontend",
       "kind": "leaf",
       "lifecycle": "active",
-      "version": "2.4.0",
+      "version": "3.0.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",

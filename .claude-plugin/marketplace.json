@@ -1,6 +1,6 @@
 {
   "name": "craft-skills",
-  "description": "Work-craft skills for research + engineering: documentation, browser automation, Obsidian, version control, structural AST search, write-prd product requirements, ML, agents, security, and a self-governing skill-authoring gate across 27 packages.",
+  "description": "Work-craft skills for research + engineering: UI/UX design, documentation, browser automation, Obsidian, version control, structural AST search, write-prd product requirements, ML, agents, security, and a self-governing skill-authoring gate across 28 packages.",
   "owner": {
     "name": "GoBeromsu"
   },
@@ -11,7 +11,7 @@
         "source": "github",
         "repo": "GoBeromsu/craft-skills"
       },
-      "description": "Work-craft Claude Code skills across 27 packages for research, engineering, browser automation, Obsidian, structural AST search, and write-prd product requirements by Beomsu Koh"
+      "description": "Work-craft Claude Code skills across 28 packages for UI/UX design, research, engineering, browser automation, Obsidian, structural AST search, and write-prd product requirements by Beomsu Koh"
     }
   ]
 }
