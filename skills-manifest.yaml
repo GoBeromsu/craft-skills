@@ -1686,7 +1686,7 @@
       "name": "testing",
       "kind": "leaf",
       "lifecycle": "active",
-      "version": "2.2.2",
+      "version": "2.3.0",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",

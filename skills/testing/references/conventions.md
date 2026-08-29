@@ -1,71 +1,133 @@
-# Testing Core Conventions Reference
+# Testing Conventions Reference
 
-Naming, DAMP-over-DRY, determinism, and assertion quality apply to every test regardless of taxonomy kind or size — this is the detail behind the "Core conventions" summary in `../SKILL.md`.
+This reference owns test quality, lifecycle evidence, audit decisions, and suite health.
 
-## Naming — behavior sentence, Given/When/Then
+## Contents
 
-A test name states the behavior using Given/When/Then (GWT: precondition / action / expected result), never the implementation. `test_given_empty_cart_when_checkout_then_rejects` names the scenario; `test_checkout_2` or `test_it_works` names nothing.
+- [Test value rubric](#test-value-rubric)
+- [Evidence and oracles](#evidence-and-oracles)
+- [New and modified tests](#new-and-modified-tests)
+- [Audits](#audits)
+- [Test-first and characterization quality](#test-first-and-characterization-quality)
+- [Readable deterministic tests](#readable-deterministic-tests)
+- [Suite health and quarantine](#suite-health-and-quarantine)
+- [Cross-skill ownership](#cross-skill-ownership)
 
-## DAMP over DRY in test code
+## Test value rubric
 
-DAMP (Descriptive And Meaningful Phrases) means readable repetition beats clever abstraction in test code. A test must be understandable without following helpers across files. Production code shares logic to avoid divergence bugs; test code repeats setup so a reader sees the whole scenario in one place.
+A valuable test names behavior or risk, uses an independent oracle, has lifecycle-appropriate counterfactual evidence, survives behavior-preserving refactors, is deterministic and diagnostic, and adds unique suite value proportional to cost.
 
-| Concern | Do / Use | Never |
+Name the contract, invariant, failure mode, or user outcome rather than a file, method, private call, assertion count, or implementation path.
+
+Choose the cheapest credible scope and resource size from `../SKILL.md`.
+
+Retain repetition only when it protects a distinct residual risk that cheaper existing evidence does not prove.
+
+Reject generated tautologies, implementation proxies, unreviewed snapshots, duplicates, and tests that cannot establish their claimed value.
+
+## Evidence and oracles
+
+An independent oracle comes from a public contract, business rule, invariant, user-visible outcome, approved fixture, or independent reference.
+
+A mock return, private-call expectation, current implementation output, or uncontrolled snapshot is not an independent oracle.
+
+Controlled observation or a snapshot is provisional characterization evidence until a contract, invariant, independent reference, or explicit approval corroborates it.
+
+| Evidence state | Meaning | Use |
 |---|---|---|
-| Setup shared by many tests | a factory function returning a fresh built object, called inline per test | a shared mutable fixture instance mutated across tests |
-| A short assertion block reused elsewhere | inline it again | extract a one-caller `assertFooIsValid` that hides what's actually checked |
-| Test data | a builder with sensible defaults + explicit overrides for what the test cares about | one giant shared fixture file every test partially depends on |
+| `observed` | The test or precise counterfactual was run and went red for the named reason | Required for new and behavior-changed tests |
+| `safely demonstrable` | A precise, disposable counterfactual demonstration is specified but has not run | Records auditable potential evidence |
+| `unavailable` | The historical counterfactual cannot safely or credibly be obtained | Records a limitation and never alone authorizes deletion |
 
-The one sanctioned exception is a navigation helper in e2e suites (log in, reach a page) — see `e2e.md`'s "Navigation helpers are the one DAMP exception".
+Evidence state describes the counterfactual, not whether a test happens to pass.
 
-## Determinism law
+## New and modified tests
 
-No `sleep`, wall-clock read, or unseeded randomness inside a unit/small test — each is a flake built in on day one.
+1. Name the behavior or risk and search for existing evidence that already proves it.
+2. Choose the cheapest credible scope and resource size that retains the relevant fidelity.
+3. Define the independent oracle before encoding setup or assertions.
+4. Design a deterministic counterfactual that would fail for the named reason and survive a behavior-preserving refactor.
+5. Obtain `observed` red evidence in a named disposable consumer for every new or behavior-changed test.
+6. Hand production-code red-green implementation to `programming` and provide the risk, oracle, and failing evidence.
+7. Review returned pass evidence for the named behavior, diagnosis, determinism, and marginal cost.
 
-```bash
-grep -rnE '\bsleep\(|Date\.now\(\)|time\.sleep|Math\.random\(\)|random\.random\(\)' \
-  --include='*.test.*' --include='test_*.py' --include='*_test.py' <test-dir>
-```
+Do not invent a failing test when a reported behavior cannot be reproduced safely.
 
-Pass: no output, or every hit lives in an e2e/large test file (which uses auto-wait / a fake clock per `e2e.md` instead of `sleep`). Fail: any hit inside a unit-labeled test file.
+Record the limitation and preserve the strongest available evidence until a credible reproduction exists.
 
-## Assertion quality
+## Audits
 
-Every test asserts something specific about behavior; no test exists that is incapable of failing.
+Inventory tests by behavior and risk rather than by source file, filename, or assertion count.
 
-```bash
-grep -rLE 'assert|expect\(|\.should|assertThat\(|assertEquals\(|\bt\.(is|true|false|deepEqual|truthy|falsy|throws)\(' \
-  --include='*.test.*' --include='test_*.py' --include='*_test.py' <test-dir>
-```
+For each test, record the decision, independent oracle, evidence state, residual risk, and cost.
 
-Pass: no output. Fail: any file listed — a test file with zero assertion keywords across the major families (`assert`/`assertEquals`/`assertThat`, `expect(...)` incl. chai's `expect().to`, `.should`, AVA's `t.is`/`t.true`/etc.). Helper-only support files with no test cases (`conftest.py`, a fixtures/factories module) can trip this same grep even though nothing is actually missing — grey zone — judge by whether the file defines test cases. One behavior per test — grey zone: two `assert` statements checking unrelated facts about unrelated code paths is two tests in one; multiple assertions confirming one behavior (a response's status *and* its body) are fine — judge by whether reverting one code path would fail only one of the assertions.
-
-## Common rationalizations
-
-| Rationalization | Reality |
+| Decision | Use when |
 |---|---|
-| "It's just a helper, extract it to keep DRY." | Test code optimizes for readability under change, not for avoiding repetition. DAMP over DRY — a reader should not need to open three files to see one scenario. |
-| "The bug is obvious, I'll skip the reproduction test." | An obvious bug with no test is a bug that returns silently. Prove it first, every time. |
-| "This test touches localhost so it's not really a unit test." | Taxonomy and size are separate axes. Label it by what it verifies; size it by what it touches. |
-| "Adding a small sleep fixes the flaky test." | A `sleep` hides a race; it does not resolve it. Wait on the actual condition or event. |
-| "One e2e test per feature keeps the pyramid honest." | The pyramid ratio is a sanity check, not a quota. Pick the cheapest layer that gives the confidence needed. |
-| "There's already a `tests/` folder somewhere, I'll add another one for this package." | Scattered test directories fragment discovery. One convention per project or package — see `structure.md` for the default. |
+| Retain | It independently protects a distinct risk at acceptable cost |
+| Rewrite | The protected risk matters but the oracle, determinism, diagnosis, or refactor resilience is weak |
+| Delete | Separate evidence proves it obsolete or duplicate and remaining coverage protects its meaningful risk |
+| Add | A material residual risk lacks credible evidence |
 
-## Red flags
+New and behavior-changed tests need `observed` counterfactual evidence.
 
-- A new `tests/` directory appears alongside an existing one at a different path.
-- A test file with no `assert`/`expect` reachable by grep.
-- `sleep` / `Date.now()` / unseeded random inside a unit-labeled test file.
-- A bug-fix commit with no test file in its diff.
-- A shared mutable fixture object written by one test and read by another.
-- Retries configured on a flaky test in place of a fix or a tracked quarantine.
+Historical `unavailable` evidence requires separate obsolete, duplicate, or remaining-coverage proof before deletion.
 
-## Verification
+Search results and static patterns are review leads only.
 
-- [ ] The gate's matching reference was read before writing the test.
-- [ ] The test's taxonomy label and resource size were both chosen deliberately, not copied from the nearest existing file.
-- [ ] Bug fixes ship with a failing-then-passing reproduction test in the same change.
-- [ ] Test names read as Given/When/Then behavior sentences.
-- [ ] No `sleep`/wall-clock/unseeded-random inside unit/small tests (grep clean).
-- [ ] Every test file has at least one reachable assertion (grep clean).
-- [ ] New test directories follow the project's existing convention, not a newly invented one.
+Do not use assertion tokens, filenames, or source-test cardinality as pass/fail gates.
+
+## Test-first and characterization quality
+
+Test-first work starts from a named risk, independent oracle, and observed red evidence before `programming` changes production behavior.
+
+`refactor` may hand off characterization tests that record incumbent behavior before structural change.
+
+Testing reviews handed-off characterization for placement, determinism, diagnostics, and whether its observation remains provisional.
+
+Do not treat unknown incumbent output as an approved specification or permanent golden master.
+
+## Readable deterministic tests
+
+Write names as behavior sentences such as `test_given_empty_cart_when_checkout_then_rejects`.
+
+Prefer DAMP over DRY so a reader can understand a scenario without chasing helpers.
+
+Use fresh factories and builders with sensible defaults and explicit relevant overrides.
+
+Keep behavior-relevant inline data when it explains the scenario more clearly than a builder.
+
+Control clocks, randomness, external state, test order, and asynchronous conditions.
+
+Wait for the condition or event that proves progress instead of sleeping or retrying a whole test.
+
+Keep diagnostic context close to the oracle so a failure identifies the broken behavior.
+
+Navigation-only helpers are the limited e2e exception described in `e2e.md`.
+
+## Suite health and quarantine
+
+Treat a flaky test as a suite-health defect and track its trust cost, duplicate coverage, runtime trend, age, and effect on signal.
+
+Quarantine only with a visible reason, owner or tracker, bounded review age, and retained diagnostic evidence.
+
+Do not silently skip a test or use retries as a long-term repair.
+
+Use a narrow documented retry only for demonstrated infrastructure instability and review its continuing cost.
+
+Route reproduction, diagnosis, and repair of one specific intermittent failure to `debug`.
+
+After `debug` returns diagnosis and fix evidence, testing decides readmission, duplicate removal, retry removal, and the suite-health follow-up.
+
+## Cross-skill ownership
+
+`refactor` initiates characterization before structural change.
+
+Testing accepts handed-off characterization tests for quality, oracle, placement, and provisional-observation review.
+
+`programming` owns production-code red-green implementation after testing supplies test design or observed red evidence.
+
+`debug` owns a specific failure's reproduction, diagnosis, and repair.
+
+Testing owns new-test quality, audits, placement, quarantine policy, and post-fix health.
+
+`ml` and `agents` own their evaluation domains.
