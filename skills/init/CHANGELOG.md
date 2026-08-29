@@ -17,3 +17,5 @@
 - 2026-07-07 — v3.0.2: operator correction rejected implicit ADR pressure → init now scaffolds only craft-owned docs folders/files, keeps `docs/decisions/README.md` explicit-only, stops README seeding, and records an anti-pattern against creating or requiring ADRs without an explicit ask. Provenance: delegated team instruction in `eldercare-fall-ai/.omo/teams/team-e61e6580/guide.md`.
 - 2026-07-12 — v3.1.0: audit applied outcome over process and evidence-first exploration → separates docs bootstrap from cartography, risk-scales discovery, and centralizes completion reporting. Provenance: docs/research/omo-analysis.md (ulw-plan).
 - 2026-08-28 — mutable agent-runtime capabilities can drift → v3.2.0 adds official-docs-first, conflict-disclosed classification with a sequential unknown fallback.
+- 2026-08-29 — v3.2.1: a wildcard support-file token made Hermes request a literal missing path → name the references directory without a glob.
+- 2026-08-29 — v3.2.2: an anti-pattern sentence looked like an instruction to overwrite agent configuration to Hermes Guard → preserve the same incumbent-content rule without the false dangerous pattern.

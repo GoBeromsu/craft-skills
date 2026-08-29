@@ -1,7 +1,7 @@
 {
   "name": "craft-skills",
   "version": "0.12.0",
-  "description": "Vendor-neutral work-craft Agent Skills across 27 packages for Codex — research, debugging, documentation, browser automation, Obsidian craft, git craft, product requirements, engineering, testing, refactoring, security triage, and skill authoring.",
+  "description": "Vendor-neutral work-craft Agent Skills across 28 packages for Codex — UI/UX design, research, debugging, documentation, browser automation, Obsidian craft, git craft, product requirements, engineering, testing, refactoring, security triage, and skill authoring.",
   "author": {
     "name": "Beomsu Koh"
   },
@@ -19,7 +19,7 @@
   "interface": {
     "displayName": "craft-skills",
     "shortDescription": "Work-craft skills for Codex, including browser automation",
-    "longDescription": "craft-skills packages 27 reusable Codex skills for engineering, research, browser automation, and Obsidian craft: documentation, deep research, debugging, git workflow, structural AST search, project bootstrap, guardrails for hooks and lint/format configuration, write-prd product requirements, technical reports, API/CI-CD/frontend/backend/ML/agent engineering, testing, refactoring, security triage, and skill-authoring governance.",
+    "longDescription": "craft-skills packages 28 reusable Codex skills for UI/UX design, engineering, research, browser automation, and Obsidian craft: design systems and UX audits, documentation, deep research, debugging, git workflow, structural AST search, project bootstrap, hook authoring, write-prd product requirements, technical reports, API/CI-CD/frontend/backend/ML/agent engineering, testing, refactoring, security triage, and skill-authoring governance.",
     "developerName": "Beomsu Koh",
     "category": "Engineering",
     "capabilities": [

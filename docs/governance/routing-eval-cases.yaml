@@ -180,6 +180,86 @@
       "trigger": "Use agent-browser to capture a JavaScript app snapshot",
       "expected_package": "craft-skills/browser",
       "forbidden_neighbors": ["craft-skills/defuddle", "craft-skills/research", "craft-skills/frontend"]
+    },
+    {
+      "trigger": "Create the root DESIGN.md for this product",
+      "expected_package": "craft-skills/design",
+      "forbidden_neighbors": ["craft-skills/document", "craft-skills/frontend", "craft-skills/init"]
+    },
+    {
+      "trigger": "Audit this onboarding flow for bad UX and propose evidence-backed improvements",
+      "expected_package": "craft-skills/design",
+      "forbidden_neighbors": ["craft-skills/frontend", "craft-skills/document", "craft-skills/testing"]
+    },
+    {
+      "trigger": "Implement this screen with the established component primitives",
+      "expected_package": "craft-skills/frontend",
+      "forbidden_neighbors": ["craft-skills/design", "craft-skills/document", "craft-skills/testing"]
+    },
+    {
+      "trigger": "Redesign the information hierarchy and visual hierarchy for this workflow",
+      "expected_package": "craft-skills/design",
+      "forbidden_neighbors": ["craft-skills/frontend", "craft-skills/document", "craft-skills/testing"]
+    },
+    {
+      "trigger": "Write a README and an ADR for this decision",
+      "expected_package": "craft-skills/document",
+      "forbidden_neighbors": ["craft-skills/design", "craft-skills/write-report", "craft-skills/init"]
+    },
+    {
+      "trigger": "Capture browser screenshots for the visual regression test",
+      "expected_package": "craft-skills/browser",
+      "forbidden_neighbors": ["craft-skills/design", "craft-skills/frontend", "craft-skills/document"]
+    },
+    {
+      "trigger": "Our mobile checkout is confusing; improve the interaction and recovery flow",
+      "expected_package": "craft-skills/design",
+      "forbidden_neighbors": ["craft-skills/frontend", "craft-skills/document", "craft-skills/browser"]
+    },
+    {
+      "trigger": "Choose a coherent type, color, spacing, and motion direction",
+      "expected_package": "craft-skills/design",
+      "forbidden_neighbors": ["craft-skills/frontend", "craft-skills/document", "craft-skills/browser"]
+    },
+    {
+      "trigger": "Review loading, empty, error, disabled, and focus states for this component family",
+      "expected_package": "craft-skills/design",
+      "forbidden_neighbors": ["craft-skills/frontend", "craft-skills/testing", "craft-skills/document"]
+    },
+    {
+      "trigger": "Compare these rendered states and identify the UX problems that matter",
+      "expected_package": "craft-skills/design",
+      "forbidden_neighbors": ["craft-skills/browser", "craft-skills/frontend", "craft-skills/testing"]
+    },
+    {
+      "trigger": "Turn these accessibility and usability findings into a design improvement plan",
+      "expected_package": "craft-skills/design",
+      "forbidden_neighbors": ["craft-skills/testing", "craft-skills/frontend", "craft-skills/write-report"]
+    },
+    {
+      "trigger": "Choose SSR/RSC versus SPA for this app",
+      "expected_package": "craft-skills/frontend",
+      "forbidden_neighbors": ["craft-skills/design", "craft-skills/backend", "craft-skills/document"]
+    },
+    {
+      "trigger": "Move this React state out of the component",
+      "expected_package": "craft-skills/frontend",
+      "forbidden_neighbors": ["craft-skills/design", "craft-skills/refactor", "craft-skills/testing"]
+    },
+    {
+      "trigger": "Fix the one-pixel CSS regression using the existing token",
+      "expected_package": "craft-skills/frontend",
+      "forbidden_neighbors": ["craft-skills/design", "craft-skills/browser", "craft-skills/testing"]
+    },
+    {
+      "trigger": "Design the public HTTP API for this resource",
+      "expected_package": "craft-skills/api",
+      "forbidden_neighbors": ["craft-skills/design", "craft-skills/frontend", "craft-skills/backend"]
+    },
+    {
+      "trigger": "Write a technical report about the usability study",
+      "expected_package": "craft-skills/write-report",
+      "forbidden_neighbors": ["craft-skills/design", "craft-skills/document", "craft-skills/research"]
     }
   ]
 }

@@ -1,148 +1,154 @@
 # Frontend Rendering Architectures
 
-A rendering model is a contract about *when* and *where* markup is produced: at build time, at request time on a server, or at runtime in the browser. Each model below is a closed set of absolute rules. Bolting a **second rendering runtime/framework** — a distinct framework or hand-rolled pipeline not native to the incumbent one — onto an app breaks the contract silently, usually as a hydration mismatch or a leaked secret. This does not forbid mixed rendering *modes* that are the detected framework's own native architecture: Next.js's `app/` router natively renders some routes as SSR, some as SSG via `generateStaticParams`, and some leaf components as pure client; Astro natively mixes SSG pages with islands and on-demand SSR. That mixing is the framework's contract, not a violation of it — as long as each mode choice is recorded in `design.md` rather than drifting unrecorded.
+A rendering model defines when and where markup, data access, and interactivity run. Preserve the detected framework's native model and keep its runtime shell separate from product slices. Version-sensitive behavior follows the evidence owner in [`../SKILL.md#requirements`](../SKILL.md#requirements).
 
 ## Contents
 
-- [Hard rules](#hard-rules)
-- [Decision table — new project](#decision-table--new-project)
-- [SSR / RSC (React Server Components, Next.js `app/` router and equivalents)](#ssr--rsc-react-server-components-nextjs-app-router-and-equivalents)
-- [SPA (client-rendered, e.g. Vite + React Router with no server entry)](#spa-client-rendered-eg-vite--react-router-with-no-server-entry)
-- [SSG (build-time-only, e.g. Gatsby, Astro without islands, static export mode)](#ssg-build-time-only-eg-gatsby-astro-without-islands-static-export-mode)
-- [Islands (Astro, and equivalent partial-hydration frameworks)](#islands-astro-and-equivalent-partial-hydration-frameworks)
+- [Framework shell contract](#framework-shell-contract)
+- [Rendering decision](#rendering-decision)
+- [React and Vite SPA shell](#react-and-vite-spa-shell)
+- [Next.js App Router shell](#nextjs-app-router-shell)
+- [SSR and RSC](#ssr-and-rsc)
+- [SPA](#spa)
+- [SSG](#ssg)
+- [Islands](#islands)
+- [Dependency admission](#dependency-admission)
+- [Measurement-led verification](#measurement-led-verification)
 - [Incumbent-respect clause](#incumbent-respect-clause)
 - [Hand-offs](#hand-offs)
 
-## Hard rules
+## Framework shell contract
 
-| Concern | Do | Never |
+| Shell owns | Product slices own |
+|---|---|
+| Bootstrap and framework entrypoint | User capabilities and domain behavior |
+| Router, layouts, loading/error boundaries, metadata | Feature/entity model, API adapters, and UI |
+| Providers and runtime-only adapters | Route-private and reusable compositions |
+| Global style entry, root tokens, fonts, document defaults | Locally scoped component and route styles |
+
+The shell composes product slices; lower layers never import the shell. Do not put catalog, checkout, account, or other product workflows in providers, layouts, middleware, or root entrypoints merely because those files are globally reachable.
+
+## Rendering decision
+
+| Need | Prefer | Verify before choosing |
 |---|---|---|
-| Rendering model per app | Pick exactly one framework/runtime (SPA / SSR-RSC / SSG / islands, or the multi-mode architecture native to the detected framework) and apply its rules everywhere | Introduce a second rendering runtime/framework into the app (e.g. an SSR/Next.js app with a hand-rolled client router bypassing the framework's routing) |
-| Existing project | Detect the incumbent framework (Phase 0 in `SKILL.md`) and follow its rules — including whatever rendering-mode mixing is native to it — for every edit | Let a rendering-mode drift (SSR ↔ SSG ↔ client) inside the incumbent framework go unrecorded in `design.md`, or bolt on a second framework "just for this one page" without a stated migration plan |
-| New project | Choose from the decision table below before scaffolding | Default to the model you personally know best regardless of the project's needs |
+| Auth-gated, interaction-heavy app with no public SEO requirement | SPA | Browser-only execution and client data/runtime cost are acceptable. |
+| Request-varying or protected data plus server rendering/streaming | SSR/RSC | Installed framework supports the required server/client and cache behavior. |
+| Content resolved at build time | SSG | No request-specific data or headers are required. |
+| Mostly static HTML with isolated interactivity | Islands | Interactive pieces can remain independent and narrowly hydrated. |
 
-## Decision table — new project
+A framework can natively combine modes. Next App Router can compose server and client components and static/dynamic routes; Astro can combine static pages, islands, and supported server routes. That native combination is one framework contract, not permission to add a second router or rendering runtime.
 
-| Need | Choose | Why |
-|---|---|---|
-| SEO-critical content, fast Time-To-First-Byte, marketing/blog/docs pages | SSG | Pages are static HTML at request time; nothing to compute per request |
-| Content that changes per request but still needs SEO/fast TTFB (product pages, dashboards with public URLs) | SSR/RSC | Server renders per request; client hydrates only the interactive parts |
-| Auth-gated app behind a login wall, no SEO requirement, rich client interactivity | SPA | No server-rendering cost to pay for pages search engines never see |
-| Mostly static content with a few interactive widgets (a comment box, a carousel) | Islands | Ships HTML by default; hydrates only the named interactive islands |
+## React and Vite SPA shell
 
-When it's genuinely ambiguous (an app with both a public marketing site and a gated dashboard) → split into two apps/rendering models at the routing boundary, not one model straining to cover both.
+Use this as a semantic map only when a feature-sliced layout is incumbent or separately approved:
 
-## SSR / RSC (React Server Components, Next.js `app/` router and equivalents)
-
-**Absolute rules:**
-- The server/client boundary is explicit and one-directional: a module marked as a client component (`"use client"` or framework equivalent) can be imported by a server component, but a server-only module is never imported into client code.
-- No browser-only API (`window`, `document`, `localStorage`) runs in server-rendered code. A server component that needs one delegates to a client leaf.
-- No secret (API key, DB credential, unprefixed env var) reaches client bundles. Framework env-var prefixing (`NEXT_PUBLIC_`, `VITE_PUBLIC_`) is the only sanctioned crossing point.
-- Data is fetched on the server by default; a client component fetches only when the data is genuinely request-time-interactive (search-as-you-type, live polling) and cannot be server-rendered.
-- Client components are leaves: push the `"use client"` boundary as far down the tree as possible so the largest share of the tree stays server-rendered.
-
-**Detect: `"use client"` density (should be low relative to total component count).**
-
-```bash
-total=$(find app src/app -type f \( -name '*.tsx' -o -name '*.jsx' \) 2>/dev/null | wc -l)
-client=$(grep -rlE "^[\"']use client[\"']" app src/app 2>/dev/null | wc -l)
-echo "client components: $client / $total"
+```text
+<current source root>/
+  <current shell owner>/
+    <current browser entry>
+    router/
+    providers/
+    styles/
+  pages/
+  features/
+  entities/
+  shared/
 ```
 
-Reading: no fixed pass/fail ratio — this is a grey zone judged by tree shape, not a percentage. A `"use client"` directive on a top-level layout or page (rather than on the specific interactive leaf inside it) is the actual smell; audit those files by hand.
+- Confirm Vite plus a browser entry and absence of a framework/server entry before classifying the app as an SPA. Vite is build tooling, not a rendering model by itself.
+- In a coherent route-colocated, `modules/`, or type-based incumbent, map these logical responsibilities onto existing paths. Do not create parallel `features/`, `entities/`, or `shared/` roots without a separately approved folder migration.
+- Shell ownership does not authorize relocating `src/main.*`, the router, providers, or the global-style entry.
+- Preserve the incumbent router. If none exists, do not add one until navigation requirements justify it.
+- Keep `main`, router registration, providers, error boundary, and global-style import in the shell.
+- Keep route composition in the incumbent route/page location; keep product behavior in route-private code or slices.
+- Read client-exposed values only through the installed Vite version's documented `VITE_*` mechanism. Never expose secrets to the client bundle.
+- Split heavy or deferred routes/components only when the installed router/build supports the boundary and production output proves the work leaves the initial path. Declare `lazy` components at module scope.
+- Run a separate typecheck because Vite transpilation and application type checking are distinct concerns; use the repository's existing script rather than inventing one.
 
-**Detect: browser API used without a client boundary.**
+## Next.js App Router shell
 
-```bash
-grep -rlE '\bwindow\.|\bdocument\.|localStorage\.' app src/app 2>/dev/null \
-  | xargs -I{} sh -c 'head -1 "{}" | grep -q "use client" || echo "{}"'
+The incumbent root `app/` or `src/app/` directory is the routing shell. When feature-sliced product folders are already incumbent or separately approved, use this mapping:
+
+```text
+src/
+  app/                 # route segments, layouts, loading/error, metadata
+  features/
+  entities/
+  shared/
 ```
 
-Any file printed uses a browser API with no `"use client"` directive at its head → server-side crash risk, fix now.
+This is an incumbent-friendly FSD subset, not the canonical FSD Next mapping. It absorbs FSD App and Pages responsibilities into Next's routing shell and may omit Widgets. The canonical [FSD Next.js guide](https://fsd.how/docs/guides/tech/with-nextjs/) separates the framework `app/` from prefixed `_app` and `_pages` layers. Preserve either incumbent; never migrate between them as a feature side effect.
 
-**Detect: server secret reachable from a client file.**
+- If the incumbent instead colocates code under route-private folders, uses `modules/`, or follows a type-based convention, preserve that physical layout. Map shell, route, domain, and shared ownership onto its existing paths and introduce feature-sliced siblings only through an explicit architecture migration.
+- Shell ownership never authorizes moving the root `app/`, route-private modules, or global-style import.
+- Pages and layouts remain Server Components by default when the installed Next version supports App Router semantics.
+- Put `'use client'` on the smallest interactive entry. Everything imported by that entry belongs to the client graph, so a high boundary can enlarge shipped JavaScript.
+- Fetch and authorize server data in server-only modules or an incumbent data-access boundary. Pass minimal serializable values to client leaves.
+- Keep server-only and client-safe exports separate when one public entry would leak environment-specific code; the complete entrypoint contract is owned by [`folders.md#public-apis-and-dependency-direction`](folders.md#public-apis-and-dependency-direction).
+- Route groups/private folders organize routing and colocation; they do not enforce product-module boundaries.
+- Keep global CSS at the framework-supported root entry. Colocate route-private and component styles without turning route files into global selector patches.
+- Use the installed Next build/analyzer surfaces for server/client and route output. Do not mix Vite into a Next application.
 
-```bash
-grep -rlE "^[\"']use client[\"']" app src/app 2>/dev/null \
-  | xargs grep -nE 'process\.env\.[A-Z_]+' 2>/dev/null \
-  | grep -v 'process\.env\.NEXT_PUBLIC_'
-```
+## SSR and RSC
 
-Any match → an unprefixed env var referenced inside a client-marked file → the value ships to the browser bundle. Move the read to a server component or an API route.
+- A server-only module never enters a client import graph.
+- Browser APIs run only below an explicit client boundary.
+- Secrets and authorization remain server-side.
+- Server data is read on the server by default; client fetching is for genuinely client-interactive or live behavior.
+- Treat exported server operations as externally reachable: validate and authorize every call.
+- Pass purpose-built minimal DTOs rather than raw database records or broad objects.
 
-**SMELL:**
+A percentage of client components is not a verdict. Review tree placement: a client root layout or broad provider is more consequential than several small client leaves.
 
-```tsx
-"use client";
-export function ApiKeyBanner() {
-  return <div>{process.env.STRIPE_SECRET_KEY ? "configured" : "missing"}</div>;
-}
-```
+## SPA
 
-**CLEAN:**
+- Treat every application module as browser-executable unless an explicit build-time boundary says otherwise.
+- Keep shareable filter/tab/search/page state in the URL.
+- Split only meaningful deferred routes or heavy interactions; many tiny chunks can add request and compression costs.
+- Centralize API transport once and keep backend authority on the server.
 
-```tsx
-// server component (no "use client") — checks the secret server-side,
-// ships only the boolean result down to a client leaf if needed
-export async function ApiKeyBanner() {
-  const configured = Boolean(process.env.STRIPE_SECRET_KEY);
-  return <ApiKeyBadge configured={configured} />;
-}
-```
+## SSG
 
-## SPA (client-rendered, e.g. Vite + React Router with no server entry)
+- Resolve static content at build time.
+- Do not read request headers, cookies, or per-user data in build-time code.
+- Add client fetching or a supported dynamic route only for data that truly varies after build.
+- Verify generated HTML, metadata, links, and stale-content/rebuild behavior.
 
-**Absolute rules:**
-- Route-level code splitting is mandatory: every top-level route is a separate lazily-loaded chunk, never all routes bundled into one file.
-- State that should be shareable via a link (a filter, a selected tab, a search query, a pagination page) lives in the URL, not in component or global state — see `state.md`'s URL-state row.
-- No server-only assumption leaks in (reading a request header, assuming a Node runtime) — an SPA has no server; treat every module as browser-executable.
+## Islands
 
-**Detect: single-chunk build output (code splitting failed or was never set up).**
+- Ship static HTML by default and hydrate only named interactive islands.
+- Choose the narrowest supported hydration trigger.
+- Do not assume implicit shared client state across independent islands.
+- Verify that non-hydrated controls do not appear interactive and that each island works after isolated hydration.
 
-```bash
-npm run build >/dev/null 2>&1
-find dist build -maxdepth 1 -name '*.js' 2>/dev/null | wc -l
-```
+## Dependency admission
 
-Reading: 1 JS chunk for an app with more than one route → code splitting is missing; wire up lazy route imports (`React.lazy` + `import()`, or the router's built-in lazy-loading). More than 1 → passing, but confirm route count roughly tracks chunk count for a genuinely route-split build.
+Start from platform and framework capabilities, then existing packages. Add a dependency only when a concrete requirement remains unmet and record its bundle/runtime, SSR/RSC, maintenance, security/license, and lockfile effects. Branch-head documentation can discover an option; matching-version documentation, types, release tags, commit permalinks, or local reproduction prove support.
 
-## SSG (build-time-only, e.g. Gatsby, Astro without islands, static export mode)
+Do not add a router, store, CSS system, component kit, analyzer, or compatibility plugin as a baseline stack. Next uses its framework toolchain; React SPA projects may use Vite when selected, but Vite is not a Next dependency.
 
-**Absolute rules:**
-- All data is resolved at build time. No request-time data coupling (no per-request DB call, no reading a request header) — anything that varies per request belongs in SSR/RSC or a client-side fetch, not SSG.
-- Personalization or per-user content is a client-side island bolted onto the static shell, never baked into the static build.
+## Measurement-led verification
 
-**Detect: request-time coupling inside a build-time data function.**
+Record a production baseline and candidate with the same commands, route, state, device/network assumptions, and artifact source.
 
-```bash
-dirs=$(find . -maxdepth 3 -iname 'getStaticProps*' -o -iname '*.astro' 2>/dev/null | xargs -n1 dirname 2>/dev/null | sort -u)
-[ -n "$dirs" ] && grep -rlE 'req\.(headers|cookies)|request\.(headers|cookies)' \
-  --include='*.ts' --include='*.tsx' --include='*.js' $dirs
-```
+| Surface | Evidence |
+|---|---|
+| Rendering | Generated HTML/RSC behavior, metadata, loading/error states, hydration/runtime errors |
+| Client boundary | Client-entry tree and unexpected server-only/client imports |
+| JavaScript | Initial and route chunk bytes, request count, parse/long-task evidence when relevant |
+| CSS | Initial/route CSS bytes, order, unused coverage after representative interactions |
+| User experience | LCP, INP, CLS, accessibility, and visual-state evidence against project thresholds |
 
-Any match inside a static-data function → the build assumes request context it does not have at build time → fix by moving that logic to a client-side fetch or an SSR route.
-
-## Islands (Astro, and equivalent partial-hydration frameworks)
-
-**Absolute rules:**
-- HTML ships with zero JavaScript by default; a component hydrates only when it declares an explicit hydration directive (`client:load`, `client:visible`, or equivalent).
-- Each island is independently interactive and does not assume a shared client-side router or global client state with another island — islands communicate through the DOM or a narrow, explicit shared store, never through implicit module-level state.
-- Choose the narrowest hydration directive that satisfies the interaction (`client:visible` over `client:load` for below-the-fold widgets) to keep the shipped JS minimal.
-
-**Detect: hydration directive count vs. interactive-looking component count (grey zone).**
-
-```bash
-grep -rl 'client:load\|client:visible\|client:idle' src/pages src/components 2>/dev/null | wc -l
-```
-
-Grey zone — judge by whether components with obvious interactivity (forms, dropdowns, carousels) appear in the hydrated set; a component with visible `onClick`/`onChange` handlers but no `client:*` directive silently does nothing in the browser.
+A smaller bundle is not automatically better if it creates a waterfall or delays interaction. When no consumer application exists, verify that the skill prescribes collection source, baseline, delta, threshold, and interpretation; mark actual runtime values N/A.
 
 ## Incumbent-respect clause
 
-Detect the project's existing rendering model with the Phase 0 commands in `SKILL.md` before writing any code. Follow the incumbent model's rules for every edit inside that project. Apply the decision table above only to a genuinely new project or a new, separately-routed app inside a monorepo — never mid-feature convert an existing app from one rendering model to another; propose that migration as its own separately-scoped change.
+Detect the framework, router, version, rendering model, and entrypoints before changing structure. Follow native framework modes and preserve an existing folder mapping. A rendering-model, router, or canonical-FSD migration is a separately approved change.
 
 ## Hand-offs
 
-- Per-file TypeScript/JavaScript discipline once the rendering-model decision is made → `programming`.
-- Component-level reuse rules within any rendering model → `components.md` in this skill.
-- State placement within any rendering model → `state.md` in this skill.
+- Slice ranks, public APIs, and promotion → [`folders.md`](folders.md).
+- Component server/client compatibility and reusable APIs → [`components.md`](components.md).
+- Server-cache, URL, and local state → [`state.md`](state.md).
+- CSS ownership and delivery → [`css.md`](css.md).

@@ -1,95 +1,106 @@
 ---
 name: frontend
-description: 'Routes frontend engineering through incumbent-aware rendering and design-scope decisions, then applies component-reuse layering, state-placement rules, and folder conventions. Use when building a React/Vue/Svelte page or component ("프론트엔드 구조 잡아줘"), asking "should this be a client or server component", choosing SPA vs SSR/RSC vs SSG vs islands for a new or existing app, deciding where a piece of state should live, or picking a folder convention (type-based, feature-based, layered feature-sliced) for a codebase. Not for API/server design — use api(공개 HTTP 계약)/backend(서비스 구조); not for authoring design.md itself — use document.'
+description: 'Routes frontend engineering through incumbent-aware rendering, ownership, reuse, state, CSS, and performance decisions. Use when building or reorganizing a React/Vue/Svelte UI ("프론트엔드 구조 잡아줘"); choosing a React + Vite or Next.js shell, folder/public-API, or server/client boundary; improving component reuse or state ownership; selecting CSS Modules/Tailwind/CSS-in-JS and token structure; or setting frontend dependency, bundle, and CSS performance strategy. Not for material visual/UX judgment or DESIGN.md — use design; public API/server contracts — use api/backend; TypeScript-only work — use programming/refactor; test suites — use testing; skill updates — use skillify.'
 metadata:
-  version: 2.3.1
+  version: 3.0.0
 ---
 
 # frontend
 
-Frontend code is correct relative to its rendering model and incumbent UI system: establish the relevant evidence before structural work, then shape components, state, and folders to match. Success looks like a known rendering decision for architecture work, documented design-system changes, and verification that reflects the user-facing result.
+Frontend structure is correct only relative to the incumbent framework, rendering model, product boundaries, and styling system. Establish those facts first, then keep framework mechanics in the shell, product behavior in cohesive slices, and shared code behind narrow supported APIs.
 
-Four rendering models recur: **SPA** (empty HTML shell, browser renders everything client-side), **SSR/RSC** (server produces markup per request; RSC lets some components run server-only), **SSG** (every page built once, before any request), and **islands** (static HTML by default, a named few components hydrate in the browser). Full rules per model live in `references/architectures.md`.
+## Governing principles
+
+1. Preserve the incumbent framework, router, package manager, styling system, and state tools unless migration is separately approved.
+2. Let the framework shell own runtime mechanics; let routes, features, and domains own product behavior.
+3. Evaluate dependency legality before public API access; a barrel never legalizes an invalid import.
+4. Promote reuse only after real consumers share semantics and a reason to change.
+5. Measure a production baseline and candidate with the same method; never claim an unobserved optimization.
 
 ## Runtime fact verification
 
-Before relying on mutable framework, CLI, or rendering-runtime behavior, consult the official documentation for the incumbent framework first. Disclose conflicting evidence. A more-specific repository-local contract or reproducible evidence for the matching framework version and platform overrides general or stale documentation. If the fact remains unknown, do not invent a command or capability: preserve the incumbent architecture and safely stop or defer the unsupported change.
+Before relying on mutable framework, CLI, CSS-tool, or bundler behavior, inspect `package.json`, the authoritative lockfile, framework config, entrypoints, router mode, and installed styling/state tools. Follow the evidence contract in [Requirements](#requirements). A matching-version repository contract or reproducible local result overrides generic guidance. Leave unresolved capabilities unknown and preserve incumbent behavior.
 
-## Phase 0 — rendering and design routing
+## Phase 0 — classify before changing
 
-Run this before structural frontend work; a small fix or composition using an existing primitive does not need a new architecture or design-document gate.
-
-1. Classify the repository from `package.json` dependencies and scripts, framework configuration, explicit entrypoints (`app/`, `pages/`, `src/main.*`, `src/index.*`, server entries), and existing route/component source.
+1. Classify the repository:
 
    | Evidence | Classification | Action |
    |---|---|---|
-   | These sources consistently identify a framework and rendering model | Known incumbent | Follow that framework and its native rendering modes; do not add a second runtime. |
-   | Source or a manifest exists, but evidence is missing or conflicts | Unknown incumbent | Inspect the local entrypoint and imports, make the smallest compatible change, and do not scaffold or migrate a rendering runtime. |
-   | No manifest, framework config, entrypoint, or frontend source exists | Truly greenfield | Choose a model with the decision table in `references/architectures.md` before scaffolding. |
+   | Manifest, config, entrypoint, and imports agree | Known incumbent | Use its native runtime and conventions. |
+   | Frontend evidence exists but conflicts or is incomplete | Unknown incumbent | Inspect local entrypoints/imports; make only the smallest compatible change. |
+   | No manifest, framework config, entrypoint, or frontend source exists | Truly greenfield | Choose a rendering model before scaffolding. |
 
-   Framework configuration remains useful corroboration:
+2. Classify the work:
 
-   ```bash
-   test -f next.config.js -o -f next.config.mjs -o -f next.config.ts && echo "SSR/RSC (Next.js)"
-   test -d app && grep -rlE "[\"']use client[\"']" app 2>/dev/null | head -1 >/dev/null && echo "RSC boundary present"
-   test -f astro.config.mjs -o -f astro.config.ts && echo "SSG/islands (Astro)"
-   test -f gatsby-config.js && echo "SSG (Gatsby)"
-   test -f vite.config.ts -o -f vite.config.js && echo "SPA (Vite) — confirm no server entry:"
-   find . -maxdepth 2 -iname 'server.*' -not -path '*/node_modules/*'
-   ```
+   | Concern | Owner | Read |
+   |---|---|---|
+   | Rendering model, framework shell, React/Vite or Next runtime | Shell / route adapter | [`references/architectures.md`](references/architectures.md) |
+   | Folder convention, slices, public APIs, promotion | Route / feature / entity / shared | [`references/folders.md`](references/folders.md) |
+   | Reusable component API, composition, accessibility | Owning component or slice | [`references/components.md`](references/components.md) |
+   | Server, URL, form, global, or local state | Closest coherent state owner | [`references/state.md`](references/state.md) |
+   | Stylesheet organization, tokens, theming, CSS delivery/performance | Shell, component, or route-private style owner | [`references/css.md`](references/css.md) |
 
-2. Read `references/architectures.md` when choosing or changing a rendering architecture. Read it for a truly-greenfield app before scaffolding. Then read whichever of these match scope:
+3. Read only the references touched by the request. A rendering-architecture change reads `architectures.md`; a CSS-only correction does not load every reference.
 
-   | Scope | Read |
-   |---|---|
-   | Component reuse, prop-API shape, extraction timing | `references/components.md` |
-   | "Where does this state live" | `references/state.md` |
-   | New project layout or folder-convention audit | `references/folders.md` |
+## Shell, slice, and promotion rules
 
-3. An incumbent architecture wins. Do not introduce a second rendering runtime/framework (for example, a Vite/react-router SPA beside a Next.js `app/` router); rendering-mode migration is separately scoped. Native SSR/SSG/client mixing within Next.js or Astro remains that framework's own architecture.
+| Level | Owns | Must not own |
+|---|---|---|
+| Framework shell | Bootstrap, router, providers, layouts, loading/error surfaces, metadata, global-style entry | Product workflows or feature-specific data rules |
+| Route/page | URL composition and route-private UI | Reusable lower-layer internals exposed by deep paths |
+| Feature/domain slice | One user capability or stable product concept with its model, API, and UI | Peer-slice internals or framework bootstrap |
+| Shared | Business-neutral primitives and focused libraries with named ownership | Code placed there only because its owner is unclear |
 
-## The design.md gate
+These are logical owners, not mandatory folder names. Map them onto a coherent incumbent route-colocated, module-based, type-based, feature-based, or FSD structure. Introducing `features/`, `entities/`, or `shared/` into a different incumbent convention is a separately approved migration, not a feature-edit default.
 
-Before a change to rendering architecture, a design system, tokens, or a material visual change, read or update `docs/design.md`. A small rendering/interaction fix or use of an existing primitive proceeds without pre-documentation; preserve the incumbent pattern and verify the result.
+Keep code route- or feature-private first. Promote it only when multiple real consumers share semantics and a reason to change, then expose the smallest environment-safe public API and remove obsolete deep paths in the same change. Exact import and promotion rules live in `references/folders.md`.
 
-```bash
-test -f docs/design.md && echo "design.md present" || echo "MISSING — document this structural design change before implementation"
-```
+## Design judgment handoff
 
-When the gate applies and the document is missing, load the `document` skill's `references/design.md` and scaffold `docs/design.md` from its `templates/design.md`; this skill does not own the 7-section structure, lifecycle, or staleness/anti-generic detection — `document` does. Record a changed rendering decision, token, primitive, or material visual result in that document with its implementation.
+Call `design` only when work changes what users perceive, understand, decide, or can accomplish, or changes reusable visual/interaction language, tokens, primitives, cross-state/cross-viewport presentation, or accessibility experience.
+`design` owns `DESIGN.md` and the design judgment; `frontend` implements approved design decisions.
+Keep rendering architecture, established-system implementation, faithful use of existing primitives, small fixes, CSS regressions, state placement, components, folders, and API boundaries within `frontend`.
 
 ## Requirements
 
-- Node.js available for project-local tooling. Official source: [Node.js API documentation](https://nodejs.org/docs/latest/api/). Probe the selected runtime safely with `node --version`. Support boundary: this recipe supports the Node major reported by that probe and only the incumbent framework capabilities documented for the versions declared in the local manifest and lockfile.
-- Inspect incumbent package-manager and framework selections before relying on them: `test -f package.json && node -e "const p=require('./package.json'); console.log(JSON.stringify({packageManager:p.packageManager,dependencies:p.dependencies,devDependencies:p.devDependencies},null,2))"` reports their manifest declarations; `for lockfile in package-lock.json npm-shrinkwrap.json pnpm-lock.yaml yarn.lock bun.lock bun.lockb; do test -f "$lockfile" && printf '%s\n' "$lockfile"; done` reports the lockfile in use. Use the matching official framework documentation: [React](https://react.dev/reference/react), [Next.js](https://nextjs.org/docs), [Vue](https://vuejs.org/guide/introduction.html), [Svelte](https://svelte.dev/docs), or [Astro](https://docs.astro.build).
-- When the Node or incumbent framework major, package-manager lockfile, or supported capability changes, review the Node and incumbent-framework official documentation and rerun architecture, build, and visual evals. Update this recipe if its runtime form changed, then bump the package version and append this package's changelog entry.
-- A project-local package manager and dev server (`npm`/`pnpm`/`bun` + the framework's dev command) for the detection commands above and any build-output checks in `references/architectures.md`; `git`, `grep`, `find` (POSIX) for the detection commands throughout this skill and its references.
+- Node.js for project-local tooling. Probe with `node --version`; use the Node range supported by the detected framework version.
+- Inspect dependencies and package manager without mutating them:
+
+  ```bash
+  node -e "const p=require('./package.json'); console.log(JSON.stringify({packageManager:p.packageManager,dependencies:p.dependencies,devDependencies:p.devDependencies},null,2))"
+  for f in package-lock.json npm-shrinkwrap.json pnpm-lock.yaml yarn.lock bun.lock bun.lockb; do test -f "$f" && printf '%s\n' "$f"; done
+  ```
+
+- Use one authoritative lockfile. If multiple lockfiles exist, resolve ownership before an install or version claim.
+- For every mutable React, Next.js, Vite, CSS-tool, router, or state capability, record: detected version/probe, official source, support boundary, and the release/update condition that requires re-review. Use a versioned official page, release tag, commit permalink, matching local types, or reproducible behavior for version-sensitive claims. Treat `main`, `canary`, and latest-branch pages as discovery sources, not proof of installed behavior.
+- Official discovery sources: [React](https://react.dev/), [Next.js](https://nextjs.org/docs), [Vite](https://vite.dev/guide/), [Vue](https://vuejs.org/guide/), [Svelte](https://svelte.dev/docs), and [Astro](https://docs.astro.build/).
+- Add a dependency only after the platform, framework, and incumbent stack cannot meet a concrete requirement. Record maintenance, bundle/runtime, SSR/RSC, security/license, and lockfile consequences. Do not add a router, global store, CSS framework, component kit, or analyzer by default.
 
 ## API boundary
 
-Centralize the common API base, path prefix, version prefix, proxy, and BFF boundary once per app. React-only/Vite apps use env (`VITE_*`) plus one API client module; components and feature hooks call that client, not hardcoded host/base strings. Next.js apps use the incumbent boundary: `rewrites` for proxying, Route Handlers for a BFF, or server-component/server-action fetch for server-only calls. Detect the incumbent style; do not prescribe `/api/v1` universally.
-Use `programming` alongside this skill for per-file TypeScript/JavaScript discipline; a rendering decision does not replace that language-level contract.
-
+Centralize the API base, path/version prefix, proxy, and BFF boundary once per app. React/Vite apps use `VITE_*` environment values plus one API client; components call slice APIs, not hardcoded hosts. Next apps preserve the incumbent server-fetch, Route Handler, Server Action, or rewrite boundary. Public HTTP contracts belong to `api`; service architecture belongs to `backend`.
 
 ## Anti-patterns
 
-- Skipping `docs/design.md` for a rendering-architecture, design-system, token, or material visual change → document the structural decision before implementation.
-- Deferring SPA/SSR/SSG/islands choice until the app grows → choose the rendering model before the first route.
-- Copying a pattern from a different rendering model → re-check it against `references/architectures.md`.
-- Leaving state unclassified because it works → classify it against `references/state.md`.
-- A component in a primitives/design-system layer importing from a feature directory → keep dependencies downward only (see `references/components.md`).
-- Server-fetched data copied into a global UI store via `useEffect` + `setState` → keep server data in the server-data layer (see `references/state.md`).
-- Mixing type-based and feature-based folders with no stated migration → follow one incumbent convention or plan a migration.
-- Repeating API base URLs, path/version prefixes, proxies, or BFF routing in components/features → use the API boundary above instead of restating transport rules in feature code.
-- Treating missing framework-config hits as proof of a greenfield app → inspect manifests, entrypoints, and source; preserve an unknown incumbent rather than scaffolding over it.
+- Framework shell contains checkout/catalog/user business logic → move behavior to its route or slice and keep the shell as composition.
+- Root `components/`, `hooks/`, `types/`, or `utils/` becomes the primary product architecture → colocate by capability or retain a separately documented small-app convention ([`folders.md`](references/folders.md)).
+- Upward, forbidden peer-slice, or deep internal import → fix dependency direction first, then import a narrow public API ([`folders.md`](references/folders.md)).
+- First similar implementation moves to `shared` → keep it local until semantics, consumers, ownership, and regression coverage justify promotion ([`folders.md`](references/folders.md)).
+- Primitive knows routing, fetching, authorization, or analytics; component API grows boolean matrices → restore a semantic reusable contract ([`components.md`](references/components.md)).
+- Derived data, URL state, or server data is mirrored through effects/global stores → return it to its single owner ([`state.md`](references/state.md)).
+- Global selectors, duplicated tokens, competing styling systems, or `!important` escalation spread across features → restore scoped ownership and the incumbent cascade ([`css.md`](references/css.md)).
+- Version-blind install/upgrade advice → inspect the manifest, lockfile, and matching-version evidence first.
+- Memoization, chunking, critical CSS, preload, or client-boundary changes lack a production baseline → measure before and after or make no optimization claim.
 
 ## Verification
 
-- [ ] Structural work was classified as known incumbent, unknown incumbent, or truly greenfield from manifests, configs, entrypoints, and source.
-- [ ] `references/architectures.md` was read for a rendering-architecture decision; `components.md` / `state.md` / `folders.md` were read only as the task touched them.
-- [ ] `docs/design.md` was updated before a rendering-architecture, design-system, token, or material visual change; small fixes and existing-primitive usage were not blocked on pre-documentation.
-- [ ] No second rendering runtime was introduced; any rendering-mode change is separately scoped and documented.
-- [ ] Every new or moved piece of state was classified against `references/state.md`.
-- [ ] Component-dependency direction stayed downward only (primitives → composed → feature-bound).
-- [ ] API base/prefix/version/proxy/BFF routing was centralized once and not repeated in components/features.
-- [ ] For a visual result, capture every relevant state and viewport after the last edit, compare same-size captures, and use diff numbers to direct reviewer attention rather than declare a verdict.
+- [ ] Incumbent framework, router, package manager, lockfile, styling/state tools, and relevant versions were recorded.
+- [ ] The framework shell contains runtime mechanics, not product behavior; route and slice ownership is explicit.
+- [ ] Dependency legality, public APIs, server/client graph safety, and obsolete-path removal were checked.
+- [ ] Component semantics, keyboard/focus behavior, variants, and controlled/uncontrolled ownership were tested where applicable.
+- [ ] State refresh, back/forward navigation, mutation invalidation, serialization, and hydration were checked where applicable.
+- [ ] CSS computed states, responsive/forced-colors/reduced-motion behavior, visual stability, and route delivery were checked where applicable.
+- [ ] Production measurements use the same collection method for baseline and candidate and record source, delta, project threshold, and interpretation. Mark unavailable consumer telemetry N/A; never fabricate it.
+- [ ] Visual work captures relevant states and viewports after the final edit; diff numbers direct review attention but do not decide correctness alone.
+- [ ] `design` was called only for material visual/UX judgment; implementation stayed in `frontend`, and `DESIGN.md` ownership stayed in `design`.

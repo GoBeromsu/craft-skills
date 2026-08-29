@@ -2,7 +2,7 @@
 
 Work-craft Agent Skills for research and engineering by Beomsu Koh.
 
-Own your craft, vendor-neutral: all 27 packages use the plain Agent Skills `SKILL.md` layout.
+Own your craft, vendor-neutral: all 28 packages use the plain Agent Skills `SKILL.md` layout.
 The portable core contains no runtime-specific behavior; Claude Code, Codex, Hermes, Cursor, and Grok-native integration lives in runtime lenses and generated instruction-file adapters.
 This is a task-oriented library for software and research work — kept separate from [`bstack`](https://github.com/GoBeromsu/bstack) (personal / life / second-brain automation) so the two domains never bleed into each other's context.
 
@@ -20,6 +20,7 @@ This is a task-oriented library for software and research work — kept separate
 | `cicd` | Design inexpensive, reliable PR validation and reversible Jenkins Compose deployment pipelines with deployment-server-owned image builds. |
 | `debug` | Diagnose a failing program under a hypothesis-driven loop — reproduce before theorizing, log fact separately from inference, and confirm the mechanism with instrumentation before any fix lands. |
 | `defuddle` | Extract clean Markdown or metadata JSON from web articles and docs with the Defuddle CLI — strips nav/ads/boilerplate and falls back to a headless browser for JS-heavy pages. |
+| `design` | Own root `DESIGN.md`, UX/UI judgment, bad-UX audits, and rendered evidence for material design work. |
 | `distil` | Distil transferable rules and conventions from an external source — a repo, an article, an AGENTS.md, or a third-party skill — into the library under the authoring contract, with provenance recorded. |
 | `document` | Route documentation into the `docs/` ontology while keeping ADR authoring explicit-only unless the user asks to record a decision. |
 | `frontend` | Gate frontend engineering on a rendering-architecture decision (SPA / SSR-RSC / SSG / islands) before UI code is written, then apply component-reuse, state-placement, and folder rules. |
@@ -62,7 +63,7 @@ Use the Claude Code marketplace channel:
 /plugin install craft-skills@craft-skills
 ```
 
-Then invoke any of the 27 skills above by name, e.g. `api`, `ast-grep`, `defuddle`, `document`, `init`, `skillify`, `programming`, `research`, `write-prd`, `debug`.
+Then invoke any of the 29 skills above by name, e.g. `api`, `ast-grep`, `defuddle`, `design`, `document`, `init`, `skillify`, `programming`, `research`, `write-prd`, `debug`.
 
 ---
 

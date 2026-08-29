@@ -2,15 +2,20 @@
 name: git
 description: 'Guides version-control craft: a ground-truth and incumbent-style detection gate before the first git mutation, the atomic-commit `git add -p` split protocol, commit/branch/PR conventions matched to the repo''s own history, and non-interactive-safe history surgery (fixup, reword, split, scripted bisect, undo). Use when committing a change ("commit this", "커밋해줘"), rebasing or squashing history, sizing a PR, recovering from a broken rebase, or running "git wt" to create an isolated worktree with the git-guard rails. Not for hook-enforcement mechanics (runtime/lint/pre-commit guard authoring) — that belongs to guardrails.'
 metadata:
-  version: 2.2.2
+  version: 2.2.3
 ---
 
 # git
 
-Version-control craft, in order: **truth over memory, one logical change per commit, incumbent style over personal preference.** A commit is done right when it traces to one logical change, matches the repo's own detected conventions rather than an imported standard, and never rewrites shared history without the safe path. Deep recipes live in `references/`: `conventions.md` (commit-type/scope/merge-strategy tables), `history-surgery.md` (non-interactive fixup/reword/split/bisect/undo), `worktree.md` (`git wt` isolated-worktree workflow + guard install). Detection-by-code runs throughout — every rule ships a copy-pasteable command with a threshold, because the repo's actual history always outranks a general convention.
+Version-control craft, in order: **truth over memory, one logical change per commit, incumbent style over personal preference.**
+A commit is done right when it traces to one logical change, matches the repo's own detected conventions rather than an imported standard, and never rewrites shared history without the safe path.
+Deep recipes live in `references/`: `conventions.md` (commit-type/scope/merge-strategy tables), `history-surgery.md` (non-interactive fixup/reword/split/bisect/undo), `worktree.md` (`git wt` isolated-worktree workflow + guard install).
+Detection-by-code runs throughout — every rule ships a copy-pasteable command with a threshold, because the repo's actual history always outranks a general convention.
 ## Request mode
 
-For a commit, rebase, or staging request, run the ground-truth gate before the first Git mutation. For an investigation-shaped request — history, blame, why, or status — collect and report evidence without changing the worktree, index, or history. Investigation findings do not authorize a follow-on mutation.
+For a commit, rebase, or staging request, run the ground-truth gate before the first Git mutation.
+For an investigation-shaped request — history, blame, why, or status — collect and report evidence without changing the worktree, index, or history.
+Investigation findings do not authorize a follow-on mutation.
 
 
 ## Ground truth (run first, every time)
@@ -40,21 +45,27 @@ else
 fi
 ```
 
-`BASE` uses `origin/HEAD` when it resolves to a commit, then the first existing remote default branch. If neither exists, record `no comparison base` and do not call `merge-base` or a base-relative PR diff. The two `diff --stat` calls separate staged from unstaged; `log -15` samples local style; a missing `@{upstream}` means an unpushed branch, not a failure; `merge-base` anchors the PR-sizing diff below.
+`BASE` uses `origin/HEAD` when it resolves to a commit, then the first existing remote default branch.
+If neither exists, record `no comparison base` and do not call `merge-base` or a base-relative PR diff.
+The two `diff --stat` calls separate staged from unstaged; `log -15` samples local style; a missing `@{upstream}` means an unpushed branch, not a failure; `merge-base` anchors the PR-sizing diff below.
 
 ## Mutable Git and forge facts
 
-For Git-version, hosting-forge, hook, or remote-policy behavior, consult official primary documentation first. Disclose conflicts; a more-specific repository-local contract or reproducible result for the target Git version, platform, and remote overrides general or stale docs. Keep unresolved behavior unknown and stop or use the safe read-only path—never invent a command, flag, permission, or provider capability.
+For Git-version, hosting-forge, hook, or remote-policy behavior, consult official primary documentation first.
+Disclose conflicts; a more-specific repository-local contract or reproducible result for the target Git version, platform, and remote overrides general or stale docs.
+Keep unresolved behavior unknown and stop or use the safe read-only path—never invent a command, flag, permission, or provider capability.
 
 ## Dependency maintenance
 
-Treat Git as a package-local dependency. Consult [the official Git documentation](https://git-scm.com/docs) before changing guidance, and record the installed capability boundary with:
+Treat Git as a package-local dependency.
+Consult [the official Git documentation](https://git-scm.com/docs) before changing guidance, and record the installed capability boundary with:
 
 ```bash
 git --version
 ```
 
-Support only behavior verified for the incumbent repository, installed Git version, platform, and remote; do not promote a newer documented feature into the recipe until that boundary supports it. When an upstream Git release changes a documented behavior used here, or a capability probe changes what this command reports, re-run the worktree and history-safety evaluations before releasing the package update.
+Support only behavior verified for the incumbent repository, installed Git version, platform, and remote; do not promote a newer documented feature into the recipe until that boundary supports it.
+When an upstream Git release changes a documented behavior used here, or a capability probe changes what this command reports, re-run the worktree and history-safety evaluations before releasing the package update.
 
 ## Repo-style detection
 
@@ -65,7 +76,11 @@ git log -30 --format=%s | perl -CSD -ne 'print if /[\x{AC00}-\x{D7A3}]/' | wc -l
 git log -30 --format=%s | awk '{ s += length($0); n++ } END { if (n) print s/n }'
 ```
 
-Divide every count by `total`, not a hardcoded 30 — a young repo samples fewer. First ratio ≥ 2/3 → use conventional-commit prefixes (`references/conventions.md`); below that → plain imperative subjects, never import the standard onto an unprefixed repo. Second command's Hangul ratio over half → write subjects in Korean. Third gives the actual average subject length — target that, not a ≤72 ceiling as a goal in itself. **Incumbent style always wins.**
+Divide every count by `total`, not a hardcoded 30 — a young repo samples fewer.
+First ratio ≥ 2/3 → use conventional-commit prefixes (`references/conventions.md`); below that → plain imperative subjects, never import the standard onto an unprefixed repo.
+Second command's Hangul ratio over half → write subjects in Korean.
+Third gives the actual average subject length — target that, not a ≤72 ceiling as a goal in itself.
+**Incumbent style always wins.**
 
 ## Atomic commit law
 
@@ -80,13 +95,16 @@ git commit -m "<subject>"
 git status --short
 ```
 
-Repeat `add -p` → `diff --staged` → `commit` for each requested logical change. Leave unrelated staged or unstaged work untouched: stage only the user-requested files or hunks, never use `git add -A` / `git add .`, and do not require an empty `status --short` as completion. Detect a mixed diff:
+Repeat `add -p` → `diff --staged` → `commit` for each requested logical change.
+Leave unrelated staged or unstaged work untouched: stage only the user-requested files or hunks, never use `git add -A` / `git add .`, and do not require an empty `status --short` as completion.
+Detect a mixed diff:
 
 ```bash
 git diff --staged --name-only | sed -E 's#/[^/]+$##' | sort -u | wc -l
 ```
 
-More than one top-level directory touched for **unrelated** reasons is a split signal — judgment, not a hard gate: a rename across the codebase is one commit even at a high count. The test is whether the message needs "and", not the file count.
+More than one top-level directory touched for **unrelated** reasons is a split signal — judgment, not a hard gate: a rename across the codebase is one commit even at a high count.
+The test is whether the message needs "and", not the file count.
 
 ## Commit message contract
 
@@ -108,7 +126,8 @@ git diff --staged
 git diff --staged | grep -nE '^\+.*(console\.log\(|print\(|pdb\.set_trace|debugger;|TODO: remove|FIXME: remove)'
 ```
 
-Read every hunk before writing the message — memory drifts from what's actually staged. Any grep hit → unstage or fix first.
+Read every hunk before writing the message — memory drifts from what's actually staged.
+Any grep hit → unstage or fix first.
 
 ## Branch naming from incumbent
 
@@ -118,7 +137,9 @@ matching=$(git branch -a --format='%(refname:short)' | grep -vE 'HEAD|->|(^|/)(m
 echo "$matching / $total"
 ```
 
-Ratio ≥ 2/3 → follow the exact shape observed (`feat/` and `feature/` are different conventions — copy, don't guess). Below 2/3, or `total` is 0 → default to `<type>/<slug>` (`references/conventions.md`). `git wt`'s own lane branches are outside this rule.
+Ratio ≥ 2/3 → follow the exact shape observed (`feat/` and `feature/` are different conventions — copy, don't guess).
+Below 2/3, or `total` is 0 → default to `<type>/<slug>` (`references/conventions.md`).
+`git wt`'s own lane branches are outside this rule.
 
 ## PR sizing
 
@@ -130,7 +151,9 @@ else
 fi
 ```
 
-Over ~400 insertions+deletions → split. When there is no comparison base, record that fact and choose an explicit comparison target before sizing. When the work must land as one deployable unit, stack branches instead:
+Over ~400 insertions+deletions → split.
+When there is no comparison base, record that fact and choose an explicit comparison target before sizing.
+When the work must land as one deployable unit, stack branches instead:
 
 ```bash
 git checkout -b <slug>-2 <slug>-1   # second slice branches off the first, not main

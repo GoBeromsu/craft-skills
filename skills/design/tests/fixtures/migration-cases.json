@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "unified-identical-legacy",
+      "classification": "unified",
+      "legacy_relation": "identical",
+      "parent_deployable": true,
+      "parent_artifact": false,
+      "dual_roots": [],
+      "delete_requested": false,
+      "gates": {"ledger": true, "conflicts_resolved": true, "target_check": true, "stale_callsite_scan": true, "review": true},
+      "expected": {"blocked": false, "canonical": "repository-root", "repo_migration_complete": false}
+    },
+    {
+      "id": "unified-contradictory-legacy",
+      "classification": "unified",
+      "legacy_relation": "contradictory",
+      "parent_deployable": true,
+      "parent_artifact": false,
+      "dual_roots": [],
+      "delete_requested": false,
+      "gates": {"ledger": true, "conflicts_resolved": false, "target_check": false, "stale_callsite_scan": false, "review": false},
+      "expected": {"blocked": true, "reason": "contradictory-unification", "repo_migration_complete": false}
+    },
+    {
+      "id": "divergent-all-legacy",
+      "classification": "divergent",
+      "legacy_relation": "independent",
+      "parent_deployable": false,
+      "parent_artifact": false,
+      "dual_roots": [],
+      "delete_requested": false,
+      "apps": {"app-a": "legacy", "app-b": "legacy"},
+      "gates": {"ledger": false, "conflicts_resolved": true, "target_check": false, "stale_callsite_scan": false, "review": false},
+      "expected": {"blocked": false, "canonical": "per-app", "repo_migration_complete": false}
+    },
+    {
+      "id": "divergent-mixed",
+      "classification": "divergent",
+      "legacy_relation": "independent",
+      "parent_deployable": false,
+      "parent_artifact": false,
+      "dual_roots": [],
+      "delete_requested": false,
+      "apps": {"app-a": "root", "app-b": "legacy"},
+      "gates": {"ledger": false, "conflicts_resolved": true, "target_check": false, "stale_callsite_scan": false, "review": false},
+      "expected": {"blocked": false, "canonical": "per-app", "repo_migration_complete": false}
+    },
+    {
+      "id": "divergent-parent-conflict",
+      "classification": "divergent",
+      "legacy_relation": "independent",
+      "parent_deployable": false,
+      "parent_artifact": true,
+      "dual_roots": [],
+      "delete_requested": false,
+      "apps": {"app-a": "root", "app-b": "root"},
+      "gates": {"ledger": true, "conflicts_resolved": false, "target_check": true, "stale_callsite_scan": true, "review": false},
+      "expected": {"blocked": true, "reason": "nondeployable-parent-conflict", "repo_migration_complete": false}
+    },
+    {
+      "id": "app-a-dual-app-b-root",
+      "classification": "divergent",
+      "legacy_relation": "independent",
+      "parent_deployable": false,
+      "parent_artifact": false,
+      "dual_roots": ["app-a"],
+      "delete_requested": false,
+      "apps": {"app-a": "dual", "app-b": "root"},
+      "gates": {"ledger": false, "conflicts_resolved": false, "target_check": true, "stale_callsite_scan": false, "review": false},
+      "expected": {"blocked": true, "reason": "dual-root-conflict", "repo_migration_complete": false}
+    },
+    {
+      "id": "nested-deployable",
+      "classification": "divergent",
+      "legacy_relation": "independent",
+      "parent_deployable": true,
+      "parent_artifact": true,
+      "dual_roots": [],
+      "delete_requested": false,
+      "apps": {"nested": "root"},
+      "gates": {"ledger": true, "conflicts_resolved": true, "target_check": true, "stale_callsite_scan": true, "review": true},
+      "expected": {"blocked": false, "canonical": "explicit-nested-root", "repo_migration_complete": true}
+    },
+    {
+      "id": "attempted-early-deletion",
+      "classification": "single",
+      "legacy_relation": "independent",
+      "parent_deployable": true,
+      "parent_artifact": false,
+      "dual_roots": [],
+      "delete_requested": true,
+      "gates": {"ledger": false, "conflicts_resolved": true, "target_check": false, "stale_callsite_scan": false, "review": false},
+      "expected": {"blocked": true, "reason": "deletion-gate-incomplete", "repo_migration_complete": false}
+    },
+    {
+      "id": "approved-deletion",
+      "classification": "single",
+      "legacy_relation": "independent",
+      "parent_deployable": true,
+      "parent_artifact": false,
+      "dual_roots": [],
+      "delete_requested": true,
+      "gates": {"ledger": true, "conflicts_resolved": true, "target_check": true, "stale_callsite_scan": true, "review": true},
+      "expected": {"blocked": false, "canonical": "repository-root", "repo_migration_complete": true}
+    }
+  ]
+}
