@@ -2,7 +2,7 @@
 name: defuddle
 description: Extract clean Markdown or metadata JSON from web articles and documentation pages using the Defuddle CLI, stripping navigation, ads, and boilerplate for a smaller, more focused result than a raw HTML fetch. Use when fetching a readable page (blog post, article, framework/library docs, GitHub README) for summarization or note-taking, pulling page metadata (title, author, description, domain), or converting a local HTML file to Markdown. Not for API endpoints or JSON responses (use a plain HTTP fetch) or JS-heavy SPAs that need a real browser (use a headless browser such as scrapling).
 metadata:
-  version: 1.1.1
+  version: 1.1.2
 ---
 
 # defuddle
@@ -28,14 +28,14 @@ Before relying on mutable Defuddle CLI behavior, options, or gateway/service ava
 - Sites requiring authentication or JavaScript rendering — use a headless browser such as `scrapling`
 - Cases where raw HTML structure is needed — use a plain HTTP fetch
 
-## DO NOT shell out to `curl | python3 -c '...regex strip HTML...'`
+## Do not build an ad-hoc HTML stripping pipeline
 
-This is the most common anti-pattern that bypasses defuddle. If you find yourself writing a one-liner that pipes `curl` into `python3` / `sed` / `awk` to strip HTML tags, **stop and use `defuddle parse <url> --markdown` instead**. Reasons:
+This is the most common anti-pattern that bypasses defuddle. If you find yourself combining an HTTP fetch with a text processor or interpreter to strip HTML tags, **stop and use `defuddle parse <url> --markdown` instead**. Reasons:
 
 - Defuddle's content extraction is far cleaner than tag stripping (drops nav/sidebar/ads, preserves heading structure, handles code blocks)
 - Tag-stripping pipelines lose semantic structure (lists collapse, code becomes prose)
 - Static pages should go through defuddle; bypassing it is a workflow-correction signal
-- A `curl | python3` pipeline commonly trips a security scanner ('pipe to interpreter') and prompts for approval — friction the defuddle path avoids
+- Piping network output into an interpreter commonly trips security scanners and prompts for approval — friction the defuddle path avoids
 
 ## Process
 
@@ -117,7 +117,7 @@ See `references/cli-reference.md` for full option details.
 ## Red Flags
 
 - A plain fetch or browser used for a standard readable page when `defuddle` would produce cleaner markdown
-- `curl | sed`, `curl | awk`, or `curl | python` HTML-stripping pipelines for readable pages — this burns tokens and loses structure; use `defuddle parse <url> --markdown` first
+- Fetch-and-strip pipelines for readable pages — these burn tokens and lose structure; use `defuddle parse <url> --markdown` first
 - Empty extraction passed downstream without attempting the `scrapling` fallback
 - Using `defuddle` for API endpoints or JSON responses
 - Skipping `--markdown` flag (raw HTML is the default without it)
