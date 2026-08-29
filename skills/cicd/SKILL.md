@@ -2,7 +2,7 @@
 name: cicd
 description: "Designs CI/CD changes that preserve the repository's delivery topology and make releases observable and reversible. Use when asked to set up the PR pipeline and deployment for this repo, configure CI/CD, add a deployment pipeline, define required CI checks, design release rollback, or 배포 파이프라인을 설계할 때. Not for service architecture or persistence — use backend; test-suite design — use testing; or commit and PR mechanics — use git."
 metadata:
-  version: 1.3.0
+  version: 1.4.0
 ---
 
 # cicd
@@ -21,6 +21,12 @@ For a greenfield repository, select and document those five topology decisions b
 
 Use [ci-gating.md](references/ci-gating.md) only when the selected CI provider is GitHub Actions and a required PR check is in scope. Use [pipeline-safety.md](references/pipeline-safety.md) only when the selected topology is Jenkins on the deployment server with local Docker Compose builds and no registry. Do not transfer either recipe's provider or runtime specifics to another topology.
 
+Use [run-economics.md](references/run-economics.md) only when the selected provider is GitHub Actions and a pipeline is too slow, or when splitting, sharding, or adding a required check.
+For another provider, retain its generic measure-first, one-run, exact-cover, and stable-gate invariants but derive the syntax and protection mechanism from that provider's current official documentation.
+Use [release-cutover.md](references/release-cutover.md) only when the selected topology uses GitHub Releases, registry-published images, and Docker Compose on the deployment host.
+For another release topology, retain its immutable-input, version-carrier, digest, pre-swap, recovery, and durable-measurement invariants without copying its GitHub or Compose procedure.
+Fork-trust, action pinning, workflow permissions, and policy mutation tests belong to `security`; this skill sequences the pipeline those rules constrain.
+
 ## Verification
 
 - [ ] Evidence records the incumbent or newly selected CI provider, image path, orchestrator, deployment target, and deployment owner.
@@ -30,6 +36,9 @@ Use [ci-gating.md](references/ci-gating.md) only when the selected CI provider i
 - [ ] An exact release input resolves to a recorded commit SHA rather than a moving branch.
 - [ ] Exercise failures before and after migration; automatic application rollback after migration is enabled only with compatibility proof, and the manual-recovery path preserves durable state.
 - [ ] A deploy-time CI gate asserts the exact release SHA's job-level conclusion — filtered to the CI workflow's own triggering event — rather than re-running proof commands or trusting commit ancestry alone.
+- [ ] Per-step timing was captured before any speed change, and each pull request produces one run rather than two.
+- [ ] Every version carrier agrees with the release tag through a guard that fails the release, and the deployment reference is a digest rather than a tag.
+- [ ] A post-swap measurement pinned its preconditions, counted from durable artefacts rather than logs, and ended with the restart count unchanged.
 
 ## Anti-patterns
 
@@ -40,6 +49,12 @@ Use [ci-gating.md](references/ci-gating.md) only when the selected CI provider i
 - A second, comment-declared "merge-ready" or "accept" signal running alongside the required check → assert mergeability only from the required check's actual state, and route access control to platform features (ruleset, environment protection, collaborator permissions) instead of a parallel truth source.
 - Removing deployment-time re-verification before a new exact-SHA CI gate has proven itself against a real release → land the gate, exercise it against an actual deployment, then remove the redundant check; the reverse order leaves a window where neither layer verifies.
 - Adding a date cutoff or bypass switch so pre-existing releases pass a newly fail-closed gate → cut a new release that satisfies the gate instead; the exception outlives the reason for it and the gate around it gets forgotten.
+- Caching dependencies first because the pipeline is slow → attribute wall-clock per step from a real run first; the dominant cost is usually the test suite, and a cache on a fork-triggered workflow buys seconds while opening a supply-chain path.
+- Adding a path filter to a required check so unrelated changes skip it → a required check that never reports blocks the pull request forever; use path filters only on non-required workflows.
+- Splitting or renaming jobs without moving the branch-protection contexts in the same change → required contexts are job names, so the default branch silently loses its gate.
+- Sharding a suite on a file glob that does not mirror the runner's own collection defaults → assert the partition as an exact cover with a test that executes the workflow's own pipeline; files in no shard leave the gate green and untested.
+- Deploying a locally built or branch-built image because it is at hand → deploy the released digest; running unmerged code in production is the default failure mode a release exists to prevent.
+- Calling a fix proven from a live log because no failures appear → count durable artefacts over a pinned window; successful operations often emit no log line, and a restart mid-window invalidates the count.
 
 ## Boundaries
 

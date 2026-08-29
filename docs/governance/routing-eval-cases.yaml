@@ -9,7 +9,7 @@
     {
       "trigger": "make a skill",
       "expected_package": "craft-skills/skillify",
-      "forbidden_neighbors": ["bstack/skillify", "craft-skills/hookify", "craft-skills/document"]
+      "forbidden_neighbors": ["bstack/skillify", "craft-skills/guardrails", "craft-skills/document"]
     },
     {
       "trigger": "write an ADR",
@@ -28,8 +28,13 @@
     },
     {
       "trigger": "pre-commit hook guard",
-      "expected_package": "craft-skills/hookify",
+      "expected_package": "craft-skills/guardrails",
       "forbidden_neighbors": ["craft-skills/programming", "craft-skills/init", "craft-skills/git"]
+    },
+    {
+      "trigger": "configure the linter rule set and formatter for this repo",
+      "expected_package": "craft-skills/guardrails",
+      "forbidden_neighbors": ["craft-skills/refactor", "craft-skills/cicd", "craft-skills/programming"]
     },
     {
       "trigger": "technical report scaffold",
@@ -114,7 +119,7 @@
     {
       "trigger": "set up the PR pipeline and deployment for this repo",
       "expected_package": "craft-skills/cicd",
-      "forbidden_neighbors": ["craft-skills/git", "craft-skills/hookify", "craft-skills/backend"]
+      "forbidden_neighbors": ["craft-skills/git", "craft-skills/guardrails", "craft-skills/backend"]
     },
     {
       "trigger": "write a PRD for this feature",

@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
-# hookify pre-commit dispatcher (tier 3: local commit gate).
+# guardrails pre-commit dispatcher (tier 3: local commit gate).
 #
-# hookify owns core.hooksPath / .githooks as the repo's single pre-commit
+# guardrails owns core.hooksPath / .githooks as the repo's single pre-commit
 # install point. Every other skill or hand-authored check registers a guard
 # by dropping an executable script into .githooks/guards.d/ — never by
 # pointing core.hooksPath elsewhere or shipping a competing pre-commit file.

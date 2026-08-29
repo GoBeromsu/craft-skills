@@ -1,8 +1,8 @@
 ---
 name: git
-description: 'Guides version-control craft: a ground-truth and incumbent-style detection gate before the first git mutation, the atomic-commit `git add -p` split protocol, commit/branch/PR conventions matched to the repo''s own history, and non-interactive-safe history surgery (fixup, reword, split, scripted bisect, undo). Use when committing a change ("commit this", "커밋해줘"), rebasing or squashing history, sizing a PR, recovering from a broken rebase, or running "git wt" to create an isolated worktree with the git-guard rails. Not for hook-enforcement mechanics (runtime/lint/pre-commit guard authoring) — that belongs to hookify.'
+description: 'Guides version-control craft: a ground-truth and incumbent-style detection gate before the first git mutation, the atomic-commit `git add -p` split protocol, commit/branch/PR conventions matched to the repo''s own history, and non-interactive-safe history surgery (fixup, reword, split, scripted bisect, undo). Use when committing a change ("commit this", "커밋해줘"), rebasing or squashing history, sizing a PR, recovering from a broken rebase, or running "git wt" to create an isolated worktree with the git-guard rails. Not for hook-enforcement mechanics (runtime/lint/pre-commit guard authoring) — that belongs to guardrails.'
 metadata:
-  version: 2.2.2
+  version: 2.2.3
 ---
 
 # git
@@ -172,9 +172,7 @@ One PR per slice, each targeting the previous branch; rebase the next slice when
 
 ## Worktrees
 
-`git wt <name>` creates or reuses an isolated worktree off the default branch — never work directly on a protected branch.
-Full workflow and guard install live in `references/worktree.md`.
-Guard scripts register into `.githooks/guards.d/`; `core.hooksPath` itself is owned by `hookify`, not this skill.
+`git wt <name>` creates or reuses an isolated worktree off the default branch — never work directly on a protected branch. Full workflow and guard install live in `references/worktree.md`. Guard scripts register into `.githooks/guards.d/`; `core.hooksPath` itself is owned by `guardrails`, not this skill.
 
 ## Requirements
 
