@@ -695,6 +695,7 @@ def build_managed_outputs(topology: Mapping[str, Any]) -> dict[str, Any]:
         )
         agents_before: bytes | None = None
         agents_before_mode: int | None = None
+        region_reconciled = False
         try:
             observed = file_observation(root, path)
             before, _ = _read_relative_nofollow(root, path)
@@ -708,6 +709,9 @@ def build_managed_outputs(topology: Mapping[str, Any]) -> dict[str, Any]:
                 # only the proven span so every surrounding user byte survives the map.
                 start, finish = _managed_region_span(before, prior_region["managed_id"], prior_region["payload_sha256"])
                 merged = before[:start] + data + before[finish:]
+                # Bytes outside the span are what make this a region rather than a file
+                # this package owns outright.
+                region_reconciled = merged != data
                 if merged != before:
                     effects.append(
                         {
@@ -755,10 +759,10 @@ def build_managed_outputs(topology: Mapping[str, Any]) -> dict[str, Any]:
             effects.append({"action": "write", "path": path, "bytes": data, "mode": NEW_FILE_MODE})
             mode = NEW_FILE_MODE
             file_bytes = data
-        # Claim a region only when a region was actually reconciled inside an existing
-        # file. A file this run authored end to end is owned as a whole file, so guarded
-        # prune removes the file instead of leaving an empty one behind.
-        artifact_type = "agents-region" if prior_region is not None and agents_before is not None else "agents-file"
+        # Claim a region only when unmanaged bytes actually share the file. A file whose
+        # every byte is managed is owned outright, so guarded prune removes the file
+        # instead of leaving an empty one behind.
+        artifact_type = "agents-region" if region_reconciled else "agents-file"
         owned.append(
             {
                 "path": path,

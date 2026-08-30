@@ -182,6 +182,43 @@ class LifecycleCoreTests(unittest.TestCase):
             self.assertIsNone(row["file_sha256"])
             core.validate_snapshot(outputs["snapshot"])
 
+    def test_fully_managed_file_under_region_ownership_is_owned_outright(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "app.py").write_text("print('ok')\n", encoding="utf-8")
+            managed_id = core.stable_id("init", {"directory": "."})
+            stale_payload = b"# outdated managed instructions\n"
+            (root / "AGENTS.md").write_bytes(core.managed_envelope(managed_id, stale_payload))
+            topology = core.discover_topology(root)
+            topology["_prior_owned_artifacts"] = [
+                {
+                    "path": "AGENTS.md",
+                    "artifact_type": "agents-region",
+                    "managed_id": managed_id,
+                    "status": "active",
+                    "payload_sha256": core.sha256_bytes(stale_payload),
+                    "file_sha256": None,
+                    "mode": 0o644,
+                }
+            ]
+            outputs = core.build_managed_outputs(topology)
+            row = next(item for item in outputs["snapshot"]["owned_artifacts"] if item["path"] == "AGENTS.md")
+            self.assertEqual(row["artifact_type"], "agents-file")
+            self.assertIsNotNone(row["file_sha256"])
+            core.validate_snapshot(outputs["snapshot"])
+            effect = next(item for item in outputs["effects"] if item["path"] == "AGENTS.md")
+            (root / "AGENTS.md").write_bytes(effect["bytes"])
+            stale_snapshot = {**outputs["snapshot"], "owned_artifacts": [{**row, "status": "stale"}]}
+            (root / ".agents-map.json").write_bytes(core.canonical_json(stale_snapshot, pretty=True))
+            offered = core.plan_prune(root, stale_snapshot, set())["proposals"][0]["id"]
+            deletion = next(
+                item
+                for item in core.plan_prune(root, stale_snapshot, {offered})["effects"]
+                if item["path"] == "AGENTS.md"
+            )
+            self.assertEqual(deletion["action"], "delete")
+            self.assertNotIn("bytes", deletion)
+
     def test_missing_file_under_region_ownership_is_reclaimed_as_whole_file(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
