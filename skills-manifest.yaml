@@ -218,7 +218,7 @@
       "name": "backend",
       "kind": "leaf",
       "lifecycle": "active",
-      "version": "3.3.0",
+      "version": "3.3.1",
       "owner_repo": "craft-skills",
       "owner_domain": "research-development",
       "visibility": "public",
@@ -383,6 +383,75 @@
           "omc-learned/shipping-and-launch",
           "omc-learned/observability-and-instrumentation"
         ]
+      },
+      "replacement_for": [],
+      "replaced_by": null,
+      "children": [],
+      "adapters": [
+        {
+          "runtime": "claude-code",
+          "surface": "plugin-skill",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "codex",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "cursor",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "grok",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        },
+        {
+          "runtime": "hermes",
+          "surface": "instruction-file",
+          "status": "generated",
+          "reason": null
+        }
+      ],
+      "validation_profile": {
+        "discovery_parity": "strict",
+        "adapter_parity": "strict",
+        "provenance_license": "strict",
+        "private_data_hygiene": "strict",
+        "deprecation": "strict",
+        "routing_eval": "smoke",
+        "install_doctor": "package",
+        "topology": "leaf"
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "craft-skills/db",
+      "name": "db",
+      "kind": "leaf",
+      "lifecycle": "active",
+      "version": "1.0.0",
+      "owner_repo": "craft-skills",
+      "owner_domain": "research-development",
+      "visibility": "public",
+      "compatibility": [
+        "claude-code",
+        "codex",
+        "cursor",
+        "grok",
+        "hermes"
+      ],
+      "provenance": {
+        "upstream": null,
+        "commit": null,
+        "license": null,
+        "absorbed_from": []
       },
       "replacement_for": [],
       "replaced_by": null,

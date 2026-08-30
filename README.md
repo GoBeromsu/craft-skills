@@ -2,7 +2,7 @@
 
 Work-craft Agent Skills for research and engineering by Beomsu Koh.
 
-Own your craft, vendor-neutral: all 28 packages use the plain Agent Skills `SKILL.md` layout.
+Own your craft, vendor-neutral: all 29 packages use the plain Agent Skills `SKILL.md` layout.
 The portable core contains no runtime-specific behavior; Claude Code, Codex, Hermes, Cursor, and Grok-native integration lives in runtime lenses and generated instruction-file adapters.
 This is a task-oriented library for software and research work — kept separate from [`bstack`](https://github.com/GoBeromsu/bstack) (personal / life / second-brain automation) so the two domains never bleed into each other's context.
 
@@ -18,6 +18,7 @@ This is a task-oriented library for software and research work — kept separate
 | `ast-grep` | Search and replace code by syntax-tree shape with ast-grep, validating parseable patterns and inspecting a dry-run before mutation. |
 | `backend` | Route backend engineering through an architecture-detection gate (layered / vertical-slice / hexagonal), then apply dependency-direction rules, persistence choices, and per-framework folder conventions. |
 | `cicd` | Design inexpensive, reliable PR validation and reversible Jenkins Compose deployment pipelines with deployment-server-owned image builds. |
+| `db` | Diagnose database issues and make schema and operational tradeoffs after the backend has selected the persistence stack and lifecycle. |
 | `debug` | Diagnose a failing program under a hypothesis-driven loop — reproduce before theorizing, log fact separately from inference, and confirm the mechanism with instrumentation before any fix lands. |
 | `defuddle` | Extract clean Markdown or metadata JSON from web articles and docs with the Defuddle CLI — strips nav/ads/boilerplate and falls back to a headless browser for JS-heavy pages. |
 | `design` | Own root `DESIGN.md`, UX/UI judgment, bad-UX audits, and rendered evidence for material design work. |
@@ -63,7 +64,7 @@ Use the Claude Code marketplace channel:
 /plugin install craft-skills@craft-skills
 ```
 
-Then invoke any of the 28 skills above by name, e.g. `api`, `ast-grep`, `defuddle`, `design`, `document`, `init`, `skillify`, `programming`, `research`, `write-prd`, `debug`.
+Then invoke any of the 29 skills above by name, e.g. `api`, `ast-grep`, `defuddle`, `design`, `document`, `init`, `skillify`, `programming`, `research`, `write-prd`, `debug`.
 
 ---
 
