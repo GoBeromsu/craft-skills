@@ -693,7 +693,6 @@ def build_managed_outputs(topology: Mapping[str, Any]) -> dict[str, Any]:
             ),
             None,
         )
-        artifact_type = "agents-region" if prior_region is not None else "agents-file"
         agents_before: bytes | None = None
         agents_before_mode: int | None = None
         try:
@@ -756,6 +755,10 @@ def build_managed_outputs(topology: Mapping[str, Any]) -> dict[str, Any]:
             effects.append({"action": "write", "path": path, "bytes": data, "mode": NEW_FILE_MODE})
             mode = NEW_FILE_MODE
             file_bytes = data
+        # Claim a region only when a region was actually reconciled inside an existing
+        # file. A file this run authored end to end is owned as a whole file, so guarded
+        # prune removes the file instead of leaving an empty one behind.
+        artifact_type = "agents-region" if prior_region is not None and agents_before is not None else "agents-file"
         owned.append(
             {
                 "path": path,
