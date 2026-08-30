@@ -18,6 +18,7 @@ try:
         normalize_path,
         operation_root,
         pinned_root_fd,
+        validate_snapshot,
         sha256_bytes,
         transaction_basis,
         transaction_id,
@@ -34,6 +35,7 @@ except ImportError:  # Direct script execution has no package parent.
         normalize_path,
         operation_root,
         pinned_root_fd,
+        validate_snapshot,
         sha256_bytes,
         transaction_basis,
         transaction_id,
@@ -523,10 +525,10 @@ def _apply_pinned(
     effects: list[dict[str, Any]],
     accepted_ids: set[str],
     *,
-    snapshot_payload: Mapping[str, Any] | None = None,
+    snapshot_payload: Mapping[str, Any],
     operation: str = "map",
 ) -> dict[str, Any]:
-    """Apply accepted product effects; with snapshot_payload, commit snapshot last and clean journal last."""
+    """Apply accepted product effects, commit the validated snapshot last, and clean the journal last."""
     try:
         _lstat_relative(root, JOURNAL_NAME)
     except FileNotFoundError:
@@ -542,7 +544,10 @@ def _apply_pinned(
         entry, content = _effect_entry(root, effect)
         entries.append(entry)
         contents.append(content)
-    snapshot, snapshot_content = _snapshot_entry(root, snapshot_payload or {"schema_version": 1, "repository_root": ".", "owned_artifacts": [], "last_applied_topology": {"max_depth": 3, "shim_policy": "off", "coverage_units": [], "exclusions": []}})
+    # The snapshot is the authority every later audit, prune, and recovery decision
+    # trusts, so it must satisfy the exact ownership contract before it is journaled.
+    validate_snapshot(snapshot_payload)
+    snapshot, snapshot_content = _snapshot_entry(root, snapshot_payload)
     basis = transaction_basis(operation, entries, snapshot)
     identifier = transaction_id(basis)
     for entry in entries + [snapshot]:
@@ -581,8 +586,6 @@ def _apply_pinned(
         _journal_write(root, journal)
     journal["phase"] = "products-applied"
     _journal_write(root, journal)
-    if snapshot_payload is None:
-        return {"transaction_id": identifier, "phase": journal["phase"], "effects": entries}
     journal["phase"] = "committing-snapshot"
     _journal_write(root, journal)
     _consume_apply(root, snapshot, "forward")
@@ -599,7 +602,7 @@ def apply(
     effects: list[dict[str, Any]],
     accepted_ids: set[str],
     *,
-    snapshot_payload: Mapping[str, Any] | None = None,
+    snapshot_payload: Mapping[str, Any],
     operation: str = "map",
 ) -> dict[str, Any]:
     root = root.absolute()

@@ -21,7 +21,26 @@ import lifecycle_core as core
 
 class TransactionTests(unittest.TestCase):
     def _snapshot(self) -> dict:
-        return {"schema_version": 1, "repository_root": ".", "owned_artifacts": [], "last_applied_topology": {"max_depth": 3, "shim_policy": "off", "coverage_units": [], "exclusions": []}}
+        return {
+            "schema_version": 1,
+            "repository_root": ".",
+            "owned_artifacts": [],
+            "last_applied_topology": {
+                "max_depth": 3,
+                "shim_policy": "off",
+                "loader": {
+                    "loader_class": "unknown",
+                    "evidence_status": "unavailable",
+                    "source_id": None,
+                    "runtime_version": None,
+                    "probe_fixture_sha256": None,
+                    "probe_result_sha256": None,
+                },
+                "nodes": [],
+                "coverage": [],
+                "root_fallback_payload_sha256": None,
+            },
+        }
 
     def test_golden_identity_serialization_and_derived_paths(self) -> None:
         golden = json.loads((Path(__file__).with_name("transaction-golden.json")).read_text(encoding="utf-8"))
@@ -174,7 +193,9 @@ class TransactionTests(unittest.TestCase):
     def test_recovery_rejects_malicious_derived_artifact_path(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            transaction.apply(root, [{"path": "AGENTS.md", "bytes": b"product"}], set())
+            with mock.patch.object(transaction, "_image_copy", side_effect=OSError("stop during preparation")):
+                with self.assertRaises(OSError):
+                    transaction.apply(root, [{"path": "AGENTS.md", "bytes": b"product"}], set(), snapshot_payload=self._snapshot())
             journal_path = root / core.JOURNAL_NAME
             journal = json.loads(journal_path.read_text(encoding="utf-8"))
             journal["targets"][0]["apply_path"] = "outside.apply"

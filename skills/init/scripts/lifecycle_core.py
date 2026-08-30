@@ -685,6 +685,15 @@ def build_managed_outputs(topology: Mapping[str, Any]) -> dict[str, Any]:
         payload = _render_managed_payload(topology, node, migrated_claude)
         data = managed_envelope(node["managed_id"], payload)
         path = node["agents_path"]
+        prior_region = next(
+            (
+                row
+                for row in topology.get("_prior_owned_artifacts", [])
+                if row["path"] == path and row["artifact_type"] == "agents-region" and row["status"] == "active"
+            ),
+            None,
+        )
+        artifact_type = "agents-region" if prior_region is not None else "agents-file"
         agents_before: bytes | None = None
         agents_before_mode: int | None = None
         try:
@@ -695,7 +704,24 @@ def build_managed_outputs(topology: Mapping[str, Any]) -> dict[str, Any]:
         if observed is not None:
             agents_before = before
             agents_before_mode = observed["mode"]
-            if before != data:
+            if prior_region is not None:
+                # An owned region shares its file with unmanaged instructions. Reconcile
+                # only the proven span so every surrounding user byte survives the map.
+                start, finish = _managed_region_span(before, prior_region["managed_id"], prior_region["payload_sha256"])
+                merged = before[:start] + data + before[finish:]
+                if merged != before:
+                    effects.append(
+                        {
+                            "action": "write",
+                            "path": path,
+                            "bytes": merged,
+                            "mode": observed["mode"],
+                            "expected_pre_sha256": observed["sha256"],
+                            "expected_pre_mode": observed["mode"],
+                        }
+                    )
+                file_bytes = merged
+            elif before != data:
                 parsed = parse_managed_envelope(before)
                 if parsed is None or parsed["managed_id"] != node["managed_id"]:
                     proposal = _proposal("map", "adopt-managed-payload", path, before, observed["mode"], data, observed["mode"])
@@ -722,11 +748,25 @@ def build_managed_outputs(topology: Mapping[str, Any]) -> dict[str, Any]:
                             "expected_pre_mode": observed["mode"],
                         }
                     )
+                file_bytes = data
+            else:
+                file_bytes = data
             mode = observed["mode"]
         else:
             effects.append({"action": "write", "path": path, "bytes": data, "mode": NEW_FILE_MODE})
             mode = NEW_FILE_MODE
-        owned.append({"path": path, "artifact_type": "agents-file", "managed_id": node["managed_id"], "status": "active", "payload_sha256": sha256_bytes(payload), "file_sha256": sha256_bytes(data), "mode": mode})
+            file_bytes = data
+        owned.append(
+            {
+                "path": path,
+                "artifact_type": artifact_type,
+                "managed_id": node["managed_id"],
+                "status": "active",
+                "payload_sha256": sha256_bytes(payload),
+                "file_sha256": None if artifact_type == "agents-region" else sha256_bytes(file_bytes),
+                "mode": mode,
+            }
+        )
         if node["directory"] == ".":
             topology_snapshot["root_fallback_payload_sha256"] = sha256_bytes(payload)
 

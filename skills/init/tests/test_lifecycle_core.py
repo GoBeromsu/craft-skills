@@ -150,6 +150,38 @@ class LifecycleCoreTests(unittest.TestCase):
                     with self.assertRaises(ValueError):
                         core.validate_snapshot(candidate)
 
+    def test_owned_region_reconciliation_preserves_surrounding_user_bytes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "app.py").write_text("print('ok')\n", encoding="utf-8")
+            managed_id = core.stable_id("init", {"directory": "."})
+            stale_payload = b"# outdated managed instructions\n"
+            (root / "AGENTS.md").write_bytes(
+                b"# user prefix\n\n" + core.managed_envelope(managed_id, stale_payload) + b"# user suffix\n"
+            )
+            topology = core.discover_topology(root)
+            topology["_prior_owned_artifacts"] = [
+                {
+                    "path": "AGENTS.md",
+                    "artifact_type": "agents-region",
+                    "managed_id": managed_id,
+                    "status": "active",
+                    "payload_sha256": core.sha256_bytes(stale_payload),
+                    "file_sha256": None,
+                    "mode": 0o644,
+                }
+            ]
+            outputs = core.build_managed_outputs(topology)
+            effect = next(item for item in outputs["effects"] if item["path"] == "AGENTS.md")
+            self.assertTrue(effect["bytes"].startswith(b"# user prefix\n\n"))
+            self.assertTrue(effect["bytes"].endswith(b"# user suffix\n"))
+            self.assertNotIn(stale_payload, effect["bytes"])
+            self.assertEqual(outputs["proposals"], [])
+            row = next(item for item in outputs["snapshot"]["owned_artifacts"] if item["path"] == "AGENTS.md")
+            self.assertEqual(row["artifact_type"], "agents-region")
+            self.assertIsNone(row["file_sha256"])
+            core.validate_snapshot(outputs["snapshot"])
+
     def test_makefile_targets_are_rendered_as_declared_commands(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
