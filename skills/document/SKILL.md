@@ -1,13 +1,14 @@
 ---
 name: document
-description: Routes repository documentation into a six-type ontology and authors canonical artifacts. Use when asked to "record this decision", "where does this spec go", "update the README", "draft the project CHANGELOG", or "comment-the-why". Not for repository docs scaffolding (use init), conducting research (use research), technical reports (use write-report), API-surface comments, or DESIGN.md, visual direction, UX audits, and design-system work (use design).
+description: Scaffolds and authors repository documentation through a six-type ontology and canonical artifacts. Use when asked to scaffold repository docs, "record this decision", "where does this spec go", "update the README", "draft the project CHANGELOG", or "comment-the-why". Not for conducting research (use research), technical reports (use write-report), API-surface comments, or DESIGN.md, visual direction, UX audits, and design-system work (use design).
 metadata:
-  version: 4.0.0
+  version: 4.0.1
 ---
 
 # document
 
-Author and file project documentation so every artifact lands at exactly one canonical location with the right template. Success: a reader or agent can always answer "where does this go?" without guessing.
+Author and file project documentation so every artifact lands at exactly one canonical location with the right template.
+Success: a reader or agent can always answer "where does this go?" without guessing.
 
 ## Requirements
 
@@ -28,7 +29,8 @@ Every documentation artifact answers exactly one question; never let one artifac
 
 ## Routing
 
-Pick the primary question a task answers and route by that row — the ontology table above for the six ontology artifacts, or the table below for repo-level artifacts and standing conventions. Create a `decision` artifact only when the user explicitly asks to record a decision or write an ADR; otherwise keep research, specs, plans, and rules in their own lanes and note decision candidates inside that artifact.
+Pick the primary question a task answers and route by that row — the ontology table above for the six ontology artifacts, or the table below for repo-level artifacts and standing conventions.
+Create a `decision` artifact only when the user explicitly asks to record a decision or write an ADR; otherwise keep research, specs, plans, and rules in their own lanes and note decision candidates inside that artifact.
 
 | Task | Read | Author with |
 |------|------|--------------|
@@ -38,6 +40,7 @@ Pick the primary question a task answers and route by that row — the ontology 
 | Decide how to comment code (comment-the-why) | `references/inline-comments.md` | — |
 | Map the system (`architecture.md`) | see architecture.md section below | `templates/architecture.md` |
 | File research, a spec, a plan, a rule, or an archived source | ontology table above | matching file in `templates/` |
+| Scaffold repository documentation | `docs/` layout below | create the applicable canonical directories and artifacts |
 
 No documentation task should dead-end here — every repo-level artifact and every ontology artifact has an exit row.
 
@@ -45,19 +48,23 @@ No documentation task should dead-end here — every repo-level artifact and eve
 
 `design` owns `DESIGN.md`, visual direction, UX audits, and design-system work; route those requests there.
 
-**References vs research:** a references file is a verbatim static copy of an external document; a research file is your own synthesis. Never merge them.
+**References vs research:** a references file is a verbatim static copy of an external document; a research file is your own synthesis.
+Never merge them.
 
-**Rule vs ADR:** the *what to do* goes in a rule. Load `references/adr.md` only when the user explicitly asks for an ADR or decision record.
+**Rule vs ADR:** the *what to do* goes in a rule.
+Load `references/adr.md` only when the user explicitly asks for an ADR or decision record.
 
 ### Root-doc-sprawl check
 
-Loose `.md` files accumulate at the repo root instead of filing into the ontology above. Count them, excluding the conventional set:
+Loose `.md` files accumulate at the repo root instead of filing into the ontology above.
+Count them, excluding the conventional set:
 
 ```bash
 find . -maxdepth 1 -name '*.md' | sed 's|^\./||' | grep -viE '^(readme|agents|claude|changelog|contributing|license|code_of_conduct)\.md$' | wc -l
 ```
 
-More than 3 is a signal to investigate the loose documents and propose their canonical `docs/` paths before adding more. Do not move existing documents without an explicit request.
+More than 3 is a signal to investigate the loose documents and propose their canonical `docs/` paths before adding more.
+Do not move existing documents without an explicit request.
 
 ## Decision boundaries
 
@@ -65,9 +72,14 @@ More than 3 is a signal to investigate the loose documents and propose their can
 research (facts found)  |  decision/ADR (explicit record request)  |  plan (implementation built)
 ```
 
-Research collects evidence and presents options; it does not decide. A plan sequences implementation; it may mention trade-offs without spawning a decision record. An ADR is an explicit destination, not an automatic distillation step. When routing is unclear, ask which artifact the user wants: evidence, a recorded decision, or implementation sequencing.
+Research collects evidence and presents options; it does not decide.
+A plan sequences implementation; it may mention trade-offs without spawning a decision record.
+An ADR is an explicit destination, not an automatic distillation step.
+When routing is unclear, ask which artifact the user wants: evidence, a recorded decision, or implementation sequencing.
 
 ## `docs/` layout
+
+Scaffold only the canonical directories and repository documentation artifacts requested; do not create empty placeholder files or move existing documents without an explicit request.
 
 ```
 docs/
@@ -86,7 +98,8 @@ docs/
 └── architecture.md                # Living system map — see architecture.md section below
 ```
 
-Scratch drafts live outside `docs/` and are not git-canonical. Finalizing a draft means **moving** it into `docs/` at the correct path, then deleting the scratch source.
+Scratch drafts live outside `docs/` and are not git-canonical.
+Finalizing a draft means **moving** it into `docs/` at the correct path, then deleting the scratch source.
 
 ## Lifecycle — spec and plan
 
@@ -98,21 +111,27 @@ work done / discarded / superseded → add status: done|discarded|superseded (+ 
 user explicitly requested a decision record → create/update docs/decisions/ADR-NNN-{topic}.md (references/adr.md)
 ```
 
-**Lifecycle = folder position.** A plan is active or archived by where its folder lives, never by a status field alone; move the whole `{slug}/` folder, never split spec and plan.
+**Lifecycle = folder position.**
+A plan is active or archived by where its folder lives, never by a status field alone; move the whole `{slug}/` folder, never split spec and plan.
 
 **Supersede timing:** when creating a superseding plan-B, archive plan-A in the same action, before beginning plan-B's execution.
 
-**Finalized-plan contract:** a working plan remains editable after commits. Set `finalized: true` only when the user explicitly adopts its body as immutable; from then, a scope change gets a new slug and the old plan's frontmatter is updated to `status: superseded` + `superseded-by: {new-slug}`. Only the finalization and lifecycle frontmatter changes after finalization.
+**Finalized-plan contract:** a working plan remains editable after commits.
+Set `finalized: true` only when the user explicitly adopts its body as immutable; from then, a scope change gets a new slug and the old plan's frontmatter is updated to `status: superseded` + `superseded-by: {new-slug}`.
+Only the finalization and lifecycle frontmatter changes after finalization.
 
 ## Slug naming
 
-Format: `{kebab-description}` — lowercase, hyphens only, no date prefix, no issue number. The folder (or filename) is the authoritative slug; a frontmatter `slug` that disagrees with it is an error.
+Format: `{kebab-description}` — lowercase, hyphens only, no date prefix, no issue number.
+The folder (or filename) is the authoritative slug; a frontmatter `slug` that disagrees with it is an error.
 
 ## `architecture.md`
 
 Answers "how is this system put together?" for someone who just opened the repo: an annotated directory tree, component boundaries, a cross-cutting-decisions index (links to ADRs, not restatements), and the one or two data/control flows that matter most.
 
-Update it whenever a change moves a component boundary or a new cross-cutting decision lands — not on every commit. Staleness signal: its directory tree or ADR index no longer matches reality. Keep it a map: if a section starts duplicating an ADR body, replace the duplication with a link.
+Update it whenever a change moves a component boundary or a new cross-cutting decision lands — not on every commit.
+Staleness signal: its directory tree or ADR index no longer matches reality.
+Keep it a map: if a section starts duplicating an ADR body, replace the duplication with a link.
 
 ## Trivial exemptions — no spec/plan required
 

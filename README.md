@@ -22,12 +22,12 @@ This is a task-oriented library for software and research work — kept separate
 | `defuddle` | Extract clean Markdown or metadata JSON from web articles and docs with the Defuddle CLI — strips nav/ads/boilerplate and falls back to a headless browser for JS-heavy pages. |
 | `design` | Own root `DESIGN.md`, UX/UI judgment, bad-UX audits, and rendered evidence for material design work. |
 | `distil` | Distil transferable rules and conventions from an external source — a repo, an article, an AGENTS.md, or a third-party skill — into the library under the authoring contract, with provenance recorded. |
-| `document` | Route documentation into the `docs/` ontology while keeping ADR authoring explicit-only unless the user asks to record a decision. |
+| `document` | Scaffold and author repository documentation through the `docs/` ontology while keeping ADR authoring explicit-only unless the user asks to record a decision. |
 | `frontend` | Gate frontend engineering on a rendering-architecture decision (SPA / SSR-RSC / SSG / islands) before UI code is written, then apply component-reuse, state-placement, and folder rules. |
 | `git` | Guide version-control craft — ground-truth and incumbent-style detection, the atomic-commit split protocol, commit/branch/PR conventions, and non-interactive-safe history surgery, including the `git wt` worktree workflow. |
 | `gpu` | Apply GPU environment and resource discipline — probe the hardware before choosing any install, budget the host before launching any job — to CUDA/PyTorch setup, attention-backend builds, and GPU job launches. |
 | `guardrails` | Turn a convention into local, deterministic enforcement — runtime hooks, linter and formatter configuration, and pre-commit guards — so a violation is blocked before it happens, not corrected after. |
-| `init` | Bootstrap the craft-owned `docs/` scaffold on a fresh repo, then generate a complexity-scored hierarchical `AGENTS.md` knowledge base on a mature one, in one triaged run. |
+| `init` | Own the hierarchical `AGENTS.md` lifecycle as prose — map, read-only audit, stale reporting — with one script for marker-region edits; bare `init` runs ordinary deep-init. |
 | `ml` | Apply ML/DL research-engineering discipline — reproducible project layout, leakage-safe dataset construction, and a training-discipline ladder — to classical ML, deep learning, fine-tuning, and vision work. |
 | `obsidian` | Route reusable Obsidian Markdown, Bases, Canvas, Mermaid, CLI, Web Clipper, plugin-doctor, and headless Sync work through one thick skill with selectively loaded sub-recipes. |
 | `programming` | Apply correctness-first, type-strict engineering discipline when writing or editing Python or TypeScript. |

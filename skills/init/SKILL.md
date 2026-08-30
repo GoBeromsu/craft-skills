@@ -1,108 +1,101 @@
 ---
 name: init
-description: Bootstraps a repository's craft docs scaffold or generates a complexity-scored, hierarchical AGENTS.md knowledge base for a mature one. Use when initializing repo docs folders ("init this repo", "bootstrap craft conventions"), deep-initing a codebase ("deep init", "generate AGENTS.md", "map this codebase"), or setting up the docs structure; uses a sequential cartography path on runtimes without agent fan-out. Not for authoring docs content, ADRs, README, or architecture decisions (use the `document` skill) or installing git-guard hooks (use the `git` skill).
+description: Maps a repository into a maintained hierarchical AGENTS.md knowledge base. Use when asked to "init this repo" for AGENTS, deep-init a codebase, generate or update AGENTS.md, map repository conventions, audit existing AGENTS coverage, or report stale managed AGENTS regions. Not for package-manager or plugin initialization, docs scaffolding or authoring (use `document`), or git-hook installation (use `git`).
 metadata:
-  version: 3.2.2
+  version: 4.0.0
 ---
 
 # init
 
-`init` selects an outcome, not a fixed phase ceremony.
-**Bootstrap** creates the craft-owned `docs/` scaffold; **cartography** generates or updates a hierarchical `AGENTS.md` map.
+`init` owns the AGENTS lifecycle: map, read-only audit, and reporting stale managed regions.
+`AGENTS.md` is canonical.
+A sibling `CLAUDE.md` may exist only as an adapter whose bytes are exactly `@AGENTS.md` plus one LF.
+Do not scaffold documentation, author document content, initialize packages, or install git hooks.
 
-Both outcomes share only these prerequisites: inspect the requested outcome and existing files without overwriting them, then emit the git-guard diagnostic below.
-A docs-only request runs Phase 0 and stops.
-A cartography request runs Phases 1–4; run Phase 0 first only when the caller also asks for the docs scaffold.
-Do not turn a bootstrap request into codebase mapping.
+Placement and content are judgment, so they live in this file as prose.
+Only one step is fragile enough to be executable: editing a marker-delimited region without disturbing surrounding bytes.
 
-This file routes; the phase procedures live in `references/` — read the selected procedure when you reach it.
+## Invocation
 
-## Requirements
-
-- `git`, POSIX `sh`, standard coreutils (`find`, `awk`, `sed`, `wc`).
-- Optional: `ast-grep` (`sg`) for symbol/reference inventory when no LSP/codegraph is available (fallback is `grep`/`find`). LSP and codegraph tooling are optional; absent → explore/`grep` fallback with centrality marked "unmeasured".
-
-## Flags (cartography engine)
-
-```
-init                 # Select the requested bootstrap or cartography outcome; update existing AGENTS.md only for cartography
-init --create-new    # Read existing AGENTS.md → remove all → regenerate from scratch
-init --max-depth=N   # Limit directory depth for cartography (default: 3)
-```
-
-## Route the run
-
-### 1. Choose the requested outcome
-
-| Request outcome | Procedure |
+| Request | Meaning |
 |---|---|
-| Craft docs scaffold only | Run Phase 0 — Ontology graft. |
-| Hierarchical `AGENTS.md` map | Run Phases 1–4 — Cartography. |
-| Both scaffold and map | Run Phase 0, then Phases 1–4. |
+| `init`, or `init map` | Map the repository: inventory, choose placements, write managed regions. |
+| `init audit` | Report current state read-only. Never write. |
+| `init report-stale` | Name managed regions no longer backed by a placement. Never delete. |
 
-### 2. Shared prerequisite — git-guard diagnostic notice
+Bare `init` means map. Do not ask which mode was intended, and do not treat bare `init` as a selector.
+`audit` and `report-stale` require their explicit words.
 
-init installs no enforcement rails of its own — git-guard belongs to the `git` skill and self-installs there on first `git wt` use.
-A missing guard should stay visible, not silently assumed; emit one line at start:
+## Map
 
-```bash
-echo "git-guard: core.hooksPath = $(git config core.hooksPath 2>/dev/null || echo '<unset — the git skill installs it on first git wt use>')"
+Work top down and stop as soon as the repository is described.
+
+1. **Inventory.** Read the tree without following symlinks. Note first-party directories, their file types, declared entry points, and configuration files. Skip `.git`, `node_modules`, `vendor`, `dist`, `build`, `__pycache__`, and comparable vendored or generated trees.
+2. **Place the root.** A root `AGENTS.md` always exists.
+3. **Place a child only on evidence.** Add a nested `AGENTS.md` when a directory owns its own build or dependency configuration, presents a distinct entry boundary, and holds enough code that root guidance would be wrong there. Prefer fewer files. A directory that merely holds many files is not a scope.
+4. **Write content that a newcomer could not infer.** Commands actually declared in that scope, entry points, local conventions, and constraints. Cite the file each claim comes from. Never invent a command; if no command is declared, say so.
+5. **Do not repeat the parent.** A child file adds only what differs from the instruction chain above it.
+6. **Install each payload** as a managed region using the script below.
+
+Keep a root file within roughly 50-150 lines and a child file within roughly 30-80.
+When evidence exceeds that, summarize and state the omitted count rather than truncating silently.
+
+## Audit
+
+Report, without writing anything: which `AGENTS.md` files exist, which managed regions are present and internally consistent, which scopes look uncovered, and which paths could not be read.
+State loading behavior as unknown unless a runtime probe actually demonstrated it.
+Never infer loading from directory placement or from a successful map.
+
+## Report stale
+
+Name any managed region whose scope no longer warrants a placement, then stop.
+`init` has no deletion authority: removing a file or a region is the user's decision, and hand-editing is fine because the region markers make ownership visible.
+
+## The one script
+
+```sh
+python3 skills/init/scripts/agents_region.py <path> --id <region-id> --payload-file <file|->
 ```
 
-### Cartography runtime branch
+It replaces exactly one `<!-- init:managed id=... -->` region, or appends one when the file has none, and preserves every other byte plus the file mode.
+It refuses symlinks, non-regular files, non-UTF-8 content, and files holding two regions with the same id.
+The hash in each opening marker is checked before any rewrite, so a region someone edited by hand is refused rather than overwritten; resolve that edit first, either by keeping the human text outside the markers or by folding it into the payload.
+Exit `0` on success with a JSON receipt, `2` on refusal with a JSON error.
+Rerunning it with the same payload is a byte-identical no-op.
 
-For mutable runtime fan-out or tool capabilities, consult official primary docs first and disclose conflicts; a more-specific local contract or matching-version/platform reproducible evidence may override general or stale docs.
-Unresolved capability stays unknown: do not invent surfaces; use the sequential path.
+Use one stable id per scope, for example `init-root` or `init-<directory>`.
 
-Classify the runtime before Phases 1–4:
+## Safety and canonicality
 
-- **Agent-spawn runtime** — Claude Code (`Task`) or Codex (`multi_agent_v1`): Phase 1 fans out concurrent exploration scaled to uncertainty and risk; Phase 3 can generate subdir files in parallel.
-- **Single-agent runtime** — Hermes / generic: run Phase 1 investigations sequentially via `Bash` + `Grep` + `Glob` (+ `ast-grep` if present), then generate Phase 3 files one at a time.
+Before working on a path, read every `AGENTS.md` from the repository root through that path's directory in order; the nearest instruction wins on conflict.
+This reading rule is instruction, not proof of how a runtime loads files.
 
-LSP/codegraph are optional in both branches; absent → explore/`grep`/`ast-grep` fallback, centrality "unmeasured".
-
-### Cartography phases
-
-Run these in order because each feeds the next:
-
-| Phase | File | What it does |
-|-------|------|--------------|
-| **1 — Discovery** | `references/phase-1-discovery.md` | Explore + structure + LSP/codegraph code map + existing files; scale investigation to uncertainty and risk. |
-| **2 — Scoring** | `references/phase-2-scoring.md` | Weighted complexity matrix → `AGENTS_LOCATIONS` (root always; >15 create; 8-15 if distinct; <8 skip). |
-| **3 — Generate** | `references/phase-3-generate.md` | Root AGENTS.md (full treatment + provenance stamp + `## DOCS & DECISIONS` graft link), then scored subdirs. Existence rule: `Edit` if present, `Write` if new. |
-| **4 — Review** | `references/phase-4-review.md` | Dedup-vs-parent and line-budget review. |
-
-### Cartography scope guard
-
-Phases 1–4 map **code** directories.
-Exclude the `docs/` ontology that Phase 0 seeded — never map the documentation scaffold back onto itself.
-
-## Completion report
-
-End every run with one explicit outcome report: selected branch; docs scaffold action; files created or updated; and, for cartography, runtime path, centrality measured/unmeasured, directories analyzed, and managed-block action.
-Mark inapplicable fields `n/a` and name any unavailable evidence rather than omitting it.
+Existing content is never silently adopted, overwritten, or deleted.
+This holds inside the markers too: a hand-edited region is reported, not rewritten.
+When a file already holds substantive instructions, keep them: the script appends rather than replacing, and consolidating them into managed content requires the user's agreement.
+When a `CLAUDE.md` holds anything other than the exact adapter bytes, migrate its content into `AGENTS.md` with the user's agreement before installing the adapter.
 
 ## Boundaries
 
 | Responsibility | Owner |
 |---|---|
-| Scaffold craft-owned `docs/` folders/files (Phase 0) and generate the hierarchical AGENTS.md map (Phases 1-4) | **init** (this skill) |
-| Author root README content or substantive content inside `docs/` (ADRs, architecture decisions, …) | `document` skill |
-| Install and manage git-hook enforcement (git-guard) | `git` skill — init only emits the diagnostic notice |
-| Scaffold consumer plugin manifests (`.claude-plugin`, etc.) | out of scope for init |
+| AGENTS placement, content, canonicality, audit, and stale reporting | **init** |
+| Documentation scaffolding, README, ADRs, and substantive docs content | `document` |
+| Git hooks and enforcement rails | `git` |
+| Package, plugin, or ecosystem initialization | Outside init |
 
-## Idempotency & Safety Rails
+## Requirements
 
-- Phase 0 is fully idempotent — re-running a bootstrapped repo writes nothing, only status notices.
-- Phase 3 never `Write`s over an existing `AGENTS.md` — `Edit` existing, `Write` new.
-- The Development Flow managed block is the **only** existing content init may replace, and it logs the replacement.
+- `python3` — official source: <https://docs.python.org/3/>; safe probe: `python3 --version`; support boundary: Python 3.10+ for the region script and its test module.
+- Dependency trigger — a selected Python release or a changed probe result requires official-documentation review and rerunning `python3 -m unittest discover -s skills/init/tests -p 'test_*.py'` before trusting this recipe.
 
 ## Anti-patterns
 
-- Inlining the scoring matrix, generation templates, or phase procedures into this file → keep them in `references/`; this file stays at triage depth.
-- Discarding incumbent docs or repository instructions in favor of a generic template → `Edit` existing files, `Write` only new ones.
-- Assuming `Task`/fan-out on a single-agent runtime → run the sequential single-agent path (`Bash` + `Grep` + `Glob`, one file at a time) instead.
-- Emitting a confident centrality number when neither LSP nor codegraph was available → mark centrality "unmeasured" instead.
-- Leaving a legacy hard-rail managed block in place → replace it and log the replacement — the only existing content init may overwrite.
-- Claiming init installs governance/enforcement → git-guard installation belongs to the `git` skill; init only emits the diagnostic notice.
-- Creating or requiring ADRs when the user did not explicitly ask for ADRs → keep `docs/decisions/README.md` as an empty destination/index and hand off decision-record authoring to `document`.
+- Asking whether bare `init` meant map → bare `init` is map.
+- Deleting a file or region because it looks stale → report it and let the user decide.
+- Overwriting incumbent instructions to install managed content → preserve them and ask.
+- Writing a nested `AGENTS.md` because a directory has many files → require configuration, an entry boundary, and real weight.
+- Restating parent guidance in a child file → keep only the local difference.
+- Claiming a command that no configuration declares → cite the source file or omit it.
+- Editing a managed region with ad-hoc string replacement → use the script.
+- Reporting loader behavior as known without a probe → say unknown.
