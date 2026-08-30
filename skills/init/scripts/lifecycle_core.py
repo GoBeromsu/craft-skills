@@ -491,7 +491,7 @@ def _render_managed_payload(
                         match.group(1)
                         for line in makefile.splitlines()
                         if (match := re.match(r"^([A-Za-z0-9][A-Za-z0-9_.-]*):", line))
-                        and not line[match.end():].startswith("=")
+                        and re.match(r"^:{0,2}=", line[match.end():]) is None
                     }
                 )
                 commands.extend(f"`make {target}` — declared Makefile target." for target in targets)
@@ -515,7 +515,9 @@ def _render_managed_payload(
     directory_limit = 12 if is_root else 5
     evidence_limit = 10 if is_root else 3
     command_limit = 30 if is_root else 5
+    relationship_limit = 12 if is_root else 5
     displayed_commands = commands[:command_limit]
+    displayed_child_scopes = child_scopes[:relationship_limit]
     displayed_entries = entry_points[:evidence_limit]
     displayed_configs = configs[:evidence_limit]
     lines = [
@@ -567,7 +569,8 @@ def _render_managed_payload(
             "## Scope relationships",
             "",
             f"- Parent instruction: `{node['parent_agents_path']}`." if node["parent_agents_path"] else "- This is the root instruction.",
-            *([f"- `{directory}/` has nearer managed instructions." for directory in child_scopes] or ["- No nearer managed child instruction was selected."]),
+            *([f"- `{directory}/` has nearer managed instructions." for directory in displayed_child_scopes] or ["- No nearer managed child instruction was selected."]),
+            *([f"- {len(child_scopes) - relationship_limit} additional managed child scopes are summarized here."] if len(child_scopes) > relationship_limit else []),
         ]
     )
     if node["directory"] == ".":

@@ -153,12 +153,18 @@ class LifecycleCoreTests(unittest.TestCase):
     def test_makefile_targets_are_rendered_as_declared_commands(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            (root / "Makefile").write_text(".PHONY: test\ntest: deps\n\tpython3 -m unittest\n", encoding="utf-8")
+            (root / "Makefile").write_text(
+                ".PHONY: test\nFLAGS:=one\nMORE::=two\nEXTRA:::=three\ntest: deps\n\tpython3 -m unittest\n",
+                encoding="utf-8",
+            )
             (root / "app.py").write_text("print('ok')\n", encoding="utf-8")
             outputs = core.build_managed_outputs(core.discover_topology(root))
             payload = core.parse_managed_envelope(outputs["effects"][0]["bytes"])
             self.assertIn("`make test` — declared Makefile target.", payload["payload"])
             self.assertNotIn("`make .PHONY`", payload["payload"])
+            self.assertNotIn("`make FLAGS`", payload["payload"])
+            self.assertNotIn("`make MORE`", payload["payload"])
+            self.assertNotIn("`make EXTRA`", payload["payload"])
 
     def test_dense_eligible_child_is_summarized_within_physical_budget(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -170,16 +176,20 @@ class LifecycleCoreTests(unittest.TestCase):
             (child / "index.ts").write_text("export const entry = 1\n", encoding="utf-8")
             for index in range(21):
                 (child / f"module-{index}.ts").write_text(f"export const value{index} = {index}\n", encoding="utf-8")
-            for index in range(6):
+            for index in range(12):
                 subdirectory = child / f"scope-{index}"
                 subdirectory.mkdir()
-                (subdirectory / "file.ts").write_text("export {}\n", encoding="utf-8")
+                (subdirectory / "package.json").write_text("{}\n", encoding="utf-8")
+                (subdirectory / "index.ts").write_text("export const entry = 1\n", encoding="utf-8")
+                for file_index in range(21):
+                    (subdirectory / f"file-{file_index}.ts").write_text("export {}\n", encoding="utf-8")
             outputs = core.build_managed_outputs(core.discover_topology(root))
             child_effect = next(effect for effect in outputs["effects"] if effect["path"] == "package/AGENTS.md")
             payload = core.parse_managed_envelope(child_effect["bytes"])
             self.assertGreaterEqual(len(payload["payload"].splitlines()), 30)
             self.assertLessEqual(len(payload["payload"].splitlines()), 80)
             self.assertIn("additional direct files are summarized", payload["payload"])
+            self.assertIn("7 additional managed child scopes are summarized here.", payload["payload"])
 
     def test_file_observation_preserves_non_0644_mode(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
