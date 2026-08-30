@@ -68,7 +68,7 @@ class InitDispatcherTests(unittest.TestCase):
                 calls.append(argv)
                 return 0
 
-        flags = ["repository", "--max-depth=4", "--claude-shim=on", "--accept=P-test"]
+        flags = ["repository", "--max-depth=4", "--claude-shim=on", "--loading-evidence=receipt.json", "--accept=P-test"]
         with patch.object(init, "_load_operation", return_value=Map):
             self.assertEqual(init.main(flags), 0)
             self.assertEqual(init.main(["map", *flags]), 0)

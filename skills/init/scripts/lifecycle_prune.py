@@ -5,11 +5,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import stat
 import sys
 from pathlib import Path
 
-from _transaction import apply
-from lifecycle_core import plan_prune, validate_ownership_snapshot
+from _transaction import apply, recover
+from lifecycle_core import JOURNAL_NAME, plan_prune, validate_ownership_snapshot
 
 _SNAPSHOT = ".agents-map.json"
 
@@ -50,6 +52,22 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         root = _root(args.root)
+        journal_path = root / JOURNAL_NAME
+        try:
+            journal_info = os.lstat(journal_path)
+        except FileNotFoundError:
+            journal_info = None
+        if journal_info is not None:
+            if not stat.S_ISREG(journal_info.st_mode):
+                raise ValueError("transaction journal is unsafe")
+            try:
+                result = recover(root, set(args.accept))
+            except RuntimeError as error:
+                code = "prune-blocked" if "recovery requires acceptance:" in str(error) else "prune-failed"
+                _emit({"diagnostics": [{"code": code, "message": str(error)}], "operation": "prune"}, sys.stderr)
+                return 2 if code == "prune-blocked" else 3
+            _emit({"operation": "prune", **result})
+            return 0
         snapshot = _snapshot(root)
         validation = validate_ownership_snapshot(root, snapshot)
         if not isinstance(validation, dict) or not validation.get("valid", False):

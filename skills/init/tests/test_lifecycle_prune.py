@@ -6,6 +6,7 @@ import hashlib
 import io
 import json
 import os
+import stat
 import sys
 import tempfile
 import unittest
@@ -163,6 +164,33 @@ class LifecyclePruneTests(unittest.TestCase):
             committed = json.loads((root / ".agents-map.json").read_text(encoding="utf-8"))
             self.assertEqual(committed["owned_artifacts"], [])
             self.assertFalse((root / ".agents-map.transaction.json").exists())
+
+    def test_accepted_region_prune_preserves_surrounding_user_bytes(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            payload = b"managed instruction\n"
+            managed_id = "region-one"
+            agents = root / "AGENTS.md"
+            agents.write_bytes(b"user prefix\n" + lifecycle_core.managed_envelope(managed_id, payload) + b"user suffix\n")
+            os.chmod(agents, 0o640)
+            row = {
+                "path": "AGENTS.md",
+                "artifact_type": "agents-region",
+                "managed_id": managed_id,
+                "status": "stale",
+                "payload_sha256": hashlib.sha256(payload).hexdigest(),
+                "file_sha256": None,
+                "mode": 0o640,
+            }
+            snapshot = snapshot_for(root, [row])
+            (root / ".agents-map.json").write_bytes(lifecycle_core.canonical_json(snapshot, pretty=True))
+            proposal = lifecycle_core.plan_prune(root, snapshot, set())["proposals"][0]
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(lifecycle_prune.main([str(root), "--accept", proposal["id"]]), 0)
+            self.assertEqual(agents.read_bytes(), b"user prefix\nuser suffix\n")
+            self.assertEqual(stat.S_IMODE(agents.stat().st_mode), 0o640)
+            committed = json.loads((root / ".agents-map.json").read_text(encoding="utf-8"))
+            self.assertEqual(committed["owned_artifacts"], [])
 
 
 if __name__ == "__main__":

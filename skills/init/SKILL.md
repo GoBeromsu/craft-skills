@@ -21,7 +21,7 @@ Those contracts are linked here, not restated or weakened.
 
 | Invocation | Valid flags | Behavior |
 |---|---|---|
-| `init` or `init [map flags]` | `--max-depth=N`, `--claude-shim=keep\|on\|off`, repeated `--accept=ID` | Map/deep-init. |
+| `init` or `init [map flags]` | `--max-depth=N`, `--claude-shim=keep\|on\|off`, `--loading-evidence=JSON`, repeated `--accept=ID` | Map/deep-init. |
 | `init map` or `init map [map flags]` | Exactly the same map flags | Exact equivalent of bare init. |
 | `init audit` | none | Read-only JSON inspection. |
 | `init prune` | repeated `--accept=ID` | Remove only accepted stale managed artifacts. |
@@ -34,6 +34,7 @@ They have identical defaults, diagnostics, proposals, reports, transaction behav
 `--max-depth` is an integer from 1 through 32 and defaults to 3.
 It limits scoring and placement only, never discovery, coverage, existing-instruction chains, or journal inspection.
 `--claude-shim=keep` uses the last valid snapshot policy, or `off` when no valid snapshot exists.
+`--loading-evidence` consumes the provenance-bound receipt emitted by the package loader probe; unbound marker arrays remain unknown.
 Legacy `--create-new`, unknown operations, malformed values, duplicate or conflicting operations, and cross-operation flags exit 2 before target temporary files or journal creation.
 Bare init is valid and never selects a bootstrap outcome, audit, or prune.
 

@@ -10,8 +10,8 @@ import stat
 import sys
 from pathlib import Path
 
-from _transaction import apply
-from lifecycle_core import JOURNAL_NAME, SNAPSHOT_NAME, build_managed_outputs, canonical_json, discover_topology, validate_ownership_snapshot, validate_snapshot
+from _transaction import apply, recover
+from lifecycle_core import JOURNAL_NAME, SNAPSHOT_NAME, build_managed_outputs, canonical_json, discover_topology, probe_loading, validate_ownership_snapshot, validate_snapshot
 _NOFOLLOW = getattr(os, "O_NOFOLLOW", 0)
 
 
@@ -28,10 +28,14 @@ def _root(value: str) -> Path:
     return root
 
 
-def _outputs(root: Path, max_depth: int, claude_shim: str) -> dict:
+def _outputs(root: Path, max_depth: int, claude_shim: str, loading_receipt: dict | None = None) -> dict:
     prior = _prior_snapshot(root)
     shim_policy = str(prior["last_applied_topology"]["shim_policy"]) if claude_shim == "keep" and prior is not None else ("off" if claude_shim == "keep" else claude_shim)
-    topology = discover_topology(root, max_depth=max_depth, shim_policy=shim_policy)
+    loading_evidence = probe_loading(root, loading_receipt) if loading_receipt is not None else None
+    if loading_evidence is None:
+        topology = discover_topology(root, max_depth=max_depth, shim_policy=shim_policy)
+    else:
+        topology = discover_topology(root, max_depth=max_depth, shim_policy=shim_policy, loading_evidence=loading_evidence)
     if not isinstance(topology, dict):
         raise ValueError("topology discovery returned an invalid result")
     topology["_prior_owned_artifacts"] = prior["owned_artifacts"] if prior is not None else []
@@ -93,12 +97,38 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-depth", type=int, default=3, metavar="N")
     parser.add_argument("--claude-shim", choices=("keep", "on", "off"), default="keep")
     parser.add_argument("--accept", action="append", default=[], metavar="ID")
+    parser.add_argument("--loading-evidence", type=Path, metavar="JSON")
     args = parser.parse_args(argv)
     try:
         if not 1 <= args.max_depth <= 32:
             raise ValueError("--max-depth must be in 1..32")
         root = _root(args.root)
-        outputs = _outputs(root, args.max_depth, args.claude_shim)
+        journal_path = root / JOURNAL_NAME
+        try:
+            journal_info = os.lstat(journal_path)
+        except FileNotFoundError:
+            journal_info = None
+        if journal_info is not None:
+            if not stat.S_ISREG(journal_info.st_mode):
+                raise ValueError("transaction journal is unsafe")
+            try:
+                result = recover(root, set(args.accept))
+            except RuntimeError as error:
+                code = "map-blocked" if "recovery requires acceptance:" in str(error) else "map-failed"
+                _emit({"diagnostics": [{"code": code, "message": str(error)}], "operation": "map"}, sys.stderr)
+                return 2 if code == "map-blocked" else 3
+            _emit({"operation": "map", **result})
+            return 0
+        loading_receipt = None
+        if args.loading_evidence is not None:
+            loading_receipt = json.loads(args.loading_evidence.read_text(encoding="utf-8"))
+            if not isinstance(loading_receipt, dict):
+                raise ValueError("--loading-evidence must contain a JSON object")
+        outputs = (
+            _outputs(root, args.max_depth, args.claude_shim)
+            if loading_receipt is None
+            else _outputs(root, args.max_depth, args.claude_shim, loading_receipt)
+        )
         validate_snapshot(outputs["snapshot"])
         offered = {proposal["id"] for proposal in outputs.get("proposals", [])}
         unmatched = sorted(set(args.accept) - offered)

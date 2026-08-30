@@ -87,10 +87,10 @@ class TransactionTests(unittest.TestCase):
             os.chmod(product, 0o640)
             original_replace = os.replace
 
-            def fail_product(source: os.PathLike[str], destination: os.PathLike[str]) -> None:
+            def fail_product(source: os.PathLike[str], destination: os.PathLike[str], **kwargs: object) -> None:
                 if Path(destination).name == product.name:
                     raise OSError("simulated product rename crash")
-                original_replace(source, destination)
+                original_replace(source, destination, **kwargs)
 
             with mock.patch.object(transaction.os, "replace", side_effect=fail_product):
                 with self.assertRaises(OSError):
@@ -109,10 +109,10 @@ class TransactionTests(unittest.TestCase):
             product.write_bytes(b"before")
             original_replace = os.replace
 
-            def fail_snapshot(source: os.PathLike[str], destination: os.PathLike[str]) -> None:
+            def fail_snapshot(source: os.PathLike[str], destination: os.PathLike[str], **kwargs: object) -> None:
                 if Path(destination).name == ".agents-map.json":
                     raise OSError("simulated snapshot rename crash")
-                original_replace(source, destination)
+                original_replace(source, destination, **kwargs)
 
             with mock.patch.object(transaction.os, "replace", side_effect=fail_snapshot):
                 with self.assertRaises(OSError):

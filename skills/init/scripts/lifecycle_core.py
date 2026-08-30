@@ -97,13 +97,12 @@ def mode_of(st_mode: int) -> int:
 
 
 def file_observation(root: Path, relative: str) -> dict[str, Any]:
-    path = safe_path(root, relative, require_exists=True)
-    data, mode = _read_regular_nofollow(path)
+    data, mode = _read_relative_nofollow(root, relative)
     return {"path": normalize_path(relative), "sha256": sha256_bytes(data), "mode": mode, "size": len(data)}
 
 
 def _read_regular_nofollow(path: Path) -> tuple[bytes, int]:
-    descriptor = os.open(path, os.O_RDONLY | _NOFOLLOW)
+    descriptor = os.open(path, os.O_RDONLY | _NOFOLLOW | getattr(os, "O_NONBLOCK", 0))
     try:
         info = os.fstat(descriptor)
         if not stat.S_ISREG(info.st_mode):
@@ -117,6 +116,36 @@ def _read_regular_nofollow(path: Path) -> tuple[bytes, int]:
         return b"".join(chunks), mode_of(info.st_mode)
     finally:
         os.close(descriptor)
+
+
+def _read_relative_nofollow(root: Path, relative: str) -> tuple[bytes, int]:
+    parts = PurePosixPath(normalize_path(relative)).parts
+    directory_fd = os.open(root.resolve(strict=True), os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    try:
+        for part in parts[:-1]:
+            next_fd = os.open(
+                part,
+                os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | _NOFOLLOW,
+                dir_fd=directory_fd,
+            )
+            os.close(directory_fd)
+            directory_fd = next_fd
+        descriptor = os.open(parts[-1], os.O_RDONLY | _NOFOLLOW | getattr(os, "O_NONBLOCK", 0), dir_fd=directory_fd)
+        try:
+            info = os.fstat(descriptor)
+            if not stat.S_ISREG(info.st_mode):
+                raise ValueError("path is not a regular file")
+            chunks: list[bytes] = []
+            while True:
+                chunk = os.read(descriptor, 1024 * 1024)
+                if not chunk:
+                    break
+                chunks.append(chunk)
+            return b"".join(chunks), mode_of(info.st_mode)
+        finally:
+            os.close(descriptor)
+    finally:
+        os.close(directory_fd)
 
 
 def managed_envelope(managed_id: str, payload: bytes) -> bytes:
@@ -145,6 +174,30 @@ def parse_managed_envelope(data: bytes) -> dict[str, str] | None:
     if sha256_bytes(raw_payload) != payload_hash:
         return None
     return {"managed_id": managed_id, "payload": payload, "payload_sha256": payload_hash, "file_sha256": sha256_bytes(data)}
+
+
+def _managed_region_span(data: bytes, managed_id: str, payload_hash: str) -> tuple[int, int]:
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ValueError("managed region file must be UTF-8") from error
+    begin = f"<!-- init:managed id={managed_id} sha256={payload_hash} -->"
+    end = f"<!-- /init:managed id={managed_id} -->"
+    start = text.find(begin)
+    finish = text.find(end, start + len(begin)) if start >= 0 else -1
+    if start < 0 or finish < 0 or text.find(begin, start + 1) >= 0:
+        raise ValueError("managed region is missing or ambiguous")
+    payload_start = start + len(begin)
+    if payload_start >= len(text) or text[payload_start] != "\n":
+        raise ValueError("managed region payload boundary is invalid")
+    payload_start += 1
+    payload_end = finish
+    if sha256_bytes(text[payload_start:payload_end].encode("utf-8")) != payload_hash:
+        raise ValueError("managed region payload hash is invalid")
+    finish += len(end)
+    if finish < len(text) and text[finish] == "\n":
+        finish += 1
+    return len(text[:start].encode("utf-8")), len(text[:finish].encode("utf-8"))
 
 
 def stable_id(prefix: str, fields: Mapping[str, Any]) -> str:
@@ -318,14 +371,21 @@ def _factors(directory: str, record: Mapping[str, Any]) -> tuple[list[dict[str, 
 
 def _loader_snapshot(evidence: Mapping[str, Any] | None) -> dict[str, Any]:
     resolved = loading_result(evidence or {})
-    verified = resolved["status"] == "verified"
+    receipt = evidence.get("receipt") if evidence and isinstance(evidence.get("receipt"), Mapping) else {}
+    status_map = {
+        "verified": "probe-verified",
+        "conflicted": "conflicted",
+        "unavailable": "unavailable",
+        "version-mismatch": "version-mismatch",
+        "unknown": "source-only" if receipt else "unavailable",
+    }
     return {
         "loader_class": resolved["loading_class"],
-        "evidence_status": "probe-verified" if verified else "unavailable",
-        "source_id": evidence.get("source_id") if evidence and isinstance(evidence.get("source_id"), str) else None,
-        "runtime_version": evidence.get("runtime_version") if evidence and isinstance(evidence.get("runtime_version"), str) else None,
+        "evidence_status": status_map.get(resolved["status"], "unavailable"),
+        "source_id": receipt.get("source_id") if isinstance(receipt.get("source_id"), str) else None,
+        "runtime_version": receipt.get("runtime_version") if isinstance(receipt.get("runtime_version"), str) else None,
         "probe_fixture_sha256": evidence.get("fixture_sha256") if evidence and isinstance(evidence.get("fixture_sha256"), str) and _HASH.match(str(evidence.get("fixture_sha256"))) else None,
-        "probe_result_sha256": evidence.get("raw_result_sha256") if evidence and isinstance(evidence.get("raw_result_sha256"), str) and _HASH.match(str(evidence.get("raw_result_sha256"))) else None,
+        "probe_result_sha256": receipt.get("raw_result_sha256") if isinstance(receipt.get("raw_result_sha256"), str) and _HASH.match(str(receipt.get("raw_result_sha256"))) else None,
     }
 
 
@@ -357,12 +417,11 @@ def discover_topology(root: Path, *, max_depth: int = 3, shim_policy: str = "off
     return {"max_depth": max_depth, "shim_policy": shim_policy, "loader": _loader_snapshot(loading_evidence), "nodes": nodes, "coverage": coverage, "root_fallback_payload_sha256": None, "findings": findings, "exclusions": exclusions, "repository_name": root.name, "_root": root}
 
 
-def _render_managed_payload(topology: Mapping[str, Any], node: Mapping[str, Any]) -> bytes:
-    measured = [
-        f"{factor['name']}={factor['value']}"
-        for factor in node["factors"]
-        if factor["measured"]
-    ]
+def _render_managed_payload(
+    topology: Mapping[str, Any],
+    node: Mapping[str, Any],
+    migrated_claude: str | None = None,
+) -> bytes:
     evidence_paths = sorted(
         {
             path
@@ -385,8 +444,21 @@ def _render_managed_payload(topology: Mapping[str, Any], node: Mapping[str, Any]
         "",
         "## Observed structure",
         "",
-        "- " + ", ".join(measured),
     ]
+    for factor in node["factors"]:
+        lines.extend(
+            [
+                f"### {factor['name']}",
+                f"- Measured: {'yes' if factor['measured'] else 'no'}",
+                f"- Value: {factor['value']!r}; score contribution: {factor['points']}",
+                "- Evidence: " + (
+                    ", ".join(f"`{path}`" for path in factor["evidence_paths"])
+                    if factor["evidence_paths"]
+                    else "unavailable"
+                ),
+                "",
+            ]
+        )
     if evidence_paths:
         lines.extend(["- Evidence: " + ", ".join(f"`{path}`" for path in evidence_paths[:20])])
     if child_scopes:
@@ -408,15 +480,39 @@ def _render_managed_payload(topology: Mapping[str, Any], node: Mapping[str, Any]
             "",
         ]
     )
+    if migrated_claude is not None:
+        lines.extend(
+            [
+                "## Migrated Claude instructions",
+                "",
+                "The following substantive incumbent instructions were preserved before installing the exact sibling adapter:",
+                "",
+                migrated_claude.rstrip("\n"),
+                "",
+            ]
+        )
     return "\n".join(lines).encode("utf-8")
 
 
-def _proposal(action: str, path: str, before: bytes, after: bytes | None) -> dict[str, Any]:
+def _proposal(
+    operation: str,
+    action: str,
+    path: str,
+    before: bytes,
+    before_mode: int,
+    after: bytes | None,
+    after_mode: int | None,
+) -> dict[str, Any]:
     fields = {
+        "operation": operation,
         "action": action,
         "path": path,
+        "pre_exists": True,
         "preimage_sha256": sha256_bytes(before),
+        "pre_mode": before_mode,
+        "post_exists": after is not None,
         "postimage_sha256": sha256_bytes(after) if after is not None else None,
+        "post_mode": after_mode,
     }
     return {**fields, "id": stable_id("P-" + action.upper(), fields)}
 
@@ -432,17 +528,28 @@ def build_managed_outputs(topology: Mapping[str, Any]) -> dict[str, Any]:
     if not isinstance(root, Path):
         raise ValueError("topology is missing its repository root")
     for node in topology_snapshot["nodes"]:
-        payload = _render_managed_payload(topology, node)
+        claude_path = "CLAUDE.md" if node["directory"] == "." else f"{node['directory']}/CLAUDE.md"
+        claude = safe_path(root, claude_path)
+        claude_before: bytes | None = None
+        migrated_claude: str | None = None
+        if topology_snapshot["shim_policy"] == "on" and claude.exists():
+            claude_before, _ = _read_relative_nofollow(root, claude_path)
+            if claude_before != SHIM_BYTES:
+                try:
+                    migrated_claude = claude_before.decode("utf-8")
+                except UnicodeDecodeError as error:
+                    raise ValueError(f"substantive CLAUDE file is not UTF-8: {claude_path}") from error
+        payload = _render_managed_payload(topology, node, migrated_claude)
         data = managed_envelope(node["managed_id"], payload)
         path = node["agents_path"]
         destination = safe_path(root, path)
         if destination.exists():
             observed = file_observation(root, path)
-            before, _ = _read_regular_nofollow(destination)
+            before, _ = _read_relative_nofollow(root, path)
             if before != data:
                 parsed = parse_managed_envelope(before)
                 if parsed is None or parsed["managed_id"] != node["managed_id"]:
-                    proposal = _proposal("adopt-managed-payload", path, before, data)
+                    proposal = _proposal("map", "adopt-managed-payload", path, before, observed["mode"], data, observed["mode"])
                     proposals.append(proposal)
                     effects.append(
                         {
@@ -474,8 +581,6 @@ def build_managed_outputs(topology: Mapping[str, Any]) -> dict[str, Any]:
         if node["directory"] == ".":
             topology_snapshot["root_fallback_payload_sha256"] = sha256_bytes(payload)
 
-        claude_path = "CLAUDE.md" if node["directory"] == "." else f"{node['directory']}/CLAUDE.md"
-        claude = safe_path(root, claude_path)
         prior_shim = next(
             (
                 row
@@ -487,9 +592,9 @@ def build_managed_outputs(topology: Mapping[str, Any]) -> dict[str, Any]:
         if topology_snapshot["shim_policy"] == "on":
             if claude.exists():
                 observed = file_observation(root, claude_path)
-                before, _ = _read_regular_nofollow(claude)
+                before = claude_before if claude_before is not None else _read_relative_nofollow(root, claude_path)[0]
                 if before != SHIM_BYTES:
-                    proposal = _proposal("merge-claude-and-replace-shim", claude_path, before, SHIM_BYTES)
+                    proposal = _proposal("map", "merge-claude-and-replace-shim", claude_path, before, observed["mode"], SHIM_BYTES, observed["mode"])
                     proposals.append(proposal)
                     effects.append(
                         {
@@ -557,8 +662,10 @@ def validate_ownership_snapshot(root: Path, snapshot: Mapping[str, Any]) -> dict
             if expected is not None and observed["sha256"] != expected:
                 findings.append({"code": "INITV4-E-OWNED-DRIFT", "path": row["path"]})
             if row["artifact_type"] == "agents-region":
-                parsed = parse_managed_envelope(safe_path(root, row["path"], require_exists=True).read_bytes())
-                if parsed is None or parsed["managed_id"] != row["managed_id"] or parsed["payload_sha256"] != row["payload_sha256"]:
+                data, _ = _read_relative_nofollow(root, row["path"])
+                try:
+                    _managed_region_span(data, row["managed_id"], row["payload_sha256"])
+                except ValueError:
                     findings.append({"code": "INITV4-E-OWNED-DRIFT", "path": row["path"]})
             if observed["mode"] != row.get("mode"):
                 findings.append({"code": "INITV4-E-MODE-DRIFT", "path": row["path"]})
@@ -570,11 +677,25 @@ def validate_ownership_snapshot(root: Path, snapshot: Mapping[str, Any]) -> dict
 def validate_snapshot(snapshot: Mapping[str, Any]) -> None:
     if not isinstance(snapshot, Mapping) or set(snapshot) != {"schema_version", "repository_root", "owned_artifacts", "last_applied_topology"}:
         raise ValueError("snapshot has missing or unknown properties")
-    if snapshot["schema_version"] != SCHEMA_VERSION or snapshot["repository_root"] != "." or not isinstance(snapshot["owned_artifacts"], list):
+    if (
+        not isinstance(snapshot["schema_version"], int)
+        or isinstance(snapshot["schema_version"], bool)
+        or snapshot["schema_version"] != SCHEMA_VERSION
+        or snapshot["repository_root"] != "."
+        or not isinstance(snapshot["owned_artifacts"], list)
+    ):
         raise ValueError("snapshot header is invalid")
     topology = snapshot["last_applied_topology"]
     required_topology = {"max_depth", "shim_policy", "loader", "nodes", "coverage", "root_fallback_payload_sha256"}
-    if not isinstance(topology, Mapping) or set(topology) != required_topology or not 1 <= topology.get("max_depth", 0) <= 32 or topology.get("shim_policy") not in {"on", "off"}:
+    if not isinstance(topology, Mapping) or set(topology) != required_topology:
+        raise ValueError("snapshot topology is invalid")
+    max_depth = topology["max_depth"]
+    if (
+        not isinstance(max_depth, int)
+        or isinstance(max_depth, bool)
+        or not 1 <= max_depth <= 32
+        or topology["shim_policy"] not in {"on", "off"}
+    ):
         raise ValueError("snapshot topology is invalid")
     loader = topology["loader"]
     loader_keys = {"loader_class", "evidence_status", "source_id", "runtime_version", "probe_fixture_sha256", "probe_result_sha256"}
@@ -607,7 +728,7 @@ def validate_snapshot(snapshot: Mapping[str, Any]) -> None:
             normalize_path(node["parent_agents_path"])
         if not isinstance(node["managed_id"], str) or not node["managed_id"] or ">" in node["managed_id"] or any(character.isspace() for character in node["managed_id"]):
             raise ValueError("snapshot managed id is invalid")
-        if not isinstance(node["score"], int) or not 0 <= node["score"] <= 17 or node["decision"] not in {"root", "high-score", "distinct-domain"}:
+        if not isinstance(node["score"], int) or isinstance(node["score"], bool) or not 0 <= node["score"] <= 17 or node["decision"] not in {"root", "high-score", "distinct-domain"}:
             raise ValueError("snapshot node decision is invalid")
         if not isinstance(node["factors"], list):
             raise ValueError("snapshot node factors are invalid")
@@ -615,7 +736,7 @@ def validate_snapshot(snapshot: Mapping[str, Any]) -> None:
             factor_keys = {"name", "measured", "value", "points", "evidence_paths"}
             if not isinstance(factor, Mapping) or set(factor) != factor_keys or factor["name"] not in factor_names:
                 raise ValueError("snapshot factor is invalid")
-            if not isinstance(factor["measured"], bool) or not isinstance(factor["points"], int) or not 0 <= factor["points"] <= 3:
+            if not isinstance(factor["measured"], bool) or not isinstance(factor["points"], int) or isinstance(factor["points"], bool) or not 0 <= factor["points"] <= 3:
                 raise ValueError("snapshot factor measurement is invalid")
             if not isinstance(factor["evidence_paths"], list):
                 raise ValueError("snapshot factor evidence is invalid")
@@ -646,7 +767,7 @@ def validate_snapshot(snapshot: Mapping[str, Any]) -> None:
             raise ValueError("snapshot ownership kind/status is invalid")
         if not isinstance(row["managed_id"], str) or not row["managed_id"] or ">" in row["managed_id"]:
             raise ValueError("snapshot ownership id is invalid")
-        if not isinstance(row["mode"], int) or not 0 <= row["mode"] <= 4095:
+        if not isinstance(row["mode"], int) or isinstance(row["mode"], bool) or not 0 <= row["mode"] <= 4095:
             raise ValueError("snapshot ownership mode is invalid")
         for key in ("payload_sha256", "file_sha256"):
             if row[key] is not None and (not isinstance(row[key], str) or not _HASH.match(row[key])):
@@ -692,27 +813,23 @@ def plan_prune(root: Path, snapshot: Mapping[str, Any], accepted_ids: set[str]) 
             continue
         observed = file_observation(root, row["path"])
         if row["artifact_type"] == "agents-region":
-            source, _ = _read_regular_nofollow(safe_path(root, row["path"], require_exists=True))
-            text = source.decode("utf-8")
-            begin = f"<!-- init:managed id={row['managed_id']} sha256={row['payload_sha256']} -->"
-            end = f"<!-- /init:managed id={row['managed_id']} -->"
-            start = text.find(begin)
-            finish = text.find(end, start + len(begin)) if start >= 0 else -1
-            if start < 0 or finish < 0 or text.find(begin, start + 1) >= 0:
-                raise ValueError(f"managed region is missing or ambiguous: {row['path']}")
-            finish += len(end)
-            if finish < len(text) and text[finish] == "\n":
-                finish += 1
-            post_bytes = (text[:start] + text[finish:]).encode("utf-8")
+            source, _ = _read_relative_nofollow(root, row["path"])
+            start, finish = _managed_region_span(source, row["managed_id"], row["payload_sha256"])
+            post_bytes = source[:start] + source[finish:]
             action = "remove-stale-region"
         else:
             post_bytes = None
             action = "remove-stale-shim" if row["artifact_type"] == "claude-shim" else "remove-stale-file"
         proposal = {
+            "operation": "prune",
             "action": action,
             "path": row["path"],
+            "pre_exists": True,
             "preimage_sha256": observed["sha256"],
+            "pre_mode": observed["mode"],
+            "post_exists": post_bytes is not None,
             "postimage_sha256": sha256_bytes(post_bytes) if post_bytes is not None else None,
+            "post_mode": observed["mode"] if post_bytes is not None else None,
         }
         proposal["id"] = stable_id("P-" + proposal["action"].upper(), proposal)
         proposals.append(proposal)

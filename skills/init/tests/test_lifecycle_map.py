@@ -8,6 +8,7 @@ import os
 import sys
 import tempfile
 import unittest
+import re
 from pathlib import Path
 from unittest import mock
 
@@ -117,6 +118,66 @@ class LifecycleMapTests(unittest.TestCase):
             after = sorted((path.relative_to(root).as_posix(), path.is_symlink(), path.read_bytes() if path.is_file() and not path.is_symlink() else b"") for path in root.iterdir())
             self.assertEqual(after, before)
             self.assertFalse((root / ".agents-map.json").exists())
+
+    def test_substantive_claude_is_preserved_in_agents_before_exact_shim(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "app.py").write_text("print('ok')\n", encoding="utf-8")
+            incumbent = "# Claude-only rule\n\nRun `python3 -m unittest` before delivery.\n"
+            (root / "CLAUDE.md").write_text(incumbent, encoding="utf-8")
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                self.assertEqual(lifecycle_map.main([str(root), "--claude-shim=on"]), 2)
+            proposal = re.search(r"P-MERGE-CLAUDE-AND-REPLACE-SHIM-[0-9a-f]{12}", stderr.getvalue())
+            self.assertIsNotNone(proposal)
+            self.assertFalse((root / "AGENTS.md").exists())
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    lifecycle_map.main([str(root), "--claude-shim=on", f"--accept={proposal.group()}"]),
+                    0,
+                )
+            self.assertEqual((root / "CLAUDE.md").read_bytes(), b"@AGENTS.md\n")
+            self.assertIn(incumbent.rstrip(), (root / "AGENTS.md").read_text(encoding="utf-8"))
+
+    def test_bound_loading_receipt_reaches_snapshot(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fixture_sha = lifecycle_core.probe_loading(root)["fixture_sha256"]
+            observations = {
+                "root": ["ROOT"],
+                "child": ["ROOT", "CHILD"],
+                "sibling": ["ROOT", "SIBLING"],
+                "precedence": {"child": "CHILD", "sibling": "SIBLING"},
+            }
+            receipt = {
+                "source_id": "test-runtime",
+                "runtime_version": "1.0.0",
+                "source_probe_result": {"status": "available", "source_id": "test-runtime"},
+                "version_probe_result": {"status": "available", "runtime_version": "1.0.0"},
+                "execution_status": "applicable",
+                "fixture_sha256": fixture_sha,
+                "raw_result_sha256": lifecycle_core.sha256_bytes(lifecycle_core.canonical_json(observations)),
+                "observations": observations,
+            }
+            evidence_path = root / "loading-receipt.json"
+            evidence_path.write_text(json.dumps(receipt), encoding="utf-8")
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(lifecycle_map.main([str(root), f"--loading-evidence={evidence_path}"]), 0)
+            snapshot = json.loads((root / ".agents-map.json").read_text(encoding="utf-8"))
+            loader = snapshot["last_applied_topology"]["loader"]
+            self.assertEqual(loader["loader_class"], "ancestor-only")
+            self.assertEqual(loader["evidence_status"], "probe-verified")
+
+    def test_dangling_journal_symlink_blocks_before_noop(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "app.py").write_text("print('ok')\n", encoding="utf-8")
+            os.symlink(root / "missing-journal-target", root / ".agents-map.transaction.json")
+            before = sorted(path.name for path in root.iterdir())
+            with contextlib.redirect_stderr(io.StringIO()):
+                self.assertEqual(lifecycle_map.main([str(root)]), 2)
+            self.assertEqual(sorted(path.name for path in root.iterdir()), before)
+            self.assertFalse((root / "AGENTS.md").exists())
 
 
 if __name__ == "__main__":

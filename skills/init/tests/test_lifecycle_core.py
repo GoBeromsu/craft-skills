@@ -93,8 +93,8 @@ class LifecycleCoreTests(unittest.TestCase):
             topology = outputs["snapshot"]["last_applied_topology"]
             self.assertEqual(set(topology), {"max_depth", "shim_policy", "loader", "nodes", "coverage", "root_fallback_payload_sha256"})
             schema = json.loads((Path(__file__).resolve().parents[1] / "templates" / "snapshot.schema.json").read_text(encoding="utf-8"))
-            import jsonschema
-            jsonschema.Draft202012Validator(schema).validate(outputs["snapshot"])
+            self.assertEqual(schema["$schema"], "https://json-schema.org/draft/2020-12/schema")
+            core.validate_snapshot(outputs["snapshot"])
 
     def test_scoring_records_all_factors_and_marks_unmeasured_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -109,6 +109,26 @@ class LifecycleCoreTests(unittest.TestCase):
             self.assertEqual(len(node["factors"]), 8)
             self.assertEqual(node["score"], 8)
             self.assertEqual([factor["measured"] for factor in node["factors"][-3:]], [False, False, False])
+
+    def test_snapshot_validator_rejects_wrong_json_types_without_optional_dependencies(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            snapshot = core.build_managed_outputs(core.discover_topology(root))["snapshot"]
+            cases = [
+                {**snapshot, "schema_version": True},
+                {**snapshot, "owned_artifacts": {}},
+                {
+                    **snapshot,
+                    "last_applied_topology": {
+                        **snapshot["last_applied_topology"],
+                        "max_depth": "3",
+                    },
+                },
+            ]
+            for candidate in cases:
+                with self.subTest(candidate=candidate):
+                    with self.assertRaises(ValueError):
+                        core.validate_snapshot(candidate)
 
     def test_file_observation_preserves_non_0644_mode(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
