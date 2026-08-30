@@ -6,6 +6,10 @@ Obsidian Bases (1.9+) turn the vault into a queryable dataset.
 Every `.base` file is YAML conforming to a fixed schema; embedded bases use a ` ```base ` code block with the same YAML.
 Getting `groupBy` and `sort` right is the difference between a base that *lists rows* and a base that *gives the reader a mental model* of the project.
 
+Layout availability is version-gated: `table` and `cards` need 1.9, `list` and `map` need 1.10 (`map` also needs the Maps plugin), and further layouts arrive through community plugins.
+Grouping by a single property is a current engine limit, not a 1.10 artifact — it still holds in 1.12.
+Verify the constraint against [Views](https://obsidian.md/help/bases/views) rather than assuming a newer release lifted it.
+
 ## Vault Access
 
 Use [`cli.md`](cli.md) for all note creation, edit, search, and property mutation inside the vault.
@@ -40,7 +44,7 @@ views:          # list of views; first view is the default
     sort:        # multi-key cascade, first key is primary
       - property: <property>
         direction: ASC | DESC
-    groupBy:     # single property — Obsidian 1.10 groups by one prop only
+    groupBy:     # single property — one groupBy per view (verified through 1.12)
       property: <property>
       direction: ASC | DESC
     summaries:   # per-column aggregation shown at top of each group / footer
@@ -108,6 +112,21 @@ filters:
     - file.mtime > now() - "7d"
 ```
 
+## Embedding a Base in a Note
+
+```markdown
+![[Hermes Cron.base]]              <!-- renders the FIRST view in the views list -->
+![[Hermes Cron.base#Retired]]      <!-- renders the named view -->
+```
+
+The view selector after `#` is the view's `name`, so renaming a view silently breaks every embed that targeted it — grep for the old name when renaming.
+When a dashboard note should open on a specific lens, prefer the explicit `#View` selector over reordering `views:`, because reordering changes what every bare `![[...]]` embed renders.
+
+## Reading a Base Without Obsidian
+
+The toolbar covers inspection and extraction: **Search** filters rows by displayed properties, **Results** limits the row count, and **Copy to clipboard** / **Export CSV** move a view into Markdown, a spreadsheet, or another document app.
+Reach for CSV export when a base's contents must be verified or diffed outside the app; it is the supported extraction path rather than parsing rendered output.
+
 ## Formula Patterns
 
 ```yaml
@@ -149,6 +168,8 @@ Reference other formulas as `formula.<name>` — no self-reference, no cycles.
 - [ ] `sort` keys exist as properties / formulas and each has a `direction`
 - [ ] `order` only references properties that exist on at least one matched file
 - [ ] For multi-view bases, every view that should be scoped has its own `filters`
+- [ ] Any `![[Base#View]]` embed names a view that still exists
+- [ ] Layouts used are available in the target Obsidian version (`list`/`map` need 1.10+)
 
 ## Reference Files
 
