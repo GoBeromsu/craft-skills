@@ -67,7 +67,11 @@ def main(argv: list[str] | None = None) -> int:
             # leave every byte, mode, and the committed snapshot untouched.
             _emit({"operation": "prune", "exit_code": 0, "phase": "complete", "effects": [], "no_op": True, "proposals": plan["proposals"]})
             return 0
-        result = apply(root, plan["effects"], set(args.accept), snapshot_payload=plan["snapshot"], operation="prune")
+        try:
+            result = apply(root, plan["effects"], set(args.accept), snapshot_payload=plan["snapshot"], operation="prune")
+        except (OSError, RuntimeError, ValueError) as error:
+            _emit({"diagnostics": [{"code": "prune-failed", "message": str(error)}], "operation": "prune"}, sys.stderr)
+            return 3
         if not isinstance(result, dict):
             raise ValueError("transaction application returned an invalid result")
         _emit({"operation": "prune", **result})

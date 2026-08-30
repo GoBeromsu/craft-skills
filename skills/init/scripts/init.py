@@ -10,7 +10,7 @@ from types import ModuleType
 
 
 OPERATIONS = ("map", "audit", "prune")
-LEGACY_FLAGS = ("--create-new", "--max-depth", "--map", "--audit", "--prune", "--operation")
+LEGACY_FLAGS = ("--create-new", "--map", "--audit", "--prune", "--operation")
 
 
 def _parser() -> argparse.ArgumentParser:

@@ -217,6 +217,28 @@ class TransactionTests(unittest.TestCase):
                     transaction.apply(root, [{"path": "AGENTS.md", "bytes": b"after"}], set(), snapshot_payload=self._snapshot())
             self.assertTrue((root / core.JOURNAL_NAME).exists())
 
+    def test_accepted_effect_rejects_changed_bound_preimage_before_journal(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            product = root / "AGENTS.md"
+            product.write_bytes(b"current")
+            os.chmod(product, 0o640)
+            with self.assertRaisesRegex(ValueError, "accepted target preimage changed"):
+                transaction.apply(
+                    root,
+                    [{
+                        "path": "AGENTS.md",
+                        "bytes": b"replacement",
+                        "mode": 0o640,
+                        "expected_pre_sha256": core.sha256_bytes(b"accepted-earlier"),
+                        "expected_pre_mode": 0o640,
+                    }],
+                    set(),
+                    snapshot_payload=self._snapshot(),
+                )
+            self.assertEqual(product.read_bytes(), b"current")
+            self.assertFalse((root / core.JOURNAL_NAME).exists())
+
 
 if __name__ == "__main__":
     unittest.main()

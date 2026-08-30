@@ -20,7 +20,7 @@
   ],
   "$defs": {
     "hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-    "path": {"type": "string", "pattern": "^(?!/)(?!.*\\\\)(?!.*\\u0000)(?!.*(?:^|/)\\.{1,2}(?:/|$)).+"},
+    "path": {"type": "string", "pattern": "^(?!.*(?:^|/)\\.{1,2}(?:/|$))[^/\\\\\\u0000]+(?:/[^/\\\\\\u0000]+)*$"},
     "mode": {"type": "integer", "minimum": 0, "maximum": 4095},
     "target": {
       "type": "object",

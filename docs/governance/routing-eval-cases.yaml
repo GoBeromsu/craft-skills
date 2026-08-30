@@ -22,6 +22,16 @@
       "forbidden_neighbors": ["craft-skills/document", "craft-skills/programming", "craft-skills/git"]
     },
     {
+      "trigger": "scaffold a Python project with its package manager",
+      "expected_package": "craft-skills/programming",
+      "forbidden_neighbors": ["craft-skills/init", "craft-skills/document", "craft-skills/git"]
+    },
+    {
+      "trigger": "initialize this reusable plugin ecosystem workflow as a skill",
+      "expected_package": "craft-skills/skillify",
+      "forbidden_neighbors": ["craft-skills/init", "craft-skills/agents", "craft-skills/document"]
+    },
+    {
       "trigger": "init this repository",
       "expected_package": "craft-skills/init",
       "forbidden_neighbors": ["craft-skills/document", "craft-skills/git", "craft-skills/skillify"]

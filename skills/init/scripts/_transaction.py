@@ -79,10 +79,10 @@ def _matches(entry: Mapping[str, Any], side: str, root: Path) -> bool:
         return not exists
     if not stat.S_ISREG(info.st_mode) or not exists:
         return False
-    data = _read_regular(path)
+    data, mode = _read_regular_with_mode(path)
     return (
         sha256_bytes(data) == entry[f"{side}_sha256"]
-        and stat.S_IMODE(info.st_mode) == entry[f"{side}_mode"]
+        and mode == entry[f"{side}_mode"]
     )
 
 
@@ -92,7 +92,7 @@ def _validate_entry(entry: Mapping[str, Any], identifier: str, *, snapshot: bool
         "post_exists", "post_sha256", "post_mode", "apply_path",
         "pre_recovery_path", "post_recovery_path", "state",
     }
-    if not required.issubset(entry):
+    if set(entry) != required:
         raise ValueError("journal entry is incomplete")
     path = normalize_path(str(entry["path"]))
     if snapshot != (path == SNAPSHOT_NAME):
@@ -124,7 +124,11 @@ def _validate_entry(entry: Mapping[str, Any], identifier: str, *, snapshot: bool
 
 
 def _validate_journal(journal: Mapping[str, Any]) -> None:
-    if not isinstance(journal, Mapping) or journal.get("schema_version") != 1:
+    journal_keys = {
+        "schema_version", "transaction_id", "operation", "phase",
+        "recovery_from_phase", "intended_snapshot_sha256", "snapshot", "targets",
+    }
+    if not isinstance(journal, Mapping) or set(journal) != journal_keys or journal.get("schema_version") != 1:
         raise ValueError("journal schema version is invalid")
     identifier = journal.get("transaction_id")
     if not isinstance(identifier, str) or len(identifier) != 64:
@@ -136,8 +140,11 @@ def _validate_journal(journal: Mapping[str, Any]) -> None:
         raise ValueError("journal schema is invalid")
     if journal.get("phase") not in {"preparing", "prepared", "applying-products", "products-applied", "committing-snapshot", "snapshot-committed", "cleaning", "recovery-required"}:
         raise ValueError("journal phase is invalid")
-    if journal.get("recovery_from_phase") not in {None, "preparing", "prepared", "applying-products", "products-applied", "committing-snapshot"}:
+    recovery_phases = {None, "preparing", "prepared", "applying-products", "products-applied", "committing-snapshot", "snapshot-committed", "cleaning"}
+    if journal.get("recovery_from_phase") not in recovery_phases:
         raise ValueError("journal recovery phase is invalid")
+    if (journal["phase"] == "recovery-required") != (journal["recovery_from_phase"] is not None):
+        raise ValueError("journal recovery phase binding is invalid")
     if len({str(entry.get("path")) for entry in targets if isinstance(entry, Mapping)}) != len(targets):
         raise ValueError("journal target paths are not unique")
     for entry in targets:
@@ -145,6 +152,10 @@ def _validate_journal(journal: Mapping[str, Any]) -> None:
             raise ValueError("journal target is invalid")
         _validate_entry(entry, identifier)
     _validate_entry(snapshot, identifier, snapshot=True)
+    if snapshot["action"] not in {"create", "replace"}:
+        raise ValueError("journal snapshot action is invalid")
+    if journal["intended_snapshot_sha256"] != snapshot["post_sha256"]:
+        raise ValueError("journal intended snapshot hash is invalid")
     if any(entry["path"] == SNAPSHOT_NAME for entry in targets):
         raise ValueError("journal target overlaps snapshot")
     if transaction_id(transaction_basis(operation, targets, snapshot)) != identifier:
@@ -153,20 +164,31 @@ def _validate_journal(journal: Mapping[str, Any]) -> None:
 
 def _validate_artifact(root: Path, relative: str, digest: str, mode: int) -> Path:
     path = safe_path(root, relative, require_exists=True)
-    info = os.lstat(path)
-    if (
-        stat.S_IMODE(info.st_mode) != mode
-        or sha256_bytes(_read_regular(path)) != digest
-    ):
+    data, observed_mode = _read_regular_with_mode(path)
+    if observed_mode != mode or sha256_bytes(data) != digest:
         raise ValueError("transaction artifact does not match its bound role")
     return path
 
 
+def _read_regular_with_mode(path: Path) -> tuple[bytes, int]:
+    descriptor = os.open(path, os.O_RDONLY | _NOFOLLOW)
+    try:
+        info = os.fstat(descriptor)
+        if not stat.S_ISREG(info.st_mode):
+            raise ValueError("transaction artifact is not a regular file")
+        chunks: list[bytes] = []
+        while True:
+            chunk = os.read(descriptor, 1024 * 1024)
+            if not chunk:
+                break
+            chunks.append(chunk)
+        return b"".join(chunks), stat.S_IMODE(info.st_mode)
+    finally:
+        os.close(descriptor)
+
+
 def _read_regular(path: Path) -> bytes:
-    info = os.lstat(path)
-    if not stat.S_ISREG(info.st_mode):
-        raise ValueError("transaction artifact is not a regular file")
-    return path.read_bytes()
+    return _read_regular_with_mode(path)[0]
 
 
 def _effect_bytes(effect: Mapping[str, Any]) -> bytes | None:
@@ -189,6 +211,11 @@ def _effect_entry(root: Path, effect: Mapping[str, Any]) -> tuple[dict[str, Any]
         before = file_observation(root, relative)
     else:
         before = None
+    expected_sha = effect.get("expected_pre_sha256")
+    expected_mode = effect.get("expected_pre_mode")
+    if expected_sha is not None or expected_mode is not None:
+        if before is None or before["sha256"] != expected_sha or before["mode"] != expected_mode:
+            raise ValueError("accepted target preimage changed")
     after = _effect_bytes(effect)
     action = "delete" if after is None else ("replace" if before else "create")
     mode = int(effect.get("mode", before["mode"] if before else NEW_FILE_MODE)) if after is not None else None
@@ -203,6 +230,19 @@ def _journal_write(root: Path, journal: Mapping[str, Any]) -> None:
     transaction = str(journal["transaction_id"])
     next_relative = derived_transaction_paths(transaction, SNAPSHOT_NAME)["next_path"]
     next_path = safe_path(root, next_relative)
+    if next_path.exists():
+        info = os.lstat(next_path)
+        if not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) != _PRIVATE_MODE:
+            raise ValueError("orphan next journal artifact is unsafe")
+        try:
+            orphan = json.loads(_read_regular(next_path).decode("utf-8"))
+            _validate_journal(orphan)
+        except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
+            raise ValueError("orphan next journal artifact is unsafe") from error
+        if orphan["transaction_id"] != transaction:
+            raise ValueError("orphan next journal artifact has the wrong identity")
+        os.unlink(next_path)
+        _fsync_directory(next_path.parent)
     _exclusive_write(next_path, canonical_json(dict(journal), pretty=True), _PRIVATE_MODE)
     os.replace(next_path, root / JOURNAL_NAME)
     _fsync_directory(root)
@@ -315,8 +355,8 @@ def _cleanup(root: Path, journal: Mapping[str, Any]) -> None:
 
 def _matches_artifact(path: Path, digest: str, mode: int) -> bool:
     try:
-        info = os.lstat(path)
-        return stat.S_ISREG(info.st_mode) and stat.S_IMODE(info.st_mode) == mode and sha256_bytes(_read_regular(path)) == digest
+        data, observed_mode = _read_regular_with_mode(path)
+        return observed_mode == mode and sha256_bytes(data) == digest
     except (OSError, ValueError):
         return False
 
@@ -440,6 +480,43 @@ def recover(root: Path, accepted_ids: set[str] | None = None) -> dict[str, Any]:
             _journal_write(root, journal)
             _cleanup(root, journal)
             return {"transaction_id": identifier, "phase": "rolled-back", "recovered": True}
+
+        accepted = accepted_ids or set()
+        if matches(snapshot, "pre"):
+            proposal_id = "P-RECOVER-ROLLBACK-TRANSACTION-" + sha256_bytes(
+                canonical_json({"transaction_id": identifier, "action": "recover-rollback-transaction"})
+            )[:12]
+            if proposal_id not in accepted:
+                raise ValueError(f"recovery requires acceptance: {proposal_id}")
+            for entry in reversed(targets):
+                if not matches(entry, "pre"):
+                    _consume_apply(root, entry, "rollback")
+                if not matches(entry, "pre"):
+                    raise ValueError("accepted rollback image verification failed")
+                entry["state"] = "rolled-back"
+            journal["phase"] = "cleaning"
+            journal["recovery_from_phase"] = None
+            _journal_write(root, journal)
+            _cleanup(root, journal)
+            return {"transaction_id": identifier, "phase": "rolled-back", "recovered": True, "accepted_proposal": proposal_id}
+
+        if matches(snapshot, "post"):
+            proposal_id = "P-RECOVER-COMPLETE-TRANSACTION-" + sha256_bytes(
+                canonical_json({"transaction_id": identifier, "action": "recover-complete-transaction"})
+            )[:12]
+            if proposal_id not in accepted:
+                raise ValueError(f"recovery requires acceptance: {proposal_id}")
+            for entry in targets:
+                if not matches(entry, "post"):
+                    _consume_apply(root, entry, "complete")
+                if not matches(entry, "post"):
+                    raise ValueError("accepted completion image verification failed")
+                entry["state"] = "applied"
+            journal["phase"] = "cleaning"
+            journal["recovery_from_phase"] = None
+            _journal_write(root, journal)
+            _cleanup(root, journal)
+            return {"transaction_id": identifier, "phase": "complete", "recovered": True, "accepted_proposal": proposal_id}
         raise ValueError("journal state cannot be recovered safely")
     except (KeyError, OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
-        raise RuntimeError("transaction recovery is blocked; journal evidence was preserved") from exc
+        raise RuntimeError(f"transaction recovery is blocked: {exc}; journal evidence was preserved") from exc

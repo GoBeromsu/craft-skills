@@ -53,13 +53,10 @@ class LifecycleMapTests(unittest.TestCase):
                 return real_discover(actual_root, max_depth=max_depth, shim_policy=shim_policy)
             with mock.patch.object(lifecycle_map, "discover_topology", side_effect=discover):
                 lifecycle_map._outputs(root, 4, "keep")
-                snapshot = lifecycle_core.build_managed_outputs(real_discover(root, max_depth=5, shim_policy="on"))["snapshot"]
-                effect = lifecycle_core.build_managed_outputs(real_discover(root, max_depth=5, shim_policy="on"))["effects"][0]
-                (root / "AGENTS.md").write_bytes(effect["bytes"])
-                os.chmod(root / "AGENTS.md", 0o644)
-                (root / ".agents-map.json").write_bytes(lifecycle_core.canonical_json(snapshot, pretty=True))
+                with contextlib.redirect_stdout(io.StringIO()):
+                    self.assertEqual(lifecycle_map.main([str(root), "--max-depth=5", "--claude-shim=on"]), 0)
                 lifecycle_map._outputs(root, 5, "keep")
-            self.assertEqual(captured, [(4, "off"), (5, "on")])
+            self.assertEqual(captured, [(4, "off"), (5, "on"), (5, "on")])
 
     def test_idempotent_plan_reuses_the_same_effects_and_snapshot(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -77,7 +74,7 @@ class LifecycleMapTests(unittest.TestCase):
             self.assertRegex(first_agents.decode("utf-8").splitlines()[0], r"^<!-- init:managed id=\S+ sha256=[0-9a-f]{64} -->$")
             first_snapshot = (root / ".agents-map.json").read_bytes()
             with mock.patch.object(lifecycle_map, "apply", side_effect=apply), contextlib.redirect_stdout(io.StringIO()):
-                self.assertEqual(lifecycle_map.main([str(root), "--accept", "P-write"]), 0)
+                self.assertEqual(lifecycle_map.main([str(root)]), 0)
             self.assertEqual((root / ".agents-map.json").read_bytes(), first_snapshot)
             self.assertEqual((root / "AGENTS.md").read_bytes(), first_agents)
             self.assertFalse((root / ".agents-map.transaction.json").exists())
@@ -88,7 +85,11 @@ class LifecycleMapTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             captured: dict[str, object] = {}
-            plan = {"effects": [{"action": "write", "path": "AGENTS.md", "content": "x", "proposal_id": "P-consolidate"}], "snapshot": {}}
+            plan = {
+                "effects": [{"action": "write", "path": "AGENTS.md", "content": "x", "proposal_id": "P-consolidate"}],
+                "proposals": [{"id": "P-consolidate"}],
+                "snapshot": {},
+            }
 
             def apply(_root: Path, effects: list[dict], accepted: set[str], *, snapshot_payload: dict) -> dict:
                 captured.update(effects=effects, accepted=accepted)
@@ -96,9 +97,12 @@ class LifecycleMapTests(unittest.TestCase):
 
             valid_snapshot = lifecycle_core.build_managed_outputs(lifecycle_core.discover_topology(root))["snapshot"]
             plan["snapshot"] = valid_snapshot
+            with mock.patch.object(lifecycle_map, "_outputs", return_value=plan), mock.patch.object(lifecycle_map, "apply", side_effect=apply), contextlib.redirect_stderr(io.StringIO()):
+                self.assertEqual(lifecycle_map.main([str(root)]), 2)
+            self.assertEqual(captured, {})
             with mock.patch.object(lifecycle_map, "_outputs", return_value=plan), mock.patch.object(lifecycle_map, "apply", side_effect=apply), contextlib.redirect_stdout(io.StringIO()):
-                lifecycle_map.main([str(root)])
-            self.assertEqual(captured["accepted"], set())
+                self.assertEqual(lifecycle_map.main([str(root), "--accept=P-consolidate"]), 0)
+            self.assertEqual(captured["accepted"], {"P-consolidate"})
             self.assertEqual(captured["effects"][0]["proposal_id"], "P-consolidate")
 
     def test_unsafe_topology_blocks_before_any_mutation(self) -> None:

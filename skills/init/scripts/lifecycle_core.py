@@ -20,6 +20,7 @@ MARKER_END = "<!-- /init:managed id={id} -->"
 _HASH = re.compile(r"^[0-9a-f]{64}$")
 _MARKER = re.compile(r"^<!-- init:managed id=([^\s>]+) sha256=([0-9a-f]{64}) -->\n(.*?)<!-- /init:managed id=\1 -->\n?$", re.DOTALL)
 EXCLUDED_DIRS = frozenset({".git", ".hg", ".svn", "node_modules", "vendor", "dist", "build", ".cache", "__pycache__"})
+_NOFOLLOW = getattr(os, "O_NOFOLLOW", 0)
 _CODE_SUFFIXES = frozenset({".c", ".cc", ".cpp", ".cs", ".go", ".h", ".hpp", ".java", ".js", ".jsx", ".kt", ".php", ".py", ".rb", ".rs", ".sh", ".swift", ".ts", ".tsx"})
 _CONFIG_NAMES = frozenset({"Cargo.toml", "go.mod", "package.json", "pyproject.toml", "setup.cfg", "setup.py", "tox.ini", "tsconfig.json"})
 _BOUNDARY_NAMES = frozenset({"__init__.py", "index.js", "index.jsx", "index.ts", "index.tsx", "main.go", "mod.rs"})
@@ -97,13 +98,29 @@ def mode_of(st_mode: int) -> int:
 
 def file_observation(root: Path, relative: str) -> dict[str, Any]:
     path = safe_path(root, relative, require_exists=True)
-    info = os.lstat(path)
-    data = path.read_bytes()
-    return {"path": normalize_path(relative), "sha256": sha256_bytes(data), "mode": mode_of(info.st_mode), "size": len(data)}
+    data, mode = _read_regular_nofollow(path)
+    return {"path": normalize_path(relative), "sha256": sha256_bytes(data), "mode": mode, "size": len(data)}
+
+
+def _read_regular_nofollow(path: Path) -> tuple[bytes, int]:
+    descriptor = os.open(path, os.O_RDONLY | _NOFOLLOW)
+    try:
+        info = os.fstat(descriptor)
+        if not stat.S_ISREG(info.st_mode):
+            raise ValueError("path is not a regular file")
+        chunks: list[bytes] = []
+        while True:
+            chunk = os.read(descriptor, 1024 * 1024)
+            if not chunk:
+                break
+            chunks.append(chunk)
+        return b"".join(chunks), mode_of(info.st_mode)
+    finally:
+        os.close(descriptor)
 
 
 def managed_envelope(managed_id: str, payload: bytes) -> bytes:
-    if not managed_id or any(character.isspace() for character in managed_id):
+    if not managed_id or ">" in managed_id or any(character.isspace() for character in managed_id):
         raise ValueError("managed id must be non-empty and whitespace-free")
     payload_hash = sha256_bytes(payload)
     try:
@@ -143,11 +160,6 @@ def loading_result(evidence: Mapping[str, Any]) -> dict[str, str]:
     if status not in {"unknown", "conflicted", "unavailable", "version-mismatch"}:
         status = "unknown"
     return {"status": status, "loading_class": "unknown"}
-
-
-def classify_loading_observations(observations: Mapping[str, Any]) -> dict[str, str]:
-    """Marker arrays are unbound claims, never verified loading evidence."""
-    return {"status": "unknown", "loading_class": "unknown"}
 
 
 def _classify_bound_loading_observations(observations: Mapping[str, Any]) -> dict[str, str]:
@@ -345,28 +357,115 @@ def discover_topology(root: Path, *, max_depth: int = 3, shim_policy: str = "off
     return {"max_depth": max_depth, "shim_policy": shim_policy, "loader": _loader_snapshot(loading_evidence), "nodes": nodes, "coverage": coverage, "root_fallback_payload_sha256": None, "findings": findings, "exclusions": exclusions, "repository_name": root.name, "_root": root}
 
 
+def _render_managed_payload(topology: Mapping[str, Any], node: Mapping[str, Any]) -> bytes:
+    measured = [
+        f"{factor['name']}={factor['value']}"
+        for factor in node["factors"]
+        if factor["measured"]
+    ]
+    evidence_paths = sorted(
+        {
+            path
+            for factor in node["factors"]
+            for path in factor["evidence_paths"]
+        }
+    )
+    child_scopes = sorted(
+        candidate["directory"]
+        for candidate in topology["nodes"]
+        if candidate["parent_agents_path"] == node["agents_path"]
+    )
+    scope = "repository root" if node["directory"] == "." else f"`{node['directory']}/`"
+    lines = [
+        "# Managed Repository Instructions",
+        "",
+        f"Repository: `{topology.get('repository_name', 'repository')}`",
+        f"Scope: {scope}",
+        f"Placement: {node['decision']} (score {node['score']})",
+        "",
+        "## Observed structure",
+        "",
+        "- " + ", ".join(measured),
+    ]
+    if evidence_paths:
+        lines.extend(["- Evidence: " + ", ".join(f"`{path}`" for path in evidence_paths[:20])])
+    if child_scopes:
+        lines.extend(
+            [
+                "",
+                "## Child scopes",
+                "",
+                *[f"- `{directory}/` has nearer managed instructions." for directory in child_scopes],
+            ]
+        )
+    lines.extend(
+        [
+            "",
+            "## Working rule",
+            "",
+            "Read every `AGENTS.md` from the repository root through the target directory; the nearest instruction wins on conflict.",
+            "Preserve repository-local conventions and verify changed behavior with the repository's own commands.",
+            "",
+        ]
+    )
+    return "\n".join(lines).encode("utf-8")
+
+
+def _proposal(action: str, path: str, before: bytes, after: bytes | None) -> dict[str, Any]:
+    fields = {
+        "action": action,
+        "path": path,
+        "preimage_sha256": sha256_bytes(before),
+        "postimage_sha256": sha256_bytes(after) if after is not None else None,
+    }
+    return {**fields, "id": stable_id("P-" + action.upper(), fields)}
+
+
 def build_managed_outputs(topology: Mapping[str, Any]) -> dict[str, Any]:
     if topology.get("findings"):
         raise ValueError("unsafe topology findings block mapping")
     topology_snapshot = {key: topology[key] for key in ("max_depth", "shim_policy", "loader", "nodes", "coverage", "root_fallback_payload_sha256")}
     effects: list[dict[str, Any]] = []
+    proposals: list[dict[str, Any]] = []
     owned: list[dict[str, Any]] = []
     root = topology.get("_root")
     if not isinstance(root, Path):
         raise ValueError("topology is missing its repository root")
     for node in topology_snapshot["nodes"]:
-        scope = "repository root" if node["directory"] == "." else f"`{node['directory']}/`"
-        payload = (f"# Managed Repository Instructions\n\nRepository: `{topology.get('repository_name', root.name)}`\nScope: {scope}\n\nFollow the nearest AGENTS.md instructions and preserve repository-local conventions.\n").encode("utf-8")
+        payload = _render_managed_payload(topology, node)
         data = managed_envelope(node["managed_id"], payload)
         path = node["agents_path"]
         destination = safe_path(root, path)
         if destination.exists():
             observed = file_observation(root, path)
-            if destination.read_bytes() != data:
-                parsed = parse_managed_envelope(destination.read_bytes())
+            before, _ = _read_regular_nofollow(destination)
+            if before != data:
+                parsed = parse_managed_envelope(before)
                 if parsed is None or parsed["managed_id"] != node["managed_id"]:
-                    raise ValueError(f"unmanaged AGENTS file blocks mapping: {path}")
-                effects.append({"action": "write", "path": path, "bytes": data, "mode": observed["mode"]})
+                    proposal = _proposal("adopt-managed-payload", path, before, data)
+                    proposals.append(proposal)
+                    effects.append(
+                        {
+                            "action": "write",
+                            "path": path,
+                            "bytes": data,
+                            "mode": observed["mode"],
+                            "proposal_id": proposal["id"],
+                            "expected_pre_sha256": observed["sha256"],
+                            "expected_pre_mode": observed["mode"],
+                        }
+                    )
+                else:
+                    effects.append(
+                        {
+                            "action": "write",
+                            "path": path,
+                            "bytes": data,
+                            "mode": observed["mode"],
+                            "expected_pre_sha256": observed["sha256"],
+                            "expected_pre_mode": observed["mode"],
+                        }
+                    )
             mode = observed["mode"]
         else:
             effects.append({"action": "write", "path": path, "bytes": data, "mode": NEW_FILE_MODE})
@@ -374,6 +473,56 @@ def build_managed_outputs(topology: Mapping[str, Any]) -> dict[str, Any]:
         owned.append({"path": path, "artifact_type": "agents-file", "managed_id": node["managed_id"], "status": "active", "payload_sha256": sha256_bytes(payload), "file_sha256": sha256_bytes(data), "mode": mode})
         if node["directory"] == ".":
             topology_snapshot["root_fallback_payload_sha256"] = sha256_bytes(payload)
+
+        claude_path = "CLAUDE.md" if node["directory"] == "." else f"{node['directory']}/CLAUDE.md"
+        claude = safe_path(root, claude_path)
+        prior_shim = next(
+            (
+                row
+                for row in topology.get("_prior_owned_artifacts", [])
+                if row["path"] == claude_path and row["artifact_type"] == "claude-shim"
+            ),
+            None,
+        )
+        if topology_snapshot["shim_policy"] == "on":
+            if claude.exists():
+                observed = file_observation(root, claude_path)
+                before, _ = _read_regular_nofollow(claude)
+                if before != SHIM_BYTES:
+                    proposal = _proposal("merge-claude-and-replace-shim", claude_path, before, SHIM_BYTES)
+                    proposals.append(proposal)
+                    effects.append(
+                        {
+                            "action": "write",
+                            "path": claude_path,
+                            "bytes": SHIM_BYTES,
+                            "mode": observed["mode"],
+                            "proposal_id": proposal["id"],
+                            "expected_pre_sha256": observed["sha256"],
+                            "expected_pre_mode": observed["mode"],
+                        }
+                    )
+                    shim_mode = observed["mode"]
+                else:
+                    shim_mode = observed["mode"]
+            else:
+                effects.append({"action": "write", "path": claude_path, "bytes": SHIM_BYTES, "mode": NEW_FILE_MODE})
+                shim_mode = NEW_FILE_MODE
+            owned.append(
+                {
+                    "path": claude_path,
+                    "artifact_type": "claude-shim",
+                    "managed_id": stable_id("shim", {"path": claude_path}),
+                    "status": "active",
+                    "payload_sha256": None,
+                    "file_sha256": sha256_bytes(SHIM_BYTES),
+                    "mode": shim_mode,
+                }
+            )
+        elif prior_shim is not None:
+            # Off never deletes during map. It marks the proven exact shim stale
+            # so guarded prune can remove it with explicit acceptance.
+            owned.append({**prior_shim, "status": "stale"})
     active_paths = {row["path"] for row in owned}
     for prior in topology.get("_prior_owned_artifacts", []):
         if prior["path"] not in active_paths:
@@ -382,7 +531,7 @@ def build_managed_outputs(topology: Mapping[str, Any]) -> dict[str, Any]:
     result = {
         "topology": topology_snapshot,
         "effects": effects,
-        "proposals": [],
+        "proposals": proposals,
         "coverage": list(topology_snapshot["coverage"]),
         "snapshot": {
             "schema_version": SCHEMA_VERSION,
@@ -427,16 +576,87 @@ def validate_snapshot(snapshot: Mapping[str, Any]) -> None:
     required_topology = {"max_depth", "shim_policy", "loader", "nodes", "coverage", "root_fallback_payload_sha256"}
     if not isinstance(topology, Mapping) or set(topology) != required_topology or not 1 <= topology.get("max_depth", 0) <= 32 or topology.get("shim_policy") not in {"on", "off"}:
         raise ValueError("snapshot topology is invalid")
-    # The checked-in schema is the final authority when jsonschema is available.
-    try:
-        import jsonschema
-        schema = json.loads((Path(__file__).resolve().parents[1] / "templates" / "snapshot.schema.json").read_text(encoding="utf-8"))
-        jsonschema.Draft202012Validator(schema).validate(dict(snapshot))
-    except ImportError:
-        if not all(isinstance(topology.get(key), list) for key in ("nodes", "coverage")):
-            raise ValueError("snapshot topology arrays are invalid")
-    except (OSError, json.JSONDecodeError, jsonschema.ValidationError) as error:
-        raise ValueError(f"snapshot does not match schema: {error.message if hasattr(error, 'message') else error}") from error
+    loader = topology["loader"]
+    loader_keys = {"loader_class", "evidence_status", "source_id", "runtime_version", "probe_fixture_sha256", "probe_result_sha256"}
+    statuses = {"probe-verified", "source-only", "conflicted", "unavailable", "version-mismatch", "not-automatable"}
+    if not isinstance(loader, Mapping) or set(loader) != loader_keys:
+        raise ValueError("snapshot loader evidence is invalid")
+    if loader["loader_class"] not in {"file-scoped", "recursive", "ancestor-only", "unknown"} or loader["evidence_status"] not in statuses:
+        raise ValueError("snapshot loader class/status is invalid")
+    if loader["evidence_status"] != "probe-verified" and loader["loader_class"] != "unknown":
+        raise ValueError("unverified loader evidence must remain unknown")
+    for key in ("source_id", "runtime_version"):
+        if loader[key] is not None and (not isinstance(loader[key], str) or not loader[key]):
+            raise ValueError("snapshot loader identity is invalid")
+    for key in ("probe_fixture_sha256", "probe_result_sha256"):
+        if loader[key] is not None and (not isinstance(loader[key], str) or not _HASH.match(loader[key])):
+            raise ValueError("snapshot loader hash is invalid")
+
+    if not isinstance(topology["nodes"], list) or not isinstance(topology["coverage"], list):
+        raise ValueError("snapshot topology arrays are invalid")
+    factor_names = set(_FACTOR_NAMES)
+    for node in topology["nodes"]:
+        keys = {"directory", "agents_path", "parent_agents_path", "managed_id", "score", "decision", "factors"}
+        if not isinstance(node, Mapping) or set(node) != keys:
+            raise ValueError("snapshot node is invalid")
+        directory = node["directory"]
+        if directory != ".":
+            normalize_path(directory)
+        normalize_path(node["agents_path"])
+        if node["parent_agents_path"] is not None:
+            normalize_path(node["parent_agents_path"])
+        if not isinstance(node["managed_id"], str) or not node["managed_id"] or ">" in node["managed_id"] or any(character.isspace() for character in node["managed_id"]):
+            raise ValueError("snapshot managed id is invalid")
+        if not isinstance(node["score"], int) or not 0 <= node["score"] <= 17 or node["decision"] not in {"root", "high-score", "distinct-domain"}:
+            raise ValueError("snapshot node decision is invalid")
+        if not isinstance(node["factors"], list):
+            raise ValueError("snapshot node factors are invalid")
+        for factor in node["factors"]:
+            factor_keys = {"name", "measured", "value", "points", "evidence_paths"}
+            if not isinstance(factor, Mapping) or set(factor) != factor_keys or factor["name"] not in factor_names:
+                raise ValueError("snapshot factor is invalid")
+            if not isinstance(factor["measured"], bool) or not isinstance(factor["points"], int) or not 0 <= factor["points"] <= 3:
+                raise ValueError("snapshot factor measurement is invalid")
+            if not isinstance(factor["evidence_paths"], list):
+                raise ValueError("snapshot factor evidence is invalid")
+            for path in factor["evidence_paths"]:
+                normalize_path(path)
+    for coverage in topology["coverage"]:
+        keys = {"directory", "expected_chain", "status_at_apply", "basis_at_apply"}
+        if not isinstance(coverage, Mapping) or set(coverage) != keys:
+            raise ValueError("snapshot coverage is invalid")
+        if coverage["directory"] != ".":
+            normalize_path(coverage["directory"])
+        if not isinstance(coverage["expected_chain"], list):
+            raise ValueError("snapshot coverage chain is invalid")
+        for path in coverage["expected_chain"]:
+            normalize_path(path)
+        if coverage["status_at_apply"] not in {"covered", "gap", "ambiguous", "unverified"} or coverage["basis_at_apply"] not in {"native", "root-fallback", "none"}:
+            raise ValueError("snapshot coverage status is invalid")
+    root_hash = topology["root_fallback_payload_sha256"]
+    if root_hash is not None and (not isinstance(root_hash, str) or not _HASH.match(root_hash)):
+        raise ValueError("snapshot root fallback hash is invalid")
+
+    owned_keys = {"path", "artifact_type", "managed_id", "status", "payload_sha256", "file_sha256", "mode"}
+    for row in snapshot["owned_artifacts"]:
+        if not isinstance(row, Mapping) or set(row) != owned_keys:
+            raise ValueError("snapshot owned artifact is invalid")
+        normalize_path(row["path"])
+        if row["artifact_type"] not in {"agents-region", "agents-file", "claude-shim"} or row["status"] not in {"active", "stale"}:
+            raise ValueError("snapshot ownership kind/status is invalid")
+        if not isinstance(row["managed_id"], str) or not row["managed_id"] or ">" in row["managed_id"]:
+            raise ValueError("snapshot ownership id is invalid")
+        if not isinstance(row["mode"], int) or not 0 <= row["mode"] <= 4095:
+            raise ValueError("snapshot ownership mode is invalid")
+        for key in ("payload_sha256", "file_sha256"):
+            if row[key] is not None and (not isinstance(row[key], str) or not _HASH.match(row[key])):
+                raise ValueError("snapshot ownership hash is invalid")
+        if row["artifact_type"] == "agents-region" and (row["payload_sha256"] is None or row["file_sha256"] is not None):
+            raise ValueError("agents-region ownership hashes are invalid")
+        if row["artifact_type"] == "agents-file" and (row["payload_sha256"] is None or row["file_sha256"] is None):
+            raise ValueError("agents-file ownership hashes are invalid")
+        if row["artifact_type"] == "claude-shim" and (row["payload_sha256"] is not None or row["file_sha256"] is None):
+            raise ValueError("claude-shim ownership hashes are invalid")
 
 
 def audit(root: Path) -> dict[str, Any]:
@@ -451,7 +671,8 @@ def audit(root: Path) -> dict[str, Any]:
         if not stat.S_ISREG(snapshot_info.st_mode) or stat.S_ISLNK(snapshot_info.st_mode):
             raise ValueError("ownership snapshot is unsafe (symlink or non-regular)")
         try:
-            snapshot = json.loads(snapshot_path.read_bytes().decode("utf-8"))
+            snapshot_bytes, _ = _read_regular_nofollow(snapshot_path)
+            snapshot = json.loads(snapshot_bytes.decode("utf-8"))
             findings.extend(validate_ownership_snapshot(root, snapshot)["findings"])
         except (OSError, UnicodeDecodeError, json.JSONDecodeError):
             findings.append({"code": "INITV4-E-SNAPSHOT-INVALID", "path": SNAPSHOT_NAME})
@@ -469,11 +690,43 @@ def plan_prune(root: Path, snapshot: Mapping[str, Any], accepted_ids: set[str]) 
     for row in sorted(snapshot.get("owned_artifacts", []), key=lambda item: item.get("path", "")):
         if row.get("status") != "stale":
             continue
-        proposal = {"action": "remove-stale-file" if row.get("artifact_type") != "claude-shim" else "remove-stale-shim", "path": row["path"], "preimage_sha256": row.get("file_sha256"), "postimage_sha256": None}
+        observed = file_observation(root, row["path"])
+        if row["artifact_type"] == "agents-region":
+            source, _ = _read_regular_nofollow(safe_path(root, row["path"], require_exists=True))
+            text = source.decode("utf-8")
+            begin = f"<!-- init:managed id={row['managed_id']} sha256={row['payload_sha256']} -->"
+            end = f"<!-- /init:managed id={row['managed_id']} -->"
+            start = text.find(begin)
+            finish = text.find(end, start + len(begin)) if start >= 0 else -1
+            if start < 0 or finish < 0 or text.find(begin, start + 1) >= 0:
+                raise ValueError(f"managed region is missing or ambiguous: {row['path']}")
+            finish += len(end)
+            if finish < len(text) and text[finish] == "\n":
+                finish += 1
+            post_bytes = (text[:start] + text[finish:]).encode("utf-8")
+            action = "remove-stale-region"
+        else:
+            post_bytes = None
+            action = "remove-stale-shim" if row["artifact_type"] == "claude-shim" else "remove-stale-file"
+        proposal = {
+            "action": action,
+            "path": row["path"],
+            "preimage_sha256": observed["sha256"],
+            "postimage_sha256": sha256_bytes(post_bytes) if post_bytes is not None else None,
+        }
         proposal["id"] = stable_id("P-" + proposal["action"].upper(), proposal)
         proposals.append(proposal)
         if proposal["id"] in accepted_ids:
-            effects.append({"action": "delete", "path": row["path"], "proposal_id": proposal["id"]})
+            effect: dict[str, Any] = {
+                "action": "delete" if post_bytes is None else "write",
+                "path": row["path"],
+                "proposal_id": proposal["id"],
+                "expected_pre_sha256": observed["sha256"],
+                "expected_pre_mode": observed["mode"],
+            }
+            if post_bytes is not None:
+                effect.update({"bytes": post_bytes, "mode": observed["mode"]})
+            effects.append(effect)
     accepted_paths = {effect["path"] for effect in effects}
     updated = dict(snapshot)
     updated["owned_artifacts"] = [dict(row) for row in snapshot.get("owned_artifacts", []) if row.get("path") not in accepted_paths]

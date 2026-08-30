@@ -11,7 +11,8 @@ import sys
 from pathlib import Path
 
 from _transaction import apply
-from lifecycle_core import SNAPSHOT_NAME, build_managed_outputs, canonical_json, discover_topology, validate_ownership_snapshot, validate_snapshot
+from lifecycle_core import JOURNAL_NAME, SNAPSHOT_NAME, build_managed_outputs, canonical_json, discover_topology, validate_ownership_snapshot, validate_snapshot
+_NOFOLLOW = getattr(os, "O_NOFOLLOW", 0)
 
 
 def _emit(value: dict, stream: object | None = None) -> None:
@@ -60,15 +61,30 @@ def _prior_snapshot(root: Path) -> dict | None:
     try:
         info = os.lstat(path)
         if not stat.S_ISREG(info.st_mode) or stat.S_ISLNK(info.st_mode):
-            return None
-        snapshot = json.loads(path.read_bytes().decode("utf-8"))
+            raise ValueError("ownership snapshot is unsafe")
+        descriptor = os.open(path, os.O_RDONLY | _NOFOLLOW)
+        try:
+            opened = os.fstat(descriptor)
+            if not stat.S_ISREG(opened.st_mode):
+                raise ValueError("ownership snapshot is unsafe")
+            chunks: list[bytes] = []
+            while True:
+                chunk = os.read(descriptor, 1024 * 1024)
+                if not chunk:
+                    break
+                chunks.append(chunk)
+            snapshot = json.loads(b"".join(chunks).decode("utf-8"))
+        finally:
+            os.close(descriptor)
         validate_snapshot(snapshot)
         validation = validate_ownership_snapshot(root, snapshot)
         if not validation.get("valid", False):
-            return None
+            raise ValueError("ownership snapshot drift blocks mapping")
         return snapshot
-    except (FileNotFoundError, OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError):
+    except FileNotFoundError:
         return None
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError(f"ownership snapshot is unreadable or invalid: {error}") from error
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -84,10 +100,27 @@ def main(argv: list[str] | None = None) -> int:
         root = _root(args.root)
         outputs = _outputs(root, args.max_depth, args.claude_shim)
         validate_snapshot(outputs["snapshot"])
-        if _is_byte_identical_noop(root, outputs):
+        offered = {proposal["id"] for proposal in outputs.get("proposals", [])}
+        unmatched = sorted(set(args.accept) - offered)
+        if unmatched:
+            raise ValueError("accepted proposal is not offered by current evidence: " + ", ".join(unmatched))
+        missing = sorted(
+            {
+                effect["proposal_id"]
+                for effect in outputs["effects"]
+                if effect.get("proposal_id") and effect["proposal_id"] not in set(args.accept)
+            }
+        )
+        if missing:
+            raise ValueError("mapping requires acceptance: " + ", ".join(missing))
+        if not (root / JOURNAL_NAME).exists() and _is_byte_identical_noop(root, outputs):
             result = {"exit_code": 0, "phase": "complete", "effects": [], "no_op": True}
         else:
-            result = apply(root, outputs["effects"], set(args.accept), snapshot_payload=outputs["snapshot"])
+            try:
+                result = apply(root, outputs["effects"], set(args.accept), snapshot_payload=outputs["snapshot"])
+            except (OSError, RuntimeError, ValueError) as error:
+                _emit({"diagnostics": [{"code": "map-failed", "message": str(error)}], "operation": "map"}, sys.stderr)
+                return 3
         if not isinstance(result, dict):
             raise ValueError("transaction application returned an invalid result")
         _emit({"operation": "map", **result})

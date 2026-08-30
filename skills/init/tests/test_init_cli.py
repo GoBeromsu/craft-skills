@@ -59,6 +59,22 @@ class InitDispatcherTests(unittest.TestCase):
 
         self.assertEqual([("audit", ["repository"]), ("prune", ["repository"])], calls)
 
+    def test_documented_map_flags_reach_bare_and_explicit_map_unchanged(self) -> None:
+        calls: list[list[str]] = []
+
+        class Map:
+            @staticmethod
+            def main(argv: list[str]) -> int:
+                calls.append(argv)
+                return 0
+
+        flags = ["repository", "--max-depth=4", "--claude-shim=on", "--accept=P-test"]
+        with patch.object(init, "_load_operation", return_value=Map):
+            self.assertEqual(init.main(flags), 0)
+            self.assertEqual(init.main(["map", *flags]), 0)
+
+        self.assertEqual(calls, [flags, flags])
+
     def test_legacy_operation_flags_fail_before_a_target_runs(self) -> None:
         with patch.object(init, "_load_operation") as load:
             with self.assertRaisesRegex(SystemExit, "^2$"):

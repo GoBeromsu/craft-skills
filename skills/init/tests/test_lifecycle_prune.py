@@ -36,13 +36,20 @@ def snapshot_for(root: Path, rows: list[dict]) -> dict:
 
 class LifecyclePruneTests(unittest.TestCase):
     def test_plan_only_emits_deletes_for_accepted_stale_owned_artifacts(self) -> None:
-        snapshot = snapshot_for(Path.cwd(), [stale_row("z.md", b"z"), stale_row("a.md", b"a"), {**stale_row("live.md", b"live"), "status": "active"}])
-        planned = lifecycle_core.plan_prune(Path("."), snapshot, set())
-        self.assertEqual([proposal["path"] for proposal in planned["proposals"]], ["a.md", "z.md"])
-        self.assertEqual(planned["effects"], [])
-        accepted = lifecycle_core.plan_prune(Path("."), snapshot, {planned["proposals"][0]["id"]})
-        self.assertEqual(accepted["effects"], [{"action": "delete", "path": "a.md", "proposal_id": planned["proposals"][0]["id"]}])
-        self.assertNotIn("a.md", [row["path"] for row in accepted["snapshot"]["owned_artifacts"]])
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, data in (("z.md", b"z"), ("a.md", b"a"), ("live.md", b"live")):
+                (root / name).write_bytes(data)
+            snapshot = snapshot_for(root, [stale_row("z.md", b"z", 0o644), stale_row("a.md", b"a", 0o644), {**stale_row("live.md", b"live", 0o644), "status": "active"}])
+            planned = lifecycle_core.plan_prune(root, snapshot, set())
+            self.assertEqual([proposal["path"] for proposal in planned["proposals"]], ["a.md", "z.md"])
+            self.assertEqual(planned["effects"], [])
+            accepted = lifecycle_core.plan_prune(root, snapshot, {planned["proposals"][0]["id"]})
+            self.assertEqual(accepted["effects"][0]["action"], "delete")
+            self.assertEqual(accepted["effects"][0]["path"], "a.md")
+            self.assertEqual(accepted["effects"][0]["proposal_id"], planned["proposals"][0]["id"])
+            self.assertEqual(accepted["effects"][0]["expected_pre_sha256"], hashlib.sha256(b"a").hexdigest())
+            self.assertNotIn("a.md", [row["path"] for row in accepted["snapshot"]["owned_artifacts"]])
 
     def test_drifted_or_missing_ownership_fails_closed_and_preserves_unowned_bytes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -90,7 +97,10 @@ class LifecyclePruneTests(unittest.TestCase):
 
             with mock.patch.object(lifecycle_prune, "apply", side_effect=apply), contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(lifecycle_prune.main([str(root), "--accept", proposal["id"]]), 0)
-            self.assertEqual(captured["effects"], [{"action": "delete", "path": "owned.md", "proposal_id": proposal["id"]}])
+            self.assertEqual(captured["effects"][0]["action"], "delete")
+            self.assertEqual(captured["effects"][0]["path"], "owned.md")
+            self.assertEqual(captured["effects"][0]["proposal_id"], proposal["id"])
+            self.assertEqual(captured["effects"][0]["expected_pre_sha256"], hashlib.sha256(b"owned").hexdigest())
             self.assertEqual(captured["operation"], "prune")
             self.assertEqual(captured["snapshot"]["owned_artifacts"], [])
             self.assertEqual(unowned.read_bytes(), b"operator content")
