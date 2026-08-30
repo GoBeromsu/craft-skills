@@ -57,7 +57,7 @@
       "forbidden_neighbors": ["craft-skills/debug", "craft-skills/document", "craft-skills/git"]
     },
     {
-      "trigger": "prune accepted stale managed AGENTS artifacts",
+      "trigger": "report stale managed AGENTS regions",
       "expected_package": "craft-skills/init",
       "forbidden_neighbors": ["craft-skills/document", "craft-skills/refactor", "craft-skills/git"]
     },

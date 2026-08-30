@@ -27,7 +27,7 @@ This is a task-oriented library for software and research work — kept separate
 | `git` | Guide version-control craft — ground-truth and incumbent-style detection, the atomic-commit split protocol, commit/branch/PR conventions, and non-interactive-safe history surgery, including the `git wt` worktree workflow. |
 | `gpu` | Apply GPU environment and resource discipline — probe the hardware before choosing any install, budget the host before launching any job — to CUDA/PyTorch setup, attention-backend builds, and GPU job launches. |
 | `guardrails` | Turn a convention into local, deterministic enforcement — runtime hooks, linter and formatter configuration, and pre-commit guards — so a violation is blocked before it happens, not corrected after. |
-| `init` | Own the complexity-scored hierarchical `AGENTS.md` map/audit/prune lifecycle; bare `init` runs ordinary deep-init. |
+| `init` | Own the hierarchical `AGENTS.md` lifecycle as prose — map, read-only audit, stale reporting — with one script for marker-region edits; bare `init` runs ordinary deep-init. |
 | `ml` | Apply ML/DL research-engineering discipline — reproducible project layout, leakage-safe dataset construction, and a training-discipline ladder — to classical ML, deep learning, fine-tuning, and vision work. |
 | `obsidian` | Route reusable Obsidian Markdown, Bases, Canvas, Mermaid, CLI, Web Clipper, plugin-doctor, and headless Sync work through one thick skill with selectively loaded sub-recipes. |
 | `programming` | Apply correctness-first, type-strict engineering discipline when writing or editing Python or TypeScript. |

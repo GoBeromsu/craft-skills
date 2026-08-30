@@ -1,32 +1,27 @@
-"""Static contract tests for the portable init v4 package surface."""
+"""Static contract tests for the portable init package surface."""
 
 from __future__ import annotations
 
-import json
 import re
-import sys
 import unittest
 from pathlib import Path
 
-
 PACKAGE = Path(__file__).resolve().parents[1]
 SKILL = PACKAGE / "SKILL.md"
-REFERENCES = PACKAGE / "references"
-TEMPLATES = PACKAGE / "templates"
-sys.path.insert(0, str(PACKAGE / "scripts"))
-
-import lifecycle_core  # noqa: E402
 
 
 def frontmatter(text: str) -> dict[str, str]:
     match = re.match(r"^---\n(.*?)\n---\n", text, re.DOTALL)
-    if match is None:
-        raise AssertionError("SKILL.md must start with YAML frontmatter")
+    if not match:
+        raise AssertionError("SKILL.md must open with a frontmatter block")
     fields: dict[str, str] = {}
     for line in match.group(1).splitlines():
-        key, separator, value = line.partition(":")
-        if separator and not line.startswith((" ", "\t")):
-            fields[key] = value.strip().strip('"')
+        if line.startswith("  ") and ":" in line:
+            key, _, value = line.strip().partition(":")
+            fields[f"metadata.{key.strip()}"] = value.strip()
+        elif ":" in line:
+            key, _, value = line.partition(":")
+            fields[key.strip()] = value.strip()
     return fields
 
 
@@ -36,79 +31,62 @@ class InitPackageContractTests(unittest.TestCase):
         cls.skill_text = SKILL.read_text(encoding="utf-8")
         cls.fields = frontmatter(cls.skill_text)
 
-    def test_frontmatter_version_and_routing_description(self) -> None:
-        self.assertEqual(self.fields["name"], "init")
-        self.assertEqual(self.fields["metadata"], "")
-        self.assertIn("version: 4.0.0", self.skill_text)
+    def test_frontmatter_is_portable_and_versioned(self) -> None:
+        self.assertEqual(self.fields["name"], PACKAGE.name)
+        self.assertRegex(self.fields["metadata.version"], r"^\d+\.\d+\.\d+$")
+        self.assertNotIn("license", self.fields)
+
+    def test_description_states_what_and_when_with_a_boundary(self) -> None:
         description = self.fields["description"]
-        for trigger in (
-            "init this repo",
-            "deep-init a codebase",
-            "generate or update AGENTS.md",
-            "map repository conventions",
-            "audit an existing AGENTS lifecycle",
-            "prune accepted stale managed AGENTS artifacts",
+        self.assertIn("AGENTS", description)
+        self.assertIn("Use when", description)
+        self.assertIn("Not for", description)
+        self.assertIn("document", description)
+        self.assertIn("git-hook", description)
+
+    def test_body_stays_within_authoring_limits(self) -> None:
+        body = self.skill_text.split("---\n", 2)[-1].splitlines()
+        self.assertLessEqual(len(body), 500, "body hard-caps at 500 lines")
+
+    def test_every_relative_link_resolves(self) -> None:
+        for target in set(re.findall(r"\]\((?!https?:)([^)#]+)", self.skill_text)):
+            with self.subTest(target=target):
+                self.assertTrue((PACKAGE / target).exists(), f"dangling link: {target}")
+
+    def test_package_ships_only_the_one_executable_step(self) -> None:
+        scripts = sorted(path.name for path in (PACKAGE / "scripts").glob("*.py"))
+        self.assertEqual(scripts, ["agents_region.py"])
+        for module in scripts:
+            self.assertTrue(
+                (PACKAGE / "tests" / f"test_{module}").exists(),
+                "every scripts/ module ships with a matching test module",
+            )
+
+    def test_removed_machinery_and_routes_are_not_referenced(self) -> None:
+        for obsolete in (
+            "lifecycle_core",
+            "lifecycle_map",
+            "lifecycle_prune",
+            "lifecycle_audit",
+            "_transaction",
+            "loading_probe",
+            "snapshot.schema.json",
+            "transaction.schema.json",
+            "--create-new",
+            "phase-0",
+            "docs-bootstrap",
         ):
-            with self.subTest(trigger=trigger):
-                self.assertIn(trigger, description)
+            with self.subTest(obsolete=obsolete):
+                self.assertNotIn(obsolete, self.skill_text)
+                self.assertFalse(list(PACKAGE.rglob(f"*{obsolete}*")))
 
-    def test_body_and_reference_layout_stay_within_authoring_limits(self) -> None:
-        self.assertLessEqual(len(self.skill_text.splitlines()), 500)
-        reference_files = sorted(REFERENCES.glob("*.md"))
-        self.assertTrue(reference_files)
-        self.assertEqual(reference_files, sorted(REFERENCES.iterdir()))
-        for reference in reference_files:
-            lines = reference.read_text(encoding="utf-8").splitlines()
-            with self.subTest(reference=reference.name):
-                if len(lines) > 100:
-                    self.assertTrue(
-                        {"## Contents", "## Table of Contents"} & set(lines[:20]),
-                        "references over 100 lines must have a table of contents near the top",
-                    )
+    def test_claude_adapter_bytes_are_documented_exactly(self) -> None:
+        self.assertIn("`@AGENTS.md` plus one LF", self.skill_text)
 
-    def test_removed_phase_zero_and_docs_routes_are_not_active(self) -> None:
-        active_links = re.findall(r"\]\(([^)]+)\)", self.skill_text)
-        for link in active_links:
-            with self.subTest(link=link):
-                self.assertNotRegex(link.lower(), r"(?:phase-0|docs-(?:bootstrap|scaffold))")
-
-        route_and_map = self.skill_text.split("## Route", 1)[1].split("## Safety and canonicality", 1)[0]
-        self.assertNotRegex(route_and_map.lower(), r"\bphase\s*0\b")
-        self.assertNotRegex(route_and_map.lower(), r"\bdocs?\s+bootstrap\b")
-        self.assertIn("Documentation scaffolding, README, ADRs, and substantive docs content | `document`", self.skill_text)
-        self.assertIn("Git hooks and enforcement rails | `git`", self.skill_text)
-
-    def test_lifecycle_and_loading_contracts_are_linked_once(self) -> None:
-        expected_links = {
-            "references/state-contract.md",
-            "references/loading-contract.md",
-            "references/phase-1-discovery.md",
-            "references/phase-2-scoring.md",
-            "references/phase-3-reconcile.md",
-            "references/phase-4-verify.md",
-        }
-        links = set(re.findall(r"\]\((references/[^)]+)\)", self.skill_text))
-        self.assertTrue(expected_links.issubset(links))
-
-    def test_claude_shim_is_exact_and_schemas_are_valid_json_schema_documents(self) -> None:
-        self.assertEqual(lifecycle_core.SHIM_BYTES, b"@AGENTS.md\n")
-        for schema_path in sorted(TEMPLATES.glob("*.schema.json")):
-            schema = json.loads(schema_path.read_text(encoding="utf-8"))
-            with self.subTest(schema=schema_path.name):
-                self.assertEqual(schema["$schema"], "https://json-schema.org/draft/2020-12/schema")
-                self.assertEqual(schema["type"], "object")
-                self.assertIn("required", schema)
-                self.assertIn("properties", schema)
-
-    def test_obsolete_phase_zero_and_docs_reference_files_do_not_exist(self) -> None:
-        obsolete = {
-            "phase-0-bootstrap.md",
-            "phase-0-discovery.md",
-            "docs-bootstrap.md",
-            "docs-scaffold.md",
-            "documentation.md",
-        }
-        self.assertFalse(obsolete & {path.name for path in REFERENCES.iterdir()})
+    def test_init_retains_no_deletion_authority(self) -> None:
+        self.assertIn("report-stale", self.skill_text)
+        self.assertIn("no deletion authority", self.skill_text)
+        self.assertNotIn("init prune", self.skill_text)
 
 
 if __name__ == "__main__":
