@@ -25,7 +25,7 @@ EXCLUDED_DIRS = frozenset({".git", ".hg", ".svn", "node_modules", "vendor", "dis
 _NOFOLLOW = getattr(os, "O_NOFOLLOW", 0)
 _PINNED_ROOT_FD: ContextVar[int | None] = ContextVar("init_lifecycle_root_fd", default=None)
 _CODE_SUFFIXES = frozenset({".c", ".cc", ".cpp", ".cs", ".go", ".h", ".hpp", ".java", ".js", ".jsx", ".kt", ".php", ".py", ".rb", ".rs", ".sh", ".swift", ".ts", ".tsx"})
-_CONFIG_NAMES = frozenset({"Cargo.toml", "go.mod", "package.json", "pyproject.toml", "setup.cfg", "setup.py", "tox.ini", "tsconfig.json"})
+_CONFIG_NAMES = frozenset({"Cargo.toml", "Makefile", "go.mod", "package.json", "pyproject.toml", "setup.cfg", "setup.py", "tox.ini", "tsconfig.json"})
 _BOUNDARY_NAMES = frozenset({"__init__.py", "index.js", "index.jsx", "index.ts", "index.tsx", "main.go", "mod.rs"})
 _FACTOR_NAMES = ("file-count", "subdirectory-count", "code-ratio", "unique-patterns", "module-boundary", "symbol-density", "export-count", "reference-centrality")
 
@@ -490,7 +490,8 @@ def _render_managed_payload(
                     {
                         match.group(1)
                         for line in makefile.splitlines()
-                        if (match := re.match(r"^([A-Za-z0-9][A-Za-z0-9_.-]*):(?:\\s|$)", line))
+                        if (match := re.match(r"^([A-Za-z0-9][A-Za-z0-9_.-]*):", line))
+                        and not line[match.end():].startswith("=")
                     }
                 )
                 commands.extend(f"`make {target}` — declared Makefile target." for target in targets)
@@ -509,8 +510,14 @@ def _render_managed_payload(
         if candidate["parent_agents_path"] == node["agents_path"]
     )
     scope = "repository root" if node["directory"] == "." else f"`{node['directory']}/`"
-    command_limit = 30 if node["directory"] == "." else 12
+    is_root = node["directory"] == "."
+    file_limit = 20 if is_root else 8
+    directory_limit = 12 if is_root else 5
+    evidence_limit = 10 if is_root else 3
+    command_limit = 30 if is_root else 5
     displayed_commands = commands[:command_limit]
+    displayed_entries = entry_points[:evidence_limit]
+    displayed_configs = configs[:evidence_limit]
     lines = [
         "# Managed Repository Instructions",
         "",
@@ -523,23 +530,25 @@ def _render_managed_payload(
         f"- Files directly observed: {len(files)}.",
         f"- Child directories directly observed: {len(directories)}.",
         "- File types: " + (", ".join(f"`{suffix}`={count}" for suffix, count in sorted(suffix_counts.items())) or "none."),
-        "- Configurations: " + (", ".join(f"`{path}`" for path in configs) or "none observed."),
-        "- Entry boundaries: " + (", ".join(f"`{path}`" for path in entry_points) or "none observed."),
+        "- Configurations: " + (", ".join(f"`{path}`" for path in displayed_configs) or "none observed."),
+        "- Entry boundaries: " + (", ".join(f"`{path}`" for path in displayed_entries) or "none observed."),
         "",
         "### Direct files",
         "",
-        *([f"- `{path}`" for path in files[:20]] or ["- No first-party regular files were observed directly in this scope."]),
-        *([f"- {len(files) - 20} additional direct files are summarized by type above."] if len(files) > 20 else []),
+        *([f"- `{path}`" for path in files[:file_limit]] or ["- No first-party regular files were observed directly in this scope."]),
+        *([f"- {len(files) - file_limit} additional direct files are summarized by type above."] if len(files) > file_limit else []),
         "",
         "### Direct child directories",
         "",
-        *([f"- `{path}/`" for path in directories[:12]] or ["- No direct child directory was observed."]),
-        *([f"- {len(directories) - 12} additional child directories are summarized by count above."] if len(directories) > 12 else []),
+        *([f"- `{path}/`" for path in directories[:directory_limit]] or ["- No direct child directory was observed."]),
+        *([f"- {len(directories) - directory_limit} additional child directories are summarized by count above."] if len(directories) > directory_limit else []),
         "",
         "## Entry points and configuration",
         "",
-        *([f"- Entry point: `{path}`." for path in entry_points] or ["- No entry boundary was asserted."]),
-        *([f"- Configuration: `{path}`." for path in configs] or ["- No local configuration was observed."]),
+        *([f"- Entry point: `{path}`." for path in displayed_entries] or ["- No entry boundary was asserted."]),
+        *([f"- {len(entry_points) - evidence_limit} additional entry points are summarized below."] if len(entry_points) > evidence_limit else []),
+        *([f"- Configuration: `{path}`." for path in displayed_configs] or ["- No local configuration was observed."]),
+        *([f"- {len(configs) - evidence_limit} additional configurations are summarized below."] if len(configs) > evidence_limit else []),
     ]
     lines.extend(
         [
@@ -552,8 +561,8 @@ def _render_managed_payload(
             "## Observed conventions",
             "",
             "- Predominant file types: " + (", ".join(f"`{suffix}` ({count})" for suffix, count in sorted(suffix_counts.items(), key=lambda item: (-item[1], item[0]))[:5]) or "none."),
-            "- Local configuration ownership: " + (", ".join(f"`{path}`" for path in configs) or "none observed."),
-            "- Local entry-point ownership: " + (", ".join(f"`{path}`" for path in entry_points) or "none observed."),
+            "- Local configuration ownership: " + (", ".join(f"`{path}`" for path in displayed_configs) or "none observed.") + (f" (+{len(configs) - evidence_limit} summarized)" if len(configs) > evidence_limit else ""),
+            "- Local entry-point ownership: " + (", ".join(f"`{path}`" for path in displayed_entries) or "none observed.") + (f" (+{len(entry_points) - evidence_limit} summarized)" if len(entry_points) > evidence_limit else ""),
             "",
             "## Scope relationships",
             "",
