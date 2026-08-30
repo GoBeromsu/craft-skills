@@ -298,54 +298,60 @@ def _walk(root: Path) -> tuple[dict[str, dict[str, Any]], list[dict[str, str]], 
     directories: dict[str, dict[str, Any]] = {".": {"files": [], "subdirectories": []}}
     exclusions: list[dict[str, str]] = []
     findings: list[dict[str, str]] = []
-    def walk_error(error: OSError) -> None:
-        path = Path(error.filename) if error.filename else root
-        try:
-            relative = normalized_relative(root, path, allow_root=True)
-        except ValueError:
-            relative = "."
-        findings.append({"code": "INITV4-E-UNREADABLE", "path": relative})
-
-    for current, names, files in os.walk(root, topdown=True, followlinks=False, onerror=walk_error):
-        current_path = Path(current)
-        current_relative = normalized_relative(root, current_path, allow_root=True)
-        record = directories.setdefault(current_relative, {"files": [], "subdirectories": []})
-        kept: list[str] = []
-        for name in sorted(names):
-            child = current_path / name
-            relative = normalized_relative(root, child)
-            info = os.lstat(child)
-            if stat.S_ISLNK(info.st_mode):
-                findings.append({"code": "INITV4-E-SYMLINK", "path": relative})
-            elif name in EXCLUDED_DIRS:
-                exclusions.append({"path": relative, "reason": "excluded-directory"})
-            elif stat.S_ISDIR(info.st_mode):
-                kept.append(name)
-                record["subdirectories"].append(relative)
-                directories.setdefault(relative, {"files": [], "subdirectories": []})
-            else:
-                findings.append({"code": "INITV4-E-SPECIAL-FILE", "path": relative})
-        names[:] = kept
-        relevant = False
-        for name in sorted(files):
-            path = current_path / name
-            relative = normalized_relative(root, path)
-            info = os.lstat(path)
-            if stat.S_ISLNK(info.st_mode):
-                findings.append({"code": "INITV4-E-SYMLINK", "path": relative})
-            elif not stat.S_ISREG(info.st_mode):
-                findings.append({"code": "INITV4-E-SPECIAL-FILE", "path": relative})
-            elif name not in {"AGENTS.md", "CLAUDE.md", SNAPSHOT_NAME, JOURNAL_NAME} and ".craft-init-v4-" not in name:
+    try:
+        walker = os.fwalk(root, topdown=True, follow_symlinks=False)
+        for current, names, files, directory_fd in walker:
+            relative_text = os.path.relpath(current, root)
+            current_relative = "." if relative_text == "." else normalize_path(PurePosixPath(relative_text).as_posix())
+            record = directories.setdefault(current_relative, {"files": [], "subdirectories": []})
+            kept: list[str] = []
+            for name in sorted(names):
+                relative = normalize_path(name if current_relative == "." else f"{current_relative}/{name}")
                 try:
-                    with path.open("rb") as handle:
-                        handle.read(1)
+                    info = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
                 except OSError:
                     findings.append({"code": "INITV4-E-UNREADABLE", "path": relative})
+                    continue
+                if stat.S_ISLNK(info.st_mode):
+                    findings.append({"code": "INITV4-E-SYMLINK", "path": relative})
+                elif name in EXCLUDED_DIRS:
+                    exclusions.append({"path": relative, "reason": "excluded-directory"})
+                elif stat.S_ISDIR(info.st_mode):
+                    kept.append(name)
+                    record["subdirectories"].append(relative)
+                    directories.setdefault(relative, {"files": [], "subdirectories": []})
                 else:
-                    relevant = True
-                    record["files"].append(relative)
-        if not relevant and current_relative != "." and not record["subdirectories"]:
-            directories.pop(current_relative, None)
+                    findings.append({"code": "INITV4-E-SPECIAL-FILE", "path": relative})
+            names[:] = kept
+            relevant = False
+            for name in sorted(files):
+                relative = normalize_path(name if current_relative == "." else f"{current_relative}/{name}")
+                try:
+                    info = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+                except OSError:
+                    findings.append({"code": "INITV4-E-UNREADABLE", "path": relative})
+                    continue
+                if stat.S_ISLNK(info.st_mode):
+                    findings.append({"code": "INITV4-E-SYMLINK", "path": relative})
+                elif not stat.S_ISREG(info.st_mode):
+                    findings.append({"code": "INITV4-E-SPECIAL-FILE", "path": relative})
+                elif name not in {"AGENTS.md", "CLAUDE.md", SNAPSHOT_NAME, JOURNAL_NAME} and ".craft-init-v4-" not in name:
+                    try:
+                        descriptor = os.open(
+                            name,
+                            os.O_RDONLY | _NOFOLLOW | getattr(os, "O_NONBLOCK", 0),
+                            dir_fd=directory_fd,
+                        )
+                        os.close(descriptor)
+                    except OSError:
+                        findings.append({"code": "INITV4-E-UNREADABLE", "path": relative})
+                    else:
+                        relevant = True
+                        record["files"].append(relative)
+            if not relevant and current_relative != "." and not record["subdirectories"]:
+                directories.pop(current_relative, None)
+    except OSError:
+        findings.append({"code": "INITV4-E-UNREADABLE", "path": "."})
     return directories, sorted(exclusions, key=lambda item: item["path"]), sorted(findings, key=lambda item: (item["path"], item["code"]))
 
 
@@ -414,7 +420,7 @@ def discover_topology(root: Path, *, max_depth: int = 3, shim_policy: str = "off
         chain = [node["agents_path"] for node in nodes if node["directory"] == "." or directory == node["directory"] or directory.startswith(node["directory"] + "/")]
         state = coverage_status(chain, None, evidence, fallback_present=bool(chain))
         coverage.append({"directory": directory, "expected_chain": chain, "status_at_apply": state["status"], "basis_at_apply": state["basis"]})
-    return {"max_depth": max_depth, "shim_policy": shim_policy, "loader": _loader_snapshot(loading_evidence), "nodes": nodes, "coverage": coverage, "root_fallback_payload_sha256": None, "findings": findings, "exclusions": exclusions, "repository_name": root.name, "_root": root}
+    return {"max_depth": max_depth, "shim_policy": shim_policy, "loader": _loader_snapshot(loading_evidence), "nodes": nodes, "coverage": coverage, "root_fallback_payload_sha256": None, "findings": findings, "exclusions": exclusions, "repository_name": root.name, "_root": root, "_inventory": inventory}
 
 
 def _render_managed_payload(
@@ -422,13 +428,33 @@ def _render_managed_payload(
     node: Mapping[str, Any],
     migrated_claude: str | None = None,
 ) -> bytes:
-    evidence_paths = sorted(
-        {
-            path
-            for factor in node["factors"]
-            for path in factor["evidence_paths"]
-        }
-    )
+    inventory = topology.get("_inventory", {})
+    record = inventory.get(node["directory"], {"files": [], "subdirectories": []})
+    files = sorted(str(path) for path in record.get("files", []))
+    directories = sorted(str(path) for path in record.get("subdirectories", []))
+    configs = [path for path in files if PurePosixPath(path).name in _CONFIG_NAMES]
+    entry_points = [path for path in files if PurePosixPath(path).name in _BOUNDARY_NAMES]
+    suffix_counts: dict[str, int] = {}
+    for path in files:
+        suffix = PurePosixPath(path).suffix.lower() or "<none>"
+        suffix_counts[suffix] = suffix_counts.get(suffix, 0) + 1
+    commands: list[str] = []
+    root = topology.get("_root")
+    if isinstance(root, Path):
+        for path in configs:
+            if PurePosixPath(path).name != "package.json":
+                continue
+            try:
+                package = json.loads(_read_relative_nofollow(root, path)[0].decode("utf-8"))
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError):
+                continue
+            scripts = package.get("scripts") if isinstance(package, Mapping) else None
+            if isinstance(scripts, Mapping):
+                commands.extend(
+                    f"`npm run {name}` — package script `{command}`"
+                    for name, command in sorted(scripts.items())
+                    if isinstance(name, str) and isinstance(command, str)
+                )
     child_scopes = sorted(
         candidate["directory"]
         for candidate in topology["nodes"]
@@ -442,41 +468,59 @@ def _render_managed_payload(
         f"Scope: {scope}",
         f"Placement: {node['decision']} (score {node['score']})",
         "",
-        "## Observed structure",
+        "## Repository evidence",
+        "",
+        f"- Files directly observed: {len(files)}.",
+        f"- Child directories directly observed: {len(directories)}.",
+        "- File types: " + (", ".join(f"`{suffix}`={count}" for suffix, count in sorted(suffix_counts.items())) or "none."),
+        "- Configurations: " + (", ".join(f"`{path}`" for path in configs) or "none observed."),
+        "- Entry boundaries: " + (", ".join(f"`{path}`" for path in entry_points) or "none observed."),
+        "",
+        "### Direct files",
+        "",
+        *([f"- `{path}`" for path in files] or ["- No first-party regular files were observed directly in this scope."]),
+        "",
+        "### Direct child directories",
+        "",
+        *([f"- `{path}/`" for path in directories] or ["- No direct child directory was observed."]),
+        "",
+        "## Placement evidence",
         "",
     ]
     for factor in node["factors"]:
-        lines.extend(
-            [
-                f"### {factor['name']}",
-                f"- Measured: {'yes' if factor['measured'] else 'no'}",
-                f"- Value: {factor['value']!r}; score contribution: {factor['points']}",
-                "- Evidence: " + (
-                    ", ".join(f"`{path}`" for path in factor["evidence_paths"])
-                    if factor["evidence_paths"]
-                    else "unavailable"
-                ),
-                "",
-            ]
-        )
-    if evidence_paths:
-        lines.extend(["- Evidence: " + ", ".join(f"`{path}`" for path in evidence_paths[:20])])
-    if child_scopes:
-        lines.extend(
-            [
-                "",
-                "## Child scopes",
-                "",
-                *[f"- `{directory}/` has nearer managed instructions." for directory in child_scopes],
-            ]
+        lines.append(
+            f"- `{factor['name']}`: measured={'yes' if factor['measured'] else 'no'}, "
+            f"value={factor['value']!r}, points={factor['points']}."
         )
     lines.extend(
         [
             "",
+            "## Commands",
+            "",
+            *(commands if commands else ["- No executable command was asserted because no declared package script was observed."]),
+            "",
+            "## Scope relationships",
+            "",
+            f"- Parent instruction: `{node['parent_agents_path']}`." if node["parent_agents_path"] else "- This is the root instruction.",
+            *([f"- `{directory}/` has nearer managed instructions." for directory in child_scopes] or ["- No nearer managed child instruction was selected."]),
+            "",
+            "## Loading and coverage",
+            "",
+            f"- Loader class: `{topology['loader']['loader_class']}`.",
+            f"- Loader evidence status: `{topology['loader']['evidence_status']}`.",
+            f"- Placement depth bound: `{topology['max_depth']}`; complete coverage remains independent.",
+            "",
+            "## Constraints",
+            "",
+            "- Use only repository facts listed above; do not invent commands, entry points, or conventions.",
+            "- Preserve unmanaged bytes and require evidence-bound acceptance before replacing incumbent instructions.",
+            "- Keep `AGENTS.md` canonical; a sibling `CLAUDE.md` may contain only the exact `@AGENTS.md` adapter.",
+            "",
             "## Working rule",
             "",
             "Read every `AGENTS.md` from the repository root through the target directory; the nearest instruction wins on conflict.",
-            "Preserve repository-local conventions and verify changed behavior with the repository's own commands.",
+            "Run only commands declared above or commands independently verified from repository configuration.",
+            "Verify changed behavior at the narrowest observable repository surface before delivery.",
             "",
         ]
     )
@@ -491,6 +535,13 @@ def _render_managed_payload(
                 "",
             ]
         )
+    line_count = len(lines)
+    minimum, maximum = (50, 150) if node["directory"] == "." else (30, 80)
+    if not minimum <= line_count <= maximum:
+        raise ValueError(
+            f"managed payload for {node['agents_path']} has {line_count} lines; "
+            f"required range is {minimum}..{maximum}"
+        )
     return "\n".join(lines).encode("utf-8")
 
 
@@ -502,6 +553,7 @@ def _proposal(
     before_mode: int,
     after: bytes | None,
     after_mode: int | None,
+    coupled_targets: Iterable[Mapping[str, Any]] = (),
 ) -> dict[str, Any]:
     fields = {
         "operation": operation,
@@ -513,6 +565,7 @@ def _proposal(
         "post_exists": after is not None,
         "postimage_sha256": sha256_bytes(after) if after is not None else None,
         "post_mode": after_mode,
+        "coupled_targets": [dict(target) for target in coupled_targets],
     }
     return {**fields, "id": stable_id("P-" + action.upper(), fields)}
 
@@ -543,9 +596,13 @@ def build_managed_outputs(topology: Mapping[str, Any]) -> dict[str, Any]:
         data = managed_envelope(node["managed_id"], payload)
         path = node["agents_path"]
         destination = safe_path(root, path)
+        agents_before: bytes | None = None
+        agents_before_mode: int | None = None
         if destination.exists():
             observed = file_observation(root, path)
             before, _ = _read_relative_nofollow(root, path)
+            agents_before = before
+            agents_before_mode = observed["mode"]
             if before != data:
                 parsed = parse_managed_envelope(before)
                 if parsed is None or parsed["managed_id"] != node["managed_id"]:
@@ -594,7 +651,26 @@ def build_managed_outputs(topology: Mapping[str, Any]) -> dict[str, Any]:
                 observed = file_observation(root, claude_path)
                 before = claude_before if claude_before is not None else _read_relative_nofollow(root, claude_path)[0]
                 if before != SHIM_BYTES:
-                    proposal = _proposal("map", "merge-claude-and-replace-shim", claude_path, before, observed["mode"], SHIM_BYTES, observed["mode"])
+                    coupled_agents = {
+                        "path": path,
+                        "action": "replace" if agents_before is not None else "create",
+                        "pre_exists": agents_before is not None,
+                        "preimage_sha256": sha256_bytes(agents_before) if agents_before is not None else None,
+                        "pre_mode": agents_before_mode,
+                        "post_exists": True,
+                        "postimage_sha256": sha256_bytes(data),
+                        "post_mode": mode,
+                    }
+                    proposal = _proposal(
+                        "map",
+                        "merge-claude-and-replace-shim",
+                        claude_path,
+                        before,
+                        observed["mode"],
+                        SHIM_BYTES,
+                        observed["mode"],
+                        [coupled_agents],
+                    )
                     proposals.append(proposal)
                     effects.append(
                         {
@@ -694,6 +770,7 @@ def validate_snapshot(snapshot: Mapping[str, Any]) -> None:
         not isinstance(max_depth, int)
         or isinstance(max_depth, bool)
         or not 1 <= max_depth <= 32
+        or not isinstance(topology["shim_policy"], str)
         or topology["shim_policy"] not in {"on", "off"}
     ):
         raise ValueError("snapshot topology is invalid")
@@ -702,7 +779,12 @@ def validate_snapshot(snapshot: Mapping[str, Any]) -> None:
     statuses = {"probe-verified", "source-only", "conflicted", "unavailable", "version-mismatch", "not-automatable"}
     if not isinstance(loader, Mapping) or set(loader) != loader_keys:
         raise ValueError("snapshot loader evidence is invalid")
-    if loader["loader_class"] not in {"file-scoped", "recursive", "ancestor-only", "unknown"} or loader["evidence_status"] not in statuses:
+    if (
+        not isinstance(loader["loader_class"], str)
+        or not isinstance(loader["evidence_status"], str)
+        or loader["loader_class"] not in {"file-scoped", "recursive", "ancestor-only", "unknown"}
+        or loader["evidence_status"] not in statuses
+    ):
         raise ValueError("snapshot loader class/status is invalid")
     if loader["evidence_status"] != "probe-verified" and loader["loader_class"] != "unknown":
         raise ValueError("unverified loader evidence must remain unknown")
@@ -721,38 +803,53 @@ def validate_snapshot(snapshot: Mapping[str, Any]) -> None:
         if not isinstance(node, Mapping) or set(node) != keys:
             raise ValueError("snapshot node is invalid")
         directory = node["directory"]
+        if not isinstance(directory, str) or not isinstance(node["agents_path"], str):
+            raise ValueError("snapshot node path is invalid")
         if directory != ".":
             normalize_path(directory)
         normalize_path(node["agents_path"])
         if node["parent_agents_path"] is not None:
+            if not isinstance(node["parent_agents_path"], str):
+                raise ValueError("snapshot parent path is invalid")
             normalize_path(node["parent_agents_path"])
         if not isinstance(node["managed_id"], str) or not node["managed_id"] or ">" in node["managed_id"] or any(character.isspace() for character in node["managed_id"]):
             raise ValueError("snapshot managed id is invalid")
-        if not isinstance(node["score"], int) or isinstance(node["score"], bool) or not 0 <= node["score"] <= 17 or node["decision"] not in {"root", "high-score", "distinct-domain"}:
+        if not isinstance(node["score"], int) or isinstance(node["score"], bool) or not 0 <= node["score"] <= 17 or not isinstance(node["decision"], str) or node["decision"] not in {"root", "high-score", "distinct-domain"}:
             raise ValueError("snapshot node decision is invalid")
         if not isinstance(node["factors"], list):
             raise ValueError("snapshot node factors are invalid")
         for factor in node["factors"]:
             factor_keys = {"name", "measured", "value", "points", "evidence_paths"}
-            if not isinstance(factor, Mapping) or set(factor) != factor_keys or factor["name"] not in factor_names:
+            if not isinstance(factor, Mapping) or set(factor) != factor_keys or not isinstance(factor["name"], str) or factor["name"] not in factor_names:
                 raise ValueError("snapshot factor is invalid")
             if not isinstance(factor["measured"], bool) or not isinstance(factor["points"], int) or isinstance(factor["points"], bool) or not 0 <= factor["points"] <= 3:
                 raise ValueError("snapshot factor measurement is invalid")
             if not isinstance(factor["evidence_paths"], list):
                 raise ValueError("snapshot factor evidence is invalid")
             for path in factor["evidence_paths"]:
+                if not isinstance(path, str):
+                    raise ValueError("snapshot factor evidence path is invalid")
                 normalize_path(path)
     for coverage in topology["coverage"]:
         keys = {"directory", "expected_chain", "status_at_apply", "basis_at_apply"}
         if not isinstance(coverage, Mapping) or set(coverage) != keys:
             raise ValueError("snapshot coverage is invalid")
+        if not isinstance(coverage["directory"], str):
+            raise ValueError("snapshot coverage directory is invalid")
         if coverage["directory"] != ".":
             normalize_path(coverage["directory"])
         if not isinstance(coverage["expected_chain"], list):
             raise ValueError("snapshot coverage chain is invalid")
         for path in coverage["expected_chain"]:
+            if not isinstance(path, str):
+                raise ValueError("snapshot coverage path is invalid")
             normalize_path(path)
-        if coverage["status_at_apply"] not in {"covered", "gap", "ambiguous", "unverified"} or coverage["basis_at_apply"] not in {"native", "root-fallback", "none"}:
+        if (
+            not isinstance(coverage["status_at_apply"], str)
+            or not isinstance(coverage["basis_at_apply"], str)
+            or coverage["status_at_apply"] not in {"covered", "gap", "ambiguous", "unverified"}
+            or coverage["basis_at_apply"] not in {"native", "root-fallback", "none"}
+        ):
             raise ValueError("snapshot coverage status is invalid")
     root_hash = topology["root_fallback_payload_sha256"]
     if root_hash is not None and (not isinstance(root_hash, str) or not _HASH.match(root_hash)):
@@ -762,8 +859,15 @@ def validate_snapshot(snapshot: Mapping[str, Any]) -> None:
     for row in snapshot["owned_artifacts"]:
         if not isinstance(row, Mapping) or set(row) != owned_keys:
             raise ValueError("snapshot owned artifact is invalid")
+        if not isinstance(row["path"], str):
+            raise ValueError("snapshot ownership path is invalid")
         normalize_path(row["path"])
-        if row["artifact_type"] not in {"agents-region", "agents-file", "claude-shim"} or row["status"] not in {"active", "stale"}:
+        if (
+            not isinstance(row["artifact_type"], str)
+            or not isinstance(row["status"], str)
+            or row["artifact_type"] not in {"agents-region", "agents-file", "claude-shim"}
+            or row["status"] not in {"active", "stale"}
+        ):
             raise ValueError("snapshot ownership kind/status is invalid")
         if not isinstance(row["managed_id"], str) or not row["managed_id"] or ">" in row["managed_id"]:
             raise ValueError("snapshot ownership id is invalid")

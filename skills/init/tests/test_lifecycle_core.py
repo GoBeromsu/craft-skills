@@ -90,6 +90,12 @@ class LifecycleCoreTests(unittest.TestCase):
             outputs = core.build_managed_outputs(core.discover_topology(root))
             self.assertEqual([effect["path"] for effect in outputs["effects"]], ["AGENTS.md"])
             self.assertTrue(outputs["effects"][0]["bytes"].startswith(b"<!-- init:managed id="))
+            payload = core.parse_managed_envelope(outputs["effects"][0]["bytes"])
+            self.assertIsNotNone(payload)
+            payload_lines = payload["payload"].splitlines()
+            self.assertGreaterEqual(len(payload_lines), 50)
+            self.assertLessEqual(len(payload_lines), 150)
+            self.assertIn("`main.py`", payload["payload"])
             topology = outputs["snapshot"]["last_applied_topology"]
             self.assertEqual(set(topology), {"max_depth", "shim_policy", "loader", "nodes", "coverage", "root_fallback_payload_sha256"})
             schema = json.loads((Path(__file__).resolve().parents[1] / "templates" / "snapshot.schema.json").read_text(encoding="utf-8"))
@@ -122,6 +128,20 @@ class LifecycleCoreTests(unittest.TestCase):
                     "last_applied_topology": {
                         **snapshot["last_applied_topology"],
                         "max_depth": "3",
+                    },
+                },
+                {
+                    **snapshot,
+                    "last_applied_topology": {
+                        **snapshot["last_applied_topology"],
+                        "shim_policy": [],
+                    },
+                },
+                {
+                    **snapshot,
+                    "last_applied_topology": {
+                        **snapshot["last_applied_topology"],
+                        "nodes": [{**snapshot["last_applied_topology"]["nodes"][0], "agents_path": 42}],
                     },
                 },
             ]

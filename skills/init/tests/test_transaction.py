@@ -7,6 +7,7 @@ import stat
 import sys
 import tempfile
 import unittest
+import re
 from pathlib import Path
 from unittest import mock
 
@@ -205,14 +206,14 @@ class TransactionTests(unittest.TestCase):
             root = Path(directory)
             product = root / "AGENTS.md"
             product.write_bytes(b"before")
-            original = transaction._exclusive_write
+            original = transaction._exclusive_write_relative
 
-            def race(path: Path, data: bytes, mode: int) -> None:
-                if path.name == core.JOURNAL_NAME:
+            def race(actual_root: Path, relative: str, data: bytes, mode: int) -> None:
+                if relative == core.JOURNAL_NAME:
                     product.write_bytes(b"changed")
-                original(path, data, mode)
+                original(actual_root, relative, data, mode)
 
-            with mock.patch.object(transaction, "_exclusive_write", side_effect=race):
+            with mock.patch.object(transaction, "_exclusive_write_relative", side_effect=race):
                 with self.assertRaisesRegex(ValueError, "preimage changed"):
                     transaction.apply(root, [{"path": "AGENTS.md", "bytes": b"after"}], set(), snapshot_payload=self._snapshot())
             self.assertTrue((root / core.JOURNAL_NAME).exists())
@@ -237,6 +238,42 @@ class TransactionTests(unittest.TestCase):
                     snapshot_payload=self._snapshot(),
                 )
             self.assertEqual(product.read_bytes(), b"current")
+            self.assertFalse((root / core.JOURNAL_NAME).exists())
+
+    def test_unexpected_target_requires_evidence_bound_rollback_acceptance(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            product = root / "AGENTS.md"
+            product.write_bytes(b"before")
+            original_replace = os.replace
+
+            def fail_product(source: os.PathLike[str], destination: os.PathLike[str], **kwargs: object) -> None:
+                if Path(destination).name == "AGENTS.md":
+                    raise OSError("stop before product rename")
+                original_replace(source, destination, **kwargs)
+
+            with mock.patch.object(transaction.os, "replace", side_effect=fail_product):
+                with self.assertRaises(OSError):
+                    transaction.apply(root, [{"path": "AGENTS.md", "bytes": b"after"}], set(), snapshot_payload=self._snapshot())
+            product.write_bytes(b"unexpected")
+            with self.assertRaises(transaction.RecoveryBlocked) as blocked:
+                transaction.recover(root)
+            proposal = re.search(r"P-RECOVER-ROLLBACK-TRANSACTION-[0-9a-f]{12}", str(blocked.exception))
+            self.assertIsNotNone(proposal)
+            self.assertEqual(transaction.recover(root, {proposal.group()})["phase"], "rolled-back")
+            self.assertEqual(product.read_bytes(), b"before")
+
+    def test_preparing_transaction_with_unchanged_products_aborts_cleanly(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            product = root / "AGENTS.md"
+            product.write_bytes(b"before")
+            with mock.patch.object(transaction, "_image_copy", side_effect=OSError("stop during preparation")):
+                with self.assertRaises(OSError):
+                    transaction.apply(root, [{"path": "AGENTS.md", "bytes": b"after"}], set(), snapshot_payload=self._snapshot())
+            self.assertTrue((root / core.JOURNAL_NAME).exists())
+            self.assertEqual(transaction.recover(root)["phase"], "aborted")
+            self.assertEqual(product.read_bytes(), b"before")
             self.assertFalse((root / core.JOURNAL_NAME).exists())
 
 

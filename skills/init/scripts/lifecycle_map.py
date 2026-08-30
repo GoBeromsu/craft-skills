@@ -10,7 +10,7 @@ import stat
 import sys
 from pathlib import Path
 
-from _transaction import apply, recover
+from _transaction import RecoveryBlocked, RecoveryFailure, apply, recover
 from lifecycle_core import JOURNAL_NAME, SNAPSHOT_NAME, build_managed_outputs, canonical_json, discover_topology, probe_loading, validate_ownership_snapshot, validate_snapshot
 _NOFOLLOW = getattr(os, "O_NOFOLLOW", 0)
 
@@ -113,17 +113,22 @@ def main(argv: list[str] | None = None) -> int:
                 raise ValueError("transaction journal is unsafe")
             try:
                 result = recover(root, set(args.accept))
-            except RuntimeError as error:
-                code = "map-blocked" if "recovery requires acceptance:" in str(error) else "map-failed"
+            except RecoveryBlocked as error:
+                code = "map-blocked"
                 _emit({"diagnostics": [{"code": code, "message": str(error)}], "operation": "map"}, sys.stderr)
-                return 2 if code == "map-blocked" else 3
+                return 2
+            except RecoveryFailure as error:
+                _emit({"diagnostics": [{"code": "map-failed", "message": str(error)}], "operation": "map"}, sys.stderr)
+                return 3
             _emit({"operation": "map", **result})
             return 0
         loading_receipt = None
         if args.loading_evidence is not None:
-            loading_receipt = json.loads(args.loading_evidence.read_text(encoding="utf-8"))
-            if not isinstance(loading_receipt, dict):
+            loaded_evidence = json.loads(args.loading_evidence.read_text(encoding="utf-8"))
+            if not isinstance(loaded_evidence, dict):
                 raise ValueError("--loading-evidence must contain a JSON object")
+            nested = loaded_evidence.get("receipt")
+            loading_receipt = dict(nested) if isinstance(nested, dict) else loaded_evidence
         outputs = (
             _outputs(root, args.max_depth, args.claude_shim)
             if loading_receipt is None

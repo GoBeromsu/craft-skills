@@ -44,6 +44,14 @@ _PRIVATE_MODE = 0o600
 _NOFOLLOW = getattr(os, "O_NOFOLLOW", 0)
 
 
+class RecoveryBlocked(RuntimeError):
+    """Recovery cannot start safely or requires fresh acceptance."""
+
+
+class RecoveryFailure(RuntimeError):
+    """A validated recovery attempt failed after mutation began."""
+
+
 def _fsync_directory(directory: Path) -> None:
     descriptor = os.open(directory, os.O_RDONLY)
     try:
@@ -68,6 +76,33 @@ def _exclusive_write(path: Path, data: bytes, mode: int) -> None:
     finally:
         os.close(descriptor)
     _fsync_directory(path.parent)
+
+
+def _exclusive_write_relative(root: Path, relative: str, data: bytes, mode: int) -> None:
+    parent_fd, name = _open_parent_dir(root, relative)
+    try:
+        descriptor = os.open(
+            name,
+            os.O_WRONLY | os.O_CREAT | os.O_EXCL | _NOFOLLOW,
+            mode,
+            dir_fd=parent_fd,
+        )
+        try:
+            offset = 0
+            while offset < len(data):
+                written = os.write(descriptor, data[offset:])
+                if written <= 0:
+                    raise OSError("exclusive write made no progress")
+                offset += written
+            os.fchmod(descriptor, mode)
+            if stat.S_IMODE(os.fstat(descriptor).st_mode) != mode:
+                raise OSError("could not set requested mode")
+            os.fsync(descriptor)
+        finally:
+            os.close(descriptor)
+        os.fsync(parent_fd)
+    finally:
+        os.close(parent_fd)
 
 
 def _matches(entry: Mapping[str, Any], side: str, root: Path) -> bool:
@@ -291,14 +326,17 @@ def _journal_write(root: Path, journal: Mapping[str, Any]) -> None:
             raise ValueError("orphan next journal artifact has the wrong identity")
         os.unlink(next_path)
         _fsync_directory(next_path.parent)
-    _exclusive_write(next_path, canonical_json(dict(journal), pretty=True), _PRIVATE_MODE)
-    os.replace(next_path, root / JOURNAL_NAME)
-    _fsync_directory(root)
+    _exclusive_write_relative(root, next_relative, canonical_json(dict(journal), pretty=True), _PRIVATE_MODE)
+    root_fd = os.open(root, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    try:
+        os.replace(next_relative, JOURNAL_NAME, src_dir_fd=root_fd, dst_dir_fd=root_fd)
+        os.fsync(root_fd)
+    finally:
+        os.close(root_fd)
 
 
 def _image_copy(root: Path, relative: str, data: bytes) -> None:
-    path = safe_path(root, relative)
-    _exclusive_write(path, data, _PRIVATE_MODE)
+    _exclusive_write_relative(root, relative, data, _PRIVATE_MODE)
     observed, mode = _read_relative_with_mode(root, relative)
     if sha256_bytes(observed) != sha256_bytes(data) or mode != _PRIVATE_MODE:
         raise ValueError("recovery image verification failed")
@@ -315,7 +353,7 @@ def _prepare_apply(root: Path, entry: Mapping[str, Any], direction: str) -> Path
     _validate_artifact(root, str(source_relative), expected["sha256"], _PRIVATE_MODE)
     data, _ = _read_relative_with_mode(root, str(source_relative))
     apply_path = safe_path(root, str(entry["apply_path"]))
-    _exclusive_write(apply_path, data, int(expected["mode"]))
+    _exclusive_write_relative(root, str(entry["apply_path"]), data, int(expected["mode"]))
     applied, applied_mode = _read_relative_with_mode(root, str(entry["apply_path"]))
     observation = {"regular": True, "sha256": sha256_bytes(applied), "mode": applied_mode}
     if not validate_apply_observation(entry, direction, observation):
@@ -325,28 +363,48 @@ def _prepare_apply(root: Path, entry: Mapping[str, Any], direction: str) -> Path
 
 def _consume_apply(root: Path, entry: Mapping[str, Any], direction: str) -> None:
     destination_relative = str(entry["path"])
-    destination = safe_path(root, destination_relative)
     expected = expected_apply(entry, direction)
     if expected is None:
-        if destination.exists():
-            parent_fd, name = _open_parent_dir(root, destination_relative)
+        parent_fd, name = _open_parent_dir(root, destination_relative)
+        try:
             try:
                 descriptor = os.open(name, os.O_RDONLY | _NOFOLLOW, dir_fd=parent_fd)
-                try:
-                    if not stat.S_ISREG(os.fstat(descriptor).st_mode):
-                        raise ValueError("delete destination is not regular")
-                finally:
-                    os.close(descriptor)
-                os.unlink(name, dir_fd=parent_fd)
-                os.fsync(parent_fd)
+            except FileNotFoundError:
+                return
+            try:
+                if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+                    raise ValueError("delete destination is not regular")
             finally:
-                os.close(parent_fd)
-            _fsync_directory(destination.parent)
+                os.close(descriptor)
+            os.unlink(name, dir_fd=parent_fd)
+            os.fsync(parent_fd)
+        finally:
+            os.close(parent_fd)
         return
     apply_path = safe_path(root, str(entry["apply_path"]))
-    if apply_path.exists():
+    try:
         _validate_artifact(root, str(entry["apply_path"]), expected["sha256"], int(expected["mode"]))
-    else:
+    except FileNotFoundError:
+        apply_path = _prepare_apply(root, entry, direction)
+        assert apply_path is not None
+    except ValueError:
+        existing, existing_mode = _read_relative_with_mode(root, str(entry["apply_path"]))
+        bound_images = [
+            image
+            for candidate_direction in ("forward", "rollback")
+            if (image := expected_apply(entry, candidate_direction)) is not None
+        ]
+        if not any(
+            sha256_bytes(existing) == image["sha256"] and existing_mode == int(image["mode"])
+            for image in bound_images
+        ):
+            raise ValueError("existing apply artifact is not a bound transaction image")
+        parent_fd, name = _open_parent_dir(root, str(entry["apply_path"]))
+        try:
+            os.unlink(name, dir_fd=parent_fd)
+            os.fsync(parent_fd)
+        finally:
+            os.close(parent_fd)
         apply_path = _prepare_apply(root, entry, direction)
         assert apply_path is not None
     # The source was re-opened and checked after its file and parent fsync; rename
@@ -362,17 +420,24 @@ def _consume_apply(root: Path, entry: Mapping[str, Any], direction: str) -> None
             dst_dir_fd=destination_parent_fd,
         )
         os.fsync(destination_parent_fd)
+        descriptor = os.open(destination_name, os.O_RDONLY | _NOFOLLOW, dir_fd=destination_parent_fd)
+        try:
+            info = os.fstat(descriptor)
+            chunks: list[bytes] = []
+            while True:
+                chunk = os.read(descriptor, 1024 * 1024)
+                if not chunk:
+                    break
+                chunks.append(chunk)
+            os.fsync(descriptor)
+            observed_hash = sha256_bytes(b"".join(chunks))
+            observed_mode = stat.S_IMODE(info.st_mode)
+        finally:
+            os.close(descriptor)
     finally:
         os.close(source_parent_fd)
         os.close(destination_parent_fd)
-    descriptor = os.open(destination, os.O_RDONLY | _NOFOLLOW)
-    try:
-        os.fsync(descriptor)
-    finally:
-        os.close(descriptor)
-    _fsync_directory(destination.parent)
-    observed = file_observation(root, str(entry["path"]))
-    if observed["sha256"] != expected["sha256"] or observed["mode"] != expected["mode"]:
+    if observed_hash != expected["sha256"] or observed_mode != expected["mode"]:
         raise ValueError("renamed destination does not match bound image")
 
 
@@ -383,25 +448,34 @@ def _cleanup(root: Path, journal: Mapping[str, Any]) -> None:
             relative = entry.get(key)
             if not relative:
                 continue
-            path = safe_path(root, str(relative))
-            if path.exists():
-                if key == "apply_path":
-                    expected = expected_apply(entry, "forward")
-                    rollback = expected_apply(entry, "rollback")
-                    valid = (
-                        expected is not None
-                        and _matches_artifact(path, expected["sha256"], int(expected["mode"]))
-                    ) or (
-                        rollback is not None
-                        and _matches_artifact(path, rollback["sha256"], int(rollback["mode"]))
-                    )
-                    if not valid:
-                        raise ValueError("cleanup apply artifact is unsafe")
-                else:
-                    side = "pre" if key.startswith("pre_") else "post"
-                    _validate_artifact(root, str(relative), entry[f"{side}_sha256"], _PRIVATE_MODE)
-                os.unlink(path)
-                _fsync_directory(path.parent)
+            try:
+                data, mode = _read_relative_with_mode(root, str(relative))
+            except FileNotFoundError:
+                continue
+            if key == "apply_path":
+                expected = expected_apply(entry, "forward")
+                rollback = expected_apply(entry, "rollback")
+                valid = (
+                    expected is not None
+                    and sha256_bytes(data) == expected["sha256"]
+                    and mode == int(expected["mode"])
+                ) or (
+                    rollback is not None
+                    and sha256_bytes(data) == rollback["sha256"]
+                    and mode == int(rollback["mode"])
+                )
+                if not valid:
+                    raise ValueError("cleanup apply artifact is unsafe")
+            else:
+                side = "pre" if key.startswith("pre_") else "post"
+                if sha256_bytes(data) != entry[f"{side}_sha256"] or mode != _PRIVATE_MODE:
+                    raise ValueError("cleanup recovery artifact is unsafe")
+            parent_fd, name = _open_parent_dir(root, str(relative))
+            try:
+                os.unlink(name, dir_fd=parent_fd)
+                os.fsync(parent_fd)
+            finally:
+                os.close(parent_fd)
     next_path = safe_path(root, derived_transaction_paths(str(journal["transaction_id"]), SNAPSHOT_NAME)["next_path"])
     if next_path.exists():
         info = os.lstat(next_path)
@@ -414,15 +488,23 @@ def _cleanup(root: Path, journal: Mapping[str, Any]) -> None:
             raise ValueError("cleanup next journal artifact is unsafe") from exc
         if next_journal["transaction_id"] != journal["transaction_id"]:
             raise ValueError("cleanup next journal artifact has the wrong identity")
-        os.unlink(next_path)
-        _fsync_directory(next_path.parent)
+        root_fd = os.open(root, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+        try:
+            os.unlink(next_path.name, dir_fd=root_fd)
+            os.fsync(root_fd)
+        finally:
+            os.close(root_fd)
     journal_path = root / JOURNAL_NAME
     if journal_path.exists():
         journal_info = os.lstat(journal_path)
         if not stat.S_ISREG(journal_info.st_mode) or stat.S_IMODE(journal_info.st_mode) != _PRIVATE_MODE:
             raise ValueError("journal artifact mode is unsafe")
-        os.unlink(journal_path)
-        _fsync_directory(root)
+        root_fd = os.open(root, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+        try:
+            os.unlink(JOURNAL_NAME, dir_fd=root_fd)
+            os.fsync(root_fd)
+        finally:
+            os.close(root_fd)
 
 
 def _matches_artifact(path: Path, digest: str, mode: int) -> bool:
@@ -476,7 +558,7 @@ def apply(
     for entry in entries + [snapshot]:
         if not _matches(entry, "pre", root):
             raise ValueError("target preimage changed before journal creation")
-    _exclusive_write(root / JOURNAL_NAME, canonical_json(journal, pretty=True), _PRIVATE_MODE)
+    _exclusive_write_relative(root, JOURNAL_NAME, canonical_json(journal, pretty=True), _PRIVATE_MODE)
     for entry, content in zip(entries + [snapshot], contents + [snapshot_content]):
         if entry["pre_exists"]:
             if not _matches(entry, "pre", root):
@@ -518,6 +600,7 @@ def _recovery_proposal_id(
     journal: Mapping[str, Any],
     journal_bytes: bytes,
     action: str,
+    selected_images: Iterable[Mapping[str, Any]],
 ) -> str:
     observed: list[dict[str, Any]] = []
     for entry in list(journal["targets"]) + [journal["snapshot"]]:
@@ -531,14 +614,78 @@ def _recovery_proposal_id(
         "action": action,
         "journal_sha256": sha256_bytes(journal_bytes),
         "observed": observed,
+        "selected_images": [dict(image) for image in selected_images],
     }
     return "P-" + action.upper() + "-" + sha256_bytes(canonical_json(basis))[:12]
+
+
+def _preflight_recovery_images(
+    root: Path,
+    targets: Iterable[Mapping[str, Any]],
+    direction: str,
+) -> list[dict[str, Any]]:
+    selected: list[dict[str, Any]] = []
+    use_post = direction == "complete"
+    side = "post" if use_post else "pre"
+    for entry in targets:
+        expected = expected_apply(entry, direction)
+        if expected is None:
+            selected.append({"path": entry["path"], "destination_exists": False, "recovery_path": None, "sha256": None, "mode": None})
+            continue
+        recovery_path = entry[f"{side}_recovery_path"]
+        if not isinstance(recovery_path, str):
+            raise ValueError("selected immutable recovery image is missing")
+        _validate_artifact(root, recovery_path, expected["sha256"], _PRIVATE_MODE)
+        selected.append({
+            "path": entry["path"],
+            "destination_exists": True,
+            "recovery_path": recovery_path,
+            "sha256": expected["sha256"],
+            "mode": expected["mode"],
+        })
+    return selected
+
+
+def _preflight_cleanup(root: Path, journal: Mapping[str, Any]) -> None:
+    for entry in list(journal["targets"]) + [journal["snapshot"]]:
+        for key in ("apply_path", "pre_recovery_path", "post_recovery_path"):
+            relative = entry.get(key)
+            if not relative:
+                continue
+            path = safe_path(root, str(relative))
+            if not path.exists():
+                continue
+            if key == "apply_path":
+                forward = expected_apply(entry, "forward")
+                rollback = expected_apply(entry, "rollback")
+                if not (
+                    (forward is not None and _matches_artifact(path, forward["sha256"], int(forward["mode"])))
+                    or (rollback is not None and _matches_artifact(path, rollback["sha256"], int(rollback["mode"])))
+                ):
+                    raise ValueError("cleanup apply artifact is unsafe")
+            else:
+                side = "pre" if key.startswith("pre_") else "post"
+                _validate_artifact(root, str(relative), entry[f"{side}_sha256"], _PRIVATE_MODE)
+    next_relative = derived_transaction_paths(str(journal["transaction_id"]), SNAPSHOT_NAME)["next_path"]
+    next_path = safe_path(root, next_relative)
+    if next_path.exists():
+        next_bytes, next_mode = _read_relative_with_mode(root, next_relative)
+        if next_mode != _PRIVATE_MODE:
+            raise ValueError("cleanup next journal artifact is unsafe")
+        try:
+            next_journal = json.loads(next_bytes.decode("utf-8"))
+            _validate_journal(next_journal)
+        except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
+            raise ValueError("cleanup next journal artifact is unsafe") from error
+        if next_journal["transaction_id"] != journal["transaction_id"]:
+            raise ValueError("cleanup next journal artifact has the wrong identity")
 
 
 def recover(root: Path, accepted_ids: set[str] | None = None) -> dict[str, Any]:
     """Finish recognized committed work or reverse a recognized pre-commit mix."""
     root = root.resolve(strict=True)
     journal_path = root / JOURNAL_NAME
+    mutating = False
     try:
         journal_info = os.lstat(journal_path)
         if not stat.S_ISREG(journal_info.st_mode) or stat.S_IMODE(journal_info.st_mode) != _PRIVATE_MODE:
@@ -556,12 +703,24 @@ def recover(root: Path, accepted_ids: set[str] | None = None) -> dict[str, Any]:
             except (FileNotFoundError, OSError, ValueError):
                 return False
 
+        if journal["phase"] == "preparing":
+            if not matches(snapshot, "pre") or not all(matches(item, "pre") for item in targets):
+                raise ValueError("preparing transaction changed a product")
+            _preflight_cleanup(root, journal)
+            mutating = True
+            _cleanup(root, journal)
+            return {"transaction_id": identifier, "phase": "aborted", "recovered": True}
+
         committed = matches(snapshot, "post") and all(matches(item, "post") for item in targets)
         if committed and journal["phase"] in {"committing-snapshot", "snapshot-committed", "cleaning"}:
+            _preflight_cleanup(root, journal)
+            mutating = True
             _cleanup(root, journal)
             return {"transaction_id": identifier, "phase": "complete", "recovered": True}
         rollbackable = matches(snapshot, "pre") and all(matches(item, "pre") or matches(item, "post") for item in targets)
         if rollbackable and journal["phase"] in {"prepared", "applying-products", "products-applied", "committing-snapshot", "recovery-required"}:
+            _preflight_recovery_images(root, targets, "rollback")
+            mutating = True
             for entry in reversed(targets):
                 if matches(entry, "post"):
                     entry["state"] = "rolling-back"
@@ -579,9 +738,13 @@ def recover(root: Path, accepted_ids: set[str] | None = None) -> dict[str, Any]:
 
         accepted = accepted_ids or set()
         if matches(snapshot, "pre"):
-            proposal_id = _recovery_proposal_id(root, journal, journal_bytes, "recover-rollback-transaction")
+            selected_images = _preflight_recovery_images(root, targets, "rollback")
+            proposal_id = _recovery_proposal_id(root, journal, journal_bytes, "recover-rollback-transaction", selected_images)
+            if accepted and proposal_id not in accepted:
+                raise ValueError("accepted recovery proposal is not offered by current evidence")
             if proposal_id not in accepted:
                 raise ValueError(f"recovery requires acceptance: {proposal_id}")
+            mutating = True
             for entry in reversed(targets):
                 if not matches(entry, "pre"):
                     _consume_apply(root, entry, "rollback")
@@ -595,9 +758,13 @@ def recover(root: Path, accepted_ids: set[str] | None = None) -> dict[str, Any]:
             return {"transaction_id": identifier, "phase": "rolled-back", "recovered": True, "accepted_proposal": proposal_id}
 
         if matches(snapshot, "post"):
-            proposal_id = _recovery_proposal_id(root, journal, journal_bytes, "recover-complete-transaction")
+            selected_images = _preflight_recovery_images(root, targets, "complete")
+            proposal_id = _recovery_proposal_id(root, journal, journal_bytes, "recover-complete-transaction", selected_images)
+            if accepted and proposal_id not in accepted:
+                raise ValueError("accepted recovery proposal is not offered by current evidence")
             if proposal_id not in accepted:
                 raise ValueError(f"recovery requires acceptance: {proposal_id}")
+            mutating = True
             for entry in targets:
                 if not matches(entry, "post"):
                     _consume_apply(root, entry, "complete")
@@ -611,4 +778,5 @@ def recover(root: Path, accepted_ids: set[str] | None = None) -> dict[str, Any]:
             return {"transaction_id": identifier, "phase": "complete", "recovered": True, "accepted_proposal": proposal_id}
         raise ValueError("journal state cannot be recovered safely")
     except (KeyError, OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
-        raise RuntimeError(f"transaction recovery is blocked: {exc}; journal evidence was preserved") from exc
+        error_type = RecoveryFailure if mutating else RecoveryBlocked
+        raise error_type(f"transaction recovery is blocked: {exc}; journal evidence was preserved") from exc

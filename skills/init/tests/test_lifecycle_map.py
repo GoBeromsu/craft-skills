@@ -160,13 +160,37 @@ class LifecycleMapTests(unittest.TestCase):
                 "observations": observations,
             }
             evidence_path = root / "loading-receipt.json"
-            evidence_path.write_text(json.dumps(receipt), encoding="utf-8")
+            evidence_path.write_text(json.dumps(lifecycle_core.probe_loading(root, receipt)), encoding="utf-8")
             with contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(lifecycle_map.main([str(root), f"--loading-evidence={evidence_path}"]), 0)
             snapshot = json.loads((root / ".agents-map.json").read_text(encoding="utf-8"))
             loader = snapshot["last_applied_topology"]["loader"]
             self.assertEqual(loader["loader_class"], "ancestor-only")
             self.assertEqual(loader["evidence_status"], "probe-verified")
+
+    def test_claude_acceptance_is_invalidated_by_coupled_agents_mode_change(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "app.py").write_text("print('ok')\n", encoding="utf-8")
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(lifecycle_map.main([str(root)]), 0)
+            (root / "CLAUDE.md").write_text("# preserve me\n", encoding="utf-8")
+            first = lifecycle_map._outputs(root, 3, "on")
+            proposal_id = next(
+                proposal["id"]
+                for proposal in first["proposals"]
+                if proposal["action"] == "merge-claude-and-replace-shim"
+            )
+            os.chmod(root / "AGENTS.md", 0o600)
+            before_agents = (root / "AGENTS.md").read_bytes()
+            before_claude = (root / "CLAUDE.md").read_bytes()
+            with contextlib.redirect_stderr(io.StringIO()):
+                self.assertEqual(
+                    lifecycle_map.main([str(root), "--claude-shim=on", f"--accept={proposal_id}"]),
+                    2,
+                )
+            self.assertEqual((root / "AGENTS.md").read_bytes(), before_agents)
+            self.assertEqual((root / "CLAUDE.md").read_bytes(), before_claude)
 
     def test_dangling_journal_symlink_blocks_before_noop(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

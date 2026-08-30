@@ -10,7 +10,7 @@ import stat
 import sys
 from pathlib import Path
 
-from _transaction import apply, recover
+from _transaction import RecoveryBlocked, RecoveryFailure, apply, recover
 from lifecycle_core import JOURNAL_NAME, plan_prune, validate_ownership_snapshot
 
 _SNAPSHOT = ".agents-map.json"
@@ -30,16 +30,26 @@ def _root(value: str) -> Path:
 
 
 def _snapshot(root: Path) -> dict:
-    path = root / _SNAPSHOT
-    # resolve(strict=True) rejects a missing snapshot and containment rejects a
-    # symlinked snapshot before its contents can influence deletion planning.
-    if path.is_symlink():
-        raise ValueError("ownership snapshot must not be a symlink")
-    resolved = path.resolve(strict=True)
-    if resolved.parent != root or not resolved.is_file():
-        raise ValueError("ownership snapshot is not a regular root-local file")
-    with resolved.open("r", encoding="utf-8", newline="") as handle:
-        payload = json.load(handle)
+    root_fd = os.open(root, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    try:
+        try:
+            descriptor = os.open(_SNAPSHOT, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0), dir_fd=root_fd)
+        except OSError as error:
+            raise ValueError("ownership snapshot is missing or unsafe") from error
+        try:
+            if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+                raise ValueError("ownership snapshot is not a regular root-local file")
+            chunks: list[bytes] = []
+            while True:
+                chunk = os.read(descriptor, 1024 * 1024)
+                if not chunk:
+                    break
+                chunks.append(chunk)
+        finally:
+            os.close(descriptor)
+    finally:
+        os.close(root_fd)
+    payload = json.loads(b"".join(chunks).decode("utf-8"))
     if not isinstance(payload, dict):
         raise ValueError("ownership snapshot must be an object")
     return payload
@@ -62,10 +72,13 @@ def main(argv: list[str] | None = None) -> int:
                 raise ValueError("transaction journal is unsafe")
             try:
                 result = recover(root, set(args.accept))
-            except RuntimeError as error:
-                code = "prune-blocked" if "recovery requires acceptance:" in str(error) else "prune-failed"
+            except RecoveryBlocked as error:
+                code = "prune-blocked"
                 _emit({"diagnostics": [{"code": code, "message": str(error)}], "operation": "prune"}, sys.stderr)
-                return 2 if code == "prune-blocked" else 3
+                return 2
+            except RecoveryFailure as error:
+                _emit({"diagnostics": [{"code": "prune-failed", "message": str(error)}], "operation": "prune"}, sys.stderr)
+                return 3
             _emit({"operation": "prune", **result})
             return 0
         snapshot = _snapshot(root)
