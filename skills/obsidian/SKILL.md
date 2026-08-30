@@ -2,7 +2,7 @@
 name: obsidian
 description: Routes one thick Obsidian skill. Use for in-vault note create/edit/cleanup (“옵시디언 노트 정리”; not filing/taxonomy) with wikilinks/callouts/properties/house style; create/debug `.base` or embedded base blocks, filters/views, `groupBy`/`sort`/`limit`, Dataview-to-Bases; Obsidian JSON Canvas `.canvas` mind maps/flowcharts/nodes/edges; Mermaid that must render in Obsidian; `obsidian-cli` read/create/search/move/property/write/inspect, readback verification, `Vault not found`, wrapper confusion; Web Clipper templates for any site/type (YouTube/GitHub/Recipe/Article), variables/filters/frontmatter; “플러그인 고쳐줘”, silent plugin failures, API skew, Templater `ReferenceError`/`<%`; or headless `ob` Sync (“headless sync 점검”, “obsidian sync status”, “볼트 동기화 복구”, “pull-only로 맞춰줘”, daemon restart). Not for web-page-to-Markdown extraction/scraping, CommonMark, Dataview queries, React Flow, Mermaid CLI/non-Obsidian rendering, outside-vault files, non-plugin core bugs, desktop Sync/Dropbox/other replication, or filing/provenance.
 metadata:
-  version: 1.1.2
+  version: 1.2.0
 ---
 
 # Obsidian
