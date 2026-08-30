@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 from _transaction import RecoveryBlocked, RecoveryFailure, apply, recover
-from lifecycle_core import JOURNAL_NAME, plan_prune, validate_ownership_snapshot
+from lifecycle_core import JOURNAL_NAME, operation_root, pinned_root_fd, plan_prune, validate_ownership_snapshot
 
 _SNAPSHOT = ".agents-map.json"
 
@@ -30,7 +30,7 @@ def _root(value: str) -> Path:
 
 
 def _snapshot(root: Path) -> dict:
-    root_fd = os.open(root, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    root_fd = pinned_root_fd(root)
     try:
         try:
             descriptor = os.open(_SNAPSHOT, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0), dir_fd=root_fd)
@@ -55,6 +55,52 @@ def _snapshot(root: Path) -> dict:
     return payload
 
 
+def _execute(root: Path, args: argparse.Namespace) -> int:
+    root_fd = pinned_root_fd(root)
+    try:
+        try:
+            journal_info = os.stat(JOURNAL_NAME, dir_fd=root_fd, follow_symlinks=False)
+        except FileNotFoundError:
+            journal_info = None
+    finally:
+        os.close(root_fd)
+    if journal_info is not None:
+        if not stat.S_ISREG(journal_info.st_mode):
+            raise ValueError("transaction journal is unsafe")
+        try:
+            result = recover(root, set(args.accept))
+        except RecoveryBlocked as error:
+            _emit({"diagnostics": [{"code": "prune-blocked", "message": str(error)}], "operation": "prune"}, sys.stderr)
+            return 2
+        except RecoveryFailure as error:
+            _emit({"diagnostics": [{"code": "prune-failed", "message": str(error)}], "operation": "prune"}, sys.stderr)
+            return 3
+        _emit({"operation": "prune", **result})
+        return 0
+    snapshot = _snapshot(root)
+    validation = validate_ownership_snapshot(root, snapshot)
+    if not isinstance(validation, dict) or not validation.get("valid", False):
+        raise ValueError("ownership snapshot validation failed")
+    plan = plan_prune(root, snapshot, set(args.accept))
+    if not isinstance(plan, dict) or not isinstance(plan.get("effects"), list):
+        raise ValueError("prune planning returned an invalid result")
+    unmatched = sorted(set(args.accept) - {proposal["id"] for proposal in plan["proposals"]})
+    if unmatched:
+        raise ValueError("accepted proposal is not offered by current evidence: " + ", ".join(unmatched))
+    if not plan["effects"]:
+        _emit({"operation": "prune", "exit_code": 0, "phase": "complete", "effects": [], "no_op": True, "proposals": plan["proposals"]})
+        return 0
+    try:
+        result = apply(root, plan["effects"], set(args.accept), snapshot_payload=plan["snapshot"], operation="prune")
+    except (OSError, RuntimeError, ValueError) as error:
+        _emit({"diagnostics": [{"code": "prune-failed", "message": str(error)}], "operation": "prune"}, sys.stderr)
+        return 3
+    if not isinstance(result, dict):
+        raise ValueError("transaction application returned an invalid result")
+    _emit({"operation": "prune", **result})
+    return int(result.get("exit_code", 0))
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Prune only stale regions proven managed by the ownership snapshot.")
     parser.add_argument("root", nargs="?", default=".", help="repository root (default: current directory)")
@@ -62,51 +108,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         root = _root(args.root)
-        journal_path = root / JOURNAL_NAME
-        try:
-            journal_info = os.lstat(journal_path)
-        except FileNotFoundError:
-            journal_info = None
-        if journal_info is not None:
-            if not stat.S_ISREG(journal_info.st_mode):
-                raise ValueError("transaction journal is unsafe")
-            try:
-                result = recover(root, set(args.accept))
-            except RecoveryBlocked as error:
-                code = "prune-blocked"
-                _emit({"diagnostics": [{"code": code, "message": str(error)}], "operation": "prune"}, sys.stderr)
-                return 2
-            except RecoveryFailure as error:
-                _emit({"diagnostics": [{"code": "prune-failed", "message": str(error)}], "operation": "prune"}, sys.stderr)
-                return 3
-            _emit({"operation": "prune", **result})
-            return 0
-        snapshot = _snapshot(root)
-        validation = validate_ownership_snapshot(root, snapshot)
-        if not isinstance(validation, dict) or not validation.get("valid", False):
-            raise ValueError("ownership snapshot validation failed")
-        plan = plan_prune(root, snapshot, set(args.accept))
-        if not isinstance(plan, dict) or not isinstance(plan.get("effects"), list):
-            raise ValueError("prune planning returned an invalid result")
-        # An acceptance that the current evidence no longer offers is stale consent:
-        # refuse it instead of committing a snapshot the operator never approved.
-        unmatched = sorted(set(args.accept) - {proposal["id"] for proposal in plan["proposals"]})
-        if unmatched:
-            raise ValueError("accepted proposal is not offered by current evidence: " + ", ".join(unmatched))
-        if not plan["effects"]:
-            # The default is no accepted deletion: report the offered proposals and
-            # leave every byte, mode, and the committed snapshot untouched.
-            _emit({"operation": "prune", "exit_code": 0, "phase": "complete", "effects": [], "no_op": True, "proposals": plan["proposals"]})
-            return 0
-        try:
-            result = apply(root, plan["effects"], set(args.accept), snapshot_payload=plan["snapshot"], operation="prune")
-        except (OSError, RuntimeError, ValueError) as error:
-            _emit({"diagnostics": [{"code": "prune-failed", "message": str(error)}], "operation": "prune"}, sys.stderr)
-            return 3
-        if not isinstance(result, dict):
-            raise ValueError("transaction application returned an invalid result")
-        _emit({"operation": "prune", **result})
-        return int(result.get("exit_code", 0))
+        with operation_root(root):
+            return _execute(root, args)
     except (OSError, ValueError, json.JSONDecodeError) as error:
         _emit({"diagnostics": [{"code": "prune-blocked", "message": str(error)}], "operation": "prune"}, sys.stderr)
         return 2

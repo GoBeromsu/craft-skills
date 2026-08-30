@@ -97,6 +97,9 @@ class TransactionTests(unittest.TestCase):
                 with self.assertRaises(OSError):
                     transaction.apply(root, [{"path": "AGENTS.md", "bytes": b"after", "mode": 0o640}], set(), snapshot_payload=self._snapshot())
             self.assertTrue((root / core.JOURNAL_NAME).exists())
+            with self.assertRaises(transaction.RecoveryBlocked):
+                transaction.recover(root, {"P-STALE-RECOVERY-000000000000"})
+            self.assertEqual(product.read_bytes(), b"before")
             recovered = transaction.recover(root)
             self.assertEqual(recovered["phase"], "rolled-back")
             self.assertEqual(product.read_bytes(), b"before")
@@ -143,7 +146,8 @@ class TransactionTests(unittest.TestCase):
 
     def test_exclusive_write_retries_posix_short_writes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "artifact"
+            root = Path(directory)
+            path = root / "artifact"
             original_write = os.write
             calls: list[bytes] = []
 
@@ -152,17 +156,18 @@ class TransactionTests(unittest.TestCase):
                 return original_write(descriptor, data[:2])
 
             with mock.patch.object(transaction.os, "write", side_effect=short_write):
-                transaction._exclusive_write(path, b"abcdef", 0o640)
+                transaction._exclusive_write_relative(root, "artifact", b"abcdef", 0o640)
             self.assertEqual(path.read_bytes(), b"abcdef")
             self.assertGreater(len(calls), 1)
             self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o640)
 
     def test_exclusive_write_rejects_zero_progress_and_keeps_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "artifact"
+            root = Path(directory)
+            path = root / "artifact"
             with mock.patch.object(transaction.os, "write", return_value=0):
                 with self.assertRaisesRegex(OSError, "no progress"):
-                    transaction._exclusive_write(path, b"abcdef", 0o600)
+                    transaction._exclusive_write_relative(root, "artifact", b"abcdef", 0o600)
             self.assertTrue(path.exists())
             self.assertEqual(path.read_bytes(), b"")
 
@@ -263,7 +268,16 @@ class TransactionTests(unittest.TestCase):
             with self.assertRaises(transaction.RecoveryBlocked):
                 transaction.recover(root, {proposal.group(), "P-STALE-RECOVERY-000000000000"})
             self.assertEqual(product.read_bytes(), b"unexpected")
-            self.assertEqual(transaction.recover(root, {proposal.group()})["phase"], "rolled-back")
+            journal = json.loads((root / core.JOURNAL_NAME).read_text(encoding="utf-8"))
+            (root / journal["targets"][0]["apply_path"]).unlink()
+            with self.assertRaises(transaction.RecoveryBlocked):
+                transaction.recover(root, {proposal.group()})
+            with self.assertRaises(transaction.RecoveryBlocked) as changed:
+                transaction.recover(root)
+            changed_proposal = re.search(r"P-RECOVER-ROLLBACK-TRANSACTION-[0-9a-f]{12}", str(changed.exception))
+            self.assertIsNotNone(changed_proposal)
+            self.assertNotEqual(changed_proposal.group(), proposal.group())
+            self.assertEqual(transaction.recover(root, {changed_proposal.group()})["phase"], "rolled-back")
             self.assertEqual(product.read_bytes(), b"before")
 
     def test_preparing_transaction_with_unchanged_products_aborts_cleanly(self) -> None:
@@ -275,6 +289,8 @@ class TransactionTests(unittest.TestCase):
                 with self.assertRaises(OSError):
                     transaction.apply(root, [{"path": "AGENTS.md", "bytes": b"after"}], set(), snapshot_payload=self._snapshot())
             self.assertTrue((root / core.JOURNAL_NAME).exists())
+            with self.assertRaises(transaction.RecoveryBlocked):
+                transaction.recover(root, {"P-STALE-RECOVERY-000000000000"})
             self.assertEqual(transaction.recover(root)["phase"], "aborted")
             self.assertEqual(product.read_bytes(), b"before")
             self.assertFalse((root / core.JOURNAL_NAME).exists())

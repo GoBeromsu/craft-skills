@@ -192,6 +192,32 @@ class LifecyclePruneTests(unittest.TestCase):
             committed = json.loads((root / ".agents-map.json").read_text(encoding="utf-8"))
             self.assertEqual(committed["owned_artifacts"], [])
 
+    def test_public_prune_keeps_one_root_capability_across_path_replacement(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory)
+            root = parent / "repo"
+            moved = parent / "repo-original"
+            root.mkdir()
+            owned = root / "stale.md"
+            owned.write_bytes(b"stale")
+            os.chmod(owned, 0o640)
+            snapshot = snapshot_for(root, [stale_row("stale.md", b"stale")])
+            (root / ".agents-map.json").write_bytes(lifecycle_core.canonical_json(snapshot, pretty=True))
+            proposal = lifecycle_core.plan_prune(root, snapshot, set())["proposals"][0]
+            original = lifecycle_prune.plan_prune
+
+            def replace_path(actual_root: Path, payload: dict, accepted: set[str]) -> dict:
+                plan = original(actual_root, payload, accepted)
+                root.rename(moved)
+                root.mkdir()
+                (root / "attacker.txt").write_text("do not touch\n", encoding="utf-8")
+                return plan
+
+            with mock.patch.object(lifecycle_prune, "plan_prune", side_effect=replace_path), contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(lifecycle_prune.main([str(root), "--accept", proposal["id"]]), 0)
+            self.assertFalse((moved / "stale.md").exists())
+            self.assertEqual((root / "attacker.txt").read_text(encoding="utf-8"), "do not touch\n")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -226,6 +226,29 @@ class LifecycleMapTests(unittest.TestCase):
             self.assertEqual((root / "CLAUDE.md").read_bytes(), before)
             self.assertFalse((root / "AGENTS.md").exists())
 
+    def test_public_map_keeps_one_root_capability_across_path_replacement(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory)
+            root = parent / "repo"
+            moved = parent / "repo-original"
+            root.mkdir()
+            (root / "app.py").write_text("print('ok')\n", encoding="utf-8")
+            original = lifecycle_map.build_managed_outputs
+
+            def replace_path(topology: dict) -> dict:
+                outputs = original(topology)
+                root.rename(moved)
+                root.mkdir()
+                (root / "attacker.txt").write_text("do not touch\n", encoding="utf-8")
+                return outputs
+
+            with mock.patch.object(lifecycle_map, "build_managed_outputs", side_effect=replace_path), contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(lifecycle_map.main([str(root)]), 0)
+            self.assertTrue((moved / "AGENTS.md").is_file())
+            self.assertTrue((moved / ".agents-map.json").is_file())
+            self.assertEqual((root / "attacker.txt").read_text(encoding="utf-8"), "do not touch\n")
+            self.assertFalse((root / "AGENTS.md").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

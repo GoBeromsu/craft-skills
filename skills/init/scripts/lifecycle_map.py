@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 from _transaction import RecoveryBlocked, RecoveryFailure, apply, recover
-from lifecycle_core import JOURNAL_NAME, SNAPSHOT_NAME, build_managed_outputs, canonical_json, discover_topology, probe_loading, validate_ownership_snapshot, validate_snapshot
+from lifecycle_core import JOURNAL_NAME, SNAPSHOT_NAME, build_managed_outputs, canonical_json, discover_topology, operation_root, pinned_root_fd, probe_loading, validate_ownership_snapshot, validate_snapshot
 _NOFOLLOW = getattr(os, "O_NOFOLLOW", 0)
 
 
@@ -69,21 +69,30 @@ def _outputs(root: Path, max_depth: int, claude_shim: str, loading_receipt: dict
 def _is_byte_identical_noop(root: Path, outputs: dict) -> bool:
     if outputs["effects"]:
         return False
-    path = root / SNAPSHOT_NAME
+    root_fd = pinned_root_fd(root)
     try:
-        info = os.lstat(path)
-        return stat.S_ISREG(info.st_mode) and not stat.S_ISLNK(info.st_mode) and path.read_bytes() == canonical_json(outputs["snapshot"], pretty=True)
+        descriptor = os.open(SNAPSHOT_NAME, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0), dir_fd=root_fd)
+        try:
+            info = os.fstat(descriptor)
+            chunks: list[bytes] = []
+            while True:
+                chunk = os.read(descriptor, 1024 * 1024)
+                if not chunk:
+                    break
+                chunks.append(chunk)
+            return stat.S_ISREG(info.st_mode) and b"".join(chunks) == canonical_json(outputs["snapshot"], pretty=True)
+        finally:
+            os.close(descriptor)
     except (FileNotFoundError, OSError):
         return False
+    finally:
+        os.close(root_fd)
 
 
 def _prior_snapshot(root: Path) -> dict | None:
-    path = root / SNAPSHOT_NAME
+    root_fd = pinned_root_fd(root)
     try:
-        info = os.lstat(path)
-        if not stat.S_ISREG(info.st_mode) or stat.S_ISLNK(info.st_mode):
-            raise ValueError("ownership snapshot is unsafe")
-        descriptor = os.open(path, os.O_RDONLY | _NOFOLLOW)
+        descriptor = os.open(SNAPSHOT_NAME, os.O_RDONLY | _NOFOLLOW, dir_fd=root_fd)
         try:
             opened = os.fstat(descriptor)
             if not stat.S_ISREG(opened.st_mode):
@@ -106,6 +115,69 @@ def _prior_snapshot(root: Path) -> dict | None:
         return None
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
         raise ValueError(f"ownership snapshot is unreadable or invalid: {error}") from error
+    finally:
+        os.close(root_fd)
+
+
+def _execute(root: Path, args: argparse.Namespace) -> int:
+    root_fd = pinned_root_fd(root)
+    try:
+        try:
+            journal_info = os.stat(JOURNAL_NAME, dir_fd=root_fd, follow_symlinks=False)
+        except FileNotFoundError:
+            journal_info = None
+    finally:
+        os.close(root_fd)
+    if journal_info is not None:
+        if not stat.S_ISREG(journal_info.st_mode):
+            raise ValueError("transaction journal is unsafe")
+        try:
+            result = recover(root, set(args.accept))
+        except RecoveryBlocked as error:
+            _emit({"diagnostics": [{"code": "map-blocked", "message": str(error)}], "operation": "map"}, sys.stderr)
+            return 2
+        except RecoveryFailure as error:
+            _emit({"diagnostics": [{"code": "map-failed", "message": str(error)}], "operation": "map"}, sys.stderr)
+            return 3
+        _emit({"operation": "map", **result})
+        return 0
+    loading_receipt = None
+    if args.loading_evidence is not None:
+        loaded_evidence = json.loads(args.loading_evidence.read_text(encoding="utf-8"))
+        if not isinstance(loaded_evidence, dict):
+            raise ValueError("--loading-evidence must contain a JSON object")
+        loading_receipt = loaded_evidence
+    outputs = (
+        _outputs(root, args.max_depth, args.claude_shim)
+        if loading_receipt is None
+        else _outputs(root, args.max_depth, args.claude_shim, loading_receipt)
+    )
+    validate_snapshot(outputs["snapshot"])
+    offered = {proposal["id"] for proposal in outputs.get("proposals", [])}
+    unmatched = sorted(set(args.accept) - offered)
+    if unmatched:
+        raise ValueError("accepted proposal is not offered by current evidence: " + ", ".join(unmatched))
+    missing = sorted(
+        {
+            effect["proposal_id"]
+            for effect in outputs["effects"]
+            if effect.get("proposal_id") and effect["proposal_id"] not in set(args.accept)
+        }
+    )
+    if missing:
+        raise ValueError("mapping requires acceptance: " + ", ".join(missing))
+    if _is_byte_identical_noop(root, outputs):
+        result = {"exit_code": 0, "phase": "complete", "effects": [], "no_op": True}
+    else:
+        try:
+            result = apply(root, outputs["effects"], set(args.accept), snapshot_payload=outputs["snapshot"])
+        except (OSError, RuntimeError, ValueError) as error:
+            _emit({"diagnostics": [{"code": "map-failed", "message": str(error)}], "operation": "map"}, sys.stderr)
+            return 3
+    if not isinstance(result, dict):
+        raise ValueError("transaction application returned an invalid result")
+    _emit({"operation": "map", **result})
+    return int(result.get("exit_code", 0))
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -120,62 +192,8 @@ def main(argv: list[str] | None = None) -> int:
         if not 1 <= args.max_depth <= 32:
             raise ValueError("--max-depth must be in 1..32")
         root = _root(args.root)
-        journal_path = root / JOURNAL_NAME
-        try:
-            journal_info = os.lstat(journal_path)
-        except FileNotFoundError:
-            journal_info = None
-        if journal_info is not None:
-            if not stat.S_ISREG(journal_info.st_mode):
-                raise ValueError("transaction journal is unsafe")
-            try:
-                result = recover(root, set(args.accept))
-            except RecoveryBlocked as error:
-                code = "map-blocked"
-                _emit({"diagnostics": [{"code": code, "message": str(error)}], "operation": "map"}, sys.stderr)
-                return 2
-            except RecoveryFailure as error:
-                _emit({"diagnostics": [{"code": "map-failed", "message": str(error)}], "operation": "map"}, sys.stderr)
-                return 3
-            _emit({"operation": "map", **result})
-            return 0
-        loading_receipt = None
-        if args.loading_evidence is not None:
-            loaded_evidence = json.loads(args.loading_evidence.read_text(encoding="utf-8"))
-            if not isinstance(loaded_evidence, dict):
-                raise ValueError("--loading-evidence must contain a JSON object")
-            loading_receipt = loaded_evidence
-        outputs = (
-            _outputs(root, args.max_depth, args.claude_shim)
-            if loading_receipt is None
-            else _outputs(root, args.max_depth, args.claude_shim, loading_receipt)
-        )
-        validate_snapshot(outputs["snapshot"])
-        offered = {proposal["id"] for proposal in outputs.get("proposals", [])}
-        unmatched = sorted(set(args.accept) - offered)
-        if unmatched:
-            raise ValueError("accepted proposal is not offered by current evidence: " + ", ".join(unmatched))
-        missing = sorted(
-            {
-                effect["proposal_id"]
-                for effect in outputs["effects"]
-                if effect.get("proposal_id") and effect["proposal_id"] not in set(args.accept)
-            }
-        )
-        if missing:
-            raise ValueError("mapping requires acceptance: " + ", ".join(missing))
-        if _is_byte_identical_noop(root, outputs):
-            result = {"exit_code": 0, "phase": "complete", "effects": [], "no_op": True}
-        else:
-            try:
-                result = apply(root, outputs["effects"], set(args.accept), snapshot_payload=outputs["snapshot"])
-            except (OSError, RuntimeError, ValueError) as error:
-                _emit({"diagnostics": [{"code": "map-failed", "message": str(error)}], "operation": "map"}, sys.stderr)
-                return 3
-        if not isinstance(result, dict):
-            raise ValueError("transaction application returned an invalid result")
-        _emit({"operation": "map", **result})
-        return int(result.get("exit_code", 0))
+        with operation_root(root):
+            return _execute(root, args)
     except (OSError, ValueError) as error:
         _emit({"diagnostics": [{"code": "map-blocked", "message": str(error)}], "operation": "map"}, sys.stderr)
         return 2

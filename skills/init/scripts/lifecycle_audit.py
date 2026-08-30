@@ -8,7 +8,7 @@ import json
 import sys
 from pathlib import Path
 
-from lifecycle_core import audit
+from lifecycle_core import audit, operation_root
 
 
 def _emit(value: dict, stream: object | None = None) -> None:
@@ -29,7 +29,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("root", nargs="?", default=".", help="repository root (default: current directory)")
     args = parser.parse_args(argv)
     try:
-        report = audit(_root(args.root))
+        root = _root(args.root)
+        with operation_root(root):
+            report = audit(root)
         if not isinstance(report, dict):
             raise ValueError("audit returned an invalid report")
         _emit(report)

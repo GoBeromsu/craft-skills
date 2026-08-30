@@ -4,8 +4,6 @@ from __future__ import annotations
 import json
 import os
 import stat
-from contextlib import contextmanager
-from contextvars import ContextVar
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
@@ -18,6 +16,8 @@ try:
         derived_transaction_paths,
         expected_apply,
         normalize_path,
+        operation_root,
+        pinned_root_fd,
         sha256_bytes,
         transaction_basis,
         transaction_id,
@@ -32,6 +32,8 @@ except ImportError:  # Direct script execution has no package parent.
         derived_transaction_paths,
         expected_apply,
         normalize_path,
+        operation_root,
+        pinned_root_fd,
         sha256_bytes,
         transaction_basis,
         transaction_id,
@@ -40,7 +42,6 @@ except ImportError:  # Direct script execution has no package parent.
 
 _PRIVATE_MODE = 0o600
 _NOFOLLOW = getattr(os, "O_NOFOLLOW", 0)
-_PINNED_ROOT_FD: ContextVar[int | None] = ContextVar("init_transaction_root_fd", default=None)
 
 
 def _valid_hash(value: object) -> bool:
@@ -55,58 +56,11 @@ class RecoveryFailure(RuntimeError):
     """A validated recovery attempt failed after mutation began."""
 
 
-@contextmanager
-def _pinned_root(root: Path) -> Iterable[None]:
-    existing = _PINNED_ROOT_FD.get()
-    if existing is not None:
-        yield
-        return
-    descriptor = os.open(
-        root.resolve(strict=True),
-        os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | _NOFOLLOW,
-    )
-    token = _PINNED_ROOT_FD.set(descriptor)
-    try:
-        yield
-    finally:
-        _PINNED_ROOT_FD.reset(token)
-        os.close(descriptor)
-
-
 def _root_fd(root: Path) -> int:
-    pinned = _PINNED_ROOT_FD.get()
-    if pinned is not None:
-        return os.dup(pinned)
-    return os.open(
-        root.resolve(strict=True),
-        os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | _NOFOLLOW,
-    )
+    return pinned_root_fd(root)
 
 
-def _fsync_directory(directory: Path) -> None:
-    descriptor = os.open(directory, os.O_RDONLY)
-    try:
-        os.fsync(descriptor)
-    finally:
-        os.close(descriptor)
-
-
-def _exclusive_write(path: Path, data: bytes, mode: int) -> None:
-    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | _NOFOLLOW, mode)
-    try:
-        offset = 0
-        while offset < len(data):
-            written = os.write(descriptor, data[offset:])
-            if written <= 0:
-                raise OSError("exclusive write made no progress")
-            offset += written
-        os.fchmod(descriptor, mode)
-        if stat.S_IMODE(os.fstat(descriptor).st_mode) != mode:
-            raise OSError("could not set requested mode")
-        os.fsync(descriptor)
-    finally:
-        os.close(descriptor)
-    _fsync_directory(path.parent)
+_pinned_root = operation_root
 
 
 def _exclusive_write_relative(root: Path, relative: str, data: bytes, mode: int) -> None:
@@ -245,27 +199,6 @@ def _validate_artifact(root: Path, relative: str, digest: str, mode: int) -> Pat
     if observed_mode != mode or sha256_bytes(data) != digest:
         raise ValueError("transaction artifact does not match its bound role")
     return root / relative
-
-
-def _read_regular_with_mode(path: Path) -> tuple[bytes, int]:
-    descriptor = os.open(path, os.O_RDONLY | _NOFOLLOW | getattr(os, "O_NONBLOCK", 0))
-    try:
-        info = os.fstat(descriptor)
-        if not stat.S_ISREG(info.st_mode):
-            raise ValueError("transaction artifact is not a regular file")
-        chunks: list[bytes] = []
-        while True:
-            chunk = os.read(descriptor, 1024 * 1024)
-            if not chunk:
-                break
-            chunks.append(chunk)
-        return b"".join(chunks), stat.S_IMODE(info.st_mode)
-    finally:
-        os.close(descriptor)
-
-
-def _read_regular(path: Path) -> bytes:
-    return _read_regular_with_mode(path)[0]
 
 
 def _read_relative_with_mode(root: Path, relative: str) -> tuple[bytes, int]:
@@ -577,14 +510,6 @@ def _cleanup(root: Path, journal: Mapping[str, Any]) -> None:
             os.close(root_fd)
 
 
-def _matches_artifact(path: Path, digest: str, mode: int) -> bool:
-    try:
-        data, observed_mode = _read_regular_with_mode(path)
-        return observed_mode == mode and sha256_bytes(data) == digest
-    except (OSError, ValueError):
-        return False
-
-
 def _snapshot_entry(root: Path, payload: Mapping[str, Any]) -> tuple[dict[str, Any], bytes]:
     data = canonical_json(dict(payload), pretty=True)
     effect = {"path": SNAPSHOT_NAME, "bytes": data, "mode": NEW_FILE_MODE}
@@ -677,7 +602,7 @@ def apply(
     snapshot_payload: Mapping[str, Any] | None = None,
     operation: str = "map",
 ) -> dict[str, Any]:
-    root = root.resolve(strict=True)
+    root = root.absolute()
     with _pinned_root(root):
         return _apply_pinned(
             root,
@@ -753,6 +678,7 @@ def _preflight_transaction_artifacts(
                 "role": f"{side}-recovery",
                 "target": entry["path"],
                 "path": relative,
+                "exists": True,
                 "sha256": entry[f"{side}_sha256"],
                 "mode": _PRIVATE_MODE,
             })
@@ -760,6 +686,14 @@ def _preflight_transaction_artifacts(
         try:
             data, mode = _read_relative_with_mode(root, apply_relative)
         except FileNotFoundError:
+            observed.append({
+                "role": "apply",
+                "target": entry["path"],
+                "path": apply_relative,
+                "exists": False,
+                "sha256": None,
+                "mode": None,
+            })
             continue
         candidates = [
             image
@@ -773,10 +707,32 @@ def _preflight_transaction_artifacts(
             "role": "apply",
             "target": entry["path"],
             "path": apply_relative,
+            "exists": True,
             "sha256": digest,
             "mode": mode,
         })
     _preflight_cleanup(root, journal)
+    next_relative = derived_transaction_paths(str(journal["transaction_id"]), SNAPSHOT_NAME)["next_path"]
+    try:
+        next_bytes, next_mode = _read_relative_with_mode(root, next_relative)
+    except FileNotFoundError:
+        observed.append({
+            "role": "journal-next",
+            "target": SNAPSHOT_NAME,
+            "path": next_relative,
+            "exists": False,
+            "sha256": None,
+            "mode": None,
+        })
+    else:
+        observed.append({
+            "role": "journal-next",
+            "target": SNAPSHOT_NAME,
+            "path": next_relative,
+            "exists": True,
+            "sha256": sha256_bytes(next_bytes),
+            "mode": next_mode,
+        })
     return observed
 
 
@@ -831,6 +787,7 @@ def _recover_pinned(root: Path, accepted_ids: set[str] | None = None) -> dict[st
         identifier = journal["transaction_id"]
         targets = list(journal["targets"])
         snapshot = journal["snapshot"]
+        accepted = accepted_ids or set()
 
         def matches(entry: Mapping[str, Any], side: str) -> bool:
             try:
@@ -839,6 +796,8 @@ def _recover_pinned(root: Path, accepted_ids: set[str] | None = None) -> dict[st
                 return False
 
         if journal["phase"] == "preparing":
+            if accepted:
+                raise ValueError("accepted recovery proposal is not offered by current evidence")
             if not matches(snapshot, "pre") or not all(matches(item, "pre") for item in targets):
                 raise ValueError("preparing transaction changed a product")
             _preflight_cleanup(root, journal)
@@ -849,12 +808,16 @@ def _recover_pinned(root: Path, accepted_ids: set[str] | None = None) -> dict[st
         complete_artifacts = _preflight_transaction_artifacts(root, journal)
         committed = matches(snapshot, "post") and all(matches(item, "post") for item in targets)
         if committed and journal["phase"] in {"committing-snapshot", "snapshot-committed", "cleaning"}:
+            if accepted:
+                raise ValueError("accepted recovery proposal is not offered by current evidence")
             _preflight_cleanup(root, journal)
             mutating = True
             _cleanup(root, journal)
             return {"transaction_id": identifier, "phase": "complete", "recovered": True}
         rollbackable = matches(snapshot, "pre") and all(matches(item, "pre") or matches(item, "post") for item in targets)
         if rollbackable and journal["phase"] in {"prepared", "applying-products", "products-applied", "committing-snapshot", "recovery-required"}:
+            if accepted:
+                raise ValueError("accepted recovery proposal is not offered by current evidence")
             _preflight_recovery_images(root, targets, "rollback")
             mutating = True
             for entry in reversed(targets):
@@ -872,7 +835,6 @@ def _recover_pinned(root: Path, accepted_ids: set[str] | None = None) -> dict[st
             _cleanup(root, journal)
             return {"transaction_id": identifier, "phase": "rolled-back", "recovered": True}
 
-        accepted = accepted_ids or set()
         if matches(snapshot, "pre"):
             selected_images = _preflight_recovery_images(root, targets, "rollback")
             proposal_id = _recovery_proposal_id(root, journal, journal_bytes, "recover-rollback-transaction", [*complete_artifacts, *selected_images])
@@ -919,6 +881,6 @@ def _recover_pinned(root: Path, accepted_ids: set[str] | None = None) -> dict[st
 
 
 def recover(root: Path, accepted_ids: set[str] | None = None) -> dict[str, Any]:
-    root = root.resolve(strict=True)
+    root = root.absolute()
     with _pinned_root(root):
         return _recover_pinned(root, accepted_ids)

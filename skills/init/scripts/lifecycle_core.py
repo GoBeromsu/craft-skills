@@ -7,6 +7,8 @@ import os
 import re
 import stat
 import unicodedata
+from contextlib import contextmanager
+from contextvars import ContextVar
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping
 
@@ -21,6 +23,7 @@ _HASH = re.compile(r"^[0-9a-f]{64}$")
 _MARKER = re.compile(r"^<!-- init:managed id=([^\s>]+) sha256=([0-9a-f]{64}) -->\n(.*?)<!-- /init:managed id=\1 -->\n?$", re.DOTALL)
 EXCLUDED_DIRS = frozenset({".git", ".hg", ".svn", "node_modules", "vendor", "dist", "build", ".cache", "__pycache__"})
 _NOFOLLOW = getattr(os, "O_NOFOLLOW", 0)
+_PINNED_ROOT_FD: ContextVar[int | None] = ContextVar("init_lifecycle_root_fd", default=None)
 _CODE_SUFFIXES = frozenset({".c", ".cc", ".cpp", ".cs", ".go", ".h", ".hpp", ".java", ".js", ".jsx", ".kt", ".php", ".py", ".rb", ".rs", ".sh", ".swift", ".ts", ".tsx"})
 _CONFIG_NAMES = frozenset({"Cargo.toml", "go.mod", "package.json", "pyproject.toml", "setup.cfg", "setup.py", "tox.ini", "tsconfig.json"})
 _BOUNDARY_NAMES = frozenset({"__init__.py", "index.js", "index.jsx", "index.ts", "index.tsx", "main.go", "mod.rs"})
@@ -96,31 +99,42 @@ def mode_of(st_mode: int) -> int:
     return mode
 
 
+@contextmanager
+def operation_root(root: Path) -> Iterable[None]:
+    existing = _PINNED_ROOT_FD.get()
+    if existing is not None:
+        yield
+        return
+    descriptor = os.open(
+        root.resolve(strict=True),
+        os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | _NOFOLLOW,
+    )
+    token = _PINNED_ROOT_FD.set(descriptor)
+    try:
+        yield
+    finally:
+        _PINNED_ROOT_FD.reset(token)
+        os.close(descriptor)
+
+
+def pinned_root_fd(root: Path) -> int:
+    pinned = _PINNED_ROOT_FD.get()
+    if pinned is not None:
+        return os.dup(pinned)
+    return os.open(
+        root.resolve(strict=True),
+        os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | _NOFOLLOW,
+    )
+
+
 def file_observation(root: Path, relative: str) -> dict[str, Any]:
     data, mode = _read_relative_nofollow(root, relative)
     return {"path": normalize_path(relative), "sha256": sha256_bytes(data), "mode": mode, "size": len(data)}
 
 
-def _read_regular_nofollow(path: Path) -> tuple[bytes, int]:
-    descriptor = os.open(path, os.O_RDONLY | _NOFOLLOW | getattr(os, "O_NONBLOCK", 0))
-    try:
-        info = os.fstat(descriptor)
-        if not stat.S_ISREG(info.st_mode):
-            raise ValueError("path is not a regular file")
-        chunks: list[bytes] = []
-        while True:
-            chunk = os.read(descriptor, 1024 * 1024)
-            if not chunk:
-                break
-            chunks.append(chunk)
-        return b"".join(chunks), mode_of(info.st_mode)
-    finally:
-        os.close(descriptor)
-
-
 def _read_relative_nofollow(root: Path, relative: str) -> tuple[bytes, int]:
     parts = PurePosixPath(normalize_path(relative)).parts
-    directory_fd = os.open(root.resolve(strict=True), os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    directory_fd = pinned_root_fd(root)
     try:
         for part in parts[:-1]:
             next_fd = os.open(
@@ -299,9 +313,18 @@ def _walk(root: Path) -> tuple[dict[str, dict[str, Any]], list[dict[str, str]], 
     exclusions: list[dict[str, str]] = []
     findings: list[dict[str, str]] = []
     try:
-        walker = os.fwalk(root, topdown=True, follow_symlinks=False)
+        pinned = _PINNED_ROOT_FD.get()
+        walker = (
+            os.fwalk(".", topdown=True, follow_symlinks=False, dir_fd=pinned)
+            if pinned is not None
+            else os.fwalk(root, topdown=True, follow_symlinks=False)
+        )
         for current, names, files, directory_fd in walker:
-            relative_text = os.path.relpath(current, root)
+            relative_text = (
+                PurePosixPath(current).as_posix().removeprefix("./")
+                if pinned is not None
+                else os.path.relpath(current, root)
+            )
             current_relative = "." if relative_text == "." else normalize_path(PurePosixPath(relative_text).as_posix())
             record = directories.setdefault(current_relative, {"files": [], "subdirectories": []})
             kept: list[str] = []
@@ -398,7 +421,7 @@ def _loader_snapshot(evidence: Mapping[str, Any] | None) -> dict[str, Any]:
 def discover_topology(root: Path, *, max_depth: int = 3, shim_policy: str = "off", loading_evidence: Mapping[str, Any] | None = None) -> dict[str, Any]:
     if not 1 <= max_depth <= 32 or shim_policy not in {"on", "off"}:
         raise ValueError("invalid topology settings")
-    root = root.resolve(strict=True)
+    root = root.absolute() if _PINNED_ROOT_FD.get() is not None else root.resolve(strict=True)
     inventory, exclusions, findings = _walk(root)
     nodes: list[dict[str, Any]] = []
     for directory in sorted(inventory):
@@ -442,25 +465,52 @@ def _render_managed_payload(
     root = topology.get("_root")
     if isinstance(root, Path):
         for path in configs:
-            if PurePosixPath(path).name != "package.json":
-                continue
             try:
-                package = json.loads(_read_relative_nofollow(root, path)[0].decode("utf-8"))
+                config_bytes, _ = _read_relative_nofollow(root, path)
             except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError):
                 continue
-            scripts = package.get("scripts") if isinstance(package, Mapping) else None
-            if isinstance(scripts, Mapping):
-                commands.extend(
-                    f"`npm run {name}` — package script `{command}`"
-                    for name, command in sorted(scripts.items())
-                    if isinstance(name, str) and isinstance(command, str)
+            if PurePosixPath(path).name == "package.json":
+                try:
+                    package = json.loads(config_bytes.decode("utf-8"))
+                except (UnicodeDecodeError, json.JSONDecodeError):
+                    continue
+                scripts = package.get("scripts") if isinstance(package, Mapping) else None
+                if isinstance(scripts, Mapping):
+                    commands.extend(
+                        f"`npm run {name}` — declared package script: `{command}`"
+                        for name, command in sorted(scripts.items())
+                        if isinstance(name, str) and isinstance(command, str)
+                    )
+            elif PurePosixPath(path).name == "Makefile":
+                try:
+                    makefile = config_bytes.decode("utf-8")
+                except UnicodeDecodeError:
+                    continue
+                targets = sorted(
+                    {
+                        match.group(1)
+                        for line in makefile.splitlines()
+                        if (match := re.match(r"^([A-Za-z0-9][A-Za-z0-9_.-]*):(?:\\s|$)", line))
+                    }
                 )
+                commands.extend(f"`make {target}` — declared Makefile target." for target in targets)
+        for path in files:
+            if PurePosixPath(path).suffix != ".sh":
+                continue
+            try:
+                script_bytes, script_mode = _read_relative_nofollow(root, path)
+            except (OSError, ValueError):
+                continue
+            if script_bytes.startswith(b"#!") and script_mode & 0o111:
+                commands.append(f"`./{path}` — executable script with a declared shebang.")
     child_scopes = sorted(
         candidate["directory"]
         for candidate in topology["nodes"]
         if candidate["parent_agents_path"] == node["agents_path"]
     )
     scope = "repository root" if node["directory"] == "." else f"`{node['directory']}/`"
+    command_limit = 30 if node["directory"] == "." else 12
+    displayed_commands = commands[:command_limit]
     lines = [
         "# Managed Repository Instructions",
         "",
@@ -478,42 +528,48 @@ def _render_managed_payload(
         "",
         "### Direct files",
         "",
-        *([f"- `{path}`" for path in files] or ["- No first-party regular files were observed directly in this scope."]),
+        *([f"- `{path}`" for path in files[:20]] or ["- No first-party regular files were observed directly in this scope."]),
+        *([f"- {len(files) - 20} additional direct files are summarized by type above."] if len(files) > 20 else []),
         "",
         "### Direct child directories",
         "",
-        *([f"- `{path}/`" for path in directories] or ["- No direct child directory was observed."]),
+        *([f"- `{path}/`" for path in directories[:12]] or ["- No direct child directory was observed."]),
+        *([f"- {len(directories) - 12} additional child directories are summarized by count above."] if len(directories) > 12 else []),
         "",
-        "## Placement evidence",
+        "## Entry points and configuration",
         "",
+        *([f"- Entry point: `{path}`." for path in entry_points] or ["- No entry boundary was asserted."]),
+        *([f"- Configuration: `{path}`." for path in configs] or ["- No local configuration was observed."]),
     ]
-    for factor in node["factors"]:
-        lines.append(
-            f"- `{factor['name']}`: measured={'yes' if factor['measured'] else 'no'}, "
-            f"value={factor['value']!r}, points={factor['points']}."
-        )
     lines.extend(
         [
             "",
             "## Commands",
             "",
-            *(commands if commands else ["- No executable command was asserted because no declared package script was observed."]),
+            *(displayed_commands if displayed_commands else ["- No executable command was asserted because no declared package script was observed."]),
+            *([f"- {len(commands) - command_limit} additional declared commands were omitted to preserve the scope budget."] if len(commands) > command_limit else []),
+            "",
+            "## Observed conventions",
+            "",
+            "- Predominant file types: " + (", ".join(f"`{suffix}` ({count})" for suffix, count in sorted(suffix_counts.items(), key=lambda item: (-item[1], item[0]))[:5]) or "none."),
+            "- Local configuration ownership: " + (", ".join(f"`{path}`" for path in configs) or "none observed."),
+            "- Local entry-point ownership: " + (", ".join(f"`{path}`" for path in entry_points) or "none observed."),
             "",
             "## Scope relationships",
             "",
             f"- Parent instruction: `{node['parent_agents_path']}`." if node["parent_agents_path"] else "- This is the root instruction.",
             *([f"- `{directory}/` has nearer managed instructions." for directory in child_scopes] or ["- No nearer managed child instruction was selected."]),
-            "",
-            "## Loading and coverage",
-            "",
-            f"- Loader class: `{topology['loader']['loader_class']}`.",
-            f"- Loader evidence status: `{topology['loader']['evidence_status']}`.",
-            f"- Placement depth bound: `{topology['max_depth']}`; complete coverage remains independent.",
         ]
     )
     if node["directory"] == ".":
         lines.extend(
             [
+                "",
+                "## Loading and coverage",
+                "",
+                f"- Loader class: `{topology['loader']['loader_class']}`.",
+                f"- Loader evidence status: `{topology['loader']['evidence_status']}`.",
+                f"- Placement depth bound: `{topology['max_depth']}`; complete coverage remains independent.",
                 "",
                 "## Constraints",
                 "",
@@ -599,11 +655,16 @@ def build_managed_outputs(topology: Mapping[str, Any]) -> dict[str, Any]:
         raise ValueError("topology is missing its repository root")
     for node in topology_snapshot["nodes"]:
         claude_path = "CLAUDE.md" if node["directory"] == "." else f"{node['directory']}/CLAUDE.md"
-        claude = safe_path(root, claude_path)
         claude_before: bytes | None = None
+        claude_observed: dict[str, Any] | None = None
         migrated_claude: str | None = None
-        if topology_snapshot["shim_policy"] == "on" and claude.exists():
-            claude_before, _ = _read_relative_nofollow(root, claude_path)
+        if topology_snapshot["shim_policy"] == "on":
+            try:
+                claude_observed = file_observation(root, claude_path)
+                claude_before, _ = _read_relative_nofollow(root, claude_path)
+            except FileNotFoundError:
+                claude_observed = None
+        if claude_before is not None:
             if claude_before != SHIM_BYTES:
                 try:
                     migrated_claude = claude_before.decode("utf-8")
@@ -612,12 +673,14 @@ def build_managed_outputs(topology: Mapping[str, Any]) -> dict[str, Any]:
         payload = _render_managed_payload(topology, node, migrated_claude)
         data = managed_envelope(node["managed_id"], payload)
         path = node["agents_path"]
-        destination = safe_path(root, path)
         agents_before: bytes | None = None
         agents_before_mode: int | None = None
-        if destination.exists():
+        try:
             observed = file_observation(root, path)
             before, _ = _read_relative_nofollow(root, path)
+        except FileNotFoundError:
+            observed = None
+        if observed is not None:
             agents_before = before
             agents_before_mode = observed["mode"]
             if before != data:
@@ -664,8 +727,8 @@ def build_managed_outputs(topology: Mapping[str, Any]) -> dict[str, Any]:
             None,
         )
         if topology_snapshot["shim_policy"] == "on":
-            if claude.exists():
-                observed = file_observation(root, claude_path)
+            if claude_observed is not None:
+                observed = claude_observed
                 before = claude_before if claude_before is not None else _read_relative_nofollow(root, claude_path)[0]
                 if before != SHIM_BYTES:
                     coupled_agents = {
@@ -902,24 +965,40 @@ def validate_snapshot(snapshot: Mapping[str, Any]) -> None:
 
 
 def audit(root: Path) -> dict[str, Any]:
-    snapshot_path = root / SNAPSHOT_NAME
     snapshot: dict[str, Any] | None = None
     findings: list[dict[str, Any]] = []
+    root_fd = pinned_root_fd(root)
     try:
-        snapshot_info = os.lstat(snapshot_path)
+        snapshot_info = os.stat(SNAPSHOT_NAME, dir_fd=root_fd, follow_symlinks=False)
     except FileNotFoundError:
         snapshot_info = None
     if snapshot_info is not None:
         if not stat.S_ISREG(snapshot_info.st_mode) or stat.S_ISLNK(snapshot_info.st_mode):
+            os.close(root_fd)
             raise ValueError("ownership snapshot is unsafe (symlink or non-regular)")
         try:
-            snapshot_bytes, _ = _read_regular_nofollow(snapshot_path)
+            descriptor = os.open(SNAPSHOT_NAME, os.O_RDONLY | _NOFOLLOW, dir_fd=root_fd)
+            try:
+                chunks: list[bytes] = []
+                while True:
+                    chunk = os.read(descriptor, 1024 * 1024)
+                    if not chunk:
+                        break
+                    chunks.append(chunk)
+                snapshot_bytes = b"".join(chunks)
+            finally:
+                os.close(descriptor)
             snapshot = json.loads(snapshot_bytes.decode("utf-8"))
             findings.extend(validate_ownership_snapshot(root, snapshot)["findings"])
         except (OSError, UnicodeDecodeError, json.JSONDecodeError):
             findings.append({"code": "INITV4-E-SNAPSHOT-INVALID", "path": SNAPSHOT_NAME})
-    if (root / JOURNAL_NAME).exists():
+    try:
+        os.stat(JOURNAL_NAME, dir_fd=root_fd, follow_symlinks=False)
+    except FileNotFoundError:
+        pass
+    else:
         findings.append({"code": "INITV4-E-TRANSACTION-ACTIVE", "path": JOURNAL_NAME})
+    os.close(root_fd)
     topology = discover_topology(root)
     findings.extend(topology["findings"])
     public_topology = {key: value for key, value in topology.items() if key != "_root"}
@@ -973,7 +1052,7 @@ def plan_prune(root: Path, snapshot: Mapping[str, Any], accepted_ids: set[str]) 
 
 
 def probe_loading(root: Path, receipt: Mapping[str, Any] | None = None) -> dict[str, Any]:
-    root = root.resolve(strict=True)
+    root = root.absolute() if _PINNED_ROOT_FD.get() is not None else root.resolve(strict=True)
     fixture = {
         "root": {"path": "AGENTS.md", "marker": "ROOT"},
         "child": {"path": "child/AGENTS.md", "marker": "CHILD"},
