@@ -260,6 +260,9 @@ class TransactionTests(unittest.TestCase):
                 transaction.recover(root)
             proposal = re.search(r"P-RECOVER-ROLLBACK-TRANSACTION-[0-9a-f]{12}", str(blocked.exception))
             self.assertIsNotNone(proposal)
+            with self.assertRaises(transaction.RecoveryBlocked):
+                transaction.recover(root, {proposal.group(), "P-STALE-RECOVERY-000000000000"})
+            self.assertEqual(product.read_bytes(), b"unexpected")
             self.assertEqual(transaction.recover(root, {proposal.group()})["phase"], "rolled-back")
             self.assertEqual(product.read_bytes(), b"before")
 
@@ -275,6 +278,36 @@ class TransactionTests(unittest.TestCase):
             self.assertEqual(transaction.recover(root)["phase"], "aborted")
             self.assertEqual(product.read_bytes(), b"before")
             self.assertFalse((root / core.JOURNAL_NAME).exists())
+
+    def test_pinned_root_fd_cannot_be_redirected_by_path_replacement(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory)
+            root = parent / "repo"
+            moved = parent / "repo-original"
+            root.mkdir()
+            with transaction._pinned_root(root):
+                root.rename(moved)
+                root.mkdir()
+                transaction._exclusive_write_relative(root, "artifact", b"bound", 0o600)
+            self.assertEqual((moved / "artifact").read_bytes(), b"bound")
+            self.assertFalse((root / "artifact").exists())
+
+    def test_invalid_journal_json_types_are_typed_recovery_blocks(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            product = root / "AGENTS.md"
+            product.write_bytes(b"before")
+            with mock.patch.object(transaction, "_image_copy", side_effect=OSError("stop during preparation")):
+                with self.assertRaises(OSError):
+                    transaction.apply(root, [{"path": "AGENTS.md", "bytes": b"after"}], set(), snapshot_payload=self._snapshot())
+            journal_path = root / core.JOURNAL_NAME
+            journal = json.loads(journal_path.read_text(encoding="utf-8"))
+            journal["schema_version"] = True
+            journal_path.write_text(json.dumps(journal), encoding="utf-8")
+            os.chmod(journal_path, 0o600)
+            with self.assertRaises(transaction.RecoveryBlocked):
+                transaction.recover(root)
+            self.assertEqual(product.read_bytes(), b"before")
 
 
 if __name__ == "__main__":

@@ -4,6 +4,8 @@ from __future__ import annotations
 import json
 import os
 import stat
+from contextlib import contextmanager
+from contextvars import ContextVar
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
@@ -15,9 +17,7 @@ try:
         canonical_json,
         derived_transaction_paths,
         expected_apply,
-        file_observation,
         normalize_path,
-        safe_path,
         sha256_bytes,
         transaction_basis,
         transaction_id,
@@ -31,9 +31,7 @@ except ImportError:  # Direct script execution has no package parent.
         canonical_json,
         derived_transaction_paths,
         expected_apply,
-        file_observation,
         normalize_path,
-        safe_path,
         sha256_bytes,
         transaction_basis,
         transaction_id,
@@ -42,6 +40,11 @@ except ImportError:  # Direct script execution has no package parent.
 
 _PRIVATE_MODE = 0o600
 _NOFOLLOW = getattr(os, "O_NOFOLLOW", 0)
+_PINNED_ROOT_FD: ContextVar[int | None] = ContextVar("init_transaction_root_fd", default=None)
+
+
+def _valid_hash(value: object) -> bool:
+    return isinstance(value, str) and len(value) == 64 and all(character in "0123456789abcdef" for character in value)
 
 
 class RecoveryBlocked(RuntimeError):
@@ -50,6 +53,34 @@ class RecoveryBlocked(RuntimeError):
 
 class RecoveryFailure(RuntimeError):
     """A validated recovery attempt failed after mutation began."""
+
+
+@contextmanager
+def _pinned_root(root: Path) -> Iterable[None]:
+    existing = _PINNED_ROOT_FD.get()
+    if existing is not None:
+        yield
+        return
+    descriptor = os.open(
+        root.resolve(strict=True),
+        os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | _NOFOLLOW,
+    )
+    token = _PINNED_ROOT_FD.set(descriptor)
+    try:
+        yield
+    finally:
+        _PINNED_ROOT_FD.reset(token)
+        os.close(descriptor)
+
+
+def _root_fd(root: Path) -> int:
+    pinned = _PINNED_ROOT_FD.get()
+    if pinned is not None:
+        return os.dup(pinned)
+    return os.open(
+        root.resolve(strict=True),
+        os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | _NOFOLLOW,
+    )
 
 
 def _fsync_directory(directory: Path) -> None:
@@ -107,14 +138,12 @@ def _exclusive_write_relative(root: Path, relative: str, data: bytes, mode: int)
 
 def _matches(entry: Mapping[str, Any], side: str, root: Path) -> bool:
     exists = entry[f"{side}_exists"]
-    path = safe_path(root, str(entry["path"]))
     try:
-        info = os.lstat(path)
+        data, mode = _read_relative_with_mode(root, str(entry["path"]))
     except FileNotFoundError:
         return not exists
-    if not stat.S_ISREG(info.st_mode) or not exists:
+    if not exists:
         return False
-    data, mode = _read_relative_with_mode(root, str(entry["path"]))
     return (
         sha256_bytes(data) == entry[f"{side}_sha256"]
         and mode == entry[f"{side}_mode"]
@@ -129,13 +158,15 @@ def _validate_entry(entry: Mapping[str, Any], identifier: str, *, snapshot: bool
     }
     if set(entry) != required:
         raise ValueError("journal entry is incomplete")
-    path = normalize_path(str(entry["path"]))
+    if not isinstance(entry["path"], str):
+        raise ValueError("journal path is invalid")
+    path = normalize_path(entry["path"])
     if snapshot != (path == SNAPSHOT_NAME):
         raise ValueError("journal snapshot role is invalid")
     if not isinstance(entry["pre_exists"], bool) or not isinstance(entry["post_exists"], bool):
         raise ValueError("journal existence flag is invalid")
     expected_action = "delete" if not entry["post_exists"] else ("replace" if entry["pre_exists"] else "create")
-    if entry["action"] != expected_action:
+    if not isinstance(entry["action"], str) or entry["action"] != expected_action:
         raise ValueError("journal action is invalid")
     for side in ("pre", "post"):
         exists = entry[f"{side}_exists"]
@@ -143,18 +174,20 @@ def _validate_entry(entry: Mapping[str, Any], identifier: str, *, snapshot: bool
         mode = entry[f"{side}_mode"]
         recovery = entry[f"{side}_recovery_path"]
         if exists:
-            if not isinstance(digest, str) or len(digest) != 64 or any(c not in "0123456789abcdef" for c in digest):
+            if not _valid_hash(digest):
                 raise ValueError("journal hash is invalid")
             if not isinstance(mode, int) or isinstance(mode, bool) or not 0 <= mode <= 0o7777:
                 raise ValueError("journal mode is invalid")
+            if not isinstance(recovery, str):
+                raise ValueError("journal recovery path is invalid")
             if recovery != derived_transaction_paths(identifier, path)[f"{side}_recovery_path"]:
                 raise ValueError("journal recovery path is invalid")
         elif digest is not None or mode is not None or recovery is not None:
             raise ValueError("journal absent side has an artifact")
     names = derived_transaction_paths(identifier, path)
-    if entry["apply_path"] != names["apply_path"]:
+    if not isinstance(entry["apply_path"], str) or entry["apply_path"] != names["apply_path"]:
         raise ValueError("journal apply path is invalid")
-    if entry["state"] not in {"pending", "applying", "applied", "rolling-back", "rolled-back"}:
+    if not isinstance(entry["state"], str) or entry["state"] not in {"pending", "applying", "applied", "rolling-back", "rolled-back"}:
         raise ValueError("journal target state is invalid")
 
 
@@ -163,20 +196,29 @@ def _validate_journal(journal: Mapping[str, Any]) -> None:
         "schema_version", "transaction_id", "operation", "phase",
         "recovery_from_phase", "intended_snapshot_sha256", "snapshot", "targets",
     }
-    if not isinstance(journal, Mapping) or set(journal) != journal_keys or journal.get("schema_version") != 1:
+    if (
+        not isinstance(journal, Mapping)
+        or set(journal) != journal_keys
+        or not isinstance(journal.get("schema_version"), int)
+        or isinstance(journal.get("schema_version"), bool)
+        or journal.get("schema_version") != 1
+    ):
         raise ValueError("journal schema version is invalid")
     identifier = journal.get("transaction_id")
-    if not isinstance(identifier, str) or len(identifier) != 64:
+    if not _valid_hash(identifier):
         raise ValueError("journal transaction id is invalid")
     operation = journal.get("operation")
     targets = journal.get("targets")
     snapshot = journal.get("snapshot")
-    if operation not in {"map", "prune"} or not isinstance(targets, list) or not isinstance(snapshot, Mapping):
+    if not isinstance(operation, str) or operation not in {"map", "prune"} or not isinstance(targets, list) or not isinstance(snapshot, Mapping):
         raise ValueError("journal schema is invalid")
-    if journal.get("phase") not in {"preparing", "prepared", "applying-products", "products-applied", "committing-snapshot", "snapshot-committed", "cleaning", "recovery-required"}:
+    if not isinstance(journal.get("phase"), str) or journal.get("phase") not in {"preparing", "prepared", "applying-products", "products-applied", "committing-snapshot", "snapshot-committed", "cleaning", "recovery-required"}:
         raise ValueError("journal phase is invalid")
     recovery_phases = {None, "preparing", "prepared", "applying-products", "products-applied", "committing-snapshot", "snapshot-committed", "cleaning"}
-    if journal.get("recovery_from_phase") not in recovery_phases:
+    recovery_from = journal.get("recovery_from_phase")
+    if recovery_from is not None and not isinstance(recovery_from, str):
+        raise ValueError("journal recovery phase is invalid")
+    if recovery_from not in recovery_phases:
         raise ValueError("journal recovery phase is invalid")
     if (journal["phase"] == "recovery-required") != (journal["recovery_from_phase"] is not None):
         raise ValueError("journal recovery phase binding is invalid")
@@ -189,7 +231,7 @@ def _validate_journal(journal: Mapping[str, Any]) -> None:
     _validate_entry(snapshot, identifier, snapshot=True)
     if snapshot["action"] not in {"create", "replace"}:
         raise ValueError("journal snapshot action is invalid")
-    if journal["intended_snapshot_sha256"] != snapshot["post_sha256"]:
+    if not _valid_hash(journal["intended_snapshot_sha256"]) or journal["intended_snapshot_sha256"] != snapshot["post_sha256"]:
         raise ValueError("journal intended snapshot hash is invalid")
     if any(entry["path"] == SNAPSHOT_NAME for entry in targets):
         raise ValueError("journal target overlaps snapshot")
@@ -198,11 +240,11 @@ def _validate_journal(journal: Mapping[str, Any]) -> None:
 
 
 def _validate_artifact(root: Path, relative: str, digest: str, mode: int) -> Path:
-    path = safe_path(root, relative, require_exists=True)
+    normalize_path(relative)
     data, observed_mode = _read_relative_with_mode(root, relative)
     if observed_mode != mode or sha256_bytes(data) != digest:
         raise ValueError("transaction artifact does not match its bound role")
-    return path
+    return root / relative
 
 
 def _read_regular_with_mode(path: Path) -> tuple[bytes, int]:
@@ -228,7 +270,7 @@ def _read_regular(path: Path) -> bytes:
 
 def _read_relative_with_mode(root: Path, relative: str) -> tuple[bytes, int]:
     parts = tuple(normalize_path(relative).split("/"))
-    directory_fd = os.open(root.resolve(strict=True), os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    directory_fd = _root_fd(root)
     try:
         for part in parts[:-1]:
             next_fd = os.open(
@@ -258,7 +300,7 @@ def _read_relative_with_mode(root: Path, relative: str) -> tuple[bytes, int]:
 
 def _open_parent_dir(root: Path, relative: str) -> tuple[int, str]:
     parts = tuple(normalize_path(relative).split("/"))
-    directory_fd = os.open(root.resolve(strict=True), os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    directory_fd = _root_fd(root)
     try:
         for part in parts[:-1]:
             next_fd = os.open(
@@ -274,6 +316,14 @@ def _open_parent_dir(root: Path, relative: str) -> tuple[int, str]:
         raise
 
 
+def _lstat_relative(root: Path, relative: str) -> os.stat_result:
+    parent_fd, name = _open_parent_dir(root, relative)
+    try:
+        return os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+    finally:
+        os.close(parent_fd)
+
+
 def _effect_bytes(effect: Mapping[str, Any]) -> bytes | None:
     action = effect.get("action")
     if action == "delete":
@@ -287,13 +337,22 @@ def _effect_bytes(effect: Mapping[str, Any]) -> bytes | None:
 
 
 def _effect_entry(root: Path, effect: Mapping[str, Any]) -> tuple[dict[str, Any], bytes | None]:
-    relative = normalize_path(str(effect["path"]))
-    destination = safe_path(root, relative)
-    before_exists = destination.exists()
-    if before_exists:
-        before = file_observation(root, relative)
-    else:
+    if not isinstance(effect.get("path"), str):
+        raise ValueError("effect path is invalid")
+    relative = normalize_path(effect["path"])
+    try:
+        before_bytes, before_mode = _read_relative_with_mode(root, relative)
+    except FileNotFoundError:
         before = None
+    except OSError as error:
+        raise ValueError("effect target is unsafe or unreadable") from error
+    else:
+        before = {
+            "path": relative,
+            "sha256": sha256_bytes(before_bytes),
+            "mode": before_mode,
+            "size": len(before_bytes),
+        }
     expected_sha = effect.get("expected_pre_sha256")
     expected_mode = effect.get("expected_pre_mode")
     if expected_sha is not None or expected_mode is not None:
@@ -312,22 +371,28 @@ def _journal_write(root: Path, journal: Mapping[str, Any]) -> None:
     _validate_journal(journal)
     transaction = str(journal["transaction_id"])
     next_relative = derived_transaction_paths(transaction, SNAPSHOT_NAME)["next_path"]
-    next_path = safe_path(root, next_relative)
-    if next_path.exists():
-        info = os.lstat(next_path)
-        if not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) != _PRIVATE_MODE:
+    try:
+        next_bytes, next_mode = _read_relative_with_mode(root, next_relative)
+    except FileNotFoundError:
+        pass
+    else:
+        if next_mode != _PRIVATE_MODE:
             raise ValueError("orphan next journal artifact is unsafe")
         try:
-            orphan = json.loads(_read_regular(next_path).decode("utf-8"))
+            orphan = json.loads(next_bytes.decode("utf-8"))
             _validate_journal(orphan)
         except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
             raise ValueError("orphan next journal artifact is unsafe") from error
         if orphan["transaction_id"] != transaction:
             raise ValueError("orphan next journal artifact has the wrong identity")
-        os.unlink(next_path)
-        _fsync_directory(next_path.parent)
+        root_fd = _root_fd(root)
+        try:
+            os.unlink(next_relative, dir_fd=root_fd)
+            os.fsync(root_fd)
+        finally:
+            os.close(root_fd)
     _exclusive_write_relative(root, next_relative, canonical_json(dict(journal), pretty=True), _PRIVATE_MODE)
-    root_fd = os.open(root, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    root_fd = _root_fd(root)
     try:
         os.replace(next_relative, JOURNAL_NAME, src_dir_fd=root_fd, dst_dir_fd=root_fd)
         os.fsync(root_fd)
@@ -352,7 +417,7 @@ def _prepare_apply(root: Path, entry: Mapping[str, Any], direction: str) -> Path
         raise ValueError("missing immutable recovery image")
     _validate_artifact(root, str(source_relative), expected["sha256"], _PRIVATE_MODE)
     data, _ = _read_relative_with_mode(root, str(source_relative))
-    apply_path = safe_path(root, str(entry["apply_path"]))
+    apply_path = root / normalize_path(str(entry["apply_path"]))
     _exclusive_write_relative(root, str(entry["apply_path"]), data, int(expected["mode"]))
     applied, applied_mode = _read_relative_with_mode(root, str(entry["apply_path"]))
     observation = {"regular": True, "sha256": sha256_bytes(applied), "mode": applied_mode}
@@ -381,7 +446,7 @@ def _consume_apply(root: Path, entry: Mapping[str, Any], direction: str) -> None
         finally:
             os.close(parent_fd)
         return
-    apply_path = safe_path(root, str(entry["apply_path"]))
+    apply_path = root / normalize_path(str(entry["apply_path"]))
     try:
         _validate_artifact(root, str(entry["apply_path"]), expected["sha256"], int(expected["mode"]))
     except FileNotFoundError:
@@ -476,30 +541,35 @@ def _cleanup(root: Path, journal: Mapping[str, Any]) -> None:
                 os.fsync(parent_fd)
             finally:
                 os.close(parent_fd)
-    next_path = safe_path(root, derived_transaction_paths(str(journal["transaction_id"]), SNAPSHOT_NAME)["next_path"])
-    if next_path.exists():
-        info = os.lstat(next_path)
-        if not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) != _PRIVATE_MODE:
+    next_relative = derived_transaction_paths(str(journal["transaction_id"]), SNAPSHOT_NAME)["next_path"]
+    try:
+        next_bytes, next_mode = _read_relative_with_mode(root, next_relative)
+    except FileNotFoundError:
+        pass
+    else:
+        if next_mode != _PRIVATE_MODE:
             raise ValueError("cleanup next journal artifact is unsafe")
         try:
-            next_journal = json.loads(_read_regular(next_path).decode("utf-8"))
+            next_journal = json.loads(next_bytes.decode("utf-8"))
             _validate_journal(next_journal)
         except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
             raise ValueError("cleanup next journal artifact is unsafe") from exc
         if next_journal["transaction_id"] != journal["transaction_id"]:
             raise ValueError("cleanup next journal artifact has the wrong identity")
-        root_fd = os.open(root, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+        root_fd = _root_fd(root)
         try:
-            os.unlink(next_path.name, dir_fd=root_fd)
+            os.unlink(next_relative, dir_fd=root_fd)
             os.fsync(root_fd)
         finally:
             os.close(root_fd)
-    journal_path = root / JOURNAL_NAME
-    if journal_path.exists():
-        journal_info = os.lstat(journal_path)
-        if not stat.S_ISREG(journal_info.st_mode) or stat.S_IMODE(journal_info.st_mode) != _PRIVATE_MODE:
+    try:
+        _, journal_mode = _read_relative_with_mode(root, JOURNAL_NAME)
+    except FileNotFoundError:
+        pass
+    else:
+        if journal_mode != _PRIVATE_MODE:
             raise ValueError("journal artifact mode is unsafe")
-        root_fd = os.open(root, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+        root_fd = _root_fd(root)
         try:
             os.unlink(JOURNAL_NAME, dir_fd=root_fd)
             os.fsync(root_fd)
@@ -523,7 +593,7 @@ def _snapshot_entry(root: Path, payload: Mapping[str, Any]) -> tuple[dict[str, A
     return entry, content
 
 
-def apply(
+def _apply_pinned(
     root: Path,
     effects: list[dict[str, Any]],
     accepted_ids: set[str],
@@ -532,8 +602,11 @@ def apply(
     operation: str = "map",
 ) -> dict[str, Any]:
     """Apply accepted product effects; with snapshot_payload, commit snapshot last and clean journal last."""
-    root = root.resolve(strict=True)
-    if (root / JOURNAL_NAME).exists():
+    try:
+        _lstat_relative(root, JOURNAL_NAME)
+    except FileNotFoundError:
+        pass
+    else:
         return recover(root, accepted_ids)
     entries: list[dict[str, Any]] = []
     contents: list[bytes | None] = []
@@ -595,6 +668,25 @@ def apply(
     _cleanup(root, journal)
     return {"transaction_id": identifier, "phase": "complete", "effects": entries}
 
+
+def apply(
+    root: Path,
+    effects: list[dict[str, Any]],
+    accepted_ids: set[str],
+    *,
+    snapshot_payload: Mapping[str, Any] | None = None,
+    operation: str = "map",
+) -> dict[str, Any]:
+    root = root.resolve(strict=True)
+    with _pinned_root(root):
+        return _apply_pinned(
+            root,
+            effects,
+            accepted_ids,
+            snapshot_payload=snapshot_payload,
+            operation=operation,
+        )
+
 def _recovery_proposal_id(
     root: Path,
     journal: Mapping[str, Any],
@@ -646,30 +738,76 @@ def _preflight_recovery_images(
     return selected
 
 
+def _preflight_transaction_artifacts(
+    root: Path,
+    journal: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    observed: list[dict[str, Any]] = []
+    for entry in list(journal["targets"]) + [journal["snapshot"]]:
+        for side in ("pre", "post"):
+            if not entry[f"{side}_exists"]:
+                continue
+            relative = entry[f"{side}_recovery_path"]
+            _validate_artifact(root, relative, entry[f"{side}_sha256"], _PRIVATE_MODE)
+            observed.append({
+                "role": f"{side}-recovery",
+                "target": entry["path"],
+                "path": relative,
+                "sha256": entry[f"{side}_sha256"],
+                "mode": _PRIVATE_MODE,
+            })
+        apply_relative = entry["apply_path"]
+        try:
+            data, mode = _read_relative_with_mode(root, apply_relative)
+        except FileNotFoundError:
+            continue
+        candidates = [
+            image
+            for direction in ("forward", "rollback")
+            if (image := expected_apply(entry, direction)) is not None
+        ]
+        digest = sha256_bytes(data)
+        if not any(digest == image["sha256"] and mode == int(image["mode"]) for image in candidates):
+            raise ValueError("apply artifact is not a bound transaction image")
+        observed.append({
+            "role": "apply",
+            "target": entry["path"],
+            "path": apply_relative,
+            "sha256": digest,
+            "mode": mode,
+        })
+    _preflight_cleanup(root, journal)
+    return observed
+
+
 def _preflight_cleanup(root: Path, journal: Mapping[str, Any]) -> None:
     for entry in list(journal["targets"]) + [journal["snapshot"]]:
         for key in ("apply_path", "pre_recovery_path", "post_recovery_path"):
             relative = entry.get(key)
             if not relative:
                 continue
-            path = safe_path(root, str(relative))
-            if not path.exists():
+            try:
+                data, mode = _read_relative_with_mode(root, str(relative))
+            except FileNotFoundError:
                 continue
             if key == "apply_path":
                 forward = expected_apply(entry, "forward")
                 rollback = expected_apply(entry, "rollback")
                 if not (
-                    (forward is not None and _matches_artifact(path, forward["sha256"], int(forward["mode"])))
-                    or (rollback is not None and _matches_artifact(path, rollback["sha256"], int(rollback["mode"])))
+                    (forward is not None and sha256_bytes(data) == forward["sha256"] and mode == int(forward["mode"]))
+                    or (rollback is not None and sha256_bytes(data) == rollback["sha256"] and mode == int(rollback["mode"]))
                 ):
                     raise ValueError("cleanup apply artifact is unsafe")
             else:
                 side = "pre" if key.startswith("pre_") else "post"
-                _validate_artifact(root, str(relative), entry[f"{side}_sha256"], _PRIVATE_MODE)
+                if sha256_bytes(data) != entry[f"{side}_sha256"] or mode != _PRIVATE_MODE:
+                    raise ValueError("cleanup recovery artifact is unsafe")
     next_relative = derived_transaction_paths(str(journal["transaction_id"]), SNAPSHOT_NAME)["next_path"]
-    next_path = safe_path(root, next_relative)
-    if next_path.exists():
+    try:
         next_bytes, next_mode = _read_relative_with_mode(root, next_relative)
+    except FileNotFoundError:
+        pass
+    else:
         if next_mode != _PRIVATE_MODE:
             raise ValueError("cleanup next journal artifact is unsafe")
         try:
@@ -681,16 +819,13 @@ def _preflight_cleanup(root: Path, journal: Mapping[str, Any]) -> None:
             raise ValueError("cleanup next journal artifact has the wrong identity")
 
 
-def recover(root: Path, accepted_ids: set[str] | None = None) -> dict[str, Any]:
+def _recover_pinned(root: Path, accepted_ids: set[str] | None = None) -> dict[str, Any]:
     """Finish recognized committed work or reverse a recognized pre-commit mix."""
-    root = root.resolve(strict=True)
-    journal_path = root / JOURNAL_NAME
     mutating = False
     try:
-        journal_info = os.lstat(journal_path)
-        if not stat.S_ISREG(journal_info.st_mode) or stat.S_IMODE(journal_info.st_mode) != _PRIVATE_MODE:
+        journal_bytes, journal_mode = _read_relative_with_mode(root, JOURNAL_NAME)
+        if journal_mode != _PRIVATE_MODE:
             raise ValueError("journal artifact is unsafe")
-        journal_bytes = _read_regular(journal_path)
         journal = json.loads(journal_bytes.decode("utf-8"))
         _validate_journal(journal)
         identifier = journal["transaction_id"]
@@ -711,6 +846,7 @@ def recover(root: Path, accepted_ids: set[str] | None = None) -> dict[str, Any]:
             _cleanup(root, journal)
             return {"transaction_id": identifier, "phase": "aborted", "recovered": True}
 
+        complete_artifacts = _preflight_transaction_artifacts(root, journal)
         committed = matches(snapshot, "post") and all(matches(item, "post") for item in targets)
         if committed and journal["phase"] in {"committing-snapshot", "snapshot-committed", "cleaning"}:
             _preflight_cleanup(root, journal)
@@ -739,8 +875,8 @@ def recover(root: Path, accepted_ids: set[str] | None = None) -> dict[str, Any]:
         accepted = accepted_ids or set()
         if matches(snapshot, "pre"):
             selected_images = _preflight_recovery_images(root, targets, "rollback")
-            proposal_id = _recovery_proposal_id(root, journal, journal_bytes, "recover-rollback-transaction", selected_images)
-            if accepted and proposal_id not in accepted:
+            proposal_id = _recovery_proposal_id(root, journal, journal_bytes, "recover-rollback-transaction", [*complete_artifacts, *selected_images])
+            if accepted - {proposal_id}:
                 raise ValueError("accepted recovery proposal is not offered by current evidence")
             if proposal_id not in accepted:
                 raise ValueError(f"recovery requires acceptance: {proposal_id}")
@@ -759,8 +895,8 @@ def recover(root: Path, accepted_ids: set[str] | None = None) -> dict[str, Any]:
 
         if matches(snapshot, "post"):
             selected_images = _preflight_recovery_images(root, targets, "complete")
-            proposal_id = _recovery_proposal_id(root, journal, journal_bytes, "recover-complete-transaction", selected_images)
-            if accepted and proposal_id not in accepted:
+            proposal_id = _recovery_proposal_id(root, journal, journal_bytes, "recover-complete-transaction", [*complete_artifacts, *selected_images])
+            if accepted - {proposal_id}:
                 raise ValueError("accepted recovery proposal is not offered by current evidence")
             if proposal_id not in accepted:
                 raise ValueError(f"recovery requires acceptance: {proposal_id}")
@@ -780,3 +916,9 @@ def recover(root: Path, accepted_ids: set[str] | None = None) -> dict[str, Any]:
     except (KeyError, OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
         error_type = RecoveryFailure if mutating else RecoveryBlocked
         raise error_type(f"transaction recovery is blocked: {exc}; journal evidence was preserved") from exc
+
+
+def recover(root: Path, accepted_ids: set[str] | None = None) -> dict[str, Any]:
+    root = root.resolve(strict=True)
+    with _pinned_root(root):
+        return _recover_pinned(root, accepted_ids)

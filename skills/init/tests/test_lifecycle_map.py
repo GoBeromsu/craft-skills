@@ -168,6 +168,18 @@ class LifecycleMapTests(unittest.TestCase):
             self.assertEqual(loader["loader_class"], "ancestor-only")
             self.assertEqual(loader["evidence_status"], "probe-verified")
 
+    def test_public_unknown_loading_report_round_trips_without_reinterpretation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            evidence_path = root / "loading-report.json"
+            evidence_path.write_text(json.dumps(lifecycle_core.probe_loading(root)), encoding="utf-8")
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(lifecycle_map.main([str(root), f"--loading-evidence={evidence_path}"]), 0)
+            snapshot = json.loads((root / ".agents-map.json").read_text(encoding="utf-8"))
+            loader = snapshot["last_applied_topology"]["loader"]
+            self.assertEqual(loader["loader_class"], "unknown")
+            self.assertEqual(loader["evidence_status"], "unavailable")
+
     def test_claude_acceptance_is_invalidated_by_coupled_agents_mode_change(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -201,6 +213,17 @@ class LifecycleMapTests(unittest.TestCase):
             with contextlib.redirect_stderr(io.StringIO()):
                 self.assertEqual(lifecycle_map.main([str(root)]), 2)
             self.assertEqual(sorted(path.name for path in root.iterdir()), before)
+            self.assertFalse((root / "AGENTS.md").exists())
+
+    def test_multiline_claude_cannot_bypass_rendered_line_budget(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "app.py").write_text("print('ok')\n", encoding="utf-8")
+            (root / "CLAUDE.md").write_text("\n".join(f"rule {index}" for index in range(200)) + "\n", encoding="utf-8")
+            before = (root / "CLAUDE.md").read_bytes()
+            with contextlib.redirect_stderr(io.StringIO()):
+                self.assertEqual(lifecycle_map.main([str(root), "--claude-shim=on"]), 2)
+            self.assertEqual((root / "CLAUDE.md").read_bytes(), before)
             self.assertFalse((root / "AGENTS.md").exists())
 
 

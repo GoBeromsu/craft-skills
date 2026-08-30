@@ -31,7 +31,24 @@ def _root(value: str) -> Path:
 def _outputs(root: Path, max_depth: int, claude_shim: str, loading_receipt: dict | None = None) -> dict:
     prior = _prior_snapshot(root)
     shim_policy = str(prior["last_applied_topology"]["shim_policy"]) if claude_shim == "keep" and prior is not None else ("off" if claude_shim == "keep" else claude_shim)
-    loading_evidence = probe_loading(root, loading_receipt) if loading_receipt is not None else None
+    loading_evidence = None
+    if loading_receipt is not None:
+        nested = loading_receipt.get("receipt")
+        if isinstance(nested, dict):
+            loading_evidence = probe_loading(root, nested)
+        elif {"status", "loading_class", "fixture_sha256"}.issubset(loading_receipt):
+            fixture_sha = probe_loading(root)["fixture_sha256"]
+            status = loading_receipt["status"]
+            loading_class = loading_receipt["loading_class"]
+            if (
+                loading_receipt["fixture_sha256"] != fixture_sha
+                or status not in {"unknown", "conflicted", "unavailable", "version-mismatch"}
+                or loading_class != "unknown"
+            ):
+                raise ValueError("loading evidence report is unbound or invalid")
+            loading_evidence = dict(loading_receipt)
+        else:
+            loading_evidence = probe_loading(root, loading_receipt)
     if loading_evidence is None:
         topology = discover_topology(root, max_depth=max_depth, shim_policy=shim_policy)
     else:
@@ -127,8 +144,7 @@ def main(argv: list[str] | None = None) -> int:
             loaded_evidence = json.loads(args.loading_evidence.read_text(encoding="utf-8"))
             if not isinstance(loaded_evidence, dict):
                 raise ValueError("--loading-evidence must contain a JSON object")
-            nested = loaded_evidence.get("receipt")
-            loading_receipt = dict(nested) if isinstance(nested, dict) else loaded_evidence
+            loading_receipt = loaded_evidence
         outputs = (
             _outputs(root, args.max_depth, args.claude_shim)
             if loading_receipt is None
@@ -148,7 +164,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         if missing:
             raise ValueError("mapping requires acceptance: " + ", ".join(missing))
-        if not (root / JOURNAL_NAME).exists() and _is_byte_identical_noop(root, outputs):
+        if _is_byte_identical_noop(root, outputs):
             result = {"exit_code": 0, "phase": "complete", "effects": [], "no_op": True}
         else:
             try:

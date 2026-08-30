@@ -509,21 +509,37 @@ def _render_managed_payload(
             f"- Loader class: `{topology['loader']['loader_class']}`.",
             f"- Loader evidence status: `{topology['loader']['evidence_status']}`.",
             f"- Placement depth bound: `{topology['max_depth']}`; complete coverage remains independent.",
-            "",
-            "## Constraints",
-            "",
-            "- Use only repository facts listed above; do not invent commands, entry points, or conventions.",
-            "- Preserve unmanaged bytes and require evidence-bound acceptance before replacing incumbent instructions.",
-            "- Keep `AGENTS.md` canonical; a sibling `CLAUDE.md` may contain only the exact `@AGENTS.md` adapter.",
-            "",
-            "## Working rule",
-            "",
-            "Read every `AGENTS.md` from the repository root through the target directory; the nearest instruction wins on conflict.",
-            "Run only commands declared above or commands independently verified from repository configuration.",
-            "Verify changed behavior at the narrowest observable repository surface before delivery.",
-            "",
         ]
     )
+    if node["directory"] == ".":
+        lines.extend(
+            [
+                "",
+                "## Constraints",
+                "",
+                "- Use only repository facts listed above; do not invent commands, entry points, or conventions.",
+                "- Preserve unmanaged bytes and require evidence-bound acceptance before replacing incumbent instructions.",
+                "- Keep `AGENTS.md` canonical; a sibling `CLAUDE.md` may contain only the exact `@AGENTS.md` adapter.",
+                "",
+                "## Working rule",
+                "",
+                "Read every `AGENTS.md` from the repository root through the target directory; the nearest instruction wins on conflict.",
+                "Run only commands declared above or commands independently verified from repository configuration.",
+                "Verify changed behavior at the narrowest observable repository surface before delivery.",
+                "",
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "",
+                "## Local override boundary",
+                "",
+                f"Inherit `{node['parent_agents_path']}` and apply only the local evidence in this file.",
+                "Do not duplicate or weaken parent commands and constraints.",
+                "",
+            ]
+        )
     if migrated_claude is not None:
         lines.extend(
             [
@@ -535,14 +551,15 @@ def _render_managed_payload(
                 "",
             ]
         )
-    line_count = len(lines)
+    rendered = "\n".join(lines)
+    line_count = len(rendered.splitlines())
     minimum, maximum = (50, 150) if node["directory"] == "." else (30, 80)
     if not minimum <= line_count <= maximum:
         raise ValueError(
             f"managed payload for {node['agents_path']} has {line_count} lines; "
             f"required range is {minimum}..{maximum}"
         )
-    return "\n".join(lines).encode("utf-8")
+    return rendered.encode("utf-8")
 
 
 def _proposal(
