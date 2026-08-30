@@ -38,3 +38,7 @@ Do not select TypeORM by default merely because it resembles decorator-based app
 | Existing ORM | Preserve the incumbent ORM; do not migrate as a feature side effect |
 
 Route public HTTP request and response conventions to the `api` skill. This reference owns database-engine fidelity, database-role separation, destructive-target proof, and ORM selection, not endpoint contract shape.
+
+## Post-selection handoff
+
+[`db`](../../db/SKILL.md)

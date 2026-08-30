@@ -11,7 +11,7 @@ Runtime-owned `agents/` directories are optional plumbing, not part of the porta
 No nested `SKILL.md` files — every skill is one level deep.
 `evals/` directories are local, gitignored scratch for the eval-first authoring loop; they are never committed.
 
-The 28 packages (alphabetical): `agents`, `api`, `ast-grep`, `backend`, `browser`, `cicd`, `debug`, `defuddle`, `design`, `distil`, `document`, `frontend`, `git`, `gpu`, `guardrails`, `init`, `ml`, `obsidian`, `programming`, `refactor`, `research`, `security`, `skillify`, `tailscale`, `testing`, `vmware`, `write-prd`, `write-report`.
+The 29 packages (alphabetical): `agents`, `api`, `ast-grep`, `backend`, `browser`, `cicd`, `db`, `debug`, `defuddle`, `design`, `distil`, `document`, `frontend`, `git`, `gpu`, `guardrails`, `init`, `ml`, `obsidian`, `programming`, `refactor`, `research`, `security`, `skillify`, `tailscale`, `testing`, `vmware`, `write-prd`, `write-report`.
 `browser` is one flat package: it owns one router and exactly three references for Aside, agent-browser, and existing-session.
 `obsidian` is one thick package whose sub-recipes live under `references/`.
 `design` owns root `DESIGN.md`, UX/UI judgment, bad-UX audits, and rendered evidence.

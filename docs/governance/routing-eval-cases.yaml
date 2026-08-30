@@ -330,6 +330,26 @@
       "trigger": "Audit these AI-generated tests for tautologies and cases that cannot fail",
       "expected_package": "craft-skills/testing",
       "forbidden_neighbors": ["craft-skills/programming", "craft-skills/debug", "craft-skills/refactor"]
+    },
+    {
+      "trigger": "Review this PostgreSQL EXPLAIN ANALYZE and recommend post-selection index and query-shape changes",
+      "expected_package": "craft-skills/db",
+      "forbidden_neighbors": ["craft-skills/backend", "craft-skills/debug", "craft-skills/testing"]
+    },
+    {
+      "trigger": "Choose the database engine, provider, ORM, production major version, roles, and destructive target for this new service",
+      "expected_package": "craft-skills/backend",
+      "forbidden_neighbors": ["craft-skills/db", "craft-skills/api", "craft-skills/programming"]
+    },
+    {
+      "trigger": "With Aurora already selected, decide read-after-write routing, replica lag handling, and storage reclamation after bulk DELETE",
+      "expected_package": "craft-skills/db",
+      "forbidden_neighbors": ["craft-skills/backend", "craft-skills/debug", "craft-skills/cicd"]
+    },
+    {
+      "trigger": "Retire the migration ledger and replace it with a create-verify-refuse bootstrap",
+      "expected_package": "craft-skills/backend",
+      "forbidden_neighbors": ["craft-skills/db", "craft-skills/api", "craft-skills/testing"]
     }
   ]
 }
