@@ -59,6 +59,7 @@ python3 skills/init/scripts/agents_region.py <path> --id <region-id> --payload-f
 
 It replaces exactly one `<!-- init:managed id=... -->` region, or appends one when the file has none, and preserves every other byte plus the file mode.
 It refuses symlinks, non-regular files, non-UTF-8 content, and files holding two regions with the same id.
+The hash in each opening marker is checked before any rewrite, so a region someone edited by hand is refused rather than overwritten; resolve that edit first, either by keeping the human text outside the markers or by folding it into the payload.
 Exit `0` on success with a JSON receipt, `2` on refusal with a JSON error.
 Rerunning it with the same payload is a byte-identical no-op.
 
@@ -70,6 +71,7 @@ Before working on a path, read every `AGENTS.md` from the repository root throug
 This reading rule is instruction, not proof of how a runtime loads files.
 
 Existing content is never silently adopted, overwritten, or deleted.
+This holds inside the markers too: a hand-edited region is reported, not rewritten.
 When a file already holds substantive instructions, keep them: the script appends rather than replacing, and consolidating them into managed content requires the user's agreement.
 When a `CLAUDE.md` holds anything other than the exact adapter bytes, migrate its content into `AGENTS.md` with the user's agreement before installing the adapter.
 

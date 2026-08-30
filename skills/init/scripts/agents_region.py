@@ -64,7 +64,12 @@ def _read(path: Path) -> tuple[bytes, int] | None:
 
 
 def region_span(data: bytes, managed_id: str) -> tuple[int, int]:
-    """Locate exactly one managed region, or refuse the file."""
+    """Locate exactly one self-consistent managed region, or refuse the file.
+
+    The hash recorded in the opening marker is what makes a hand edit inside the
+    region detectable. Verifying it here is what keeps 'never silently overwrite
+    existing content' true for bytes a person added between the markers.
+    """
     try:
         text = data.decode("utf-8")
     except UnicodeDecodeError as error:
@@ -80,6 +85,11 @@ def region_span(data: bytes, managed_id: str) -> tuple[int, int]:
     finish = text.find(end, head) if head >= 0 else -1
     if head < 0 or finish < 0:
         raise ValueError("managed region is unterminated")
+    recorded = text[start + len(opener) : head].removesuffix(" -->")
+    if len(recorded) != 64 or any(character not in "0123456789abcdef" for character in recorded):
+        raise ValueError("managed region marker has no valid payload hash")
+    if _digest(text[head + 1 : finish].encode("utf-8")) != recorded:
+        raise ValueError("managed region was edited by hand; resolve it before rewriting")
     finish += len(end)
     if finish < len(text) and text[finish] == "\n":
         finish += 1

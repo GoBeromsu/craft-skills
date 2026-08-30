@@ -77,6 +77,39 @@ class AgentsRegionTests(unittest.TestCase):
                 region.apply_region(path, "init-root", b"# c\n")
             self.assertEqual(path.read_bytes(), before)
 
+    def test_hand_edited_region_is_refused_instead_of_overwritten(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "AGENTS.md"
+            path.write_bytes(region.envelope("init-root", b"# generated\n"))
+            path.write_bytes(
+                path.read_bytes().replace(b"# generated\n", b"# generated\nnever deploy on Friday\n")
+            )
+            before = path.read_bytes()
+            with self.assertRaises(ValueError):
+                region.apply_region(path, "init-root", b"# generated\n")
+            self.assertEqual(path.read_bytes(), before)
+            self.assertIn(b"never deploy on Friday", path.read_bytes())
+
+    def test_ordinary_payload_update_still_replaces_a_consistent_region(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "AGENTS.md"
+            path.write_bytes(PREFIX + region.envelope("init-root", b"# v1\n") + SUFFIX)
+            self.assertTrue(region.apply_region(path, "init-root", b"# v2\n")["changed"])
+            written = path.read_bytes()
+            self.assertIn(b"# v2", written)
+            self.assertNotIn(b"# v1", written)
+            self.assertTrue(written.startswith(PREFIX))
+            self.assertTrue(written.endswith(SUFFIX))
+
+    def test_marker_without_a_valid_payload_hash_is_refused(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "AGENTS.md"
+            path.write_bytes(region.envelope("init-root", b"# x\n").replace(b"sha256=", b"sha256=zz"))
+            before = path.read_bytes()
+            with self.assertRaises(ValueError):
+                region.apply_region(path, "init-root", b"# y\n")
+            self.assertEqual(path.read_bytes(), before)
+
     def test_payload_without_trailing_newline_is_refused(self) -> None:
         with self.assertRaises(ValueError):
             region.envelope("init-root", b"# no newline")
