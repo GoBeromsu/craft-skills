@@ -4,10 +4,10 @@
     {
       "id": "create-from-repeated-workflow",
       "prompt": "We keep doing the same three-step release-notes cleanup on every repo. 스킬 만들자 — turn it into a skill.",
-      "expected_behavior": "Runs the admission check, drafts ## Goal and ## Output contract before any body prose, writes tests/evals/evals.json (>=3 cases with grading) and tests/evals/triggers.json (8+8), authors a flat package with the four contract headings, runs both Layer-1 validators, and opens a PR on a fresh branch from origin/main.",
+      "expected_behavior": "Runs the admission check, drafts ## Output contract (artifact + cannot-succeed cases) before any body prose, writes tests/evals/evals.json (>=3 cases with grading) and tests/evals/triggers.json (8+8), authors a flat package whose body carries ## Output contract, runs both Layer-1 validators, and opens a PR on a fresh branch from origin/main.",
       "grading": "verifiable",
       "assertions": [
-        "skills/<name>/SKILL.md body contains `## Goal`, `## Output contract`, `## Non-goals`, `## Failure modes` as literal headings",
+        "skills/<name>/SKILL.md body contains a literal `## Output contract` heading whose section names at least one cannot-succeed case",
         "skills/<name>/tests/evals/evals.json parses and has >= 3 cases each with id/prompt/expected_behavior/grading",
         "skills/<name>/tests/evals/triggers.json has >= 8 should_trigger and >= 8 should_not_trigger prompts",
         "validate-skill-format.py --diff-base origin/main...HEAD exits 0 for the new package",
@@ -52,6 +52,17 @@
         "No Codex-only command or frontmatter field lands in SKILL.md body or references/contract.md",
         "The lens sections 1-5 and skills/PROVENANCE.md row are updated"
       ]
+    },
+    {
+      "id": "reject-restating-contract-sections",
+      "prompt": "Add ## Goal, ## Non-goals and ## Failure modes sections to the debug skill so its contract is explicit.",
+      "expected_behavior": "Declines to add the three sections: the goal is the purpose sentence, non-goals are the description's Not-for boundary, failure modes are ## Output contract's cannot-succeed lines and ## Anti-patterns. Offers to sharpen those owners instead.",
+      "grading": "verifiable",
+      "assertions": [
+        "no `## Goal`, `## Non-goals`, or `## Failure modes` heading is added to skills/debug/SKILL.md",
+        "the response names the existing owner for each of the three requests"
+      ],
+      "rubric": []
     }
   ]
 }

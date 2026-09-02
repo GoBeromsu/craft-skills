@@ -20,20 +20,12 @@ metadata:
 
 # demo
 
-## Goal
-Run the demo end to end.
-
 ## Output contract
 A demo transcript in the working directory.
+Missing input stops the run with a message.
 
 ## Overview
 A demo skill.
-
-## Non-goals
-Production runs.
-
-## Failure modes
-Missing input stops the run with a message.
 """
 GOOD_CHANGELOG = "# Change Log\n\n- 2026-06-07 — initial; created the demo skill.\n"
 GOOD_EVALS = json.dumps({
@@ -78,13 +70,20 @@ class SkillFormatValidatorTest(unittest.TestCase):
     def test_rejects_missing_contract_section(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            no_goal = GOOD_SKILL.replace("## Goal\nRun the demo end to end.\n\n", "")
-            self._make_skill(root, "demo", no_goal, GOOD_CHANGELOG)
+            no_contract = GOOD_SKILL.replace("## Output contract\nA demo transcript in the working directory.\nMissing input stops the run with a message.\n\n", "")
+            self._make_skill(root, "demo", no_contract, GOOD_CHANGELOG)
             result = self.run_validator(root)
             self.assertEqual(result.returncode, 1)
             self.assertIn("MISSING_CONTRACT_SECTION", result.stdout)
-            self.assertIn("`## Goal`", result.stdout)
-            self.assertNotIn("`## Non-goals`", result.stdout)
+
+    def test_rejects_output_contract_without_failure_branch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            happy_only = GOOD_SKILL.replace("Missing input stops the run with a message.\n", "")
+            self._make_skill(root, "demo", happy_only, GOOD_CHANGELOG)
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("CONTRACT_LACKS_FAILURE_BRANCH", result.stdout)
 
     def test_rejects_referenced_path_that_does_not_ship(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

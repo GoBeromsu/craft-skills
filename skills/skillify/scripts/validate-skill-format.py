@@ -22,8 +22,9 @@ least `SKILL.md` + `CHANGELOG.md`. This validator enforces, per package:
   7. SKILL.md body contains no `## Change Log` (history lives in CHANGELOG.md).
   8. CHANGELOG.md exists beside SKILL.md with >= 1 dated bullet `- YYYY-MM-DD ...`.
   9. No tracked real `.env` file in the package (only `.env.example` may be committed).
- 10. SKILL.md body carries the contract block as literal `##` headings:
-     `## Goal`, `## Output contract`, `## Non-goals`, `## Failure modes` (contract §4).
+ 10. SKILL.md body carries a literal `## Output contract` heading whose section names at
+     least one cannot-succeed behavior (a line mentioning cannot / stop / no-result /
+     partial / unavailable / ambiguous / missing) (contract §4).
  11. Every package-relative path the body mentions (`scripts/`, `references/`,
      `templates/`, `assets/`, `tests/`, `agents/`) exists in the package (contract §12).
  12. The committed eval corpus exists and is well-formed: `tests/evals/evals.json`
@@ -83,7 +84,11 @@ PREFIX = "MUST USE "
 DELIMITER = ". "
 ANY_TOKEN = re.compile(r"(?<![A-Za-z0-9_])ANY(?![A-Za-z0-9_])")
 ALL_CAPS_DIRECTIVE_LOOKALIKE = re.compile(r"^MUST(?![A-Za-z0-9])")
-CONTRACT_SECTIONS = ("Goal", "Output contract", "Non-goals", "Failure modes")
+CONTRACT_SECTION = "Output contract"
+CANNOT_SUCCEED_RE = re.compile(
+    r"\b(cannot|can't|stop|stops|no-result|no result|partial|unavailable|ambiguous|ambiguity|missing)\b",
+    re.IGNORECASE,
+)
 PACKAGE_PATH_DIRS = ("scripts", "references", "templates", "assets", "tests", "agents")
 PACKAGE_PATH_RE = re.compile(
     r"(?:\$SKILL_DIR/|\$\{SKILL_DIR\}/|(?<![A-Za-z0-9_./-]))(?:" + "|".join(PACKAGE_PATH_DIRS) + r")/[A-Za-z0-9_./-]*[A-Za-z0-9_]"
@@ -302,12 +307,15 @@ def changed_skill_dirs(diff_base: str) -> set[Path] | None:
 
 
 def check_contract_sections(name: str, body: str) -> list[Finding]:
-    headings = {m.group(1).strip() for m in re.finditer(r"^## +(.+?)\s*$", body, re.MULTILINE)}
-    return [
-        Finding(name, "MISSING_CONTRACT_SECTION", f"SKILL.md body lacks `## {section}` (contract §4)")
-        for section in CONTRACT_SECTIONS
-        if section not in headings
-    ]
+    match = re.search(rf"^## +{re.escape(CONTRACT_SECTION)}\s*$(.*?)(?=^## |\Z)", body, re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    if match is None:
+        return [Finding(name, "MISSING_CONTRACT_SECTION",
+                        f"SKILL.md body lacks `## {CONTRACT_SECTION}` (contract §4)")]
+    if not CANNOT_SUCCEED_RE.search(match.group(1)):
+        return [Finding(name, "CONTRACT_LACKS_FAILURE_BRANCH",
+                        f"`## {CONTRACT_SECTION}` never says what the run does when it cannot succeed "
+                        "(no-result / partial / stop / ambiguous case) (contract §4)")]
+    return []
 
 
 def check_referenced_paths(name: str, skill_dir: Path, body: str) -> list[Finding]:

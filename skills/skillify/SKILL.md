@@ -7,24 +7,28 @@ metadata:
 
 # skillify
 
-## Goal
-
-Turn a repeated workflow into a well-formed craft-skills package — required `SKILL.md` + `CHANGELOG.md`, plus the execution parts it needs — and own that package's lifecycle afterward.
-Success looks like: the package passes both Layer-1 validators, its contract block and committed eval corpus agree, its description triggers correctly and only on the intended prompts, and its [delivery follows the lifecycle flow](references/lifecycle.md#6-branch--commit--pr).
-Inputs: the workflow to encode (2–3 concrete invocations), the operator corrections it must absorb, and the sibling skills whose boundaries it must respect.
+Turns a repeated workflow into a well-formed craft-skills package — required `SKILL.md` + `CHANGELOG.md`, plus the execution parts it needs — and owns that package's lifecycle afterward.
+Success looks like: the package passes both Layer-1 validators, its `## Output contract` and committed eval corpus agree, its description triggers correctly and only on the intended prompts, and its [delivery follows the lifecycle flow](references/lifecycle.md#6-branch--commit--pr).
 The core contract stays vendor-agnostic; what any one runtime needs lives in that vendor's lens.
 
 ## Output contract
 
 A run leaves behind one package under `skills/<name>/` on its own branch with a PR open:
 
-- `SKILL.md` whose body opens with `## Goal` and `## Output contract` and closes with `## Non-goals` and `## Failure modes` — the four literal headings the validator checks and the evals grade against ([contract §4](references/contract.md#4-body)).
+- `SKILL.md` whose body carries `## Output contract` — the one literal heading the validator checks and the evals grade against, stating the artifact and what the run does when it cannot succeed ([contract §4](references/contract.md#4-body)).
 - `tests/evals/evals.json` (≥ 3 cases, each `verifiable` with `assertions` or `subjective` with `rubric`) and `tests/evals/triggers.json` (8 should-trigger + 8 near-miss) — committed, so a reviewer reads the contract and its proof together ([contract §7](references/contract.md#7-eval-first-authoring-loop)).
 - Every `scripts/`, `references/`, `templates/`, `assets/`, `tests/`, `agents/` path the body mentions exists in the package ([contract §12](references/contract.md#12-referenced-paths)).
 - A dated `CHANGELOG.md` bullet and a version bump per the [rubric](references/contract.md#8-version-bump-rubric); manifest and plugin versions updated when the package is published.
 - The summary returned to the user names the package, the mode (create / update / move / retire / absorb), the eval delta observed, and the PR URL.
 
-When the admission check fails, the run produces no package: it returns the failed question and the project-local or upstream owner instead.
+When the run cannot succeed, it leaves no half-built package:
+
+- Admission check fails → stop before authoring; return the failed question and the owner (project-local, upstream harness, or bstack `promote` for SSOT promotion).
+- A Layer-1 validator fails → fix the package, not the validator; a `MISSING_REFERENCED_PATH` means add the file or drop the mention.
+- The with-skill arm shows no delta over the baseline → do not ship the body; sharpen the recipe or record that the capability is already native.
+- A near-miss prompt triggers the skill → tighten the description's "Not for X" boundary and re-run the 16 trigger prompts.
+- Upstream skill-creator guidance conflicts with this contract → record the divergence in the vendor lens; never silently import.
+- Dirty tree or stale `main` → use the [clean-start route](references/lifecycle.md#1-clean-start) before editing; the lifecycle ends at an open PR on a clean branch, never at a merge or an edit to the user's checked-out branch.
 
 ## Admission check
 
@@ -55,7 +59,7 @@ For mutable external CLI, API, service, or runtime facts, apply the [official-do
 
 Before writing `SKILL.md`, draft the contract block and the eval corpus that will judge it — evals are the quality bar, not a manual sign-off round:
 
-1. Draft `## Goal` and `## Output contract` first; every eval case grades against them.
+1. Draft `## Output contract` first — the artifact and the cannot-succeed cases; every eval case grades against it.
 2. Draft `tests/evals/evals.json` — about 3 realistic scenarios (id, prompt, expected behavior). Mark each `verifiable` (checkable output → `assertions`) or `subjective` (judgment output → `rubric`); never force assertions onto a subjective case.
 3. Draft `tests/evals/triggers.json` — 8 should-trigger + 8 near-miss should-NOT-trigger prompts pulled from sibling skills' domains.
 4. Run each scenario without the skill, then with the drafted body — the skill's value is the delta between the arms. Iterate until behavior matches. Run the 16 trigger prompts against the drafted description; tighten the "Not for X" boundary sentence wherever a near-miss would plausibly match. Use a fresh, blind, read-only capable model or human independent from the authoring session as the fresh-eyes judge.
@@ -75,7 +79,7 @@ Include relevant ambiguity, conflict, unknown, and dependency-update cases in th
 Use the portable baseline frontmatter: `name`, `description`, and `metadata.version`.
 Add spec keys `license`, `compatibility`, or experimental `allowed-tools` only when the package truly requires them; document the runtime support caveat in the relevant vendor lens rather than making them a universal requirement.
 Name is kebab-case and equals the directory: verb-first for a skill the user explicitly triggers, a plain noun for a skill that supplies ambient domain context.
-The body opens with `## Goal` and `## Output contract` and closes with `## Non-goals` and `## Failure modes`; the workflow sits between them ([contract §4](references/contract.md#4-body)).
+The body carries `## Output contract` right after the purpose sentence; the workflow follows it ([contract §4](references/contract.md#4-body)).
 Every package path the body cites must ship with the package ([contract §12](references/contract.md#12-referenced-paths)).
 Description is third person, states what + when, weaves in 3–6 real trigger phrases, writes against undertriggering, and adds a "Not for X" line when a sibling overlaps.
 Default to ordinary prose.
@@ -121,26 +125,12 @@ Follow the [branch → commit → PR delivery flow](references/lifecycle.md#6-br
 - `gh` — official source: https://cli.github.com/manual/; safe probe: `gh --version`; support boundary: current `gh pr create`, `gh pr checks`, and `gh pr merge` command surfaces for the delivery flow.
 - Dependency trigger — a selected dependency/runtime release or a changed probe/capability requires official-documentation review and affected evals before updating this package. The dependency contract applies to skillify immediately; apply it to another package when that package is next touched or when its own dependency trigger fires. Do not create mass churn or a global inventory.
 
-## Non-goals
-
-- One-off project scripts or prompts with no reuse intent → stay local to the originating project.
-- Promotion into the bstack SSOT, its routing, gates, and PR delivery → bstack `promote` owns that; skillify hands off a validated package.
-- Runtime plumbing, plugin metadata, or vendor-only commands in the core body → the matching vendor lens.
-- Rewriting an untouched legacy package to the current contract → apply the contract when that package is next touched; no mass churn.
-- Merging its own PR or editing the user's checked-out branch → the lifecycle ends at an open PR on a clean branch.
-
-## Failure modes
-
-- Admission check fails → stop before authoring; return the failed question and the owner (project-local or upstream harness).
-- A Layer-1 validator fails → fix the package, not the validator; a `MISSING_REFERENCED_PATH` means add the file or drop the mention.
-- The with-skill arm shows no delta over the baseline → do not ship a body that adds nothing; either sharpen the recipe or record that the capability is already native.
-- A near-miss prompt triggers the skill → tighten the description's "Not for X" boundary and re-run the 16 trigger prompts.
-- Upstream skill-creator guidance conflicts with this contract → record the divergence in the vendor lens; never silently import.
-- Dirty tree or stale `main` → use the [clean-start route](references/lifecycle.md#1-clean-start) before editing.
-
 ## Anti-patterns
 
-- Authoring before `## Goal`, `## Output contract`, `tests/evals/evals.json`, and `tests/evals/triggers.json` exist → the contract block and its corpus judge behavior and trigger-fit first; tests lock in behavior only once proven.
+- Authoring before `## Output contract`, `tests/evals/evals.json`, and `tests/evals/triggers.json` exist → the contract and its corpus judge behavior and trigger-fit first; tests lock in behavior only once proven.
+- Adding `## Goal`, `## Non-goals`, or `## Failure modes` sections → each restates an existing owner (purpose sentence, description's "Not for X", `## Output contract`'s cannot-succeed lines, this registry); one contract heading, one anti-pattern registry.
+- Rewriting an untouched legacy package to the current contract → apply the contract when that package is next touched; no mass churn.
+- Putting runtime plumbing, plugin metadata, or vendor-only commands in the core body → the matching vendor lens owns them.
 - A rubric where an assertion would do, or assertions forced onto judgment output → grade `verifiable` cases by assertions and `subjective` cases by rubric.
 - A recipe step that cites a script or reference the package does not ship → add the file or remove the mention; the validator fails the package either way.
 - A longer, descriptive skill name "for clarity" → the name is a compact handle; discoverability lives in the description's trigger phrases.
@@ -155,8 +145,8 @@ Follow the [branch → commit → PR delivery flow](references/lifecycle.md#6-br
 
 ## Verification
 
-- [ ] [Layer-1 validators](references/runtime-hygiene.md#2-validator-playbook) pass, including the contract block, referenced paths, and eval corpus checks
-- [ ] `tests/evals/` scenarios ran clean against the contract block and the 16 trigger prompts route correctly
+- [ ] [Layer-1 validators](references/runtime-hygiene.md#2-validator-playbook) pass, including the `## Output contract`, referenced paths, and eval corpus checks
+- [ ] `tests/evals/` scenarios ran clean against `## Output contract` and the 16 trigger prompts route correctly
 - [ ] Any leading routing directive has a frozen 6+6 tuning / 2+2 held-out split, repairs a baseline miss without regression, and cites bounded inclusion/exclusion evidence
 - [ ] [Version and CHANGELOG requirements](references/contract.md#6-changelog) are met
 - [ ] [Secret hygiene](references/runtime-hygiene.md#1-per-skill-secrets-rule) is met
