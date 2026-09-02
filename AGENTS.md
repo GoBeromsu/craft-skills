@@ -9,7 +9,7 @@ Kept strictly separate from `bstack` (personal / life / second-brain automation)
 A package is one flat directory: `skills/<name>/SKILL.md` plus whichever of `references/`, `templates/`, `scripts/`, `tests/`, `assets/`, and `CHANGELOG.md` it needs.
 Runtime-owned `agents/` directories are optional plumbing, not part of the portable core.
 No nested `SKILL.md` files — every skill is one level deep.
-`evals/` directories are local, gitignored scratch for the eval-first authoring loop; they are never committed.
+`tests/evals/` holds each package's committed eval corpus (`evals.json` + `triggers.json`); `evals/` directories are local, gitignored scratch for run transcripts and are never committed.
 
 The 29 packages (alphabetical): `agents`, `api`, `ast-grep`, `backend`, `browser`, `cicd`, `db`, `debug`, `defuddle`, `design`, `distil`, `document`, `frontend`, `git`, `gpu`, `guardrails`, `init`, `ml`, `obsidian`, `programming`, `refactor`, `research`, `security`, `skillify`, `tailscale`, `testing`, `vmware`, `write-prd`, `write-report`.
 `browser` is one flat package: it owns one router and exactly three references for Aside, agent-browser, and existing-session.

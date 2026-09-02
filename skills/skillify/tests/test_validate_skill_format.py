@@ -2,6 +2,7 @@
 """Tests for skillify skill-format validator (v4 contract)."""
 from __future__ import annotations
 
+import json
 import subprocess
 import tempfile
 import unittest
@@ -19,10 +20,38 @@ metadata:
 
 # demo
 
+## Goal
+Run the demo end to end.
+
+## Output contract
+A demo transcript in the working directory.
+
 ## Overview
 A demo skill.
+
+## Non-goals
+Production runs.
+
+## Failure modes
+Missing input stops the run with a message.
 """
 GOOD_CHANGELOG = "# Change Log\n\n- 2026-06-07 — initial; created the demo skill.\n"
+GOOD_EVALS = json.dumps({
+    "skill": "demo",
+    "cases": [
+        {"id": "run", "prompt": "demo this", "expected_behavior": "runs", "grading": "verifiable",
+         "assertions": ["transcript exists"]},
+        {"id": "judge", "prompt": "demo nicely", "expected_behavior": "reads well", "grading": "subjective",
+         "rubric": ["clear"]},
+        {"id": "stop", "prompt": "demo nothing", "expected_behavior": "stops", "grading": "verifiable",
+         "assertions": ["no transcript"]},
+    ],
+})
+GOOD_TRIGGERS = json.dumps({
+    "skill": "demo",
+    "should_trigger": [f"demo case {i}" for i in range(8)],
+    "should_not_trigger": [f"unrelated case {i}" for i in range(8)],
+})
 
 
 class SkillFormatValidatorTest(unittest.TestCase):
@@ -32,13 +61,74 @@ class SkillFormatValidatorTest(unittest.TestCase):
             cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
         )
 
-    def _make_skill(self, root: Path, name: str, skill_md: str, changelog: str | None) -> Path:
+    def _make_skill(self, root: Path, name: str, skill_md: str, changelog: str | None,
+                    evals: str | None = GOOD_EVALS, triggers: str | None = GOOD_TRIGGERS) -> Path:
         d = root / "skills" / name
         d.mkdir(parents=True)
         (d / "SKILL.md").write_text(skill_md, encoding="utf-8")
         if changelog is not None:
             (d / "CHANGELOG.md").write_text(changelog, encoding="utf-8")
+        (d / "tests" / "evals").mkdir(parents=True)
+        if evals is not None:
+            (d / "tests" / "evals" / "evals.json").write_text(evals, encoding="utf-8")
+        if triggers is not None:
+            (d / "tests" / "evals" / "triggers.json").write_text(triggers, encoding="utf-8")
         return d
+
+    def test_rejects_missing_contract_section(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            no_goal = GOOD_SKILL.replace("## Goal\nRun the demo end to end.\n\n", "")
+            self._make_skill(root, "demo", no_goal, GOOD_CHANGELOG)
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("MISSING_CONTRACT_SECTION", result.stdout)
+            self.assertIn("`## Goal`", result.stdout)
+            self.assertNotIn("`## Non-goals`", result.stdout)
+
+    def test_rejects_referenced_path_that_does_not_ship(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            body = GOOD_SKILL + "\nRun `scripts/deploy.py` then read `references/schema.md`.\nGlob forms like `references/*.md` and `scripts/<name>` are fine.\n"
+            d = self._make_skill(root, "demo", body, GOOD_CHANGELOG)
+            (d / "references").mkdir()
+            (d / "references" / "schema.md").write_text("# schema\n", encoding="utf-8")
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("MISSING_REFERENCED_PATH", result.stdout)
+            self.assertIn("scripts/deploy.py", result.stdout)
+            self.assertNotIn("references/schema.md", result.stdout)
+            (d / "scripts").mkdir()
+            (d / "scripts" / "deploy.py").write_text("", encoding="utf-8")
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 0, result.stdout)
+
+    def test_rejects_missing_eval_corpus(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG, evals=None)
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("NO_EVAL_CORPUS", result.stdout)
+            self.assertIn("evals.json", result.stdout)
+
+    def test_rejects_malformed_eval_corpus(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            bad_evals = json.dumps({"skill": "demo", "cases": [
+                {"id": "a", "prompt": "p", "expected_behavior": "e", "grading": "verifiable"},
+                {"id": "b", "prompt": "p", "expected_behavior": "e", "grading": "subjective", "assertions": ["x"]},
+            ]})
+            bad_triggers = json.dumps({"skill": "demo", "should_trigger": ["only one"], "should_not_trigger": []})
+            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG, evals=bad_evals, triggers=bad_triggers)
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 1)
+            out = result.stdout
+            self.assertIn("has 2 cases < 3", out)
+            self.assertIn("verifiable case a needs non-empty `assertions`", out)
+            self.assertIn("subjective case b needs non-empty `rubric`", out)
+            self.assertIn("`should_trigger` needs >= 8", out)
+            self.assertIn("`should_not_trigger` needs >= 8", out)
 
     def test_accepts_well_formed_package(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

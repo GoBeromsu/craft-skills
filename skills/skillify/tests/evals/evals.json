@@ -1,0 +1,57 @@
+{
+  "skill": "skillify",
+  "cases": [
+    {
+      "id": "create-from-repeated-workflow",
+      "prompt": "We keep doing the same three-step release-notes cleanup on every repo. 스킬 만들자 — turn it into a skill.",
+      "expected_behavior": "Runs the admission check, drafts ## Goal and ## Output contract before any body prose, writes tests/evals/evals.json (>=3 cases with grading) and tests/evals/triggers.json (8+8), authors a flat package with the four contract headings, runs both Layer-1 validators, and opens a PR on a fresh branch from origin/main.",
+      "grading": "verifiable",
+      "assertions": [
+        "skills/<name>/SKILL.md body contains `## Goal`, `## Output contract`, `## Non-goals`, `## Failure modes` as literal headings",
+        "skills/<name>/tests/evals/evals.json parses and has >= 3 cases each with id/prompt/expected_behavior/grading",
+        "skills/<name>/tests/evals/triggers.json has >= 8 should_trigger and >= 8 should_not_trigger prompts",
+        "validate-skill-format.py --diff-base origin/main...HEAD exits 0 for the new package",
+        "a PR URL is returned and the branch was created from origin/main"
+      ],
+      "rubric": []
+    },
+    {
+      "id": "update-records-operator-correction",
+      "prompt": "The testing skill keeps proposing tests for trivial getters even after I told it not to. Update the skill so this stops.",
+      "expected_behavior": "Enters update mode on skills/testing, applies the three-way split (behavior -> imperative step, failure -> ## Anti-patterns line, event -> CHANGELOG bullet), adds or adjusts an eval case whose assertions reject the trivial-test proposal, bumps the version, and delivers a PR. Does not rewrite unrelated sections.",
+      "grading": "verifiable",
+      "assertions": [
+        "skills/testing/SKILL.md gains exactly one new `## Anti-patterns` line describing the correction",
+        "skills/testing/tests/evals/evals.json gains a case whose assertions fail on a getter-only test proposal",
+        "skills/testing/CHANGELOG.md gains one dated bullet and metadata.version is bumped",
+        "diff touches only skills/testing/** (plus manifest/plugin version if published)"
+      ],
+      "rubric": []
+    },
+    {
+      "id": "reject-one-off-project-script",
+      "prompt": "Make a skill that runs our internal deploy.sh with the prod flags for this repo.",
+      "expected_behavior": "Fails the admission check (not reusable craft; bound to one project's paths) and returns the failed question plus the recommendation to keep it project-local. No package, branch, or PR is created.",
+      "grading": "verifiable",
+      "assertions": [
+        "no new directory under skills/ is created",
+        "no branch or PR is created",
+        "the response names which admission question failed and where the script should live instead"
+      ],
+      "rubric": []
+    },
+    {
+      "id": "absorb-upstream-skill-creator",
+      "prompt": "OpenAI shipped a new version of their skill-creator. Absorb whatever is worth absorbing.",
+      "expected_behavior": "Runs the absorption protocol: classifies each upstream lesson as portable (merge into the core owner with provenance) or plumbing (stays in references/vendor-openai.md), records disagreements explicitly, and never imports a vendor-only mechanism into the core body.",
+      "grading": "subjective",
+      "assertions": [],
+      "rubric": [
+        "Each absorbed lesson is placed in exactly one owner (core section or vendor lens) with a Provenance clause in CHANGELOG.md",
+        "Divergences from this library's contract are recorded, not silently overwritten",
+        "No Codex-only command or frontmatter field lands in SKILL.md body or references/contract.md",
+        "The lens sections 1-5 and skills/PROVENANCE.md row are updated"
+      ]
+    }
+  ]
+}
