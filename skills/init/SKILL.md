@@ -2,15 +2,18 @@
 name: init
 description: Maps a repository into a maintained hierarchical AGENTS.md knowledge base. Use when asked to "init this repo" for AGENTS, deep-init a codebase, generate or update AGENTS.md, map repository conventions, audit existing AGENTS coverage, or report stale managed AGENTS regions. Not for package-manager or plugin initialization, docs scaffolding or authoring (use `document`), or git-hook installation (use `git`).
 metadata:
-  version: 4.0.0
+  version: 4.1.0
 ---
 
 # init
 
-`init` owns the AGENTS lifecycle: map, read-only audit, and reporting stale managed regions.
-`AGENTS.md` is canonical.
-A sibling `CLAUDE.md` may exist only as an adapter whose bytes are exactly `@AGENTS.md` plus one LF.
-Do not scaffold documentation, author document content, initialize packages, or install git hooks.
+## Goal
+
+Map a repository into a maintained hierarchical `AGENTS.md` knowledge base with evidence-backed placements and preserved incumbent instructions.
+
+## Output contract
+
+Return the written or read-only audit result with the affected `AGENTS.md` paths, evidence sources, managed-region status, and unavailable paths.
 
 Placement and content are judgment, so they live in this file as prose.
 Only one step is fragile enough to be executable: editing a marker-delimited region without disturbing surrounding bytes.
@@ -88,6 +91,7 @@ When a `CLAUDE.md` holds anything other than the exact adapter bytes, migrate it
 
 - `python3` — official source: <https://docs.python.org/3/>; safe probe: `python3 --version`; support boundary: Python 3.10+ for the region script and its test module.
 - Dependency trigger — a selected Python release or a changed probe result requires official-documentation review and rerunning `python3 -m unittest discover -s skills/init/tests -p 'test_*.py'` before trusting this recipe.
+- [Tool preflight](references/tool-preflight.md) records mutable CLI probes, support boundaries, incompatibilities, and CHANGELOG verification receipts.
 
 ## Anti-patterns
 
@@ -99,3 +103,11 @@ When a `CLAUDE.md` holds anything other than the exact adapter bytes, migrate it
 - Claiming a command that no configuration declares → cite the source file or omit it.
 - Editing a managed region with ad-hoc string replacement → use the script.
 - Reporting loader behavior as known without a probe → say unknown.
+
+## Non-goals
+
+Do not scaffold documentation, author document content, initialize packages, install Git hooks, or delete stale instructions.
+
+## Failure modes
+
+Stop and report unreadable paths, ambiguous scope evidence, or hand-edited managed regions without overwriting incumbent content.

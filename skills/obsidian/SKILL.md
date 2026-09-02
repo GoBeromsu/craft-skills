@@ -2,13 +2,18 @@
 name: obsidian
 description: Routes one thick Obsidian skill. Use for in-vault note create/edit/cleanup (“옵시디언 노트 정리”; not filing/taxonomy) with wikilinks/callouts/properties/house style; create/debug `.base` or embedded base blocks, filters/views, `groupBy`/`sort`/`limit`, Dataview-to-Bases; Obsidian JSON Canvas `.canvas` mind maps/flowcharts/nodes/edges; Mermaid that must render in Obsidian; `obsidian-cli` read/create/search/move/property/write/inspect, readback verification, `Vault not found`, wrapper confusion; Web Clipper templates for any site/type (YouTube/GitHub/Recipe/Article), variables/filters/frontmatter; “플러그인 고쳐줘”, silent plugin failures, API skew, Templater `ReferenceError`/`<%`; or headless `ob` Sync (“headless sync 점검”, “obsidian sync status”, “볼트 동기화 복구”, “pull-only로 맞춰줘”, daemon restart). Not for web-page-to-Markdown extraction/scraping, CommonMark, Dataview queries, React Flow, Mermaid CLI/non-Obsidian rendering, outside-vault files, non-plugin core bugs, desktop Sync/Dropbox/other replication, or filing/provenance.
 metadata:
-  version: 1.2.0
+  version: 1.2.1
 ---
 
 # Obsidian
 
-Apply Obsidian-specific mechanics through one package and load only the matching sub-recipe from `references/`.
-Success means the requested file or operation follows Obsidian’s real format and runtime behavior, preserves unrelated vault content, and has observable readback evidence after mutation.
+## Goal
+
+Apply Obsidian-specific mechanics through one package so the requested artifact follows the real format and runtime behavior while preserving unrelated vault content.
+
+## Output contract
+
+Return the verified artifact or runtime state, selected sub-recipe, readback evidence, and every unavailable prerequisite.
 
 ## Requirements
 
@@ -19,6 +24,7 @@ Use only the tools required by the selected sub-recipe:
 - `ob` from `obsidian-headless` for the headless Sync sub-recipe.
 - A real browser when Web Clipper selectors must be tested against a page.
 - Runtime and release maintenance: record the relevant [Obsidian Help](https://help.obsidian.md/), [Obsidian developer documentation](https://docs.obsidian.md/), and official app, CLI, plugin API, or Sync release source. Use an installed app or CLI version probe only when current official documentation supports that exact probe; otherwise observe the version in the app and record it as unknown to automation. When probe or release evidence shows an app, CLI, plugin API, or Sync runtime form changed, recheck official documentation, rerun affected package evaluations, update the recipe if needed, then bump this package's version and append its CHANGELOG.
+- [Tool preflight](../init/references/tool-preflight.md) distinguishes the Yakitrak `obsidian-cli` from the separate Obsidian.app `obsidian` binary and records their safe probes and CHANGELOG verification receipt convention.
 
 Never hardcode a host path, vault name, account identifier, remote host, or credential.
 
@@ -75,3 +81,11 @@ Generic file synchronization, Git conflicts, and backup systems are outside the 
 - [ ] Destructive operations had explicit approved scope or were skipped.
 - [ ] The changed artifact or runtime state was read back exactly.
 - [ ] Any composed sub-recipes had distinct responsibilities.
+
+## Non-goals
+
+Do not decide personal-vault taxonomy, extract public web pages, render generic Mermaid outside Obsidian, or operate generic synchronization systems.
+
+## Failure modes
+
+Stop and report an unresolved vault, unavailable runtime, unsupported command surface, or missing readback evidence without inventing an operation.
