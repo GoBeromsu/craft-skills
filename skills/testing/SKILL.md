@@ -7,8 +7,6 @@ metadata:
 
 # testing
 
-## Goal
-
 Decide for each proposed or changed test which behavior can fail, which independent oracle proves it, and whether to add, rewrite, delete, or omit the test.
 Leave a strategy that selects the cheapest credible layer and makes no-test decisions reviewable.
 
@@ -17,6 +15,10 @@ Leave a strategy that selects the cheapest credible layer and makes no-test deci
 Emit one `templates/test-strategy.md`-shaped strategy table per change before adding or changing tests.
 Include every required column, name the existing higher contract test for each `no-test` row that relies on coverage, and return the decision with its evidence state.
 Treat the table as the deliverable rather than counting tests added.
+When a failure cannot be reproduced, record `no-test` with unavailable reproduction evidence, do not invent a failing test, and report the limit.
+When the oracle is the implementation, rewrite the test against a specification, contract, recorded fixture, or independent reference.
+When a test is flaky, quarantine it with a root-cause investigation and remove the nondeterminism instead of retrying in a loop.
+When behavior is ambiguous, ask which contract governs it before choosing a test layer.
 
 ## Admission and workflow
 
@@ -87,17 +89,3 @@ Do not turn unknown incumbent output into a permanent golden master without an i
 Use the target package's incumbent runner, order-randomization mechanism, and property-testing library.
 Consult the deployed tool's official primary documentation and the repository's matching-version configuration before claiming support.
 Do not install dependencies, assume a global executable, or invent a command when the target package does not establish it.
-
-## Non-goals
-
-Route production-code red-green implementation to `programming`.
-Route diagnosis or repair of one currently failing test to `debug`.
-Route characterization before structural change to `refactor`.
-Route ML and agent evaluation methodology to `ml` or `agents`.
-Do not add tests merely to increase count, preserve implementation text, or re-check topology.
-
-## Failure modes
-
-Record `no-test` and the unavailable reproduction evidence when the failure cannot be reproduced rather than inventing a failing test.
-Rewrite the test against a specification, contract, recorded fixture, or independent reference when its oracle is the implementation.
-Quarantine a flaky test with its root-cause investigation and remove the nondeterminism rather than adding a retry loop.
