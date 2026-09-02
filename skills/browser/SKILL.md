@@ -2,13 +2,18 @@
 name: browser
 description: Routes live-browser work across Aside, agent-browser, and an existing authenticated browser session. Use when a request says "Use Aside to inspect my logged-in dashboard", "inspect my signed-in dashboard", "open this in my browser", "click this button", "fill out this form", "use agent-browser", or "브라우저로 열어줘" and the page needs login, JavaScript, or multi-step interaction. Not for static public extraction — use defuddle — or plain JSON API responses — use an HTTP client.
 metadata:
-  version: 1.1.0
+  version: 1.1.1
 ---
 
 # Browser
 
+## Goal
+
 Drive authenticated or interactive web work through one backend while protecting account identity, existing browser state, and uncertain writes.
-Success means the selected backend reaches the intended account and target read state before any target-site mutation, and finalization preserves every resource not created by this task.
+
+## Output contract
+
+Report the selected backend, proven account and read state, target-site mutation evidence when authorized, and cleanup outcome without closing unowned resources.
 
 ## Procedure references
 
@@ -38,6 +43,10 @@ Permit target-site mutation only after all four checks pass.
 For a default Aside startup failure, try agent-browser and then existing-session, repeating baseline, setup, and preflight for each candidate.
 Do not silently replace an explicitly requested backend.
 Do not replace required existing-session work with a different account or identity.
+
+## Requirements
+
+- [Tool preflight](../init/references/tool-preflight.md) records the Aside install and version probes, browser-agent boundary, and CHANGELOG verification receipt convention.
 
 ## Aside connection-hang recovery
 
@@ -73,3 +82,11 @@ Report a cleanup failure without broadening the close scope.
 
 Use defuddle for static public pages that do not need an authenticated browser session.
 Use an HTTP client for direct API or JSON work.
+
+## Non-goals
+
+Do not use this skill for static public extraction, direct API work, or unapproved target-site mutations.
+
+## Failure modes
+
+Stop after unavailable tooling, unproven identity, unrecovered browser state, or an uncertain write, and report the last confirmed checkpoint.
