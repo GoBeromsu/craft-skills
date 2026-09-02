@@ -1,0 +1,23 @@
+{
+  "skill": "design",
+  "should_trigger": [
+    "Review this PR for UX regressions with screenshots.",
+    "왜 이 사용자 흐름이 불편한지 UX 원칙으로 리뷰해줘.",
+    "Audit whether the loading state preserves typing and focus.",
+    "Check this shared deep link after the page loads.",
+    "Review role permissions for this destructive action.",
+    "Compare the upload limit copy with actual validation.",
+    "Review whether onboarding loses state between steps.",
+    "Find the canonical route for the documents task."
+  ],
+  "should_not_trigger": [
+    "Implement the modal from this design.",
+    "Pick a CSS framework for our dashboard.",
+    "Write the PRD for this feature.",
+    "Fix the failing e2e test.",
+    "Refactor the React state management.",
+    "Capture screenshots with browser automation.",
+    "Write button copy for the new checkout flow.",
+    "Create API endpoints for document uploads."
+  ]
+}
