@@ -2,15 +2,17 @@
 name: init
 description: Maps a repository into a maintained hierarchical AGENTS.md knowledge base. Use when asked to "init this repo" for AGENTS, deep-init a codebase, generate or update AGENTS.md, map repository conventions, audit existing AGENTS coverage, or report stale managed AGENTS regions. Not for package-manager or plugin initialization, docs scaffolding or authoring (use `document`), or git-hook installation (use `git`).
 metadata:
-  version: 4.0.0
+  version: 4.1.0
 ---
 
 # init
 
-`init` owns the AGENTS lifecycle: map, read-only audit, and reporting stale managed regions.
-`AGENTS.md` is canonical.
-A sibling `CLAUDE.md` may exist only as an adapter whose bytes are exactly `@AGENTS.md` plus one LF.
-Do not scaffold documentation, author document content, initialize packages, or install git hooks.
+Map a repository into a maintained hierarchical `AGENTS.md` knowledge base with evidence-backed placements and preserved incumbent instructions.
+
+## Output contract
+
+Return the written or read-only audit result with the affected `AGENTS.md` paths, evidence sources, managed-region status, and unavailable paths.
+If paths are unreadable, scope evidence is ambiguous, or a managed region was hand-edited, stop and report the condition without overwriting incumbent content.
 
 Placement and content are judgment, so they live in this file as prose.
 Only one step is fragile enough to be executable: editing a marker-delimited region without disturbing surrounding bytes.
@@ -31,11 +33,12 @@ Bare `init` means map. Do not ask which mode was intended, and do not treat bare
 Work top down and stop as soon as the repository is described.
 
 1. **Inventory.** Read the tree without following symlinks. Note first-party directories, their file types, declared entry points, and configuration files. Skip `.git`, `node_modules`, `vendor`, `dist`, `build`, `__pycache__`, and comparable vendored or generated trees.
-2. **Place the root.** A root `AGENTS.md` always exists.
-3. **Place a child only on evidence.** Add a nested `AGENTS.md` when a directory owns its own build or dependency configuration, presents a distinct entry boundary, and holds enough code that root guidance would be wrong there. Prefer fewer files. A directory that merely holds many files is not a scope.
-4. **Write content that a newcomer could not infer.** Commands actually declared in that scope, entry points, local conventions, and constraints. Cite the file each claim comes from. Never invent a command; if no command is declared, say so.
-5. **Do not repeat the parent.** A child file adds only what differs from the instruction chain above it.
-6. **Install each payload** as a managed region using the script below.
+2. **Preflight mutable tools.** Before recording a tool-dependent instruction, follow [tool preflight](references/tool-preflight.md) and keep unavailable or unsupported command surfaces explicit.
+3. **Place the root.** A root `AGENTS.md` always exists.
+4. **Place a child only on evidence.** Add a nested `AGENTS.md` when a directory owns its own build or dependency configuration, presents a distinct entry boundary, and holds enough code that root guidance would be wrong there. Prefer fewer files. A directory that merely holds many files is not a scope.
+5. **Write content that a newcomer could not infer.** Commands actually declared in that scope, entry points, local conventions, and constraints. Cite the file each claim comes from. Never invent a command; if no command is declared, say so.
+6. **Do not repeat the parent.** A child file adds only what differs from the instruction chain above it.
+7. **Install each payload** as a managed region using the script below.
 
 Keep a root file within roughly 50-150 lines and a child file within roughly 30-80.
 When evidence exceeds that, summarize and state the omitted count rather than truncating silently.
@@ -88,6 +91,7 @@ When a `CLAUDE.md` holds anything other than the exact adapter bytes, migrate it
 
 - `python3` — official source: <https://docs.python.org/3/>; safe probe: `python3 --version`; support boundary: Python 3.10+ for the region script and its test module.
 - Dependency trigger — a selected Python release or a changed probe result requires official-documentation review and rerunning `python3 -m unittest discover -s skills/init/tests -p 'test_*.py'` before trusting this recipe.
+- [Tool preflight](references/tool-preflight.md) records mutable CLI probes, support boundaries, incompatibilities, and CHANGELOG verification receipts.
 
 ## Anti-patterns
 

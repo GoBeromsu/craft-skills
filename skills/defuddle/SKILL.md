@@ -2,14 +2,16 @@
 name: defuddle
 description: Extract clean Markdown or metadata JSON from web articles and documentation pages using the Defuddle CLI, stripping navigation, ads, and boilerplate for a smaller, more focused result than a raw HTML fetch. Use when fetching a readable page (blog post, article, framework/library docs, GitHub README) for summarization or note-taking, pulling page metadata (title, author, description, domain), or converting a local HTML file to Markdown. Not for API endpoints or JSON responses (use a plain HTTP fetch) or JS-heavy SPAs that need a real browser (use a headless browser such as scrapling).
 metadata:
-  version: 1.1.2
+  version: 1.1.3
 ---
-
 # defuddle
 
-## Overview
+Extract clean Markdown or metadata JSON from readable web pages with Defuddle while preserving the calling workflow's storage ownership.
 
-Defuddle (by kepano) extracts article content from web pages and returns clean Markdown. It strips away navigation, ads, sidebars, and boilerplate — producing smaller, more focused content than a raw HTML fetch. It is a strong default web-content extractor for readable pages.
+## Output contract
+
+Return non-empty clean Markdown or metadata JSON for one logical source, or report an extraction boundary without persisting content.
+If CLI behavior is unknown or extraction is empty, report the no-result without persisting content and use the documented browser fallback only for JavaScript-heavy pages.
 
 ## Runtime fact verification
 
@@ -103,6 +105,7 @@ See `references/cli-reference.md` for full option details.
 
 - `defuddle` CLI (by kepano) available on `PATH` or via `${DEFUDDLE_BIN}`. Official source: [Defuddle](https://github.com/kepano/defuddle). Probe the installed CLI safely with `defuddle --version`. Support boundary: this recipe supports the currently installed Defuddle major and only its officially documented `parse` capabilities used here (`--markdown`, `--json`, `-p`, `-o`, and `-l`); leave unverified capabilities unknown.
 - When a Defuddle release changes the selected major or `defuddle --version` probe result, review the official source and rerun extraction and `scrapling`-fallback evals. Update this recipe if its runtime form changed, then bump the package version and append this package's changelog entry.
+- [Tool preflight](../init/references/tool-preflight.md) records the installed Defuddle probe, release evidence, support boundary, and CHANGELOG verification receipt convention.
 - Optional `scrapling` for the JS-heavy-SPA fallback.
 - Optional `yt-dlp` for discovering watch URLs before per-URL extraction.
 
@@ -114,13 +117,13 @@ See `references/cli-reference.md` for full option details.
 | "The page is blank, so Defuddle is broken." | JS-heavy SPAs need a real browser. Fall back to `scrapling` instead. |
 | "I don't need to check the output." | Extraction quality varies by site. A quick review prevents garbage downstream. |
 
-## Red Flags
+## Anti-patterns
 
-- A plain fetch or browser used for a standard readable page when `defuddle` would produce cleaner markdown
-- Fetch-and-strip pipelines for readable pages — these burn tokens and lose structure; use `defuddle parse <url> --markdown` first
-- Empty extraction passed downstream without attempting the `scrapling` fallback
-- Using `defuddle` for API endpoints or JSON responses
-- Skipping `--markdown` flag (raw HTML is the default without it)
+- Using a plain fetch or browser for a standard readable page → use `defuddle` for cleaner Markdown.
+- Building a fetch-and-strip pipeline for readable pages → use `defuddle parse <url> --markdown` first.
+- Passing an empty extraction downstream → use the `scrapling` fallback for a JavaScript-heavy page or report the no-result.
+- Using `defuddle` for an API endpoint or JSON response → use a plain HTTP fetch.
+- Skipping the `--markdown` flag → request Markdown because raw HTML is the default.
 
 ## Known Source Notes
 

@@ -2,3 +2,4 @@
 - 2026-08-28 — the Chrome reference promised a fixed MCP tool inventory across runtimes → v1.0.1 requires `/mcp` or ToolSearch discovery and records current official Anthropic Chrome sources.
 - 2026-08-28 — v1.0.2: explicit Aside logged-in dashboard inspection requests undertriggered to generic browser use → names signed-in dashboard inspection without changing static-public routing.
 - 2026-08-28 — v1.1.0: replaced the universal Claude-in-Chrome assumption with a vendor-neutral existing-session backend; runtime discovery now gates native session surfaces, while Claude Code-specific Claude in Chrome guidance remains in its own subsection.
+- 2026-09-02 — v1.1.1: Aside browser-agent availability could be inferred from stale assumptions → link the shared tool preflight reference and collapse the contract into `## Output contract` with its stop condition. verified_against: aside@1.26.709.1533.

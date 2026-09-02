@@ -20,3 +20,4 @@
 - 2026-08-28 — mutable agent-runtime capabilities can drift → v3.2.0 adds official-docs-first, conflict-disclosed classification with a sequential unknown fallback.
 - 2026-08-29 — v3.2.1: a wildcard support-file token made Hermes request a literal missing path → name the references directory without a glob.
 - 2026-08-29 — v3.2.2: an anti-pattern sentence looked like an instruction to overwrite agent configuration to Hermes Guard → preserve the same incumbent-content rule without the false dangerous pattern.
+- 2026-09-02 — v4.1.0: mutable command-line tool facts could drift before bootstrap recipes used them → add the shared preflight reference and receipt convention, and collapse the contract into `## Output contract` with its stop condition. verified_against: obsidian-cli@0.2.3, obsidian@1.13.7, qmd@2.5.3, aside@1.26.709.1533, defuddle@0.19.1, gh@2.99.0, hermes@0.20.1, gjc@0.16.0.

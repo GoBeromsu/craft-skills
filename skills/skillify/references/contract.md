@@ -190,6 +190,7 @@ When sources conflict, disclose the conflict where the fact is used; prefer a mo
 Leave an unresolved fact unknown rather than inventing a value, behavior, or command.
 
 For every mutable CLI, API, service, or runtime requirement, the affected package records its name, official source URL, installed-version probe, support boundary, and release or update trigger in its `## Requirements` section or a linked reference.
+Record `verified_against: <tool>@<version>` in the affected package's CHANGELOG bullet whenever its recipe depends on a probed mutable tool.
 The probe is an exact safe command or API query that reports the installed or selected version; the boundary says which version range, platform, or capability the recipe supports.
 For a selected dependency/runtime release or a changed probe/capability, that trigger requires official-documentation review and affected evals, then update the recipe if its runtime form changed, bump the package version, and append its CHANGELOG entry.
 Keep this maintenance beside the dependent package; do not build a global dependency inventory, background daemon, or separate update framework.
