@@ -34,11 +34,12 @@ Bare `init` means map. Do not ask which mode was intended, and do not treat bare
 Work top down and stop as soon as the repository is described.
 
 1. **Inventory.** Read the tree without following symlinks. Note first-party directories, their file types, declared entry points, and configuration files. Skip `.git`, `node_modules`, `vendor`, `dist`, `build`, `__pycache__`, and comparable vendored or generated trees.
-2. **Place the root.** A root `AGENTS.md` always exists.
-3. **Place a child only on evidence.** Add a nested `AGENTS.md` when a directory owns its own build or dependency configuration, presents a distinct entry boundary, and holds enough code that root guidance would be wrong there. Prefer fewer files. A directory that merely holds many files is not a scope.
-4. **Write content that a newcomer could not infer.** Commands actually declared in that scope, entry points, local conventions, and constraints. Cite the file each claim comes from. Never invent a command; if no command is declared, say so.
-5. **Do not repeat the parent.** A child file adds only what differs from the instruction chain above it.
-6. **Install each payload** as a managed region using the script below.
+2. **Preflight mutable tools.** Before recording a tool-dependent instruction, follow [tool preflight](references/tool-preflight.md) and keep unavailable or unsupported command surfaces explicit.
+3. **Place the root.** A root `AGENTS.md` always exists.
+4. **Place a child only on evidence.** Add a nested `AGENTS.md` when a directory owns its own build or dependency configuration, presents a distinct entry boundary, and holds enough code that root guidance would be wrong there. Prefer fewer files. A directory that merely holds many files is not a scope.
+5. **Write content that a newcomer could not infer.** Commands actually declared in that scope, entry points, local conventions, and constraints. Cite the file each claim comes from. Never invent a command; if no command is declared, say so.
+6. **Do not repeat the parent.** A child file adds only what differs from the instruction chain above it.
+7. **Install each payload** as a managed region using the script below.
 
 Keep a root file within roughly 50-150 lines and a child file within roughly 30-80.
 When evidence exceeds that, summarize and state the omitted count rather than truncating silently.
