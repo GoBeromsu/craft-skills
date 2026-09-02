@@ -1,0 +1,23 @@
+{
+  "skill": "skillify",
+  "should_trigger": [
+    "스킬 만들자 — this PR review checklist we repeat every week",
+    "Turn this migration runbook into a skill",
+    "skillify this workflow so the next project gets it for free",
+    "Update the debug skill: it keeps skipping the reproduction step",
+    "Move the obsidian-clipper skill into the obsidian package",
+    "Retire the vmware skill, nobody uses it anymore",
+    "Absorb Anthropic's updated skill-creator into our contract",
+    "Record this correction in the governing skill instead of just remembering it"
+  ],
+  "should_not_trigger": [
+    "Promote this skill to bstack and open the PR",
+    "Write a one-off script that renames these 40 files in this repo",
+    "Design the test suite for the payments service",
+    "Debug why this test is flaky on CI",
+    "Refactor the parser module without changing behavior",
+    "Draft a PRD for the onboarding feature",
+    "Set up the Hermes cron job for the nightly digest",
+    "Write the weekly report from these meeting notes"
+  ]
+}

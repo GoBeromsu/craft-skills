@@ -16,6 +16,7 @@ The permanent, self-contained authoring contract for every `SKILL.md` in this li
 9. [MECE ownership](#9-mece-ownership)
 10. [External facts and dependencies](#10-external-facts-and-dependencies)
 11. [Core portability](#11-core-portability)
+12. [Referenced paths](#12-referenced-paths)
 
 ---
 
@@ -74,7 +75,9 @@ trigger phrases woven in naturally>. Not for <nearest-neighbor boundary — use 
 ## 4. Body
 
 - 150 lines is the target for a leaf skill; 500 lines is the hard ceiling the validator enforces. When the draft runs long, move depth to `references/*.md` — don't trim useful material, relocate it.
-- Structure: title → 1–2 sentence purpose with success criteria → the workflow/decision content → boundaries/hand-offs. Cut preamble and restated-obvious practice — an agent is already competent; only add context it doesn't already have.
+- Structure: title → 1–2 sentence purpose with success criteria → `## Output contract` → the workflow/decision content → boundaries/hand-offs → any `## Requirements`, `## Anti-patterns`, `## Verification`. Cut preamble and restated-obvious practice — an agent is already competent; only add context it doesn't already have.
+- `## Output contract` is the one contract section every package carries as a literal `##` heading (the validator checks for it), because it is what the evals grade against. It states what a correct run leaves behind — artifact and location, format and required sections, link or field rules, the summary returned to the user — and what the run does when it cannot succeed: at least one line for the no-result, partial-success, stop, or ambiguity case, phrased as condition → behavior. Specify only constraints that matter; where several surface forms are equally valid, say so instead of pinning one.
+- Everything else the contract needs already has an owner: the trigger and the "Not for X" boundary live in the description (§3); the goal is the purpose sentence under the title; inputs and dependencies live in `## Requirements` (§10); agent mistakes that break the contract live in `## Anti-patterns`; the eval corpus that proves the contract lives in `tests/evals/` (§7). Do not add `## Goal`, `## Non-goals`, or `## Failure modes` sections — they restate those owners.
 - Outcome over process: state the goal and constraints. Give numbered steps only where the exact sequence matters (a fragile or deterministic operation) — prose for judgment calls, scripts for mechanics.
 - Implement only what the requested outcome requires; no speculative features, refactors, or abstractions. Do not add fallbacks or validation for impossible internal states; validate system boundaries. Keep complete end-to-end behavior.
 - Keep instructions lean and single-owned: state the action, its autonomy boundary, and any required approval at the owner; link from every other location. Report progress through observable evidence and decisions, not private chain-of-thought, and never ask a user to reveal or transcribe internal reasoning.
@@ -108,8 +111,8 @@ What remains — the judgment and sequencing — is the `SKILL.md` body.
 | `templates/` | The skill emits a canonical artifact with a fixed shape. |
 | `assets/` | The output consumes files without loading them into context — boilerplate trees, fonts, images copied or filled into results. They are not background reference material. |
 | `agents/` | A bounded subagent role needs a charter or runtime metadata. Each file defines that role's scope, inputs, outputs, and hand-off; it is never a child skill and never contains `SKILL.md`. |
-| `tests/` | Any `scripts/` file ships with a matching test module. |
-| `evals/` | Local scratch for the eval-first loop (§7) — **gitignored, never committed**. |
+| `tests/` | Any `scripts/` file ships with a matching test module. Every package ships `tests/evals/evals.json` and `tests/evals/triggers.json` — the committed eval corpus that grades the contract block (§7). |
+| `evals/` | Local scratch for eval-run transcripts and judge notes (§7) — **gitignored, never committed**. The corpus itself is a package part under `tests/evals/`; only run output is scratch. |
 | `.env` / `.env.example` | Any credential, token, or host-specific value. Commit only `.env.example` with placeholders. |
 
 An additional directory needs a concrete execution purpose not covered by these parts; document that purpose in the package rather than using it for grouping.
@@ -136,12 +139,18 @@ The cross-skill lineage snapshot lives in `skills/PROVENANCE.md`; update its row
 ## 7. Eval-first authoring loop
 
 Replaces any committee review or manual sign-off process as the quality gate.
-Before authoring a package, draft (in the local, gitignored `evals/` directory):
+Before authoring a package, draft its eval corpus under `tests/evals/` — it is committed with the package, because the corpus is the reviewable form of the contract block (§4):
 
-- `evals/evals.json` — about 3 realistic scenarios: `{"skill": "<name>", "cases": [{"prompt": "<realistic user request>", "expected_behavior": "<what a correct run does>"}]}`.
-- `evals/triggers.json` — 8 should-trigger prompts plus 8 near-miss should-NOT-trigger prompts drawn from sibling skills' domains.
+- `tests/evals/evals.json` — about 3 realistic scenarios: `{"skill": "<name>", "cases": [{"id": "<kebab-id>", "prompt": "<realistic user request>", "expected_behavior": "<what a correct run does>", "grading": "verifiable" | "subjective", "assertions": ["<checkable statement about the output>"], "rubric": ["<quality criterion>"]}]}`.
+- `tests/evals/triggers.json` — `{"skill": "<name>", "should_trigger": [8 prompts], "should_not_trigger": [8 near-miss prompts drawn from sibling skills' domains]}`.
+
+Grade each case by its kind.
+A `verifiable` case produces an objectively checkable result — a file transform, an extracted value, a command run, a fixed artifact shape — and carries `assertions` a script or a reader can mark pass/fail against the `## Output contract`.
+A `subjective` case produces judgment-quality output — prose, a review, a design call — and carries a `rubric` that a fresh-eyes judge scores; never force assertions onto it, and never let a rubric stand in for an assertion the output could actually satisfy.
+Every case names at least one negative expectation when the contract block lists a non-goal or failure mode that the prompt could plausibly hit.
 
 Run each scenario without the skill, then with the drafted `SKILL.md`; the skill's value is the delta between the two arms, not the with-skill output alone.
+Transcripts, judge notes, and per-run scores go to the gitignored `evals/` scratch directory, never into `tests/evals/`.
 Iterate the body until behavior matches `expected_behavior`.
 Run the 16 trigger prompts against the drafted `description`; any near-miss that would plausibly match tightens the "Not for X" boundary sentence (§3).
 Before using the optional §3 directive, freeze those 16 trigger prompts as 6 should-trigger plus 6 should-NOT-trigger tuning cases and 2+2 held-out cases.
@@ -150,7 +159,7 @@ The directive is eligible only when it repairs at least one baseline miss, prese
 A universal directive records the runtime, model or human judge, and actual discovery/index surface for every supported runtime that consumes the shared description; an unavailable or failing runtime keeps the description in ordinary prose rather than weakening the gate.
 A perfect baseline ships the general capability without self-applying the directive because no routing delta exists.
 How to run the arms, judge with fresh eyes, read transcripts, and iterate without overfitting: `references/evaluation.md`.
-These artifacts are temporal working notes, not a package part — never commit them.
+The corpus under `tests/evals/` is a package part and changes with the contract block; the run output under `evals/` is temporal working notes — never commit it.
 
 ## 8. Version-bump rubric
 
@@ -195,3 +204,9 @@ Universal `SKILL.md` recipes must work without alteration on Hermes, Claude Code
 They may require standard tools only when the package documents them; they must not require one vendor's CLI, plugin command, frontmatter field, or proprietary tool.
 Put runtime-specific fields, installation commands, plugin metadata, and plumbing in that runtime's vendor lens.
 If a workflow cannot meet this law, make its boundary and supported runtime explicit in the relevant lens rather than presenting it as universal core guidance.
+
+## 12. Referenced paths
+
+Every package-relative path a `SKILL.md` mentions — `scripts/<file>`, `references/<file>`, `templates/<file>`, `assets/<file>`, `tests/<file>`, `agents/<file>` — must exist in the package tree.
+A recipe step that points at a script or reference the package does not ship is a broken recipe, and a reviewer cannot tell it from a real one by reading.
+The validator (`scripts/validate-skill-format.py`, `MISSING_REFERENCED_PATH`) fails the package on the first missing path; fix it by adding the file or by removing the mention, never by leaving a placeholder.

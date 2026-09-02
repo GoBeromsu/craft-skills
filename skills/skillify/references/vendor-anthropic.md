@@ -38,7 +38,7 @@ Do not ask a model to transcribe private reasoning; request inspectable outputs,
 ## 4. Divergences from this library
 
 - **Eval artifacts.** Anthropic persists schema'd benchmark and history artifacts alongside a
-  skill. This library keeps `evals/` as gitignored local scratch (`contract.md` §7), while
+  skill. This library commits the eval corpus under `tests/evals/` and keeps run transcripts in gitignored `evals/` scratch (`contract.md` §7), while
   retaining the measurement discipline.
 - **Executor coupling.** Anthropic's scripts assume its CLI and session protocol; this library
   defines runner-agnostic evaluation outcomes in [`evaluation.md`](evaluation.md).

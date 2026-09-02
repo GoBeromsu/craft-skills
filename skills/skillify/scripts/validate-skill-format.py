@@ -22,6 +22,16 @@ least `SKILL.md` + `CHANGELOG.md`. This validator enforces, per package:
   7. SKILL.md body contains no `## Change Log` (history lives in CHANGELOG.md).
   8. CHANGELOG.md exists beside SKILL.md with >= 1 dated bullet `- YYYY-MM-DD ...`.
   9. No tracked real `.env` file in the package (only `.env.example` may be committed).
+ 10. SKILL.md body carries a literal `## Output contract` heading whose section names at
+     least one cannot-succeed behavior (a line mentioning cannot / stop / no-result /
+     partial / unavailable / ambiguous / missing) (contract §4).
+ 11. Every package-relative path the body mentions (`scripts/`, `references/`,
+     `templates/`, `assets/`, `tests/`, `agents/`) exists in the package (contract §12).
+ 12. The committed eval corpus exists and is well-formed: `tests/evals/evals.json`
+     (>= 3 cases, each with id/prompt/expected_behavior/grading; `verifiable` cases
+     carry `assertions`, `subjective` cases carry `rubric`) and
+     `tests/evals/triggers.json` (>= 8 `should_trigger` + >= 8 `should_not_trigger`)
+     (contract §7).
 
 Modes:
   (default)       full scan; reports every violation; exit 1 if any hard error found.
@@ -74,6 +84,18 @@ PREFIX = "MUST USE "
 DELIMITER = ". "
 ANY_TOKEN = re.compile(r"(?<![A-Za-z0-9_])ANY(?![A-Za-z0-9_])")
 ALL_CAPS_DIRECTIVE_LOOKALIKE = re.compile(r"^MUST(?![A-Za-z0-9])")
+CONTRACT_SECTION = "Output contract"
+CANNOT_SUCCEED_RE = re.compile(
+    r"\b(cannot|can't|stop|stops|no-result|no result|partial|unavailable|ambiguous|ambiguity|missing)\b",
+    re.IGNORECASE,
+)
+PACKAGE_PATH_DIRS = ("scripts", "references", "templates", "assets", "tests", "agents")
+PACKAGE_PATH_RE = re.compile(
+    r"(?:\$SKILL_DIR/|\$\{SKILL_DIR\}/|(?<![A-Za-z0-9_./-]))(?:" + "|".join(PACKAGE_PATH_DIRS) + r")/[A-Za-z0-9_./-]*[A-Za-z0-9_]"
+)
+EVALS_MIN_CASES = 3
+TRIGGERS_MIN_EACH = 8
+GRADING_KINDS = {"verifiable", "subjective"}
 
 
 @dataclass
@@ -284,6 +306,90 @@ def changed_skill_dirs(diff_base: str) -> set[Path] | None:
     return dirs
 
 
+def check_contract_sections(name: str, body: str) -> list[Finding]:
+    match = re.search(rf"^## +{re.escape(CONTRACT_SECTION)}\s*$(.*?)(?=^## |\Z)", body, re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    if match is None:
+        return [Finding(name, "MISSING_CONTRACT_SECTION",
+                        f"SKILL.md body lacks `## {CONTRACT_SECTION}` (contract §4)")]
+    if not CANNOT_SUCCEED_RE.search(match.group(1)):
+        return [Finding(name, "CONTRACT_LACKS_FAILURE_BRANCH",
+                        f"`## {CONTRACT_SECTION}` never says what the run does when it cannot succeed "
+                        "(no-result / partial / stop / ambiguous case) (contract §4)")]
+    return []
+
+
+def check_referenced_paths(name: str, skill_dir: Path, body: str) -> list[Finding]:
+    findings: list[Finding] = []
+    seen: set[str] = set()
+    for match in PACKAGE_PATH_RE.finditer(body):
+        rel = re.sub(r"^\$\{?SKILL_DIR\}?/", "", match.group(0)).rstrip(".")
+        if rel in seen or "<" in rel or "*" in rel or rel.endswith("/"):
+            continue
+        seen.add(rel)
+        if rel.split("/", 1)[0] not in PACKAGE_PATH_DIRS:
+            continue
+        if not (skill_dir / rel).exists():
+            findings.append(Finding(name, "MISSING_REFERENCED_PATH",
+                                    f"SKILL.md mentions `{rel}` but the package does not ship it (contract §12)"))
+    return findings
+
+
+def _load_json(path: Path) -> object | None:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+
+
+def check_eval_corpus(name: str, skill_dir: Path) -> list[Finding]:
+    findings: list[Finding] = []
+    evals_path = skill_dir / "tests" / "evals" / "evals.json"
+    triggers_path = skill_dir / "tests" / "evals" / "triggers.json"
+
+    if not evals_path.exists():
+        findings.append(Finding(name, "NO_EVAL_CORPUS", "missing tests/evals/evals.json (contract §7)"))
+    else:
+        data = _load_json(evals_path)
+        cases = data.get("cases") if isinstance(data, dict) else None
+        if not isinstance(cases, list):
+            findings.append(Finding(name, "BAD_EVAL_CORPUS", "tests/evals/evals.json must be an object with a `cases` list"))
+        else:
+            if len(cases) < EVALS_MIN_CASES:
+                findings.append(Finding(name, "BAD_EVAL_CORPUS",
+                                        f"tests/evals/evals.json has {len(cases)} cases < {EVALS_MIN_CASES}"))
+            for i, case in enumerate(cases):
+                label = case.get("id", f"#{i}") if isinstance(case, dict) else f"#{i}"
+                if not isinstance(case, dict):
+                    findings.append(Finding(name, "BAD_EVAL_CORPUS", f"case {label} is not an object"))
+                    continue
+                for key in ("id", "prompt", "expected_behavior", "grading"):
+                    if not isinstance(case.get(key), str) or not case[key].strip():
+                        findings.append(Finding(name, "BAD_EVAL_CORPUS", f"case {label} lacks non-empty `{key}`"))
+                grading = case.get("grading")
+                if grading not in GRADING_KINDS:
+                    findings.append(Finding(name, "BAD_EVAL_CORPUS",
+                                            f"case {label} grading must be one of {sorted(GRADING_KINDS)}"))
+                elif grading == "verifiable" and not case.get("assertions"):
+                    findings.append(Finding(name, "BAD_EVAL_CORPUS", f"verifiable case {label} needs non-empty `assertions`"))
+                elif grading == "subjective" and not case.get("rubric"):
+                    findings.append(Finding(name, "BAD_EVAL_CORPUS", f"subjective case {label} needs non-empty `rubric`"))
+
+    if not triggers_path.exists():
+        findings.append(Finding(name, "NO_EVAL_CORPUS", "missing tests/evals/triggers.json (contract §7)"))
+    else:
+        data = _load_json(triggers_path)
+        if not isinstance(data, dict):
+            findings.append(Finding(name, "BAD_EVAL_CORPUS", "tests/evals/triggers.json must be an object"))
+        else:
+            for key in ("should_trigger", "should_not_trigger"):
+                items = data.get(key)
+                if not isinstance(items, list) or len(items) < TRIGGERS_MIN_EACH \
+                        or not all(isinstance(x, str) and x.strip() for x in items):
+                    findings.append(Finding(name, "BAD_EVAL_CORPUS",
+                                            f"tests/evals/triggers.json `{key}` needs >= {TRIGGERS_MIN_EACH} non-empty prompts"))
+    return findings
+
+
 def check_skill(skill_dir: Path) -> list[Finding]:
     name = skill_dir.name
     findings: list[Finding] = []
@@ -380,6 +486,10 @@ def check_skill(skill_dir: Path) -> list[Finding]:
     if body_lines > BODY_LINE_LIMIT:
         findings.append(Finding(name, "BODY_TOO_LONG",
                                 f"body is {body_lines} lines > {BODY_LINE_LIMIT} hard ceiling"))
+
+    findings.extend(check_contract_sections(name, body))
+    findings.extend(check_referenced_paths(name, skill_dir, body))
+    findings.extend(check_eval_corpus(name, skill_dir))
 
     for nested in sorted(skill_dir.rglob("SKILL.md")):
         if nested != skill_md:
