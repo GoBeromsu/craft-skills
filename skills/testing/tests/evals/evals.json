@@ -1,0 +1,93 @@
+{
+  "skill": "testing",
+  "cases": [
+    {
+      "id": "getter-only-no-test",
+      "prompt": "Add tests for the new UserProfile.getDisplayName getter that returns the field unchanged.",
+      "expected_behavior": "Records a no-test decision because the getter is pure delegation and names the higher contract or type guarantee when applicable.",
+      "grading": "verifiable",
+      "assertions": [
+        "The strategy row has decision `no-test`.",
+        "The justification names pure delegation, a type guarantee, or a higher contract test.",
+        "The response does not propose a getter-only test."
+      ]
+    },
+    {
+      "id": "ui-copy-uses-spec-oracle",
+      "prompt": "Test that the upload dialog includes the text 50 MiB because the current component renders that string.",
+      "expected_behavior": "Rewrites the proposal to assert the documented upload limit rather than the implementation copy.",
+      "grading": "verifiable",
+      "assertions": [
+        "The strategy row has decision `rewrite`.",
+        "The independent oracle is a specification, contract, or approved fixture rather than the component string.",
+        "The response rejects a substring assertion against implementation copy."
+      ]
+    },
+    {
+      "id": "clock-boundary-injection",
+      "prompt": "Add a test for an invitation that expires tomorrow by using the real current time in the default constructor.",
+      "expected_behavior": "Admits the time boundary but rewrites the test to inject a fixed clock and assert boundary behavior.",
+      "grading": "verifiable",
+      "assertions": [
+        "The strategy names a time or clock boundary.",
+        "The response requires fixed clock injection rather than a real-clock default.",
+        "The assertion derives from the expiration contract."
+      ]
+    },
+    {
+      "id": "deterministic-parametrization-ids",
+      "prompt": "Generate random IDs for each parametrized test case so we can distinguish cases under xdist.",
+      "expected_behavior": "Rewrites the proposal to use deterministic parametrization identifiers.",
+      "grading": "verifiable",
+      "assertions": [
+        "The strategy row has decision `rewrite`.",
+        "The response rejects random identifiers as nondeterministic.",
+        "The response requires deterministic case identifiers."
+      ]
+    },
+    {
+      "id": "unreproducible-failure-no-invention",
+      "prompt": "The import sometimes fails in CI but nobody can reproduce it; add a failing test now.",
+      "expected_behavior": "Records a no-test decision with unavailable reproduction evidence rather than inventing a failing test.",
+      "grading": "verifiable",
+      "assertions": [
+        "The strategy row has decision `no-test`.",
+        "The response records unavailable reproduction evidence.",
+        "The response does not invent a failing test."
+      ]
+    },
+    {
+      "id": "ambiguous-contract-before-layer",
+      "prompt": "Test that checkout handles an invalid discount code, but product has not specified whether it is an API or UI error.",
+      "expected_behavior": "Stops layer selection until the governing product contract is clarified.",
+      "grading": "verifiable",
+      "assertions": [
+        "The response asks which contract governs the invalid discount-code behavior.",
+        "The response does not choose a test layer before that contract is known."
+      ]
+    },
+    {
+      "id": "flaky-test-quarantine-root-cause",
+      "prompt": "Our retry loop makes the intermittent checkout test green; add another retry.",
+      "expected_behavior": "Quarantines the flaky test with a root-cause investigation instead of adding retries.",
+      "grading": "verifiable",
+      "assertions": [
+        "The response rejects adding a retry loop.",
+        "The response quarantines the flaky test.",
+        "The response requires root-cause investigation and removal of nondeterminism."
+      ]
+    },
+    {
+      "id": "concurrency-boundary-integration",
+      "prompt": "Verify that two concurrent reservation requests cannot both claim the final seat.",
+      "expected_behavior": "Admits a concurrency boundary at the integration layer with deterministic synchronization and a contract oracle.",
+      "grading": "verifiable",
+      "assertions": [
+        "The strategy row has decision `add`.",
+        "The cheapest layer is `integration`.",
+        "The response explains why a cheaper layer cannot observe the assembled concurrency boundary.",
+        "The response uses deterministic synchronization and a capacity or reservation contract oracle."
+      ]
+    }
+  ]
+}
