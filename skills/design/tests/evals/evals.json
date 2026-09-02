@@ -80,13 +80,34 @@
     },
     {
       "id": "no-browser-evidence",
-      "prompt": "Review this UI diff, but no running page, screenshots, or browser access are available.",
-      "expected_behavior": "Returns a static review rather than claiming interaction evidence.",
+      "prompt": "Review this UI diff, but no running page, screenshots, screen access, or browser access are available.",
+      "expected_behavior": "Returns a static review with evidence none and lower confidence rather than claiming interaction evidence.",
       "grading": "verifiable",
       "assertions": [
         "Sets evidence to none.",
         "States lower confidence in the recommendation.",
         "Does not present a verdict as interaction-verified."
+      ]
+    },
+    {
+      "id": "ambiguous-primary-operator",
+      "prompt": "Review the approval journey without identifying whether the requester or approver performs the task.",
+      "expected_behavior": "Stops before judging and asks which role is the primary operator.",
+      "grading": "verifiable",
+      "assertions": [
+        "Asks which role performs the primary action.",
+        "Does not infer a primary operator."
+      ]
+    },
+    {
+      "id": "zero-violations",
+      "prompt": "Review the submitted checkout and profile screens; all seven principles pass.",
+      "expected_behavior": "Returns the completed review with no violated principles and every checked screen listed.",
+      "grading": "verifiable",
+      "assertions": [
+        "Lists each checked checkout and profile screen.",
+        "Leaves violated principles empty.",
+        "Returns a recommendation despite zero violations."
       ]
     }
   ]

@@ -1,21 +1,21 @@
 ---
 name: design
-description: Owns canonical DESIGN.md artifacts and evidence-first UX/UI judgment for coherent product design roots. Use when requests ask to define interface direction; choose type, color, spacing, or motion; audit a user journey; establish design tokens or state specifications; redesign information hierarchy; review mental models; evaluate rendered states; prioritize bad UX; improve an interaction; or turn accessibility and usability findings into an improvement plan. Not for frontend rendering and architecture or generic documentation — use frontend or document; live-page operation and automated evidence collection remain mechanics-owned.
+description: Owns canonical DESIGN.md artifacts and evidence-first UX/UI judgment for coherent product design roots. Use when requests ask to define interface direction; choose type, color, spacing, or motion; audit a user journey; establish design tokens or state specifications; redesign information hierarchy; review mental models; evaluate rendered states; prioritize bad UX; improve an interaction; or turn accessibility and usability findings into an improvement plan. Not for frontend rendering or architecture, product copy, or generic documentation — use frontend, the product or copywriting owner, or document; live-page operation and automated evidence collection remain mechanics-owned.
 metadata:
   version: 1.1.0
 ---
-
-## Goal
 
 Review a PR or rendered user journey against seven named UX principles so an identified operator can complete one primary action without an evidenced interaction failure.
 Succeed when the review names each failed principle from a rendered screen or interaction, records reproducible evidence, and recommends the smallest correction.
 
 ## Output contract
 
-Deliver the completed [UX review template](templates/ux-review.md) as the review artifact.
+Leave a completed [UX review template](templates/ux-review.md) as the review artifact.
 Include `primary_operator`, `primary_action`, `evidence`, `screens_checked[]`, `violated_principles[]`, and `recommendation`.
-Treat a verdict without screenshot or interaction evidence as a static review rather than a completed interaction review.
-List every checked screen when no principle is violated.
+When browser or screen access is unavailable → deliver a static review with `evidence: none` and lower confidence.
+When the primary operator is ambiguous → stop and ask which role performs the task.
+When no principle is violated → still list every checked screen.
+When only part of the journey is reachable → return the checked screens and partial findings, and report unavailable routes, credentials, or environments as evidence limitations.
 
 ## Routing
 
@@ -84,17 +84,3 @@ Escalate normative accessibility conformance to accessibility engineering and le
 - Ship stock framework values or one-off literals outside the named token system → register the deliberate design decision or replace it with an incumbent token.
 - Assign multiple primary families to one audit finding → choose the dominant user and task consequence and use secondary tags only for context.
 - Call an observable consent asymmetry deceptive or illegal → record the interaction and hand intent, legal, privacy, and security conclusions to their owners.
-
-## Non-goals
-
-Do not implement frontend components, rendering, architecture, or state management, because `frontend` owns implementation.
-Do not write or revise product copy, because the product or copywriting owner owns wording.
-Do not operate a live page or automate evidence collection without the `browser` skill.
-Do not claim accessibility, legal, privacy, or security conformance from this review.
-
-## Failure modes
-
-Ask which role performs the task before judging when the primary operator is ambiguous.
-Deliver a static review with `evidence: none` and lower confidence when browser access, screenshots, or interaction transcripts are unavailable.
-Report missing routes, credentials, or environments as evidence limitations and avoid guessing a pass or failure.
-Return the checked screens and partial findings when only part of the journey is reachable.
