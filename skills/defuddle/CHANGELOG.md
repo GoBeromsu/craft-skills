@@ -4,4 +4,4 @@
 - 2026-08-28 — mutable Defuddle CLI and service facts require current evidence → added official-docs-first precedence, conflict disclosure, and no-invention fallback.
 - 2026-08-28 — v1.1.1: Defuddle dependency maintenance lacked a versioned support boundary → recorded the official source, safe version probe, installed-major/capability boundary, and release/probe-change extraction/fallback-evaluation trigger.
 - 2026-08-29 — v1.1.2: executable-looking pipe examples triggered Hermes's safety scanner → kept the anti-pattern guidance without spelling a network-to-interpreter command.
-- 2026-09-02 — v1.1.3: Defuddle CLI drift lacked shared preflight evidence → link the shared tool preflight reference. verified_against: defuddle@0.19.1.
+- 2026-09-02 — v1.1.3: Defuddle CLI drift lacked shared preflight evidence → link the shared tool preflight reference and collapse the contract into `## Output contract` with its no-result condition. verified_against: defuddle@0.19.1.

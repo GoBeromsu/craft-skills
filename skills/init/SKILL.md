@@ -7,13 +7,12 @@ metadata:
 
 # init
 
-## Goal
-
 Map a repository into a maintained hierarchical `AGENTS.md` knowledge base with evidence-backed placements and preserved incumbent instructions.
 
 ## Output contract
 
 Return the written or read-only audit result with the affected `AGENTS.md` paths, evidence sources, managed-region status, and unavailable paths.
+If paths are unreadable, scope evidence is ambiguous, or a managed region was hand-edited, stop and report the condition without overwriting incumbent content.
 
 Placement and content are judgment, so they live in this file as prose.
 Only one step is fragile enough to be executable: editing a marker-delimited region without disturbing surrounding bytes.
@@ -104,11 +103,3 @@ When a `CLAUDE.md` holds anything other than the exact adapter bytes, migrate it
 - Claiming a command that no configuration declares → cite the source file or omit it.
 - Editing a managed region with ad-hoc string replacement → use the script.
 - Reporting loader behavior as known without a probe → say unknown.
-
-## Non-goals
-
-Do not scaffold documentation, author document content, initialize packages, install Git hooks, or delete stale instructions.
-
-## Failure modes
-
-Stop and report unreadable paths, ambiguous scope evidence, or hand-edited managed regions without overwriting incumbent content.
