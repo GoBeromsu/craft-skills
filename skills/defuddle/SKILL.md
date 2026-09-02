@@ -4,16 +4,14 @@ description: Extract clean Markdown or metadata JSON from web articles and docum
 metadata:
   version: 1.1.3
 ---
-
 # defuddle
-
-## Goal
 
 Extract clean Markdown or metadata JSON from readable web pages with Defuddle while preserving the calling workflow's storage ownership.
 
 ## Output contract
 
 Return non-empty clean Markdown or metadata JSON for one logical source, or report an extraction boundary without persisting content.
+If CLI behavior is unknown or extraction is empty, report the no-result without persisting content and use the documented browser fallback only for JavaScript-heavy pages.
 
 ## Runtime fact verification
 
@@ -119,13 +117,13 @@ See `references/cli-reference.md` for full option details.
 | "The page is blank, so Defuddle is broken." | JS-heavy SPAs need a real browser. Fall back to `scrapling` instead. |
 | "I don't need to check the output." | Extraction quality varies by site. A quick review prevents garbage downstream. |
 
-## Red Flags
+## Anti-patterns
 
-- A plain fetch or browser used for a standard readable page when `defuddle` would produce cleaner markdown
-- Fetch-and-strip pipelines for readable pages — these burn tokens and lose structure; use `defuddle parse <url> --markdown` first
-- Empty extraction passed downstream without attempting the `scrapling` fallback
-- Using `defuddle` for API endpoints or JSON responses
-- Skipping `--markdown` flag (raw HTML is the default without it)
+- Using a plain fetch or browser for a standard readable page → use `defuddle` for cleaner Markdown.
+- Building a fetch-and-strip pipeline for readable pages → use `defuddle parse <url> --markdown` first.
+- Passing an empty extraction downstream → use the `scrapling` fallback for a JavaScript-heavy page or report the no-result.
+- Using `defuddle` for an API endpoint or JSON response → use a plain HTTP fetch.
+- Skipping the `--markdown` flag → request Markdown because raw HTML is the default.
 
 ## Known Source Notes
 
@@ -137,11 +135,3 @@ See `references/cli-reference.md` for full option details.
 - [ ] Output mode matches the downstream task (markdown for content, JSON for metadata)
 - [ ] Extracted content is non-empty
 - [ ] `scrapling` fallback used when defuddle returns empty on JS-heavy sites
-
-## Non-goals
-
-Do not extract JSON APIs, reproduce raw HTML, persist caller-owned output, or automate JavaScript-heavy authenticated pages.
-
-## Failure modes
-
-Report unknown CLI behavior or empty extraction, and use the documented browser fallback only for JavaScript-heavy pages.

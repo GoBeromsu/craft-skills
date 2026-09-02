@@ -4,16 +4,14 @@ description: Routes one thick Obsidian skill. Use for in-vault note create/edit/
 metadata:
   version: 1.2.1
 ---
-
 # Obsidian
-
-## Goal
 
 Apply Obsidian-specific mechanics through one package so the requested artifact follows the real format and runtime behavior while preserving unrelated vault content.
 
 ## Output contract
 
 Return the verified artifact or runtime state, selected sub-recipe, readback evidence, and every unavailable prerequisite.
+If the vault is unresolved, the runtime or command surface is unavailable or unsupported, or readback evidence is missing, stop and report the condition without inventing an operation.
 
 ## Requirements
 
@@ -81,11 +79,3 @@ Generic file synchronization, Git conflicts, and backup systems are outside the 
 - [ ] Destructive operations had explicit approved scope or were skipped.
 - [ ] The changed artifact or runtime state was read back exactly.
 - [ ] Any composed sub-recipes had distinct responsibilities.
-
-## Non-goals
-
-Do not decide personal-vault taxonomy, extract public web pages, render generic Mermaid outside Obsidian, or operate generic synchronization systems.
-
-## Failure modes
-
-Stop and report an unresolved vault, unavailable runtime, unsupported command surface, or missing readback evidence without inventing an operation.

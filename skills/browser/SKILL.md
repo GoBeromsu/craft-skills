@@ -4,16 +4,14 @@ description: Routes live-browser work across Aside, agent-browser, and an existi
 metadata:
   version: 1.1.1
 ---
-
 # Browser
-
-## Goal
 
 Drive authenticated or interactive web work through one backend while protecting account identity, existing browser state, and uncertain writes.
 
 ## Output contract
 
 Report the selected backend, proven account and read state, target-site mutation evidence when authorized, and cleanup outcome without closing unowned resources.
+If tooling is unavailable, identity is unproven, browser state is unrecovered, or a write is uncertain, stop and report the last confirmed checkpoint.
 
 ## Procedure references
 
@@ -82,11 +80,3 @@ Report a cleanup failure without broadening the close scope.
 
 Use defuddle for static public pages that do not need an authenticated browser session.
 Use an HTTP client for direct API or JSON work.
-
-## Non-goals
-
-Do not use this skill for static public extraction, direct API work, or unapproved target-site mutations.
-
-## Failure modes
-
-Stop after unavailable tooling, unproven identity, unrecovered browser state, or an uncertain write, and report the last confirmed checkpoint.
