@@ -1,0 +1,23 @@
+{
+  "skill": "testing",
+  "should_trigger": [
+    "Review these generated tests for duplicate coverage and weak oracles.",
+    "Which test layer should prove this API schema boundary?",
+    "Create a test strategy before we add coverage for this change.",
+    "Audit our flaky tests and decide which ones to quarantine or rewrite.",
+    "Do we need a test for this wrapper method or should we record no-test?",
+    "Find the cheapest credible test for concurrent reservation ordering.",
+    "Check whether this snapshot has an independent oracle.",
+    "테스트 전략표로 이 변경의 실패 모드와 검증 계층을 결정해줘."
+  ],
+  "should_not_trigger": [
+    "Fix this failing test; it started failing in CI today.",
+    "Implement this feature with TDD and make the production code pass.",
+    "Evaluate the agent's tool-use quality on these benchmark tasks.",
+    "Refactor safely by adding characterization tests before moving these modules.",
+    "Debug this intermittent timeout and identify its root cause.",
+    "Write the production API endpoint and its validation logic.",
+    "Redesign the database schema without changing behavior.",
+    "Compare these LLM prompts and score their model outputs."
+  ]
+}
