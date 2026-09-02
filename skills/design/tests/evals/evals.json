@@ -1,0 +1,114 @@
+{
+  "skill": "design",
+  "cases": [
+    {
+      "id": "action-authority",
+      "prompt": "Review this PR: ordinary team members can see a button that removes all team support.",
+      "expected_behavior": "Reviews the rendered role-specific surface and identifies Action authority only with interaction or screenshot evidence and reproduction steps.",
+      "grading": "subjective",
+      "rubric": [
+        "Names Action authority.",
+        "Includes screen evidence and role-specific reproduction steps.",
+        "Recommends an authority gate rather than an unrelated redesign."
+      ]
+    },
+    {
+      "id": "continuity-under-loading",
+      "prompt": "Review the search form: typing one character replaces it with a skeleton and the second character is lost.",
+      "expected_behavior": "Reviews the loading interaction and identifies Continuity under loading with evidence and reproduction steps.",
+      "grading": "subjective",
+      "rubric": [
+        "Names Continuity under loading.",
+        "Includes evidence of focus, input, or context loss and reproduction steps.",
+        "Recommends preserving the interactive shell during loading."
+      ]
+    },
+    {
+      "id": "deep-link-arrival",
+      "prompt": "Review the activity page: opening a shared #activity URL leaves the browser at the top after data loads.",
+      "expected_behavior": "Reviews fresh deep-link arrival and identifies Deep-link arrival with evidence and reproduction steps.",
+      "grading": "subjective",
+      "rubric": [
+        "Names Deep-link arrival.",
+        "Includes evidence from opening the fragment URL and waiting for loading.",
+        "Recommends scrolling after the target mounts or layout stabilizes."
+      ]
+    },
+    {
+      "id": "copy-validation-parity",
+      "prompt": "Review upload: the UI says 50 MiB but the server rejects files larger than 5 MiB.",
+      "expected_behavior": "Compares visible guidance with observed acceptance and identifies Copy–validation parity with evidence and reproduction steps.",
+      "grading": "subjective",
+      "rubric": [
+        "Names Copy–validation parity.",
+        "Includes the displayed limit, submitted boundary value, and rejection evidence.",
+        "Recommends one canonical constraint for copy and validation."
+      ]
+    },
+    {
+      "id": "one-canonical-route",
+      "prompt": "Review the documents journey: one role visits /status and another visits /mydocs for the same task.",
+      "expected_behavior": "Reviews task entry points and identifies One canonical route per task with evidence and reproduction steps.",
+      "grading": "subjective",
+      "rubric": [
+        "Names One canonical route per task.",
+        "Includes evidence for both routes and role entry points.",
+        "Recommends one route with in-route role handling."
+      ]
+    },
+    {
+      "id": "no-lost-state",
+      "prompt": "Review onboarding: team creation, joining, solo selection, summary, and consent each use separate paths and choices disappear when going back.",
+      "expected_behavior": "Exercises substeps and identifies No lost state across substeps with evidence and reproduction steps.",
+      "grading": "subjective",
+      "rubric": [
+        "Names No lost state across substeps.",
+        "Includes evidence of forward and backward transitions losing state.",
+        "Recommends one state-preserving flow shell."
+      ]
+    },
+    {
+      "id": "role-task-minimal-action",
+      "prompt": "Review the care-worker task: the worker needs only 확인, but the screen also shows 해결 완료.",
+      "expected_behavior": "Reviews the care-worker completion task and identifies Role-task minimal action with evidence and reproduction steps.",
+      "grading": "subjective",
+      "rubric": [
+        "Names Role-task minimal action.",
+        "Includes evidence of the care-worker screen and the extra action.",
+        "Recommends retaining only the necessary confirmation action."
+      ]
+    },
+    {
+      "id": "no-browser-evidence",
+      "prompt": "Review this UI diff, but no running page, screenshots, screen access, or browser access are available.",
+      "expected_behavior": "Returns a static review with evidence none and lower confidence rather than claiming interaction evidence.",
+      "grading": "verifiable",
+      "assertions": [
+        "Sets evidence to none.",
+        "States lower confidence in the recommendation.",
+        "Does not present a verdict as interaction-verified."
+      ]
+    },
+    {
+      "id": "ambiguous-primary-operator",
+      "prompt": "Review the approval journey without identifying whether the requester or approver performs the task.",
+      "expected_behavior": "Stops before judging and asks which role is the primary operator.",
+      "grading": "verifiable",
+      "assertions": [
+        "Asks which role performs the primary action.",
+        "Does not infer a primary operator."
+      ]
+    },
+    {
+      "id": "zero-violations",
+      "prompt": "Review the submitted checkout and profile screens; all seven principles pass.",
+      "expected_behavior": "Returns the completed review with no violated principles and every checked screen listed.",
+      "grading": "verifiable",
+      "assertions": [
+        "Lists each checked checkout and profile screen.",
+        "Leaves violated principles empty.",
+        "Returns a recommendation despite zero violations."
+      ]
+    }
+  ]
+}
