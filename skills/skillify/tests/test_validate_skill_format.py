@@ -89,7 +89,7 @@ class SkillFormatValidatorTest(unittest.TestCase):
     def test_rejects_referenced_path_that_does_not_ship(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            body = GOOD_SKILL + "\nRun `scripts/deploy.py` then read `references/schema.md`.\nGlob forms like `references/*.md` and `scripts/<name>` are fine.\n"
+            body = GOOD_SKILL + "\nRun `$SKILL_DIR/scripts/deploy.py` then read `references/schema.md`.\nGlob forms like `references/*.md` and `scripts/<name>` are fine.\n"
             d = self._make_skill(root, "demo", body, GOOD_CHANGELOG)
             (d / "references").mkdir()
             (d / "references" / "schema.md").write_text("# schema\n", encoding="utf-8")

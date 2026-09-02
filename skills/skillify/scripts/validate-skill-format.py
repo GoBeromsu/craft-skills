@@ -86,7 +86,7 @@ ALL_CAPS_DIRECTIVE_LOOKALIKE = re.compile(r"^MUST(?![A-Za-z0-9])")
 CONTRACT_SECTIONS = ("Goal", "Output contract", "Non-goals", "Failure modes")
 PACKAGE_PATH_DIRS = ("scripts", "references", "templates", "assets", "tests", "agents")
 PACKAGE_PATH_RE = re.compile(
-    r"(?<![A-Za-z0-9_./-])(?:" + "|".join(PACKAGE_PATH_DIRS) + r")/[A-Za-z0-9_./-]*[A-Za-z0-9_]"
+    r"(?:\$SKILL_DIR/|\$\{SKILL_DIR\}/|(?<![A-Za-z0-9_./-]))(?:" + "|".join(PACKAGE_PATH_DIRS) + r")/[A-Za-z0-9_./-]*[A-Za-z0-9_]"
 )
 EVALS_MIN_CASES = 3
 TRIGGERS_MIN_EACH = 8
@@ -314,7 +314,7 @@ def check_referenced_paths(name: str, skill_dir: Path, body: str) -> list[Findin
     findings: list[Finding] = []
     seen: set[str] = set()
     for match in PACKAGE_PATH_RE.finditer(body):
-        rel = match.group(0).rstrip(".")
+        rel = re.sub(r"^\$\{?SKILL_DIR\}?/", "", match.group(0)).rstrip(".")
         if rel in seen or "<" in rel or "*" in rel or rel.endswith("/"):
             continue
         seen.add(rel)
