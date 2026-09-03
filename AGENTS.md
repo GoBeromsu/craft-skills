@@ -6,7 +6,7 @@ Kept strictly separate from `bstack` (personal / life / second-brain automation)
 
 ## Layout
 
-A package is one flat directory: `skills/<name>/SKILL.md` plus whichever of `references/`, `templates/`, `scripts/`, `tests/`, `assets/`, and `CHANGELOG.md` it needs.
+A package is one flat directory: `skills/<name>/SKILL.md` plus whichever of `references/`, `templates/`, `scripts/`, `assets/`, and `CHANGELOG.md` it needs; tests live at repo-root `tests/<name>/`.
 Runtime-owned `agents/` directories are optional plumbing, not part of the portable core.
 No nested `SKILL.md` files — every skill is one level deep.
 `tests/evals/` holds each package's committed eval corpus (`evals.json` + `triggers.json`); `evals/` directories are local, gitignored scratch for run transcripts and are never committed.

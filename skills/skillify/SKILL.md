@@ -2,7 +2,7 @@
 name: skillify
 description: Owns the full lifecycle of craft-skills skill packages — creating, updating, moving/renaming, retiring them, and absorbing frontier labs' skill-creators into vendor lenses — through an eval-first authoring loop and deterministic format validation. Use when a user says things like "make a skill", "skillify this workflow", "turn this into a skill", "update this skill", "move this skill", "absorb openai's new skill-creator", or "스킬 만들자", or when a recurring workflow correction needs to be encoded into a governing skill instead of staying in chat memory. Not for one-off project scripts or prompts with no reuse intent — those stay local to the originating project.
 metadata:
-  version: 4.10.1
+  version: 4.10.2
 ---
 
 # skillify
@@ -16,7 +16,7 @@ The core contract stays vendor-agnostic; what any one runtime needs lives in tha
 A run leaves behind one package under `skills/<name>/` on its own branch with a PR open:
 
 - `SKILL.md` whose body carries `## Output contract` — the one literal heading the validator checks and the evals grade against, stating the artifact and what the run does when it cannot succeed ([contract §4](references/contract.md#4-body)).
-- `tests/evals/evals.json` (≥ 3 cases, each `verifiable` with `assertions` or `subjective` with `rubric`) and `tests/evals/triggers.json` (8 should-trigger + 8 near-miss) — committed, so a reviewer reads the contract and its proof together ([contract §7](references/contract.md#7-eval-first-authoring-loop)).
+- `tests/<name>/evals/evals.json` (≥ 3 cases, each `verifiable` with `assertions` or `subjective` with `rubric`) and `tests/<name>/evals/triggers.json` (8 should-trigger + 8 near-miss) — committed, so a reviewer reads the contract and its proof together ([contract §7](references/contract.md#7-eval-first-authoring-loop)).
 - Every `scripts/`, `references/`, `templates/`, `assets/`, `tests/`, `agents/` path the body mentions exists in the package ([contract §12](references/contract.md#12-referenced-paths)).
 - A dated `CHANGELOG.md` bullet and a version bump per the [rubric](references/contract.md#8-version-bump-rubric); manifest and plugin versions updated when the package is published.
 - The summary returned to the user names the package, the mode (create / update / move / retire / absorb), the eval delta observed, and the PR URL.
@@ -60,8 +60,8 @@ For mutable external CLI, API, service, or runtime facts, apply the [official-do
 Before writing `SKILL.md`, draft the contract block and the eval corpus that will judge it — evals are the quality bar, not a manual sign-off round:
 
 1. Draft `## Output contract` first — the artifact and the cannot-succeed cases; every eval case grades against it.
-2. Draft `tests/evals/evals.json` — about 3 realistic scenarios (id, prompt, expected behavior). Mark each `verifiable` (checkable output → `assertions`) or `subjective` (judgment output → `rubric`); never force assertions onto a subjective case.
-3. Draft `tests/evals/triggers.json` — 8 should-trigger + 8 near-miss should-NOT-trigger prompts pulled from sibling skills' domains.
+2. Draft `tests/<name>/evals/evals.json` — about 3 realistic scenarios (id, prompt, expected behavior). Mark each `verifiable` (checkable output → `assertions`) or `subjective` (judgment output → `rubric`); never force assertions onto a subjective case.
+3. Draft `tests/<name>/evals/triggers.json` — 8 should-trigger + 8 near-miss should-NOT-trigger prompts pulled from sibling skills' domains.
 4. Run each scenario without the skill, then with the drafted body — the skill's value is the delta between the arms. Iterate until behavior matches. Run the 16 trigger prompts against the drafted description; tighten the "Not for X" boundary sentence wherever a near-miss would plausibly match. Use a fresh, blind, read-only capable model or human independent from the authoring session as the fresh-eyes judge.
 
 For a leading routing directive, freeze the 16 trigger cases before tuning as 6+6 tuning and 2+2 held-out cases.
@@ -70,7 +70,7 @@ Promote only when the candidate repairs a baseline miss, preserves every baselin
 When the baseline is perfect, ship the capability without self-applying the directive.
 
 How to run the arms, judge with fresh eyes, read transcripts, and improve without overfitting: [`references/evaluation.md`](references/evaluation.md).
-The corpus under `tests/evals/` is committed with the package; transcripts and judge notes go to the gitignored `evals/` scratch directory.
+The corpus under repo-root `tests/<name>/evals/` is committed beside the package, never inside it; transcripts and judge notes go to the gitignored `evals/` scratch directory.
 Full contract: `references/contract.md §7`.
 Include relevant ambiguity, conflict, unknown, and dependency-update cases in that existing loop per [§10](references/contract.md#10-external-facts-and-dependencies); do not add an inventory, daemon, or validator.
 
@@ -128,7 +128,7 @@ Follow the [branch → commit → PR delivery flow](references/lifecycle.md#6-br
 
 ## Anti-patterns
 
-- Authoring before `## Output contract`, `tests/evals/evals.json`, and `tests/evals/triggers.json` exist → the contract and its corpus judge behavior and trigger-fit first; tests lock in behavior only once proven.
+- Authoring before `## Output contract`, `tests/<name>/evals/evals.json`, and `tests/<name>/evals/triggers.json` exist → the contract and its corpus judge behavior and trigger-fit first; tests lock in behavior only once proven.
 - Adding `## Goal`, `## Non-goals`, or `## Failure modes` sections → each restates an existing owner (purpose sentence, description's "Not for X", `## Output contract`'s cannot-succeed lines, this registry); one contract heading, one anti-pattern registry.
 - Rewriting an untouched legacy package to the current contract → apply the contract when that package is next touched; no mass churn.
 - Putting runtime plumbing, plugin metadata, or vendor-only commands in the core body → the matching vendor lens owns them.
@@ -147,7 +147,7 @@ Follow the [branch → commit → PR delivery flow](references/lifecycle.md#6-br
 ## Verification
 
 - [ ] [Layer-1 validators](references/runtime-hygiene.md#2-validator-playbook) pass, including the `## Output contract`, referenced paths, and eval corpus checks
-- [ ] `tests/evals/` scenarios ran clean against `## Output contract` and the 16 trigger prompts route correctly
+- [ ] repo-root `tests/<name>/evals/` scenarios ran clean against `## Output contract` and the 16 trigger prompts route correctly
 - [ ] Any leading routing directive has a frozen 6+6 tuning / 2+2 held-out split, repairs a baseline miss without regression, and cites bounded inclusion/exclusion evidence
 - [ ] [Version and CHANGELOG requirements](references/contract.md#6-changelog) are met
 - [ ] [Secret hygiene](references/runtime-hygiene.md#1-per-skill-secrets-rule) is met

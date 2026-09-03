@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = REPO_ROOT / "skills/skillify/scripts/validate-skill-format.py"
 
 GOOD_SKILL = """---
@@ -60,11 +60,12 @@ class SkillFormatValidatorTest(unittest.TestCase):
         (d / "SKILL.md").write_text(skill_md, encoding="utf-8")
         if changelog is not None:
             (d / "CHANGELOG.md").write_text(changelog, encoding="utf-8")
-        (d / "tests" / "evals").mkdir(parents=True)
+        corpus = root / "tests" / name / "evals"
+        corpus.mkdir(parents=True)
         if evals is not None:
-            (d / "tests" / "evals" / "evals.json").write_text(evals, encoding="utf-8")
+            (corpus / "evals.json").write_text(evals, encoding="utf-8")
         if triggers is not None:
-            (d / "tests" / "evals" / "triggers.json").write_text(triggers, encoding="utf-8")
+            (corpus / "triggers.json").write_text(triggers, encoding="utf-8")
         return d
 
     def test_rejects_missing_contract_section(self) -> None:

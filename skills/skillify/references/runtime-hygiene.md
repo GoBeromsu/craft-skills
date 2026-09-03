@@ -47,7 +47,10 @@ Run either script without `--diff-base` for a full non-blocking inventory of leg
 **Guard-first sequencing.**
 When a hygiene gap is discovered in already-committed content, add or update the guard before doing broad cleanup, and keep the guard scoped to newly changed lines (`--diff-base origin/main...HEAD`) so old debt never blocks an unrelated PR.
 For a large cleanup, prefer two separate PRs: one adds the guard + tests + CI step, the next externalizes the legacy paths/secrets it now catches.
-In cleanup PRs, keep prose examples as placeholders (`<VAR>`, `${VAR}`) and executable code as environment lookups (`os.environ[...]`, shell `${VAR:?message}`).
+In cleanup PRs, keep prose examples as placeholders (`<VAR>`, `${VAR}`), and make executable scripts declare inputs with argparse flags or shell positional or flag arguments; a runtime-owned non-secret setting may default from a `getenv`-style read of one documented variable, and secrets use `getenv` after declaration in the runtime's secret manifest.
+
+Avoid ambient configuration / implicit inputs and language-in-language heredocs.
+The runtime's security scanner cannot distinguish a script that dumps the environment from one that passes arguments through it, and neither can a reader of `--help`.
 
 Post-merge, re-sync `main` and rerun both scripts against it; confirm `git status --short --branch` is clean or explicitly report a remaining stash.
 

@@ -3,7 +3,7 @@
 # parses the template frame and runs the validators' built-in negative fixtures.
 set -u
 
-SKILL_DIR="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+SKILL_DIR="$(CDPATH= cd -- "$(dirname -- "$0")/../../skills/write-report" && pwd)"
 YAML="$SKILL_DIR/templates/technical-report.template.yaml"
 fail=0
 

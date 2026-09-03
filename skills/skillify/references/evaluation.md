@@ -28,7 +28,7 @@ A capable agent completes many tasks respectably with no skill at all; the skill
 
 ## 2. Scenario evals
 
-For the `tests/evals/evals.json` cases (shape and count: contract §7):
+For the `tests/<name>/evals/evals.json` cases (shape and count: contract §7):
 
 - Make each `expected_behavior` concrete enough to verify — name the artifacts, decisions, or refusals a correct run produces, not "handles it well".
 - Where a check is objective (file exists, format matches, command exits 0), script it rather than eyeballing it; the script outlives the session and re-runs on every update.
@@ -40,7 +40,7 @@ For the `tests/evals/evals.json` cases (shape and count: contract §7):
 
 ## 3. Trigger evals
 
-For the `tests/evals/triggers.json` prompts (counts: contract §7):
+For the `tests/<name>/evals/triggers.json` prompts (counts: contract §7):
 
 - Write queries the way users actually type: concrete file names, column letters, a line of backstory, casual phrasing, the occasional typo. Mix lengths. A polished abstract query ("Extract text from PDF") tests nothing real.
 - Should-trigger prompts cover different phrasings of the intent — including ones that never name the skill or its file type — plus cases where a sibling skill competes and this one should win.
@@ -53,7 +53,7 @@ For the `tests/evals/triggers.json` prompts (counts: contract §7):
 
 The optional `MUST USE <bounded ownership clause>. ` form in contract §3 needs behavioral evidence because its lexical shape cannot prove MECE ownership.
 
-1. Author and label exactly 8 should-trigger and 8 should-NOT-trigger cases in `tests/evals/triggers.json`.
+1. Author and label exactly 8 should-trigger and 8 should-NOT-trigger cases in `tests/<name>/evals/triggers.json`.
 2. Assign stable IDs and freeze the prompts, labels, and split before candidate tuning: 6+6 tuning cases and 2+2 held-out cases.
 3. Record the frozen file hash; a justified corpus correction restarts the baseline and tuning cycle.
 4. Run the current description on the 12 tuning cases and record every success, miss, and false positive.
