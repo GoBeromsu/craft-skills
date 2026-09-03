@@ -2,7 +2,7 @@
 name: init
 description: Maps a repository into a maintained hierarchical AGENTS.md knowledge base. Use when asked to "init this repo" for AGENTS, deep-init a codebase, generate or update AGENTS.md, map repository conventions, audit existing AGENTS coverage, or report stale managed AGENTS regions. Not for package-manager or plugin initialization, docs scaffolding or authoring (use `document`), or git-hook installation (use `git`).
 metadata:
-  version: 4.1.2
+  version: 4.1.3
 ---
 
 # init
@@ -13,6 +13,7 @@ Map a repository into a maintained hierarchical `AGENTS.md` knowledge base with 
 
 Return the written or read-only audit result with the affected `AGENTS.md` paths, evidence sources, managed-region status, and unavailable paths.
 If paths are unreadable, scope evidence is ambiguous, or a managed region was hand-edited, stop and report the condition without overwriting incumbent content.
+A sibling `CLAUDE.md` may exist only as an adapter whose bytes are exactly `@AGENTS.md` plus one LF.
 
 Placement and content are judgment, so they live in this file as prose.
 Only one step is fragile enough to be executable: editing a marker-delimited region without disturbing surrounding bytes.
