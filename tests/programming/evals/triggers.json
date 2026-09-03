@@ -1,0 +1,23 @@
+{
+  "skill": "programming",
+  "should_trigger": [
+    "Write a strictly typed Python function that parses this webhook payload.",
+    "Fix this TypeScript bug where an optional field causes a runtime crash.",
+    "Scaffold a Python command-line script with the project-standard checks.",
+    "Implement this `.ts` date formatter and cover the invalid input case.",
+    "Add strict types to this Python service method and verify it.",
+    "Why does this Python function return the wrong total? Fix the reproducible defect.",
+    "Create a typed TypeScript utility for normalizing user IDs.",
+    "Write a Python module that validates this external API response at the boundary."
+  ],
+  "should_not_trigger": [
+    "Design the repository and persistence architecture for a new billing service.",
+    "Choose state ownership and component boundaries for this React settings screen.",
+    "Refactor this working parser to remove duplication without changing behavior.",
+    "Design the integration and end-to-end test strategy for the checkout flow.",
+    "Investigate why this test fails only once per week in CI.",
+    "Set up a leakage-safe dataset and training experiment for image classification.",
+    "Design the public HTTP API contract for these customer endpoints.",
+    "Review this authentication flow for a vulnerability class."
+  ]
+}

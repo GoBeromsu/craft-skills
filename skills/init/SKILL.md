@@ -2,7 +2,7 @@
 name: init
 description: Maps a repository into a maintained hierarchical AGENTS.md knowledge base. Use when asked to "init this repo" for AGENTS, deep-init a codebase, generate or update AGENTS.md, map repository conventions, audit existing AGENTS coverage, or report stale managed AGENTS regions. Not for package-manager or plugin initialization, docs scaffolding or authoring (use `document`), or git-hook installation (use `git`).
 metadata:
-  version: 4.1.1
+  version: 4.1.2
 ---
 
 # init
@@ -98,7 +98,7 @@ When a `CLAUDE.md` holds anything other than the exact adapter bytes, migrate it
 - Asking whether bare `init` meant map → bare `init` is map.
 - Deleting a file or region because it looks stale → report it and let the user decide.
 - Overwriting incumbent instructions to install managed content → preserve them and ask.
-- Writing a nested `AGENTS.md` because a directory has many files → require configuration, an entry boundary, and real weight.
+- A nested `AGENTS.md` that exists only because a directory has many files → require configuration, an entry boundary, and real weight.
 - Restating parent guidance in a child file → keep only the local difference.
 - Claiming a command that no configuration declares → cite the source file or omit it.
 - Editing a managed region with ad-hoc string replacement → use the script.

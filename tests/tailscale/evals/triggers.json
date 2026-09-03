@@ -1,0 +1,23 @@
+{
+  "skill": "tailscale",
+  "should_trigger": [
+    "Tailscale ping to my build peer fails; diagnose the connection before running the job",
+    "SSH over my tailnet hangs even though the host should be online",
+    "The remote node disappeared after I switched Tailscale accounts",
+    "Help me determine whether this Tailscale failure is network-layer or SSH service-layer",
+    "Migrate this always-on Mac from the Tailscale app to a headless daemon",
+    "Which stored Tailscale profile owns the peer I need to reach?",
+    "A browser OAuth popup appears when I initiate Tailscale SSH",
+    "My shared-in tailnet node responds to ping; explain what approval I need before remote work"
+  ],
+  "should_not_trigger": [
+    "Drive a VMware Fusion guest through its VNC console",
+    "Review this pull request for authentication vulnerabilities",
+    "Find why this intermittent unit test started failing",
+    "Design the persistence layer for a new backend service",
+    "Configure required CI checks and deployment rollback for this repository",
+    "Rebase these commits and prepare an atomic pull request",
+    "Set up a local virtual machine for the integration test suite",
+    "Audit our dependency upgrades for exposed security flaws"
+  ]
+}

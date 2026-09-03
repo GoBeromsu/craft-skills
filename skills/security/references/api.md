@@ -21,7 +21,7 @@ Every handler is a trust boundary — parse and authorize before touching a requ
 | Concern | Do / Use | Never |
 |---|---|---|
 | Query construction | Parameterized query / ORM query builder | String concatenation or f-string/template-literal building of SQL |
-| Shell invocation | `subprocess.run([...], shell=False)` / `execFile` with an argv array | `shell=True` / `child_process.exec()` with interpolated input |
+| Shell invocation | `subprocess.run([...], shell=False)` / Node's child-process `execFile` with an argv array | `shell=True` / a shell-string exec call with interpolated input |
 | Object access by ID | Fetch scoped to the caller (`WHERE owner_id = :caller_id`) | Fetch by ID alone, trusting the caller's claim |
 | Outbound URL fetch | Allowlisted destinations only | `fetch` / `requests.get` on a raw user-supplied URL |
 | Deserialization of untrusted data | `json.loads` / `yaml.safe_load` / a schema-validated parser | `pickle.load`, `yaml.load()` without `SafeLoader`, `eval`/`exec` |

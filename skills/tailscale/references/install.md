@@ -19,7 +19,7 @@ Three install layouts coexist in the wild. Identify which one a host is on befor
 
 - **macsys (Tailscale.app, standalone `.pkg`)** — GUI app, menu-bar item, daemon embedded in the app process. Suitable for laptops driven interactively.
 - **Homebrew + per-user LaunchAgent** — `brew install tailscale` and `brew services start tailscale`. Daemon runs as the login user, stops when the user logs out. Suitable for workstations where the user is always logged in.
-- **Homebrew + system LaunchDaemon (headless)** — `brew install tailscale` and `sudo tailscaled install-system-daemon`. Daemon runs as root via `launchd`, survives logout. Suitable for headless servers and for always-on workstations where no GUI is wanted.
+- **Homebrew + system LaunchDaemon (headless)** — `brew install tailscale` and `tailscaled install-system-daemon` (run as root). Daemon runs as root via `launchd`, survives logout. Suitable for headless servers and for always-on workstations where no GUI is wanted.
 
 Identification commands (use the host's own out-of-band shell, not over the tailnet you are trying to diagnose):
 - `ls /Applications | grep -i Tailscale` — presence of `Tailscale.app` implies macsys is at least installed.
@@ -33,8 +33,8 @@ For an always-on host that no longer needs the GUI, migrate to the system daemon
 1. Snapshot pre-migration state (`tailscale status`, tailnet IPv4, exit-node and subnet-route settings) to a local file outside the vault. Do not commit this snapshot.
 2. Quit the GUI: `osascript -e 'quit app "Tailscale"'`.
 3. Install the Homebrew formula (CLI + daemon binaries): `brew install tailscale`.
-4. Register the system daemon: `sudo tailscaled install-system-daemon`. This writes `/Library/LaunchDaemons/com.tailscale.tailscaled.plist` and starts the daemon as root.
-5. Re-authenticate: `tailscale up` (add `--operator=<user>` if a non-root user should be allowed to run `tailscale` without `sudo`; re-apply exit-node and route flags captured in step 1).
+4. Register the system daemon: `tailscaled install-system-daemon` (run as root). This writes `/Library/LaunchDaemons/com.tailscale.tailscaled.plist` and starts the daemon as root.
+5. Re-authenticate: `tailscale up` (add `--operator=<user>` if a non-root user should be allowed to run `tailscale` without root privileges; re-apply exit-node and route flags captured in step 1).
 6. Confirm the node appears connected with `tailscale status`.
 7. Delete or rename the now-obsolete node entry in the Tailscale admin console — the host will otherwise re-register with a `-N` hostname suffix on next auth.
 8. Move `/Applications/Tailscale.app` to the Trash. The Network System Extension that the macsys app loaded auto-unloads on next reboot for non-SIP-disabled hosts; do not attempt `systemextensionsctl uninstall` without SIP-disable, it will fail.

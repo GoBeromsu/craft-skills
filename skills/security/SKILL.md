@@ -2,7 +2,7 @@
 name: security
 description: Finds and fixes vulnerabilities in code the user owns across web, API, and LLM surfaces, mapping every trust boundary first and triaging by production reachability and severity second. Use when asked for a security review, "is this safe to ship," "check for vulnerabilities," or "보안 점검," when auditing secrets hygiene or dependency risk, or when reviewing a PR or feature for security regressions before release. Not for building or changing LLM-agent systems themselves (use `agents`) or for installing the enforcement hook, lint, or pre-commit that closes a finding permanently (use `guardrails`); this skill finds and fixes, it never attacks.
 metadata:
-  version: 2.3.2
+  version: 2.3.3
 ---
 
 # security
@@ -96,6 +96,11 @@ Reachability, not a demonstrated exploit, drives the tree — a finding with cle
 - `git` for tracked-file and history secret scans.
 - `npm audit` / `pnpm audit` (Node) or `pip-audit` / the uv-native audit command (Python/uv) when the dependency/build/credential/supply-chain routing row applies — see `references/secrets-supply-chain.md` for the exact commands.
 - Optional: `ast-grep` for structural matches where a plain regex produces too many false positives — an optional extra, not a substitute for the commands shipped in the references.
+
+## Output contract
+
+Produce, in the completion summary, a findings list that gives each finding `file:line` evidence, severity, reachability triage, applied or proposed remediation, and evidence from the re-run that verifies the remediation. State the trust-boundary map and every detection command that informed the list there.
+Stop and report that no result is available when the trust boundary cannot be established or required audit tooling is unavailable; do not certify the review or propose unsupported remediation.
 
 ## Anti-patterns
 
