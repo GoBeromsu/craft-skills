@@ -7,7 +7,7 @@ fail() {
 }
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-WT_SH=$(CDPATH= cd -- "$SCRIPT_DIR/../scripts" && pwd)/wt.sh
+WT_SH=$(CDPATH= cd -- "$SCRIPT_DIR/../../skills/git/scripts" && pwd)/wt.sh
 TMPDIR=${TMPDIR:-/tmp}
 TMP=$(mktemp -d "$TMPDIR/wt-test.XXXXXX")
 trap 'rm -rf "$TMP"' EXIT INT TERM

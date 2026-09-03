@@ -33,8 +33,10 @@ context mechanism.
   packages under a namespace and resolve names according to its own precedence rules; portable
   core instructions must not require that discovery behavior.
 - Hermes rich metadata, including `metadata.hermes.*`, tool/environment requirements, templated
-  bodies, and scheduling-oriented fields, are lens-only product capabilities. They do not
-  extend the portable skill contract.
+  bodies, and scheduling-oriented fields, are lens-only product capabilities. For script inputs,
+  `metadata.hermes.config` declares non-secret settings such as paths and top-level
+  `required_environment_variables` declares secrets. They do not extend the portable skill
+  contract.
 - Hermes-managed authoring, approval, hub, and smoke-test surfaces are runtime operations, not
   universal commands. This lens intentionally defines no cross-runtime command from them.
 
@@ -59,3 +61,6 @@ context mechanism.
   `contract.md` §4.
 - Reusable procedural craft rather than project-local declarative facts → the admission check
   in `SKILL.md`.
+- Declared inputs (config plus required environment) → confirms the declared-inputs rule in
+  `runtime-hygiene.md`; Hermes injects declared config into context on load and passes declared
+  secrets into sandboxes.

@@ -48,7 +48,7 @@ GJC owns only orchestration:
 Skillify continues to own:
 
 - admission and package planning.
-- `tests/evals/evals.json` and `tests/evals/triggers.json`.
+- `tests/<name>/evals/evals.json` and `tests/<name>/evals/triggers.json`.
 - baseline-versus-candidate evaluation.
 - package format and deterministic validators.
 - versioning, changelog, provenance, and branch-to-PR delivery.
@@ -140,7 +140,7 @@ Use the provider-neutral fresh-eyes contract in [`evaluation.md`](evaluation.md)
 GJC orchestration does not prescribe a second GJC profile as the judge.
 Use a fresh, blind, read-only capable model or human independent from the authoring session, and keep the baseline and candidate arms matched as that methodology requires.
 
-Keep eval run transcripts under the gitignored `evals/` directory; the corpus itself lives in committed `tests/evals/`.
+Keep eval run transcripts under the gitignored `evals/` directory; the corpus itself lives in committed repo-root `tests/<name>/evals/`.
 Do not commit GJC session state, workflow IDs, profile receipts, or `.gjc` paths into a generated package.
 A useful sanitized run record contains:
 

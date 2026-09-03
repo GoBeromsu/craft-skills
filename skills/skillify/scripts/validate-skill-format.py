@@ -27,10 +27,10 @@ least `SKILL.md` + `CHANGELOG.md`. This validator enforces, per package:
      partial / unavailable / ambiguous / missing) (contract §4).
  11. Every package-relative path the body mentions (`scripts/`, `references/`,
      `templates/`, `assets/`, `tests/`, `agents/`) exists in the package (contract §12).
- 12. The committed eval corpus exists and is well-formed: `tests/evals/evals.json`
+ 12. The committed eval corpus exists at repo-root `tests/<name>/evals/evals.json`
      (>= 3 cases, each with id/prompt/expected_behavior/grading; `verifiable` cases
      carry `assertions`, `subjective` cases carry `rubric`) and
-     `tests/evals/triggers.json` (>= 8 `should_trigger` + >= 8 `should_not_trigger`)
+     `tests/<name>/evals/triggers.json` (>= 8 `should_trigger` + >= 8 `should_not_trigger`)
      (contract §7).
 
 Modes:
@@ -60,6 +60,12 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SKILLS_DIR = REPO_ROOT / "skills"
+TESTS_DIR = REPO_ROOT / "tests"
+
+
+def corpus_dir(skill_dir: Path) -> Path:
+    """Eval corpus lives at repo-root tests/<name>/evals/, never inside the package."""
+    return TESTS_DIR / skill_dir.name / "evals"
 
 SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
 KEBAB_CASE_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
@@ -301,9 +307,28 @@ def changed_skill_dirs(diff_base: str) -> set[Path] | None:
         pkg_dir = p.parent
         if pkg_dir.parent != SKILLS_DIR:
             continue
-        if (pkg_dir / "SKILL.md").exists():
-            dirs.add(pkg_dir)
+        if not (pkg_dir / "SKILL.md").exists():
+            continue
+        # A history correction — CHANGELOG.md edited without adding a bullet and
+        # without touching SKILL.md — is not new work and does not ratchet.
+        if p.name == "CHANGELOG.md" and not _changelog_adds_bullet(diff_base, rel):
+            continue
+        dirs.add(pkg_dir)
     return dirs
+
+
+def _changelog_adds_bullet(diff_base: str, rel: str) -> bool:
+    """True when the diff adds at least one dated bullet line to ``rel``."""
+    try:
+        out = subprocess.run(
+            ["git", "diff", "--unified=0", diff_base, "--", rel],
+            cwd=REPO_ROOT, capture_output=True, text=True, check=True,
+        ).stdout
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return True
+    added = sum(1 for line in out.splitlines() if line.startswith("+") and CHANGELOG_BULLET_RE.match(line[1:]))
+    removed = sum(1 for line in out.splitlines() if line.startswith("-") and CHANGELOG_BULLET_RE.match(line[1:]))
+    return added > removed
 
 
 def check_contract_sections(name: str, body: str) -> list[Finding]:
@@ -325,6 +350,8 @@ def check_referenced_paths(name: str, skill_dir: Path, body: str) -> list[Findin
         rel = re.sub(r"^\$\{?SKILL_DIR\}?/", "", match.group(0)).rstrip(".")
         if rel in seen or "<" in rel or "*" in rel or rel.endswith("/"):
             continue
+        if rel == "tests" or rel.startswith("tests/"):
+            continue  # repo-root tests/<name>/ is never a package path
         seen.add(rel)
         if rel.split("/", 1)[0] not in PACKAGE_PATH_DIRS:
             continue
@@ -343,11 +370,11 @@ def _load_json(path: Path) -> object | None:
 
 def check_eval_corpus(name: str, skill_dir: Path) -> list[Finding]:
     findings: list[Finding] = []
-    evals_path = skill_dir / "tests" / "evals" / "evals.json"
-    triggers_path = skill_dir / "tests" / "evals" / "triggers.json"
+    evals_path = corpus_dir(skill_dir) / "evals.json"
+    triggers_path = corpus_dir(skill_dir) / "triggers.json"
 
     if not evals_path.exists():
-        findings.append(Finding(name, "NO_EVAL_CORPUS", "missing tests/evals/evals.json (contract §7)"))
+        findings.append(Finding(name, "NO_EVAL_CORPUS", "missing tests/<name>/evals/evals.json at the repo root (contract §7)"))
     else:
         data = _load_json(evals_path)
         cases = data.get("cases") if isinstance(data, dict) else None
@@ -375,7 +402,7 @@ def check_eval_corpus(name: str, skill_dir: Path) -> list[Finding]:
                     findings.append(Finding(name, "BAD_EVAL_CORPUS", f"subjective case {label} needs non-empty `rubric`"))
 
     if not triggers_path.exists():
-        findings.append(Finding(name, "NO_EVAL_CORPUS", "missing tests/evals/triggers.json (contract §7)"))
+        findings.append(Finding(name, "NO_EVAL_CORPUS", "missing tests/<name>/evals/triggers.json at the repo root (contract §7)"))
     else:
         data = _load_json(triggers_path)
         if not isinstance(data, dict):
@@ -518,10 +545,11 @@ def main() -> int:
     ap.add_argument("--root", help="repo root override (default: derived from script path)")
     args = ap.parse_args()
 
-    global REPO_ROOT, SKILLS_DIR
+    global REPO_ROOT, SKILLS_DIR, TESTS_DIR
     if args.root:
         REPO_ROOT = Path(args.root).resolve()
         SKILLS_DIR = REPO_ROOT / "skills"
+        TESTS_DIR = REPO_ROOT / "tests"
 
     all_skill_dirs = sorted(
         p for p in SKILLS_DIR.iterdir() if p.is_dir() and (p / "SKILL.md").exists()

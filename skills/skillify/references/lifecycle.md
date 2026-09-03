@@ -46,7 +46,7 @@ SKILL_DIR="skills/<skill-name>"
 mkdir -p "$SKILL_DIR"
 ```
 
-1. Draft `## Output contract` (contract §4), then `tests/evals/evals.json` + `tests/evals/triggers.json` (contract §7), before writing the rest of `SKILL.md`.
+1. Draft `## Output contract` (contract §4), then `tests/<name>/evals/evals.json` + `tests/<name>/evals/triggers.json` (contract §7), before writing the rest of `SKILL.md`.
 2. Author `SKILL.md` (contract §1–§4) and seed `CHANGELOG.md` with the first dated bullet.
 3. Add `references/`, `scripts/`, `assets/`, optional `agents/`, `templates/`, `tests/`, and `.env.example` only as the package-parts table (contract §5) calls for them; keep `evals/` local and gitignored.
 4. For each mutable external dependency, record its official source, installed-version probe, support boundary, and update trigger beside this package (contract §10).
