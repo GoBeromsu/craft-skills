@@ -91,6 +91,10 @@ def _changed_packages(root: Path, diff_base: str) -> set[str]:
     for path in changed.splitlines():
         parts = Path(path).parts
         if len(parts) >= 3 and parts[0] == "skills":
+            # A package-local tests/ tree is not a package part (tests live at
+            # repo-root tests/<name>/); removing one is not a release.
+            if parts[2] == "tests":
+                continue
             packages.add(parts[1])
     return packages
 

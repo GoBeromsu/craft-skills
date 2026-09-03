@@ -122,6 +122,17 @@ class CheckVersionBumpTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout)
         self.assertIn("demo: deleted package removed from manifest", result.stdout)
 
+    def test_package_local_tests_tree_is_not_a_package_change(self) -> None:
+        tests_dir = self.root / "skills" / "demo" / "tests"
+        tests_dir.mkdir()
+        (tests_dir / "test_demo.py").write_text("def test_ok():\n    assert True\n", encoding="utf-8")
+        subprocess.run(["git", "add", "skills"], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-m", "add tests"], cwd=self.root, check=True, capture_output=True, text=True)
+        subprocess.run(["git", "rm", "-rq", "skills/demo/tests"], cwd=self.root, check=True, capture_output=True)
+        subprocess.run(["git", "commit", "-m", "move tests out"], cwd=self.root, check=True, capture_output=True, text=True)
+        result = self._run()
+        self.assertEqual(result.returncode, 0, result.stdout)
+
     def test_rejects_missing_version_bump_and_dated_changelog_entry(self) -> None:
         self._commit_change("1.0.0", "updated guidance", "- 2026-01-01 — initial release\n")
         result = self._run()
