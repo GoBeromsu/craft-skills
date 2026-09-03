@@ -2,7 +2,7 @@
 name: tailscale
 description: Verifies and repairs the Tailscale tailnet that carries cross-host work — SSH, remote process inspection, `scp` — before a dependent workflow runs, and triages failures as network-layer versus service-layer. Use when `tailscale ping` or `ssh <peer>` hangs, when a reachable peer is missing from `tailscale status`, when switching networks between tailnets with `tailscale switch` or listing stored profiles, when the target is a shared-in node or a tailnet you were invited to rather than own, when picking the daemon-restart path for a macOS install variant, or when a browser OAuth popup appears mid-SSH. Not for generic SSH problems unrelated to the tailnet.
 metadata:
-  version: 1.2.1
+  version: 1.2.2
 ---
 
 # tailscale
@@ -30,7 +30,7 @@ Support only behavior verified for the selected tailnet, installed client versio
 Three macOS install layouts coexist, and the daemon-restart path differs across them:
 - **macsys (Tailscale.app, standalone `.pkg`)** — GUI app with the daemon embedded in the app process. Restart by quitting and relaunching the app (`osascript -e 'quit app "Tailscale"'`, then launch again).
 - **Homebrew + per-user `LaunchAgent`** — `brew install tailscale` + `brew services start tailscale`. Daemon runs as the login user, stops on logout. Restart via `brew services restart tailscale`.
-- **Homebrew + system `LaunchDaemon` (headless)** — `brew install tailscale` + `sudo tailscaled install-system-daemon`. Daemon runs as root via `launchd`, survives logout. Restart via `sudo launchctl kickstart -k system/com.tailscale.tailscaled`. Do not use `brew services` here — it manages the per-user agent, not the root system daemon.
+- **Homebrew + system `LaunchDaemon` (headless)** — `brew install tailscale` + `tailscaled install-system-daemon` (run as root). Daemon runs as root via `launchd`, survives logout. Restart via `launchctl kickstart -k system/com.tailscale.tailscaled` as root. Do not use `brew services` here — it manages the per-user agent, not the root system daemon.
 
 ## When to use
 
@@ -44,6 +44,10 @@ Three macOS install layouts coexist, and the daemon-restart path differs across 
 - When the target is a shared-in node or lives on a tailnet the operator was invited to rather than owns.
 
 Not for generic SSH problems that do not involve the tailnet, or public-facing Funnel design beyond the dependent workflow. Never reveal Tailscale IPs (`100.x.x.x`), tailnet domains, or real hostnames in output — use neutral role labels (`source`, `replica`, `peer`) and MagicDNS names.
+
+## Output contract
+
+Leave a verified tailnet connectivity report in the task transcript that records the local daemon state, active profile, ownership classification, reachability result, and any configuration change made. The completion summary reports the peer using a neutral role label, the network-versus-service verdict, commands or state changes performed, and the verification evidence. When daemon-level triage cannot restore a peer, root privileges are unavailable for a required system-daemon action, or ownership remains ambiguous, stop and report no result; do not dispatch the dependent workflow.
 
 ## Process
 
@@ -83,7 +87,7 @@ Expect a `pong from <peer>` under a few hundred ms. If ping fails, do not procee
 
 ### 4. Separate network state from service state
 
-If `tailscale ping <peer>` fails, the fault is at the tailnet layer. Triage on the relevant daemon using whatever out-of-band access exists (physical or screen share), and pick the restart path per install variant: quit/relaunch the app (macsys), `brew services restart tailscale` (per-user LaunchAgent), or `sudo launchctl kickstart -k system/com.tailscale.tailscaled` (system LaunchDaemon). A `sudo tailscale down && sudo tailscale up` cycle is a logical reconnect on any variant but does not restart the daemon process — use it only to renegotiate a running session, not to revive a wedged daemon.
+If `tailscale ping <peer>` fails, the fault is at the tailnet layer. Triage on the relevant daemon using whatever out-of-band access exists (physical or screen share), and pick the restart path per install variant: quit/relaunch the app (macsys), `brew services restart tailscale` (per-user LaunchAgent), or `launchctl kickstart -k system/com.tailscale.tailscaled` as root (system LaunchDaemon). A `tailscale down && tailscale up` cycle run with root privileges is a logical reconnect on any variant but does not restart the daemon process — use it only to renegotiate a running session, not to revive a wedged daemon.
 
 If `tailscale ping <peer>` succeeds but `ssh <peer>` fails, the fault is at the service layer (sshd, keys, agent forwarding). Do not restart tailscale — fix ssh instead.
 
@@ -123,7 +127,7 @@ In a two-host setup, every meaningful change is authored on the source-of-truth 
 - Pasting Tailscale IPs (`100.x.x.x`), tailnet domains, or real hostnames into output → use neutral role labels (`source`, `replica`, `peer`) and MagicDNS names in every example.
 - Concluding "SSH fails, so Tailscale is broken" → run `tailscale ping <peer>` first; SSH failure can be network-layer or service-layer, and only a failed ping implicates the daemon.
 - Treating all Tailscale installs the same during a restart → identify the macOS variant first and use its matching restart path (`references/install.md`).
-- Running `brew services restart tailscale` on a host using the system `LaunchDaemon` → use `sudo launchctl kickstart -k system/com.tailscale.tailscaled`; `brew services` manages only the per-user agent.
+- Running `brew services restart tailscale` on a host using the system `LaunchDaemon` → run `launchctl kickstart -k system/com.tailscale.tailscaled` as root; `brew services` manages only the per-user agent.
 - Assuming Tailscale.app still owns the tailnet after a headless migration → verify with `launchctl print system/com.tailscale.tailscaled` and `file "$(command -v tailscale)"`; the system daemon owns the session once migrated.
 - Leaving both the macsys app and the headless daemon running → quit the app fully before starting the system daemon so only one client owns the socket.
 - Treating `tailscale set --hostname` as the final rename → reconcile the control-plane name in the admin console (delete or rename the old node), or the host re-registers with a `-N` suffix.

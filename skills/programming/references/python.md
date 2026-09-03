@@ -21,7 +21,7 @@ Load this file in full before writing or editing Python. The rules below are del
 
 | Category | Use | Never |
 |---|---|---|
-| Package manager | `uv` | pip, poetry, conda, pipenv |
+| Package manager | `uv` | pip, pipenv, poetry, conda |
 | Type checker | `basedpyright` (`typeCheckingMode = "all"`) | mypy, plain pyright |
 | Linter + formatter | `ruff` (`select = ["ALL"]`) | flake8, black, isort, autopep8 |
 | Async runtime | `anyio` | bare `import asyncio` |

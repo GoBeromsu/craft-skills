@@ -111,7 +111,7 @@ What remains — the judgment and sequencing — is the `SKILL.md` body.
 | `references/` | Bulk knowledge consulted on demand, not on every invocation. |
 | `scripts/` | A step must be deterministic and repeatable — CI can call it for a pass/fail exit code. Not for one-off setup or judgment-driven branching. |
 | `templates/` | The skill emits a canonical artifact with a fixed shape. |
-| `assets/` | The output consumes files without loading them into context — boilerplate trees, fonts, images copied or filled into results. They are not background reference material. |
+| `assets/` | Files the deliverable copies or fills in — boilerplate trees, fonts, images — that the agent never reads as text. They are not background reference material. |
 | `agents/` | A bounded subagent role needs a charter or runtime metadata. Each file defines that role's scope, inputs, outputs, and hand-off; it is never a child skill and never contains `SKILL.md`. |
 | repo-root `tests/<skill-name>/` | Any `scripts/` file ships with a matching test module. Packages carry no `tests/`; tests and the committed eval corpus live at repo root so install bundles never ship fixtures. |
 | `evals/` | Local scratch for eval-run transcripts and judge notes (§7) — **gitignored, never committed**. The committed corpus lives under repo-root `tests/<skill-name>/evals/`; only run output is scratch. |

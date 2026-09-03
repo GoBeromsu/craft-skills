@@ -1,0 +1,38 @@
+{
+  "skill": "programming",
+  "cases": [
+    {
+      "id": "fix-typed-python-parser",
+      "prompt": "Fix the Python parser so an invalid status returns a typed domain error, then verify the change.",
+      "expected_behavior": "Loads the Python and workflow references, changes the shared parsing boundary with strict types, and reports the changed files plus the incumbent type, lint, and focused test results.",
+      "grading": "verifiable",
+      "assertions": [
+        "The implementation follows the Python reference's typed-boundary and typed-error rules.",
+        "The completion summary names changed artifact locations and reports the checks run with their results.",
+        "The response does not route a behavior-changing defect to refactor."
+      ]
+    },
+    {
+      "id": "implement-strict-typescript-feature",
+      "prompt": "Add a TypeScript function that parses a user-selected date range and rejects an end date before the start date.",
+      "expected_behavior": "Loads the TypeScript and workflow references, implements the smallest strict typed change, and runs and reports the incumbent checks named by the recipe.",
+      "grading": "verifiable",
+      "assertions": [
+        "The code follows the selected TypeScript reference and handles the invalid date-range branch explicitly.",
+        "The completion summary reports changed artifact locations, check results, and focused behavior evidence.",
+        "The response does not add a dependency when existing project facilities or the platform suffice."
+      ]
+    },
+    {
+      "id": "stop-for-unsupported-language",
+      "prompt": "Implement this Rust CLI bug fix and run the required checks.",
+      "expected_behavior": "Stops without producing a code result because Rust is not covered by this skill's language references, and reports the unsupported prerequisite.",
+      "grading": "verifiable",
+      "assertions": [
+        "No Rust implementation is claimed or produced under this skill.",
+        "The response states that the requested language is not covered by a reference.",
+        "The response stops and reports the reason rather than guessing commands or tooling."
+      ]
+    }
+  ]
+}

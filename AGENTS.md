@@ -25,7 +25,7 @@ The `skillify` skill owns create/update/move/retire work and keeps the portable 
 |---------|------------------------|
 | **Claude Code** | Claude marketplace commands: `/plugin marketplace add GoBeromsu/craft-skills` then `/plugin install craft-skills@craft-skills`. |
 | **Codex** | Canonical channel: vendor-native plugin install with `codex plugin marketplace add GoBeromsu/craft-skills` then `codex plugin add craft-skills@craft-skills --json`; marketplace metadata lives in `.codex-plugin/plugin.json`. Codex auxiliary clone path: `.agents/skills/craft-skills` is optional development context from the user project's root; skills are nested at `.agents/skills/craft-skills/skills/<name>/SKILL.md`. |
-| **Hermes** | Install the repository root with `hermes plugins install GoBeromsu/craft-skills --enable`. The plugin registers all packages as namespaced skills such as `craft-skills:testing`; no `skills.external_dirs` edit is required and bare-name precedence remains untouched. The `.hermes` subdirectory is not installable. |
+| **Hermes** | Custom tap: `hermes skills tap add GoBeromsu/craft-skills`, then `hermes skills install GoBeromsu/craft-skills/skills/<name>` per skill and `hermes skills update` for upstream changes. The tap copies and scans the whole unit, so packages stay scanner-clean (`safe`). |
 | **Generic agents** (Cursor, Gemini, Copilot, etc.) | Point the instruction-file import at `skills/<name>/SKILL.md`; each file is self-contained. |
 
 ## Environment variables

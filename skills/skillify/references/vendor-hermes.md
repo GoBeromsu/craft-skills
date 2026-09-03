@@ -29,9 +29,11 @@ context mechanism.
 
 ## 3. Runtime plumbing (Hermes-only)
 
-- Hermes plugin installation and namespaced discovery are runtime plumbing. A plugin can expose
-  packages under a namespace and resolve names according to its own precedence rules; portable
-  core instructions must not require that discovery behavior.
+- Hermes distribution is runtime plumbing: this library ships through a custom tap
+  (`hermes skills tap add GoBeromsu/craft-skills`, one install unit per package), which copies
+  the whole unit and scans every file with the skills guard — only a `safe` verdict installs
+  without `--force`, so prose and scripts stay scanner-clean. Portable core instructions must
+  not depend on Hermes discovery, naming, or precedence behavior.
 - Hermes rich metadata, including `metadata.hermes.*`, tool/environment requirements, templated
   bodies, and scheduling-oriented fields, are lens-only product capabilities. For script inputs,
   `metadata.hermes.config` declares non-secret settings such as paths and top-level

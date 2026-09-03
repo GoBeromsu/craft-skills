@@ -5,7 +5,7 @@
 #   ./install.sh claude    Print the Claude Code marketplace install commands
 #   ./install.sh codex [--clone [PROJECT_ROOT]]
 #                       Print Codex plugin commands; optionally clone development context
-#   ./install.sh hermes    Print the Hermes plugin and skills discovery config
+#   ./install.sh hermes    Print the Hermes tap commands and verify the tap is registered
 #   ./install.sh all       Run all three targets
 #
 # Idempotent — safe to re-run. Never hardcodes secrets or user paths beyond $HOME.
@@ -111,103 +111,22 @@ install_codex() {
 install_hermes() {
   header "Hermes"
 
-  SKILLS_PATH="plugins/craft-skills/skills"
+  TAP_REPO="GoBeromsu/craft-skills"
 
-  note "Install and enable the repository-root Hermes plugin."
+  note "Hermes installs craft-skills through a custom tap; each skill is one install unit."
   printf '\n'
-  printf '    hermes plugins install GoBeromsu/craft-skills --enable\n'
+  printf '    hermes skills tap add %s\n' "${TAP_REPO}"
+  printf '    hermes skills install %s/skills/<name>\n' "${TAP_REPO}"
+  printf '    hermes skills update            # pull upstream changes for every tap-installed skill\n'
   printf '\n'
-  note "The .hermes subdirectory is not an install target."
-  note "Automatic config.yaml editing is NOT performed — paste the snippet below manually."
+  note "The tap scans every file in the unit; only a safe verdict installs without --force."
 
-  if [ -n "${HERMES_HOME}" ] && [ -f "${HERMES_HOME}/config.yaml" ]; then
-    if HERMES_REFERENCES="$(python3 -c '
-import re
-import sys
-from pathlib import Path
-
-config_path = Path(sys.argv[1])
-expected_path = sys.argv[2]
-external_dirs_indent = None
-key_stack = []  # list of (indent, key) tracking real mapping ancestry
-has_expected_entry = False
-unexpected_references = []
-
-for raw_line in config_path.read_text(encoding="utf-8").splitlines():
-    line = raw_line.rstrip()
-    key_match = re.match(r"^(\s*)([A-Za-z0-9_-]+)\s*:\s*(?:#.*)?$", line)
-    if key_match:
-        indent = len(key_match.group(1))
-        key = key_match.group(2)
-        while key_stack and key_stack[-1][0] >= indent:
-            key_stack.pop()
-        # The canonical list is exactly top-level `skills` -> direct child
-        # `external_dirs`: the ancestry stack must be [] for skills and
-        # [skills] for external_dirs.
-        if key == "external_dirs" and [entry[1] for entry in key_stack] == ["skills"]:
-            external_dirs_indent = indent
-        else:
-            external_dirs_indent = None
-        key_stack.append((indent, key))
-        continue
-
-    if external_dirs_indent is not None:
-        stripped = line.strip()
-        indent = len(line) - len(line.lstrip())
-        if stripped and indent <= external_dirs_indent:
-            external_dirs_indent = None
-        else:
-            entry_match = re.match(r"^\s*-\s*(.*?)\s*(?:#.*)?$", line)
-            if entry_match:
-                entry = entry_match.group(1).strip()
-                if entry == expected_path:
-                    has_expected_entry = True
-                    continue
-                if "craft-skills" in entry:
-                    unexpected_references.append(entry)
-                    continue
-
-    if "craft-skills" in line:
-        unexpected_references.append(line.strip())
-
-if has_expected_entry and not unexpected_references:
-    raise SystemExit(0)
-print("\n".join(unexpected_references))
-raise SystemExit(1)
-' "${HERMES_HOME}/config.yaml" "${SKILLS_PATH}"
-    )"; then
-      ok "config.yaml has the canonical skills.external_dirs entry."
-      return 0
-    fi
-    if [ -n "${HERMES_REFERENCES}" ]; then
-      note "Found noncanonical craft-skills reference: ${HERMES_REFERENCES}"
-    fi
-    printf '\n  Merge this block into %s/config.yaml under the skills: key:\n' "${HERMES_HOME}"
-  else
-    printf '\n  HERMES_HOME is not set or config.yaml not found.\n'
-    note "Set HERMES_HOME to your Hermes installation root, then re-run to get a targeted path."
-    printf '  Add this block to your Hermes config.yaml under the skills: key:\n'
+  TAPS_FILE="${HERMES_HOME:-${HOME}/.hermes}/skills/.hub/taps.json"
+  if [ -f "${TAPS_FILE}" ] && grep -q "\"${TAP_REPO}\"" "${TAPS_FILE}"; then
+    ok "tap ${TAP_REPO} is registered in ${TAPS_FILE}."
+    return 0
   fi
-
-  printf '\n'
-  printf '  ┌──────────────────────────────────────────────────────────────┐\n'
-  printf '  │  skills:                                                     │\n'
-  printf '  │    external_dirs:                                            │\n'
-  printf '  │      - %s\n' "${SKILLS_PATH}"
-  printf '  └──────────────────────────────────────────────────────────────┘\n'
-  printf '\n'
-  note "Hermes resolves this profile-relative path against the active HERMES_HOME."
-  note "Place plugins/bstack/skills before this entry when bstack is installed; bstack owns the first bare skillify lookup."
-  printf '\n'
-  step "After editing config.yaml, restart the gateway:"
-  printf '\n'
-  printf '    hermes gateway restart\n'
-  printf '\n'
-  step "Verify skills are visible:"
-  printf '\n'
-  printf '    hermes skills list | grep -E '"'"'document|git|init|skillify|write-prd'"'"'\n'
-  printf '\n'
-  note "Hermes config snippet printed; config.yaml is not yet verified."
+  note "tap ${TAP_REPO} is not registered yet (checked ${TAPS_FILE})."
   return 1
 }
 
@@ -252,7 +171,7 @@ case "${TARGET}" in
     printf '\n'
     printf '  claude   Print Claude Code marketplace install commands\n'
     printf '  codex    Print Codex plugin commands; --clone optionally adds development context\n'
-    printf '  hermes   Print the Hermes plugin command and profile-relative skills config\n'
+    printf '  hermes   Print the Hermes tap commands and verify the tap is registered\n'
     printf '  all      Run all three targets\n'
     exit 0
     ;;

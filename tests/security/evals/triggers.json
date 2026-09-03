@@ -1,0 +1,23 @@
+{
+  "skill": "security",
+  "should_trigger": [
+    "Review this service for security vulnerabilities before release",
+    "Is this API safe to ship?",
+    "Check this pull request for authentication and authorization regressions",
+    "Audit our dependency and secret exposure risk",
+    "보안 점검 해줘",
+    "Find and fix potential injection vulnerabilities in this codebase",
+    "Review this webhook handler's trust boundaries",
+    "Check our LLM feature for prompt injection and unsafe tool permissions"
+  ],
+  "should_not_trigger": [
+    "Design the public REST pagination and error response contract",
+    "Choose a repository and service-layer structure for this new backend",
+    "Set up the release pipeline and deployment rollback procedure",
+    "Diagnose why this integration test flakes only on CI",
+    "Design a test suite for the payment flow",
+    "Refactor this nested function without changing behavior",
+    "Define the API endpoint schema for a new resource",
+    "Clean up duplicated parser code while preserving behavior"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "skill": "security",
+  "cases": [
+    {
+      "id": "triage-reachable-api-injection",
+      "prompt": "Review this public API handler before release. It interpolates a request parameter into a database query; fix confirmed vulnerabilities.",
+      "expected_behavior": "Maps the request boundary, identifies the interpolated query with file:line evidence, triages its production reachability and severity, applies a parameterized-query remediation when repository evidence confirms it, and re-runs the relevant detection or test.",
+      "grading": "verifiable",
+      "assertions": [
+        "The response records the request parameter as an ingress channel with parse, validate, and limit decisions",
+        "The finding includes file:line evidence, a severity, and explicit reachability reasoning",
+        "The proposed or applied remediation uses bound query parameters rather than string construction",
+        "The completion summary reports evidence from a re-run or test"
+      ]
+    },
+    {
+      "id": "review-untrusted-pull-request-workflow",
+      "prompt": "Check this pull-request CI workflow for security regressions. It runs contributor-controlled input and uploads artifacts.",
+      "expected_behavior": "Treats the workflow as a trust boundary, routes to the untrusted-CI reference, reviews token consumers and artifact handling, and reports reachability-based findings without probing systems outside the authorized repository.",
+      "grading": "verifiable",
+      "assertions": [
+        "The response identifies the pull-request workflow as an ingress channel",
+        "The response routes to the untrusted-CI reference before recommending changes",
+        "Each reported workflow issue includes severity and reachability triage",
+        "The response does not propose scanning or accessing external systems"
+      ]
+    },
+    {
+      "id": "stop-without-auditing-tools",
+      "prompt": "Audit dependency and credential supply-chain risk, but the repository cannot provide the required audit tool or trustworthy dependency metadata.",
+      "expected_behavior": "Stops instead of certifying the supply-chain review, reports that audit tooling or the trust boundary is unavailable, and names the unavailable evidence without inventing a command or remediation result.",
+      "grading": "verifiable",
+      "assertions": [
+        "The response explicitly stops or states that no result can be certified",
+        "The response identifies the unavailable audit tooling or missing trust-boundary evidence",
+        "The response does not claim that the dependency audit passed",
+        "The response does not invent an audit command, flag, or tool output"
+      ]
+    }
+  ]
+}

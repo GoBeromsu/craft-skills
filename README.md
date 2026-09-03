@@ -89,28 +89,18 @@ The clone is optional development context; its skills have the nested layout `.a
 
 ---
 
-### Hermes — plugin
+### Hermes — custom tap
 
-Install the repository root as a standalone plugin:
+Register the repository as a custom tap, then install each skill as one unit:
 
-1. Install and enable the plugin:
-   ```bash
-   hermes plugins install GoBeromsu/craft-skills --enable
-   ```
-2. Restart the gateway:
-   ```bash
-   hermes gateway restart
-   ```
-3. Verify the namespaced plugin skills:
-   ```bash
-hermes plugins list --plain --no-bundled
-# In a Hermes session: skill_view(name='craft-skills:write-prd')
-   ```
+```bash
+hermes skills tap add GoBeromsu/craft-skills
+hermes skills install GoBeromsu/craft-skills/skills/<name>
+hermes skills update            # pull upstream changes for every tap-installed skill
+```
 
-Namespacing preserves any existing bare-name owner such as bstack's `skillify`.
-Install from the repository root because the `.hermes` subdirectory is intentionally rejected.
-
-See `.hermes/README.md` for full deployment details.
+The tap scans every file in the unit; only a `safe` verdict installs without `--force`, so
+every package is kept scanner-clean (see `skills/skillify/references/runtime-hygiene.md`).
 
 ---
 

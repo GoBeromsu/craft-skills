@@ -11,7 +11,6 @@ from pathlib import Path
 
 _ROOT = Path(__file__).resolve().parent.parent.parent.parent
 _INSTALL = _ROOT / "install.sh"
-_SKILLS_PATH = "plugins/craft-skills/skills"
 _SUBPROCESS_TIMEOUT_SECONDS = 5
 
 
@@ -77,51 +76,30 @@ class CodexCloneGuardTest(unittest.TestCase):
             self.assertFalse((Path(tmp) / ".agents").exists())
 
 
-class HermesConfigGuardTest(unittest.TestCase):
-    def _hermes(self, config: str) -> subprocess.CompletedProcess[str]:
+class HermesTapCheckTest(unittest.TestCase):
+    def _hermes(self, taps: str | None) -> subprocess.CompletedProcess[str]:
         with tempfile.TemporaryDirectory() as tmp:
-            (Path(tmp) / "config.yaml").write_text(config, encoding="utf-8")
+            if taps is not None:
+                hub = Path(tmp) / "skills" / ".hub"
+                hub.mkdir(parents=True)
+                (hub / "taps.json").write_text(taps, encoding="utf-8")
             return _run("hermes", env={"HERMES_HOME": tmp})
 
-    def test_canonical_entry_passes(self) -> None:
-        result = self._hermes(f"skills:\n  external_dirs:\n    - {_SKILLS_PATH}\n")
+    def test_registered_tap_passes(self) -> None:
+        result = self._hermes('{"taps": [{"repo": "GoBeromsu/craft-skills", "path": "skills/"}]}\n')
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("canonical", result.stdout)
-        self.assertIn(
-            "hermes plugins install GoBeromsu/craft-skills --enable",
-            result.stdout,
-        )
+        self.assertIn("is registered", result.stdout)
+        self.assertIn("hermes skills tap add GoBeromsu/craft-skills", result.stdout)
 
-    def test_wrong_parent_key_fails(self) -> None:
-        result = self._hermes(f"other:\n  external_dirs:\n    - {_SKILLS_PATH}\n")
+    def test_missing_tap_fails(self) -> None:
+        result = self._hermes('{"taps": []}\n')
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("noncanonical", result.stdout)
+        self.assertIn("not registered", result.stdout)
 
-    def test_wrong_path_fails(self) -> None:
-        result = self._hermes("skills:\n  external_dirs:\n    - /tmp/craft-skills/skills\n")
+    def test_missing_taps_file_fails(self) -> None:
+        result = self._hermes(None)
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("noncanonical", result.stdout)
-
-
-class HermesAncestryGuardTest(unittest.TestCase):
-    def _hermes(self, config: str) -> subprocess.CompletedProcess[str]:
-        with tempfile.TemporaryDirectory() as tmp:
-            (Path(tmp) / "config.yaml").write_text(config, encoding="utf-8")
-            return _run("hermes", env={"HERMES_HOME": tmp})
-
-    def test_nested_intermediate_mapping_fails(self) -> None:
-        result = self._hermes(
-            f"skills:\n  nested:\n    external_dirs:\n      - {_SKILLS_PATH}\n"
-        )
-        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
-        self.assertIn("noncanonical", result.stdout)
-
-    def test_non_toplevel_skills_parent_fails(self) -> None:
-        result = self._hermes(
-            f"other:\n  skills:\n    external_dirs:\n      - {_SKILLS_PATH}\n"
-        )
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("noncanonical", result.stdout)
+        self.assertIn("not registered", result.stdout)
 
 
 if __name__ == "__main__":
