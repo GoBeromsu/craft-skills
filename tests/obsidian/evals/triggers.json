@@ -1,0 +1,25 @@
+{
+  "skill": "obsidian",
+  "should_trigger": [
+    "Clean up this Obsidian note's frontmatter, wikilinks, and callouts without changing its meaning",
+    "Create a .base for my reading list with filtered views and sort it by priority",
+    "My embedded Obsidian Base view is empty; diagnose the filter and groupBy configuration",
+    "Turn these project ideas into an Obsidian .canvas with nodes and edges",
+    "Repair this Mermaid sequence diagram so it renders in my Obsidian note",
+    "Use obsidian-cli to move this vault note and update its properties, then read it back",
+    "Build an Obsidian Web Clipper template for GitHub issues and test its selectors",
+    "My Obsidian plugin silently stopped working after an app update; diagnose the API or Templater error",
+    "Check the headless ob Sync replica before enabling continuous synchronization"
+  ],
+  "should_not_trigger": [
+    "Extract the main text and metadata from this blog article URL for later summarization",
+    "Convert this local HTML export into clean Markdown while removing navigation and ads",
+    "Fetch this framework documentation page as readable Markdown, not raw HTML",
+    "Write an ADR documenting our database selection in the repository's canonical location",
+    "Scaffold the docs directories and README for this new service repository",
+    "Draft release notes for version 2.0 from these merged pull requests",
+    "Record this architecture decision and explain the trade-offs for future maintainers",
+    "Create a project implementation plan and file it under the repository documentation structure",
+    "Write a technical specification for the new billing API in the canonical docs location"
+  ]
+}

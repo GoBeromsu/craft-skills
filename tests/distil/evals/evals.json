@@ -1,0 +1,40 @@
+{
+  "skill": "distil",
+  "cases": [
+    {
+      "id": "absorb-portable-repository-rules",
+      "prompt": "Distil the portable engineering conventions from this public repository and land the useful rules in our craft-skills library.",
+      "expected_behavior": "Fetches the repository into scratch, audits candidate rules for novelty, portability, and ownership, records a keep/drop mapping, routes approved rules through skillify, and records source credit in each receiving package CHANGELOG.",
+      "grading": "verifiable",
+      "assertions": [
+        "The absorption report maps every candidate rule to a receiving package and landing form or a drop reason",
+        "Every landed rule is written in present-tense imperative contract voice without source-specific names, paths, secrets, or codenames",
+        "Each receiving package CHANGELOG.md contains a Provenance clause that names what was taken and links the source",
+        "The completion summary identifies each receiving package, landed and dropped rules, provenance credits, and smallest executable evaluations"
+      ]
+    },
+    {
+      "id": "confirm-edited-absorption-mapping",
+      "prompt": "Absorb the useful parts of this third-party AGENTS.md. Some rules are tied to its monorepo, and some need adaptation.",
+      "expected_behavior": "Produces an absorb-with-edits verdict that separates portable rules from monorepo-bound rules, lists each required edit and intended owner, obtains confirmation of the mapping before landing, and drops rules that do not remain portable.",
+      "grading": "verifiable",
+      "assertions": [
+        "The verdict lists every gap and intended edit before any landing",
+        "The mapping is confirmed before rules are routed through skillify",
+        "Monorepo-bound rules are dropped with their reasons rather than copied into a package",
+        "No external version history is transferred to a new package"
+      ]
+    },
+    {
+      "id": "stop-on-unfetchable-source",
+      "prompt": "Distil the rules from this repository URL, but the HTTPS source cannot be fetched.",
+      "expected_behavior": "Stops after intake, reports the fetch failure as a no-result, and writes no package or partial landing.",
+      "grading": "verifiable",
+      "assertions": [
+        "The response identifies the source fetch failure",
+        "The response explicitly reports a no-result and stops",
+        "No package files, CHANGELOG provenance clauses, or partial mappings are written"
+      ]
+    }
+  ]
+}

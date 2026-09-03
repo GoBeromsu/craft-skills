@@ -2,7 +2,7 @@
 name: distil
 description: Distils transferable rules and conventions from an external source — a well-crafted repo, an engineering article, an AGENTS.md, or a third-party skill — and lands them in this library under the authoring contract with provenance recorded. Use when the user says "파쿠리", "distil the rules from this repo", "absorb this skill", or "pull the conventions out of this article", or hands over a link worth mining. Not for authoring a skill from your own workflow or shipping the final package — the landing routes through skillify; not for open-ended investigation of a question — use research; not for summarizing a source with no intent to land rules in the library.
 metadata:
-  version: 1.1.1
+  version: 1.1.2
 ---
 
 # distil
@@ -67,7 +67,7 @@ per decision, no history, no attribution in the body. Then choose its landing fo
 |-------------------|--------------|
 | A whole workflow this library lacks | New skill draft → `skillify` create mode (new package starts at 1.0.0 — the external version history does not transfer). |
 | A sharper rule for an existing skill | Body rule or `## Anti-patterns` entry → `skillify` update mode on the owning package. |
-| Bulk knowledge worth re-consulting | `references/` distillate in the owning package, rewritten to reference voice. |
+| Bulk knowledge worth re-consulting | A reference distillate in the owning package, rewritten to reference voice. |
 
 Document the mapping — every candidate rule, its landing form, and keep/drop recommendation —
 before routing it to its owner.
@@ -77,9 +77,22 @@ before routing it to its owner.
 Route the approved mapping through `skillify` (create or update). State the observable
 behavior each landing preserves or gains and its smallest executable evaluation; keep the
 handoff to one logical, independently revertible package change. Source provenance follows
-the [authoring contract](../skillify/references/contract.md#6-changelog).
+the `skillify` authoring contract (its `contract.md` reference, §6 CHANGELOG).
 
 Delete the scratch directory after landing.
+
+## Output contract
+
+Leave an absorption report in the completion summary that maps every candidate rule to its
+receiving package and landing form, with an explicit keep or drop decision for each. Record
+the source credit in
+the receiving package's `CHANGELOG.md` `Provenance:` clause, naming what the landing took
+and linking the source.
+
+Report the receiving package, each landed rule, each dropped rule and its reason, the
+provenance credit recorded, and the smallest executable evaluation for every landing. If
+the source cannot be fetched or parsed, or no candidate rule is portable, stop, report the
+no-result and reason, and write nothing.
 
 ## Requirements
 
@@ -89,7 +102,7 @@ Delete the scratch directory after landing.
 ## Anti-patterns
 
 - Treating a fetched script as runnable "to see what it does" → follow the [Intake rule](#intake).
-- Keeping the author's name in the body as credit → follow the [provenance rule](../skillify/references/contract.md#6-changelog).
+- Keeping the author's name in the body as credit → follow the `skillify` provenance rule (its `contract.md` reference, §6 CHANGELOG).
 - Preserving the external skill's version number → a landed package starts at 1.0.0; foreign history does not transfer.
 - Absorbing a source that overlaps an existing skill "because it's close enough" → redundancy is a reject; name the owner instead.
 - Writing fetched material into `skills/` before the audit verdict → keep it in the scratch directory until [Audit completes](#audit--what-actually-transfers).
@@ -100,5 +113,5 @@ Delete the scratch directory after landing.
 - [ ] [Intake](#intake) passed
 - [ ] [Audit verdict and mapping confirmation](#audit--what-actually-transfers) are recorded
 - [ ] Every landed line survived the Strip table — no names, paths, secrets, or codenames
-- [ ] [Provenance requirements](../skillify/references/contract.md#6-changelog) are met
+- [ ] Provenance requirements (`skillify` `contract.md` reference, §6 CHANGELOG) are met
 - [ ] Scratch directory removed

@@ -2,7 +2,7 @@
 name: skillify
 description: Owns the full lifecycle of craft-skills skill packages — creating, updating, moving/renaming, retiring them, and absorbing frontier labs' skill-creators into vendor lenses — through an eval-first authoring loop and deterministic format validation. Use when a user says things like "make a skill", "skillify this workflow", "turn this into a skill", "update this skill", "move this skill", "absorb openai's new skill-creator", or "스킬 만들자", or when a recurring workflow correction needs to be encoded into a governing skill instead of staying in chat memory. Not for one-off project scripts or prompts with no reuse intent — those stay local to the originating project.
 metadata:
-  version: 4.10.3
+  version: 4.10.4
 ---
 
 # skillify
@@ -123,7 +123,7 @@ Follow the [branch → commit → PR delivery flow](references/lifecycle.md#6-br
 
 - `python3` — official source: https://docs.python.org/3/; safe probe: `python3 --version`; support boundary: Python 3.10+ for Layer-1 validators.
 - `gh` — official source: https://cli.github.com/manual/; safe probe: `gh --version`; support boundary: current `gh pr create`, `gh pr checks`, and `gh pr merge` command surfaces for the delivery flow.
-- [Tool preflight](../init/references/tool-preflight.md) records mutable CLI probes, support boundaries, and the CHANGELOG verification receipt convention.
+- The `init` skill's tool-preflight reference (`tool-preflight.md` under its references) records mutable CLI probes, support boundaries, and the CHANGELOG verification receipt convention.
 - Dependency trigger — a selected dependency/runtime release or a changed probe/capability requires official-documentation review and affected evals before updating this package. The dependency contract applies to skillify immediately; apply it to another package when that package is next touched or when its own dependency trigger fires. Do not create mass churn or a global inventory.
 
 ## Anti-patterns

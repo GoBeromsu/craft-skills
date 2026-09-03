@@ -213,3 +213,4 @@ If a workflow cannot meet this law, make its boundary and supported runtime expl
 Every package-relative path a `SKILL.md` mentions — `scripts/<file>`, `references/<file>`, `templates/<file>`, `assets/<file>`, `agents/<file>` — must exist in the package tree; test paths resolve under repo-root `tests/<skill-name>/`.
 A recipe step that points at a script or reference the package does not ship is a broken recipe, and a reviewer cannot tell it from a real one by reading.
 The validator (`scripts/validate-skill-format.py`, `MISSING_REFERENCED_PATH`) fails the package on the first missing path; fix it by adding the file or by removing the mention, never by leaving a placeholder.
+A markdown link that climbs out of the package (`](../other/...)`) is never allowed: cross-package pointers are prose that names the skill and its file, because the Hermes tap fetcher treats a `../` link as a traversal attempt and aborts the whole install (`TRAVERSAL_LINK`).

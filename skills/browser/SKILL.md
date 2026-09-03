@@ -2,7 +2,7 @@
 name: browser
 description: Routes live-browser work across Aside, agent-browser, and an existing authenticated browser session. Use when a request says "Use Aside to inspect my logged-in dashboard", "inspect my signed-in dashboard", "open this in my browser", "click this button", "fill out this form", "use agent-browser", or "브라우저로 열어줘" and the page needs login, JavaScript, or multi-step interaction. Not for static public extraction — use defuddle — or plain JSON API responses — use an HTTP client.
 metadata:
-  version: 1.1.1
+  version: 1.1.2
 ---
 # Browser
 
@@ -44,7 +44,7 @@ Do not replace required existing-session work with a different account or identi
 
 ## Requirements
 
-- [Tool preflight](../init/references/tool-preflight.md) records the Aside install and version probes, browser-agent boundary, and CHANGELOG verification receipt convention.
+- The `init` skill's tool-preflight reference (`tool-preflight.md` under its references) records the Aside install and version probes, browser-agent boundary, and CHANGELOG verification receipt convention.
 
 ## Aside connection-hang recovery
 

@@ -1,0 +1,23 @@
+{
+  "skill": "distil",
+  "should_trigger": [
+    "Distil the transferable engineering rules from this public repository into our skill library.",
+    "파쿠리 this AGENTS.md and land only the portable conventions in the right skills.",
+    "Absorb the useful parts of this third-party skill and preserve source provenance.",
+    "Pull the conventions out of this engineering article and map each one to its owning package.",
+    "Mine this GitHub repository for reusable craft rules, not its implementation.",
+    "Evaluate this external workflow for portability and land the survivors in our library.",
+    "Take this pasted team guide, strip its internal details, and absorb the transferable rules.",
+    "Distil this raw file URL into library-native rules with a keep/drop report."
+  ],
+  "should_not_trigger": [
+    "Create a new skill for our repeated incident-triage workflow.",
+    "Update the testing skill to stop proposing tests for trivial getters.",
+    "Research whether PostgreSQL or SQLite better fits this embedded product.",
+    "Extract clean Markdown from this news article URL.",
+    "Open my signed-in dashboard and click the export button.",
+    "Record this architecture decision in the repository documentation.",
+    "Scaffold the canonical technical report for this project.",
+    "Summarize this article for me without changing the skill library."
+  ]
+}
