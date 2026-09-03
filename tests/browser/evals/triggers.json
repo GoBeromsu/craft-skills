@@ -1,0 +1,24 @@
+{
+  "skill": "browser",
+  "should_trigger": [
+    "Use Aside to inspect my logged-in dashboard and summarize the pending approvals.",
+    "Open this page in my browser and click the export button.",
+    "Use agent-browser to take a snapshot of this JavaScript-heavy staging app.",
+    "Fill out the reimbursement form in my existing authenticated browser session.",
+    "브라우저로 열어줘. 로그인한 관리자 화면에서 오류 배너를 확인해줘.",
+    "Check my signed-in support portal and report the status of ticket 482.",
+    "Use the current Chrome session to reproduce this multi-step checkout problem.",
+    "Open the live app, click through the settings flow, and capture the resulting page state."
+  ],
+  "should_not_trigger": [
+    "Extract clean Markdown from this public blog post for my notes.",
+    "Fetch the metadata and readable article text from this documentation URL.",
+    "Research OAuth providers before we decide which one to adopt.",
+    "Compare the evidence for Postgres and MySQL and write a decision research memo.",
+    "Distil the conventions from this open-source repository into our skill library.",
+    "파쿠리해줘: 이 third-party skill의 규칙을 우리 라이브러리에 옮겨줘.",
+    "Audit this test suite for flaky tests and propose the cheapest credible coverage.",
+    "Design the component ownership and CSS strategy for this existing React application.",
+    "Review this pull request for security vulnerabilities before release."
+  ]
+}

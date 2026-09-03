@@ -1,0 +1,40 @@
+{
+  "skill": "obsidian",
+  "cases": [
+    {
+      "id": "edit-note-with-cli-and-markdown-contract",
+      "prompt": "Use obsidian-cli to add a meeting summary to Projects/Launch.md, preserve its existing properties and wikilinks, then prove the saved note contains the change.",
+      "expected_behavior": "Loads the CLI and Markdown sub-recipes, resolves the exact vault and note path, reads the existing note before the vault-aware mutation, preserves unrelated properties and links, reads back the saved artifact, and reports the path plus readback evidence.",
+      "grading": "verifiable",
+      "assertions": [
+        "The response selects both the CLI and Markdown sub-recipes and assigns each a distinct responsibility",
+        "The response resolves the vault and exact note-relative path before mutating the note",
+        "The response preserves existing properties, wikilinks, and unrelated content",
+        "The completion summary names the changed note and exact readback evidence"
+      ]
+    },
+    {
+      "id": "create-bases-canvas-and-mermaid-artifacts",
+      "prompt": "Create a project tracker .base with a grouped status view, draw its workflow as a .canvas, and put a Mermaid status diagram in the project note that renders in Obsidian.",
+      "expected_behavior": "Routes each artifact to its dedicated Bases, Canvas, and Mermaid sub-recipe, keeps the file formats and their independent invariants separate, verifies each materialized artifact, and reports the verified paths and renderer or readback evidence.",
+      "grading": "verifiable",
+      "assertions": [
+        "The response loads the Bases, Canvas, and Mermaid sub-recipes rather than treating all artifacts as generic Markdown or JSON",
+        "The response identifies an exact target path for the .base, .canvas, and project note before writing",
+        "The response validates the Canvas node and edge references and the Bases view configuration independently",
+        "The completion summary reports verification evidence for all three artifacts"
+      ]
+    },
+    {
+      "id": "stop-when-vault-cannot-be-resolved",
+      "prompt": "Fix the broken callout in my Obsidian note, but I do not know which vault or note contains it and OBSIDIAN_VAULT_PATH is unavailable.",
+      "expected_behavior": "Stops without inventing a vault, note path, mutation, or success claim. Reports that the exact target and required vault prerequisite cannot be resolved, and identifies the missing information needed to proceed.",
+      "grading": "verifiable",
+      "assertions": [
+        "The response explicitly stops because the vault and exact artifact cannot be resolved",
+        "The response does not fabricate a path, execute a mutation, or claim readback evidence",
+        "The response reports the unavailable prerequisite and the information required to continue"
+      ]
+    }
+  ]
+}

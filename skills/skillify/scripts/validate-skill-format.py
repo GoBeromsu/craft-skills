@@ -26,7 +26,8 @@ least `SKILL.md` + `CHANGELOG.md`. This validator enforces, per package:
      least one cannot-succeed behavior (a line mentioning cannot / stop / no-result /
      partial / unavailable / ambiguous / missing) (contract §4).
  11. Every package-relative path the body mentions (`scripts/`, `references/`,
-     `templates/`, `assets/`, `tests/`, `agents/`) exists in the package (contract §12).
+     `templates/`, `assets/`, `tests/`, `agents/`) exists in the package, and no markdown
+     link climbs out of the package with `../` (contract §12).
  12. The committed eval corpus exists at repo-root `tests/<name>/evals/evals.json`
      (>= 3 cases, each with id/prompt/expected_behavior/grading; `verifiable` cases
      carry `assertions`, `subjective` cases carry `rubric`) and
@@ -343,8 +344,17 @@ def check_contract_sections(name: str, body: str) -> list[Finding]:
     return []
 
 
+TRAVERSAL_LINK_RE = re.compile(
+    r"\]\(\.\./|(?:references|templates|scripts|assets|examples)/(?:[^\s)`\"'<>]*/)?\.\.(?:/|$)"
+)  # mirrors the Hermes tap fetcher's traversal abort
+
+
 def check_referenced_paths(name: str, skill_dir: Path, body: str) -> list[Finding]:
     findings: list[Finding] = []
+    if TRAVERSAL_LINK_RE.search(body):
+        findings.append(Finding(name, "TRAVERSAL_LINK",
+                                "SKILL.md links climb out of the package with `../`; "
+                                "the Hermes tap fetcher aborts the install on such a path (contract §12)"))
     seen: set[str] = set()
     for match in PACKAGE_PATH_RE.finditer(body):
         rel = re.sub(r"^\$\{?SKILL_DIR\}?/", "", match.group(0)).rstrip(".")

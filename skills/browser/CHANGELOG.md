@@ -3,3 +3,4 @@
 - 2026-08-28 — v1.0.2: explicit Aside logged-in dashboard inspection requests undertriggered to generic browser use → names signed-in dashboard inspection without changing static-public routing.
 - 2026-08-28 — v1.1.0: replaced the universal Claude-in-Chrome assumption with a vendor-neutral existing-session backend; runtime discovery now gates native session surfaces, while Claude Code-specific Claude in Chrome guidance remains in its own subsection.
 - 2026-09-02 — v1.1.1: Aside browser-agent availability could be inferred from stale assumptions → link the shared tool preflight reference and collapse the contract into `## Output contract` with its stop condition. verified_against: aside@1.26.709.1533.
+- 2026-09-03 — v1.1.2: a cross-package link climbed out of the package, which the Hermes tap fetcher treats as traversal and refuses to install → name the owning skill and file in prose; add the Output contract and eval corpus the contract requires.

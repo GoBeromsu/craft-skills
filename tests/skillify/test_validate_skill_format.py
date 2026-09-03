@@ -86,6 +86,20 @@ class SkillFormatValidatorTest(unittest.TestCase):
             self.assertEqual(result.returncode, 1)
             self.assertIn("CONTRACT_LACKS_FAILURE_BRANCH", result.stdout)
 
+    def test_rejects_traversal_link_out_of_package(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            body = GOOD_SKILL + "\nSee [the contract](../skillify/references/contract.md) for provenance.\n"
+            self._make_skill(root, "demo", body, GOOD_CHANGELOG)
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("TRAVERSAL_LINK", result.stdout)
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            body = GOOD_SKILL + "\nThe `skillify` skill's contract reference owns provenance.\n"
+            self._make_skill(root, "demo", body, GOOD_CHANGELOG)
+            self.assertEqual(self.run_validator(root).returncode, 0)
+
     def test_rejects_referenced_path_that_does_not_ship(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
