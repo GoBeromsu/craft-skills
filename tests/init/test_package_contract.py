@@ -6,7 +6,7 @@ import re
 import unittest
 from pathlib import Path
 
-PACKAGE = Path(__file__).resolve().parents[1]
+PACKAGE = Path(__file__).resolve().parents[2] / "skills" / "init"
 SKILL = PACKAGE / "SKILL.md"
 
 
@@ -58,7 +58,7 @@ class InitPackageContractTests(unittest.TestCase):
         self.assertEqual(scripts, ["agents_region.py"])
         for module in scripts:
             self.assertTrue(
-                (PACKAGE / "tests" / f"test_{module}").exists(),
+                (Path(__file__).resolve().parent / f"test_{module}").exists(),
                 "every scripts/ module ships with a matching test module",
             )
 

@@ -1,4 +1,5 @@
 # Changelog
+- 2026-09-03 — v4.1.3: the exact adapter-bytes rule for the sibling Claude file had dropped out of the contract while a later step still relied on it → restate it in the Output contract; package tests move to the repository root.
 
 - 2026-09-03 — v4.1.1: tool probes could leave recipes without an explicit failure path → add per-tool fallback rows and record verified QMD/Aside command surfaces. verified_against: obsidian-cli@0.2.3, obsidian@1.13.7, qmd@2.5.3, aside@1.26.902.1732, defuddle@0.19.1, gh@2.99.0, hermes@0.20.1, gjc@0.16.0.
 - 2026-08-30 — v4.0.0: BREAKING — a skill package should own a contract, not a program → init keeps AGENTS placement, content, audit, and stale reporting as prose, ships one script for marker-region edits, drops the transaction/snapshot/loader machinery, replaces `init prune` deletion authority with `init report-stale`, and removes docs bootstrap plus `--create-new`.

@@ -7,8 +7,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-SCRIPT = Path(__file__).parents[1] / "scripts" / "check-design.py"
-TEMPLATE = Path(__file__).parents[1] / "templates" / "DESIGN.md"
+SCRIPT = Path(__file__).resolve().parents[2] / "skills" / "design" / "scripts" / "check-design.py"
+TEMPLATE = Path(__file__).resolve().parents[2] / "skills" / "design" / "templates" / "DESIGN.md"
 MIGRATION_FIXTURES = Path(__file__).parent / "fixtures" / "migration-cases.json"
 HEADINGS = ["Product Intent", "Principles", "Tokens", "Typography", "Layout and Responsive", "Primitives", "Interaction and Feedback", "Motion", "Accessibility", "Verification", "Accepted Debt"]
 
