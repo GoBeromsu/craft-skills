@@ -6,7 +6,8 @@
 #   ./install.sh codex [--clone [PROJECT_ROOT]]
 #                       Print Codex plugin commands; optionally clone development context
 #   ./install.sh hermes    Print the Hermes tap commands and verify the tap is registered
-#   ./install.sh all       Run all three targets
+#   ./install.sh gjc       Print the GJC plugin commands and verify the plugin is installed
+#   ./install.sh all       Run all four targets
 #
 # Idempotent — safe to re-run. Never hardcodes secrets or user paths beyond $HOME.
 # Does not write git commits or push to remotes.
@@ -130,7 +131,33 @@ install_hermes() {
   return 1
 }
 
-# ── Dispatch ───────────────────────────────────────────────────────────────────
+# ── GJC ───────────────────────────────────────────────────────────────────────────
+
+install_gjc() {
+  header "GJC"
+
+  note "GJC installs craft-skills as a marketplace plugin and loads packages straight from it."
+  printf '\n'
+  printf '    gjc plugin marketplace add GoBeromsu/craft-skills\n'
+  printf '    gjc plugin install craft-skills@craft-skills\n'
+  printf '    gjc plugin upgrade              # the whole update path\n'
+  printf '\n'
+  note "Packages are advertised as craft-skills:<name>; no further configuration is required."
+  note "The installed plugin is the only copy; see the GJC row of the install matrix in AGENTS.md."
+
+  if ! command -v gjc >/dev/null 2>&1; then
+    note "gjc is not on PATH; nothing to verify."
+    return 1
+  fi
+  if gjc plugin list 2>/dev/null | grep -q 'craft-skills@craft-skills'; then
+    ok "craft-skills@craft-skills is installed."
+    return 0
+  fi
+  note "craft-skills@craft-skills is not installed yet."
+  return 1
+}
+
+# ── Dispatch ───────────────────────────────────────────────────────────────────────
 
 TARGET="${1:-}"
 if [ "$#" -gt 0 ]; then
@@ -155,6 +182,13 @@ case "${TARGET}" in
     }
     install_hermes
     ;;
+  gjc)
+    [ "$#" -eq 0 ] || {
+      printf 'Usage: %s gjc\n' "$0" >&2
+      exit 2
+    }
+    install_gjc
+    ;;
   all)
     [ "$#" -eq 0 ] || {
       printf 'Usage: %s all\n' "$0" >&2
@@ -165,14 +199,17 @@ case "${TARGET}" in
     install_codex
     hr
     install_hermes
+    hr
+    install_gjc
     ;;
   ""|--help|-h)
-    printf 'Usage: %s [claude|codex [--clone [PROJECT_ROOT]]|hermes|all]\n' "$0"
+    printf 'Usage: %s [claude|codex [--clone [PROJECT_ROOT]]|hermes|gjc|all]\n' "$0"
     printf '\n'
     printf '  claude   Print Claude Code marketplace install commands\n'
     printf '  codex    Print Codex plugin commands; --clone optionally adds development context\n'
     printf '  hermes   Print the Hermes tap commands and verify the tap is registered\n'
-    printf '  all      Run all three targets\n'
+    printf '  gjc      Print the GJC plugin commands and verify the plugin is installed\n'
+    printf '  all      Run all four targets\n'
     exit 0
     ;;
   *)
