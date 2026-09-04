@@ -51,6 +51,7 @@ This is a task-oriented library for software and research work — kept separate
 | Claude Code | Marketplace package |
 | Codex | Plugin marketplace package; plain Agent Skills clone is auxiliary development context |
 | Hermes | Standalone Hermes plugin |
+| GJC (Gajae-Code) | Marketplace plugin; packages load from the installed plugin as `craft-skills:<name>` |
 | Cursor | Project or user skills in `.cursor/skills`; plain Agent Skills discovery also supports `.agents/skills` |
 | Grok-native | Skills in `.grok/skills` or a configured plugin path |
 | Plain Agent Skills | One `SKILL.md` directory per skill under `.agents/skills` |
@@ -101,6 +102,28 @@ hermes skills update            # pull upstream changes for every tap-installed 
 
 The tap scans every file in the unit; only a `safe` verdict installs without `--force`, so
 every package is kept scanner-clean (see `skills/skillify/references/runtime-hygiene.md`).
+
+---
+
+### GJC — marketplace plugin
+
+Register the marketplace once, then install the plugin:
+
+```bash
+gjc plugin marketplace add GoBeromsu/craft-skills
+gjc plugin install craft-skills@craft-skills
+```
+
+GJC scans the installed plugin directly and advertises every package as `craft-skills:<name>`,
+so `/skill:craft-skills:obsidian` works with no further configuration.
+Updates are one command:
+
+```bash
+gjc plugin upgrade
+```
+
+The installed plugin is the only copy; a manual copy alongside it outranks the plugin and freezes
+(see the GJC row of the install matrix in `AGENTS.md`).
 
 ---
 

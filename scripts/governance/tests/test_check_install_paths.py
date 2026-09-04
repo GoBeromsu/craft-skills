@@ -27,6 +27,8 @@ class CheckInstallPathsTest(unittest.TestCase):
 .codex-plugin/plugin.json
 Codex auxiliary clone path: `{clone_path}`
 Hermes mount path: `~/dev/GoBeromsu/craft-skills/skills`
+gjc plugin marketplace add GoBeromsu/craft-skills
+gjc plugin install craft-skills@craft-skills
 """
         for name in ("README.md", "AGENTS.md"):
             (self.root / name).write_text(shared, encoding="utf-8")
@@ -53,6 +55,36 @@ SKILLS_PATH="${{HOME}}/dev/GoBeromsu/craft-skills/skills"
         self._write_surfaces()
         result = self._run()
         self.assertEqual(result.returncode, 0, result.stdout)
+
+    def test_rejects_inconsistent_gjc_plugin_declaration(self) -> None:
+        self._write_surfaces()
+        agents = self.root / "AGENTS.md"
+        agents.write_text(
+            agents.read_text(encoding="utf-8").replace(
+                "gjc plugin install craft-skills@craft-skills",
+                "gjc plugin install craft-skills@other-marketplace",
+            ),
+            encoding="utf-8",
+        )
+        result = self._run()
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("gjc: inconsistent declarations", result.stdout)
+
+    def test_rejects_missing_gjc_declaration(self) -> None:
+        self._write_surfaces()
+        install = self.root / "install.sh"
+        install.write_text(
+            "\n".join(
+                line
+                for line in install.read_text(encoding="utf-8").splitlines()
+                if not line.startswith("gjc plugin ")
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        result = self._run()
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("gjc: missing declaration in install.sh", result.stdout)
 
     def test_rejects_inconsistent_codex_clone_path(self) -> None:
         self._write_surfaces()

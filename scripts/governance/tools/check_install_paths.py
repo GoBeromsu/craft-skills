@@ -19,6 +19,7 @@ _REQUIRED = {
     "codex_plugin": ("README.md", "AGENTS.md", "install.sh"),
     "codex_clone": ("README.md", "AGENTS.md", "install.sh"),
     "hermes": ("README.md", "AGENTS.md", "install.sh", ".hermes/README.md"),
+    "gjc": ("README.md", "AGENTS.md", "install.sh"),
 }
 
 
@@ -63,6 +64,16 @@ def _declared_paths(text: str, surface: str) -> dict[str, str]:
 
     if re.search(r"\.codex-plugin/plugin\.json", text):
         declarations["codex_plugin"] = ".codex-plugin/plugin.json"
+
+    gjc_marketplace = _one(
+        r"gjc\s+plugin\s+marketplace\s+add\s+([A-Za-z0-9._/-]+)", text
+    )
+    gjc_plugin = _one(r"gjc\s+plugin\s+install\s+([A-Za-z0-9@._/-]+)", text)
+    if gjc_marketplace or gjc_plugin:
+        if gjc_marketplace and gjc_plugin:
+            declarations["gjc"] = f"{gjc_marketplace};{gjc_plugin}"
+        else:
+            declarations["gjc"] = "<incomplete GJC plugin command>"
 
     if surface == "install.sh":
         clone_path = _assignment("CLONE_DIR", text)

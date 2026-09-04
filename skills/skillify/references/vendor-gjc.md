@@ -13,6 +13,7 @@ The generated package remains runtime-neutral; this lens never changes the packa
 6. [Evaluation and evidence](#6-evaluation-and-evidence)
 7. [Failure and retry behavior](#7-failure-and-retry-behavior)
 8. [Portability boundary](#8-portability-boundary)
+9. [Runtime plumbing (GJC-only)](#9-runtime-plumbing-gjc-only)
 
 ## 1. Sources and support boundary
 
@@ -177,3 +178,23 @@ Never copy them into a universal package's root `SKILL.md`, scripts, templates, 
 
 The final skill package must run unchanged wherever its declared portable contract applies, including Claude Code, Codex, Cursor, Hermes, and Grok-native runtimes.
 A package may link to this lens as optional authoring guidance; it may not require GJC to execute its reusable craft.
+
+## 9. Runtime plumbing (GJC-only)
+
+GJC distribution is runtime plumbing: this library ships as a marketplace plugin, and GJC reads packages
+straight out of the installed plugin. There is no copy step and therefore no second tree that can go stale;
+an upgrade replaces the installed plugin and every package moves with it.
+The install and upgrade commands live in the install matrix in the repository's `AGENTS.md`, which is the
+single owner for every runtime's channel — do not restate them here.
+
+Two consequences bind authoring:
+
+- GJC advertises each package as `craft-skills:<name>`, not the bare directory name. A package must not
+  assume its own directory name is the invocation handle a user types, and must not hardcode either form
+  into portable prose.
+- A package copied into the user's GJC skill root, or reached through a `skills.customDirectories` entry
+  pointing at the versioned plugin cache, defeats the no-copy property above: the copy outranks the plugin
+  and freezes, and the versioned cache path breaks on the next upgrade. Treat any such path found while
+  authoring as a stale source, not as the package.
+
+Portable core instructions must not depend on GJC discovery, naming, or precedence behavior.
