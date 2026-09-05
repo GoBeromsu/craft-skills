@@ -1,0 +1,23 @@
+{
+  "skill": "orca",
+  "should_trigger": [
+    "orca worktree current reports selector_not_found even though this is a git repo",
+    "Register this checkout with Orca so --worktree active resolves",
+    "My saved Orca environment answers remote_runtime_unavailable",
+    "Revive the paired Orca runtime on the remote host before I dispatch workers to it",
+    "ssh to my Orca host exits 255 with 'Cannot execute command-line and remote command'",
+    "Piping ssh output to that Orca machine never returns even with a timeout",
+    "Orca processes are visible but the CLI insists no runtime is running",
+    "orca에 연결이 안된다"
+  ],
+  "should_not_trigger": [
+    "My Tailscale peer disappeared after I switched to another account profile",
+    "Decide whether this tailnet failure is network-layer or SSH service-layer",
+    "Create an isolated git worktree and branch for this task",
+    "Squash these commits and reword the top message before I push",
+    "Drive my logged-in dashboard and click through the checkout flow",
+    "Find why this unit test only fails intermittently on CI",
+    "Extract the readable article text from this public page",
+    "Stand up a VMware Fusion guest and connect to its console"
+  ]
+}

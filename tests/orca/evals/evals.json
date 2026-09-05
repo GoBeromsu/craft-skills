@@ -1,0 +1,53 @@
+{
+  "skill": "orca",
+  "cases": [
+    {
+      "id": "unregistered-sibling-checkout",
+      "prompt": "orca worktree current says no Orca-managed worktree contains this directory, but it is a normal git repo and orca status looks fine. Get orca terminal create working here.",
+      "expected_behavior": "Reads selector_not_found as a repo-registration verdict rather than a runtime or network fault, registers the repo root, and re-runs the command that failed plus one selector-dependent call.",
+      "grading": "verifiable",
+      "assertions": [
+        "The response classifies `selector_not_found` as a registration failure while the runtime is healthy",
+        "The response registers the repo root with `orca repo add --path <repo-root>`",
+        "The response explains that the inherited `ORCA_WORKSPACE_ID` names the launching workspace, not the current checkout",
+        "The response re-runs `orca worktree current` and a `--worktree active` command as proof rather than declaring success from the registration call"
+      ]
+    },
+    {
+      "id": "remote-environment-host-verdict",
+      "prompt": "My saved Orca environment returns remote_runtime_unavailable. The tailnet is healthy and I can ping the host. Fix it.",
+      "expected_behavior": "Treats the error as a host verdict rather than a network fault, confirms runtime state on the host itself, revives it, and re-verifies from the local side before reporting success.",
+      "grading": "verifiable",
+      "assertions": [
+        "The response treats `remote_runtime_unavailable` as a host-side runtime failure rather than a transport failure",
+        "The response reads the endpoint and pairing port from `orca environment show` and confirms runtime state by running `orca status --json` on the host",
+        "The response revives the host runtime with `orca open` rather than re-pairing the environment or editing the saved record",
+        "The response re-verifies with `orca status --environment` and one operational remote call before reporting the connection restored"
+      ]
+    },
+    {
+      "id": "ssh-transport-traps",
+      "prompt": "ssh to my Orca host exits 255 with 'Cannot execute command-line and remote command', and when I pipe ssh output the command never returns. My ssh alias opens tmux for interactive use.",
+      "expected_behavior": "Identifies both failures as SSH configuration behavior rather than a broken host, overrides per invocation, and leaves the operator's alias unchanged.",
+      "grading": "verifiable",
+      "assertions": [
+        "The response attributes exit 255 to the alias's `RemoteCommand` and overrides it with `-o RemoteCommand=none -o RequestTTY=no`",
+        "The response attributes the hang to a `ControlMaster`/`ControlPersist` master inheriting stdout, not to a network or timeout problem",
+        "The response redirects output to a file and detaches stdin with `</dev/null` instead of piping the connection",
+        "The response leaves the interactive tmux alias unmodified rather than editing the operator's ssh config"
+      ]
+    },
+    {
+      "id": "stale-processes-no-runtime",
+      "prompt": "pgrep shows Orca processes on the host so the app is clearly running, but every orca command says the runtime is not running. Confirm the app is up and carry on with the dispatch.",
+      "expected_behavior": "Rejects process presence as evidence, reports the runtime as down on the authority of the CLI status output, and does not proceed to dependent orchestration work on an unverified runtime.",
+      "grading": "verifiable",
+      "assertions": [
+        "The response declines to treat visible Orca processes as proof that the runtime is up",
+        "The response names crash-handler helper processes that outlive the application as the reason the process check misleads",
+        "The response uses `orca status --json` as the authority for runtime state",
+        "The response does not continue to the dependent dispatch while the runtime is unverified"
+      ]
+    }
+  ]
+}
