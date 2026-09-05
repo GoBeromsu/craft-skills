@@ -2,7 +2,7 @@
 name: skillify
 description: Owns the full lifecycle of craft-skills skill packages — creating, updating, moving/renaming, retiring them, and absorbing frontier labs' skill-creators into vendor lenses — through an eval-first authoring loop and deterministic format validation. Use when a user says things like "make a skill", "skillify this workflow", "turn this into a skill", "update this skill", "move this skill", "absorb openai's new skill-creator", or "스킬 만들자", or when a recurring workflow correction needs to be encoded into a governing skill instead of staying in chat memory. Not for one-off project scripts or prompts with no reuse intent — those stay local to the originating project.
 metadata:
-  version: 4.11.0
+  version: 4.11.1
 ---
 
 # skillify
@@ -139,6 +139,7 @@ Follow the [branch → commit → PR delivery flow](references/lifecycle.md#6-br
 - Caps-lock used to compensate for weak or overlapping routing boundaries → either prove the single leading description directive with bounded sibling edges and frozen trigger delta, or keep ordinary prose; the exception never applies to body prose.
 - A nested `SKILL.md` anywhere inside a package → every skill is one flat directory.
 - An operator correction left in chat memory → record it via the three-way split before the session ends (`references/lifecycle.md §3`).
+- Hand-authoring a skill package because the destination repository carries its own frontmatter and routing conventions → run the admission check and the eval-first loop here first, then let that repository's own promotion gate route the well-formed package.
 - Duplicated overlapping guidance inside one package → apply `references/contract.md` §9; link to the owner instead of restating the rule.
 - An upstream mechanism imported into core without the portability test → classify universal vs plumbing per the absorption protocol; plumbing stays in the lens.
 - Patching the body until the three eval examples pass → generalize the lesson instead; held-out prompts judge the result (`references/evaluation.md §5`).

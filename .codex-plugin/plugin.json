@@ -1,6 +1,6 @@
 {
   "name": "craft-skills",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "description": "Vendor-neutral work-craft Agent Skills across 29 packages for Codex — UI/UX design, research, debugging, documentation, database diagnosis and schema/operations tradeoffs, browser automation, Obsidian craft, git craft, product requirements, engineering, testing, refactoring, security triage, and skill authoring.",
   "author": {
     "name": "Beomsu Koh"
