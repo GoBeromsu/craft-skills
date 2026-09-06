@@ -1,8 +1,8 @@
 ---
 name: design
-description: Owns canonical DESIGN.md artifacts and evidence-first UX/UI judgment for coherent product design roots. Use when requests ask to define interface direction; choose type, color, spacing, or motion; audit a user journey; establish design tokens or state specifications; redesign information hierarchy; review mental models; evaluate rendered states; prioritize bad UX; improve an interaction; or turn accessibility and usability findings into an improvement plan. Not for frontend rendering or architecture, product copy, or generic documentation — use frontend, the product or copywriting owner, or document; live-page operation and automated evidence collection remain mechanics-owned.
+description: Owns canonical DESIGN.md artifacts and evidence-first UX/UI judgment for coherent product design roots. Use when requests ask to define interface direction; choose type, color, spacing, or motion; audit a user journey; establish design tokens or state specifications; redesign information hierarchy; review mental models; evaluate rendered states; prioritize bad UX; improve an interaction; turn accessibility and usability findings into an improvement plan; or 디자인 점검해줘. Not for frontend rendering or architecture, product copy, or generic documentation — use frontend, the product or copywriting owner, or document; live-page operation and automated evidence collection remain mechanics-owned.
 metadata:
-  version: 1.1.0
+  version: 1.1.1
 ---
 
 Review a PR or rendered user journey against seven named UX principles so an identified operator can complete one primary action without an evidenced interaction failure.
