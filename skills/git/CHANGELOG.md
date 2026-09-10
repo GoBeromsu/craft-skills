@@ -1,5 +1,7 @@
 # Changelog
 
+- 2026-09-10 — v2.2.4: native source packaging omitted the Git environment placeholder → moved the exact bytes to env.example and updated the worktree reference.
+- 2026-09-10 — v2.2.4: expose existing investigation/mutation evidence and stop behavior in the required output-contract section; retain the full Git verification checklist.
 - 2026-06-13 — no worktree workflow or branch-guard automation existed → initial release: git-guard scripts, git wt <issue#>, self-install, Tailscale extension.
 - 2026-06-17 — v1.0.1: post-merge cleanup ordering undocumented → documented correct ordering + red-flag entries.
 - 2026-06-30 — v2.0.0 BREAKING: git wt simplified to a plain worktree maker → dropped gh/issue coupling and --type/--slug.

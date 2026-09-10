@@ -1,0 +1,49 @@
+{
+  "skill": "ml",
+  "cases": [
+    {
+      "id": "contradictory-label-loss-floor",
+      "prompt": "A deterministic binary classifier receives the same input twice with labels 0 and 1. Its mean cross-entropy plateaus near log(2), with finite loss and working gradients. Must I rewrite the pipeline because the tiny batch does not reach zero?",
+      "expected_behavior": "Recognizes the feasible nonzero floor and inspects objective and constraints before declaring a defect; retains useful gradient/data checks.",
+      "grading": "subjective",
+      "assertions": [],
+      "rubric": [
+        "Explains why conflicting labels can produce a valid nonzero optimum rather than asserting every tiny batch must memorize.",
+        "Distinguishes a constrained objective from an actual data, gradient, or optimizer defect."
+      ]
+    },
+    {
+      "id": "frozen-dirty-factorial-comparison",
+      "prompt": "I have a preserved, hashed snapshot of all code/config inputs including untracked files and its Git base. A planned factorial study changes learning rate and optimizer. No commit was authorized. Can I run the authorized experiment and claim one factor caused the combined result?",
+      "expected_behavior": "Accepts complete frozen source identity without forcing a commit or stash, while limiting causal attribution to what the experimental design supports.",
+      "grading": "subjective",
+      "assertions": [],
+      "rubric": [
+        "Does not equate dirty Git state with irreproducibility or manufacture commit authority.",
+        "Requires launched inputs to match the preserved snapshot and distinguishes combined performance from unsupported single-factor attribution."
+      ]
+    },
+    {
+      "id": "preliminary-evaluation-without-invented-variance",
+      "prompt": "A generative model has one measured run and no budget for repeats. The hosted evaluator exposes no immutable revision. What can I report, and what identity evidence should I retain?",
+      "expected_behavior": "Reports a qualified preliminary observation with actual model, prompt, task, settings, invocation and environment identity; labels unavailable revisions and variance without inventing them or enforcing a universal repeat count.",
+      "grading": "subjective",
+      "assertions": [],
+      "rubric": [
+        "Does not call the single observation a robust statistically established improvement or invent variance.",
+        "Records applicable generative-evaluation identities and explicitly marks unavailable hosted revisions."
+      ]
+    },
+    {
+      "id": "reward-increase-is-not-task-quality",
+      "prompt": "Post-training reward increased, but malformed completions exploit the extraction parser. A frozen end-task evaluation shows no improvement. May I report better model quality from reward alone?",
+      "expected_behavior": "Rejects the unsupported quality claim, records reward/parser identity, and requires meaningful malformed/adversarial checks and independent end-task evidence.",
+      "grading": "subjective",
+      "assertions": [],
+      "rubric": [
+        "Separates training reward and format compliance from held-out task quality.",
+        "Requires versioned reward/parser evidence and checks actual exploit cases without prescribing universal reward counts or loss thresholds."
+      ]
+    }
+  ]
+}

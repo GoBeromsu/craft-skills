@@ -1,131 +1,94 @@
 # ML Training Discipline
 
-A training run is a claim about what the model can do; the ladder below is the evidence that makes the claim believable before it makes the run fast, large, or novel.
+Match the evidence to the modeling claim before making a run faster, larger, or more novel. Preserve exploratory results with their limitations instead of manufacturing certainty or blocking them on arbitrary counts.
 
 ## Table of Contents
 
-- [Hard rules](#hard-rules) — the discipline ladder, the experiment tracking table, when to relax the ladder, the uncommitted-changes-at-launch guard
+- [Hard rules](#hard-rules) — smoke tests, baselines, attribution, uncertainty, recovery, evaluation, and reproducibility
 - [Hand-offs](#hand-offs)
-
----
 
 ## Hard rules
 
-### The discipline ladder (apply in order, every new modeling effort)
+### The discipline ladder
 
-**1. Overfit a single batch first.** Before any full run, take one batch — or a handful of examples — and train on it alone until the loss drops to (near) zero, or accuracy reaches (near) 100%. This is the canonical smoke test: if the model cannot memorize a tiny batch, the pipeline itself is broken (wrong loss, a label/feature mismatch, a gradient that never flows), and no amount of full-dataset training will fix that.
+**1. Smoke-test a small, understood input before a full run.** Verify data/label alignment, finite loss, intended trainable parameters, gradient flow, and meaningful updates. When the objective and model can memorize the selected examples, overfit a tiny batch as a diagnostic; define the expected target before interpreting the curve.
 
-Grey zone — no single grep catches this; judge by the loss curve: a single-batch loss that plateaus well above zero after generous training steps means the pipeline is broken, not that the batch is "just hard."
+A nonzero loss is not by itself proof of a broken pipeline. Contradictory labels for identical inputs, regularization, frozen capacity, stochastic objectives, and irreducible uncertainty can impose a valid nonzero floor. For example, a deterministic binary classifier given the same input with both labels has minimum mean cross-entropy `log(2)`, not zero. Check the objective's feasible target before demanding memorization.
 
-Fast diagnosis when step 1 fails:
-
-| Symptom | Likely cause |
+| Symptom | Investigation |
 |---|---|
-| Loss is `NaN` within the first few steps | Learning rate too high, or an unguarded division/log inside the loss |
-| Single-batch loss won't reach zero, even after many steps | A data/label mismatch, a gradient path that never actually reaches some parameters, or the wrong loss function for the task |
-| Train loss drops but validation loss does not, on the *full* run | Overfitting — this is a step-6 (eval discipline) concern, not a step-1 one; step 1 only concerns the single-batch memorization check |
+| Loss becomes `NaN` or infinite | Check numerical stability, input values, learning rate, and unsafe operations |
+| A representable tiny example does not improve | Check labels, objective, trainable parameters, gradients, and optimizer updates |
+| A constrained objective plateaus above zero | Compare with its expected floor and constraints; do not label it broken from the loss alone |
+| Full-run train loss improves while validation does not | Investigate generalization, leakage, distribution shift, and overfitting rather than rerunning the memorization check blindly |
 
-**2. Baseline before novelty.** Every modeling effort starts with the cheapest baseline that could plausibly work — a majority-class or mean predictor, a linear model, or a pretrained model with only its head trained (frozen backbone). A novel architecture is judged against that number, in the same report, not against "no result at all."
+**2. Establish a baseline before claiming an improvement.** Choose the cheapest credible baseline for the task: a majority/mean predictor, linear model, frozen pretrained model, or an already measured comparable system. Compare actual outcomes on the same evaluation boundary. A file named `baseline` proves neither a run nor its result. An exploratory run may remain exploratory; an unmeasured baseline means the improvement claim remains unverified.
 
-```bash
-ls configs/ | grep -iE 'baseline' || echo "FAIL: no baseline config found — nothing for the novel run to beat"
-```
-
-Pass: a baseline config exists (or the report cites a numeric baseline the reader can check). Fail: no baseline present — a "beats prior work" claim has nothing to actually beat.
-
-**3. One variable per experiment.** A single experiment changes exactly one variable from its predecessor; the config diff between two experiments *is* the experiment's identity.
+**3. Match experimental design to attribution.** Change one factor at a time for a simple causal comparison. Planned factorial designs and multi-change candidates are valid, but record their full configuration and distinguish a combined-system comparison from evidence about an individual factor.
 
 ```bash
 diff configs/exp-003.yaml configs/exp-004.yaml
 ```
 
-Pass: the diff shows exactly one semantic change (one hyperparameter, one architectural flag). Fail: multiple unrelated fields changed at once — a metric delta cannot be attributed to any single cause.
+Inspect the semantic changes rather than counting diff lines. A learning-rate, batch-size, and optimizer change can support a claim about the combined candidate against a matched baseline; without suitable controls or experimental design it cannot identify which change caused the outcome. Record the hypothesis and controls before selecting a favorable explanation.
 
-**SMELL — a config diff that changes three things at once:**
+**4. Record randomness and qualify uncertainty.** Record applicable framework, data-loader, sampling, and evaluator seeds plus relevant deterministic settings. Inspect their actual use: finding the word `seed` in a source file is not execution evidence. Use framework-supported independent worker streams rather than accidentally repeating identical augmentation/shuffle streams.
 
-```diff
-- learning_rate: 0.001
-- batch_size: 32
-- optimizer: adam
-+ learning_rate: 0.0005
-+ batch_size: 64
-+ optimizer: sgd
-```
+Choose repeats and uncertainty estimates for the task variability, decision stakes, and available budget. Report the actual sample count and method; do not impose a universal seed floor or claim statistical stability merely because a count was reached. A single stochastic run can be reported as preliminary, without invented variance or an unsupported robust-improvement claim. Repeating a deterministic calculation with different unused seed labels adds no evidence.
 
-Whichever metric moves, there is no way to say which of the three changes caused it.
+Seeds alone do not guarantee bitwise identity across hardware, library versions, or nondeterministic kernels. Record those limits. Enable a framework's documented deterministic mode when the debugging need justifies its performance cost, not as an assumed universal default.
 
-**CLEAN — a config diff that changes exactly one thing:**
+**5. Test checkpoint recovery before committing to a long run.** For runs longer than the expected uninterrupted window, use a bounded short trial and the project's supported interruption/resume mechanism. Verify the recovered checkpoint identity, step, model/optimizer/scheduler state and applicable RNG/data-loader state. Check that training genuinely continues; a success exit or a similar-looking loss alone is insufficient.
 
-```diff
-- learning_rate: 0.001
-+ learning_rate: 0.0005
-```
+Use the project's installed help and configuration for the actual invocation. Do not invent a resume flag or interrupt an unrelated live job to demonstrate recovery. Preserve a failed recovery as a launch blocker for the long run, not as a passing smoke test.
 
-**4. Seed everything; report variance over ≥3 seeds for any claim.**
+**6. Keep evaluation independent of tuning and aligned with the product goal.** Use validation data for model selection, early stopping, and other tuning. Reserve the test set for a frozen final comparison; do not use test feedback to select the next candidate while calling it untouched hold-out evidence. Replaying a frozen final evaluation for verification is not a new independent test set: disclose reuse and do not retune from its results.
 
-```bash
-matches="$(find src/<pkg>/training configs -type f \( -name "*.py" -o -name "*.yaml" \) -exec grep -nE "seed" {} + 2>/dev/null)"
-[ -z "$matches" ] && echo "FAIL: no seed set — run is not reproducible" || echo "$matches"
-```
+Pick the metric from the actual task. Accuracy can conceal rare-class failure in an imbalanced classifier; use the relevant recall, precision, calibration, or other product measure. Inspect the data/control flow rather than treating a grep match for `test` as proof of leakage. See `references/vision.md` for vision-specific checks.
 
-Pass: a seed value is set and recorded in the config. Fail: no seed anywhere — the run cannot be reproduced even with the exact same code and data. Use `find` over a shell glob for the two path patterns — a glob that matches zero files (an empty `configs/` before the first experiment is committed) aborts the whole line before grep runs in some shells, producing a false FAIL even when a seed is already set in `src/`. Any claim of improvement is reported as mean ± spread across at least 3 seeds; a single run's number is an anecdote, not a result.
-
-Grey zone — multi-worker data loading needs each worker's seed derived from the base seed (for example `base_seed + worker_id`), not the same base seed copied verbatim to every worker; copying it verbatim makes every worker draw an identical augmentation/shuffle stream instead of an independent one, which quietly reduces the effective diversity of a "shuffled" epoch.
-
-GPU training rarely reproduces bitwise-identical results across runs even with every seed fixed (non-deterministic cuDNN/cuBLAS kernels are the usual cause); chasing bitwise identity is not the goal — reporting mean ± spread over ≥3 seeds is. Bitwise-exact reproduction is available (`torch.use_deterministic_algorithms(True)` or equivalent) when a specific debugging need requires it, at a real throughput cost.
-
-**5. Checkpointing and resume are tested before a long run launches.** Before a run expected to take longer than the environment's typical uninterrupted window, deliberately kill it at a checkpoint boundary and resume it — confirm loss and metrics continue smoothly rather than restarting from scratch or diverging. Skipping this turns the first real preemption into a fully lost run.
-
-```bash
-timeout 60 python scripts/train.py --config configs/exp-004.yaml --out experiments/exp-004/
-python scripts/train.py --config configs/exp-004.yaml --out experiments/exp-004/ --resume-from experiments/exp-004/latest.ckpt
-```
-
-Pass: the second invocation's loss picks up near where the first left off, not from a fresh initialization. Fail: the resumed run's loss jumps back to its initial value, or the resume flag silently does nothing — either means a real preemption in production would lose all progress.
-
-**6. Eval discipline: a fixed eval set, never tuned on the test split, and a metric that matches the actual product goal.** The test split is read exactly once, at the very end, to report the final number. Pick the metric from what the product actually needs — optimizing accuracy on a severely imbalanced classification task while the product cares about rare-class recall reports a number that looks good and means little; see `references/vision.md`'s class-imbalance playbook for the vision-specific version of this same problem.
-
-```bash
-grep -rnE "test" src/<pkg>/training/*.py | grep -viE "eval\.py|final_report|report_metrics"
-```
-
-Grey zone — approximate: this flags files referencing "test" outside the expected eval/report modules; confirm by hand whether test data actually enters a hyperparameter search loop (grid search, early-stopping-on-test, manual "peek and adjust") rather than being read only for the final reported number. Early stopping driven by the validation split is standard practice and not a leak; early stopping (or any other hyperparameter decision) driven by the test split is exactly the leak this rule forbids.
+For preference or RL post-training, version the reward function, extraction/parser logic, and any reward model. Test known-good, malformed, and adversarial completions so extraction errors or reward exploits do not masquerade as task success. Evaluate the resulting candidate against a matched baseline with a held-out end-task metric; training reward, formatting compliance, or one loss direction alone does not prove quality. Reward counts, dispersion thresholds, and loss behavior depend on the task and trainer. Keep framework APIs and attention-backend selection with matching official documentation and the `gpu` environment checks.
 
 ### Experiment tracking table
 
-Log all of the following for every run that produces a number anyone will cite:
+Keep the following in the project's existing run receipt for a result that will be cited or compared; do not create a new tracking service merely to satisfy this table.
 
 | Log | Why it matters |
 |---|---|
-| Config hash / config file path | Identifies the exact hyperparameters used |
-| Git SHA | Identifies the exact code that ran |
-| Data manifest hash (see `references/datasets.md`) | Identifies the exact data version used |
-| Metrics (train/val/test, per epoch or step) | The outcome being claimed |
-| Artifacts (checkpoints, plots, confusion matrices) | Makes the result inspectable after the fact, not just a number in a table |
+| Configuration identity and preserved artifact | Identifies actual hyperparameters, not just a mutable filename |
+| Git base/revision plus frozen current-content identity | Identifies the code that ran, including relevant dirty or untracked inputs |
+| Data manifest hash (see `references/datasets.md`) | Identifies the data version and split |
+| Metrics and their evaluation boundary | Identifies the measured outcome, split, and uncertainty limits |
+| Artifacts and their identities | Preserves checkpoints, plots, predictions, and other inspectable evidence |
+| Actual invocation and relevant environment | Distinguishes recorded execution from an intended command |
 
-A minimal per-run log entry (JSON, one line per run, appended to an `experiments/log.jsonl`) covers the table above without inventing new infrastructure:
+For reported generative-model evaluations, also preserve the model/checkpoint ID and revision, prompt/template revision, evaluation task or suite and version, few-shot/decoding/evaluator settings, and hardware. If a hosted model or evaluator revision is unavailable, record that limitation instead of inventing an immutable identifier. These details qualify a reported evaluation; they do not require model downloads or full evaluations for unrelated exploratory or documentation work.
+
+Illustrative JSONL shape (one record per physical line; placeholders are not observed identities):
 
 ```json
-{"run_id": "exp-004", "config": "configs/exp-004.yaml", "git_sha": "a1b2c3d",
- "data_manifest": "9f8e7d6c", "seed": 3, "val_metric": 0.842,
- "checkpoint": "experiments/exp-004/latest.ckpt"}
+{"run_id":"exp-004","config":"configs/exp-004.yaml","config_digest":"<recorded-digest>","git_sha":"<recorded-base-commit>","source_snapshot":"experiments/exp-004/source.tar","source_digest":"<recorded-digest>","data_manifest":"<recorded-digest>","seed":3,"val_metric":0.842,"uncertainty":"single exploratory run; variance not estimated","checkpoint":"experiments/exp-004/latest.ckpt","invocation":"<actual invocation>","environment":"<recorded environment identity>"}
 ```
 
-### Grey zone — when to relax the ladder
+For a reported generative evaluation, extend that record with the applicable fields rather than replacing its existing provenance:
 
-A throwaway exploratory run (checking whether a feature is even worth pursuing, before any result will be reported or compared) does not need the full ladder — step 1 (the smoke test) still applies, because a broken pipeline wastes time regardless of intent, but steps 2–4 (baseline, one-variable diffing, multi-seed variance) apply once the run's result is going into a report, a comparison table, or a decision. Judge by audience: a number nobody but the author will ever see again can skip the full ladder; a number that will be compared against anything else cannot.
-
-### Uncommitted-changes-at-launch guard
-
-```bash
-git status --porcelain | grep -q . && echo "FAIL: uncommitted changes at launch — this run's git SHA won't describe the code that ran"
+```json
+{"model_or_checkpoint_id":"<evaluated model>","model_revision":"<observed revision or unavailable>","prompt_template_revision":"<recorded revision>","evaluation_task_or_suite":"<task identifier>","evaluation_suite_version":"<recorded version>","few_shot":0,"decoding_settings":{"temperature":0},"evaluator_settings":"<recorded settings>","hardware":"<observed hardware or unavailable>"}
 ```
 
-Pass: no output — the working tree is clean, so the recorded git SHA fully describes the code. Fail: uncommitted changes exist — put this exact check as a pre-flight assertion inside the training entrypoint itself, not just as a manual habit before the command; a run that "worked" with uncommitted changes cannot be reproduced later even when it succeeded.
+### Exploratory runs
+
+A throwaway exploration still needs a credible smoke test and must respect the incumbent environment and launch authority. Apply baseline, attribution, uncertainty, and receipt requirements when using its result for a comparison or decision. Preserve limited observations as limited observations; never convert a missing measurement into a fabricated value or a universal failure of the experiment.
+
+### Freeze source identity before launch
+
+A Git SHA alone does not identify dirty or relevant untracked inputs. Preserve the exact code/configuration snapshot used by the run, record its digest and base commit, and verify that the launched inputs match it. Include all relevant committed, staged, unstaged, and untracked execution inputs; record dependency, data, and model identities separately. Do not include secrets in a shareable snapshot.
+
+A clean checkout can use an immutable revision when it fully identifies the execution inputs. A dirty checkout is acceptable with a complete, preserved current-content snapshot; never force a commit, stash, branch switch, or discard as a substitute. If the inputs cannot be frozen or change after capture, stop the comparable/long-run launch until its identity is resolved. Exploratory output without this evidence remains explicitly non-reproducible, not a verified comparison.
 
 ## Hand-offs
 
-- Split-before-fitting and leakage prevention that this ladder assumes is already true of the data (steps 2 and 6 above depend on it) → `references/datasets.md`.
-- Vision-specific additions to this ladder (input pipeline, augmentation, error analysis) → `references/vision.md`.
+- Dataset splitting, fitted-statistic leakage, and manifests → `references/datasets.md`.
+- Vision-specific input pipelines, augmentation, and error analysis → `references/vision.md`.
 - Serving a trained checkpoint behind an API → the `backend` skill.
-- Per-file Python discipline for the training code itself → the `programming` skill.
+- Per-file Python discipline → the `programming` skill.
+- Framework/CUDA compatibility and shared-host launch safety → the `gpu` skill.

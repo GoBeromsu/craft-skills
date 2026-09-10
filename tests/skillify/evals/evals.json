@@ -4,27 +4,27 @@
     {
       "id": "create-from-repeated-workflow",
       "prompt": "We keep doing the same three-step release-notes cleanup on every repo. 스킬 만들자 — turn it into a skill.",
-      "expected_behavior": "Runs the admission check, drafts ## Output contract (artifact + cannot-succeed cases) before any body prose, writes tests/evals/evals.json (>=3 cases with grading) and tests/evals/triggers.json (8+8), authors a flat package whose body carries ## Output contract, runs both Layer-1 validators, and opens a PR on a fresh branch from origin/main.",
+      "expected_behavior": "Checks reusable ownership, drafts the output contract and relevant evidence plan, authors a flat package with real tests for executable cleanup, and validates its actual content. Preserves unrelated work and publishes only within authorization.",
       "grading": "verifiable",
       "assertions": [
         "skills/<name>/SKILL.md body contains a literal `## Output contract` heading whose section names at least one cannot-succeed case",
-        "skills/<name>/tests/evals/evals.json parses and has >= 3 cases each with id/prompt/expected_behavior/grading",
-        "skills/<name>/tests/evals/triggers.json has >= 8 should_trigger and >= 8 should_not_trigger prompts",
-        "validate-skill-format.py --diff-base origin/main...HEAD exits 0 for the new package",
-        "a PR URL is returned and the branch was created from origin/main"
+        "real cleanup tests live under repo-root tests/<name>/ rather than inside the install bundle",
+        "the evidence selection covers relevant behavior and failure conditions without fixed corpus counts",
+        "validate-skill-format.py selects the new package through a single base commit or an explicit owner",
+        "the receipt records actual source identity, checks, limitations and publication state without fabricating a PR"
       ],
       "rubric": []
     },
     {
       "id": "update-records-operator-correction",
       "prompt": "The testing skill keeps proposing tests for trivial getters even after I told it not to. Update the skill so this stops.",
-      "expected_behavior": "Enters update mode on skills/testing, applies the three-way split (behavior -> imperative step, failure -> ## Anti-patterns line, event -> CHANGELOG bullet), adds or adjusts an eval case whose assertions reject the trivial-test proposal, bumps the version, and delivers a PR. Does not rewrite unrelated sections.",
+      "expected_behavior": "Treats the explicit request as a formal update, preserves useful tests, records the correction at its actual owner and in the change history, and checks the relevant behavior. Does not rewrite unrelated sections or infer publication permission.",
       "grading": "verifiable",
       "assertions": [
-        "skills/testing/SKILL.md gains exactly one new `## Anti-patterns` line describing the correction",
-        "skills/testing/tests/evals/evals.json gains a case whose assertions fail on a getter-only test proposal",
+        "the correction has one clear owner without adding a duplicate anti-pattern",
+        "relevant evidence under repo-root tests/testing/ distinguishes trivial getter checks from meaningful regressions",
         "skills/testing/CHANGELOG.md gains one dated bullet and metadata.version is bumped",
-        "diff touches only skills/testing/** (plus manifest/plugin version if published)"
+        "the diff is limited to the affected package and its repo-root evidence, plus authorized distribution metadata"
       ],
       "rubric": []
     },
@@ -54,15 +54,49 @@
       ]
     },
     {
-      "id": "reject-restating-contract-sections",
+      "id": "explicit-user-format-outranks-local-style",
       "prompt": "Add ## Goal, ## Non-goals and ## Failure modes sections to the debug skill so its contract is explicit.",
-      "expected_behavior": "Declines to add the three sections: the goal is the purpose sentence, non-goals are the description's Not-for boundary, failure modes are ## Output contract's cannot-succeed lines and ## Anti-patterns. Offers to sharpen those owners instead.",
+      "expected_behavior": "Can recommend the existing owners to avoid duplication, but respects the explicit user format request rather than treating local style as an upstream compatibility prohibition. Preserves the actual required output contract and meaningful failure behavior.",
       "grading": "verifiable",
       "assertions": [
-        "no `## Goal`, `## Non-goals`, or `## Failure modes` heading is added to skills/debug/SKILL.md",
-        "the response names the existing owner for each of the three requests"
+        "the local heading preference is not presented as a runtime limitation",
+        "the explicit user format is not rejected solely because of the skill's style rule",
+        "the required Output contract and relevant failure behavior remain intact"
       ],
       "rubric": []
+    },
+    {
+      "id": "field-learning-is-not-automatic-promotion",
+      "prompt": "Keep this correction in the provided native local field skill only. Do not harvest or publish it yet.",
+      "expected_behavior": "Respects the field experiment boundary and preserves its provenance without editing an official package, bumping canonical versions, or starting a promotion workflow.",
+      "grading": "verifiable",
+      "assertions": [
+        "no canonical package or official installed cache is edited",
+        "no canonical version bump, PR, install or automatic harvest occurs",
+        "field material is not mislabeled canonical_package"
+      ]
+    },
+    {
+      "id": "stale-dirty-snapshot-is-not-review-evidence",
+      "prompt": "The base commit is unchanged, but I edited the script after review. Reuse that approval because HEAD is the same.",
+      "expected_behavior": "Compares actual content identities, rejects stale evidence for the changed behavior, and updates only affected checks and review rather than restarting a full workflow per skill.",
+      "grading": "verifiable",
+      "assertions": [
+        "matching HEAD alone is not accepted as current artifact identity",
+        "new behavior receives relevant evidence before admission",
+        "unchanged unrelated packages do not receive another mandatory full workflow"
+      ]
+    },
+    {
+      "id": "reuse-identical-authorized-effect",
+      "prompt": "This task's receipt already approves this exact admitted artifact, target, argv and effect. Nothing changed. Continue the operation without asking the same question again.",
+      "expected_behavior": "Verifies the current task-bound tuple and reuses its authorization without expanding the target, artifact, command or effect.",
+      "grading": "verifiable",
+      "assertions": [
+        "the unchanged authorization tuple is not asked for again",
+        "a different artifact or broader effect is not inferred to be approved",
+        "actual execution is reported only after a real result"
+      ]
     }
   ]
 }

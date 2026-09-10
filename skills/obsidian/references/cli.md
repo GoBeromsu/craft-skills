@@ -2,7 +2,7 @@
 
 ## Overview
 
-Use the installed `obsidian-cli` binary to operate an Obsidian vault when an Obsidian-aware command is safer than raw filesystem access.
+Use the installed community `notesmd-cli` (which may be exposed as `obsidian-cli`) when a vault-aware command is safer than raw filesystem access. Distinguish it from the official app's `obsidian` CLI; commands and runtime prerequisites are not interchangeable.
 Treat `${OBSIDIAN_VAULT_PATH}`, `${OBSIDIAN_VAULT_NAME}`, and `${OBSIDIAN_CLI_PATH}` as the source of truth for the vault; never hardcode a host-specific vault root or vault name in skill instructions, scripts, examples, or reports.
 
 ## When to Use
@@ -22,18 +22,18 @@ Treat `${OBSIDIAN_VAULT_PATH}`, `${OBSIDIAN_VAULT_NAME}`, and `${OBSIDIAN_CLI_PA
    : "${OBSIDIAN_VAULT_NAME:?set OBSIDIAN_VAULT_NAME}"
    : "${OBSIDIAN_CLI_PATH:=obsidian-cli}"
    "$OBSIDIAN_CLI_PATH" --version
-   "$OBSIDIAN_CLI_PATH" print-default
+   "$OBSIDIAN_CLI_PATH" --help
    ```
-Pass only when the command reports the expected default vault and the path matches `${OBSIDIAN_VAULT_PATH}`.
+Use the installed help-supported registry lookup: `list-vaults --json` for names and paths, or `list-vaults --default` when deliberately using the default. Match `${OBSIDIAN_VAULT_NAME}` to `${OBSIDIAN_VAULT_PATH}` before note operations. An explicit `--vault` target need not be the default. If lookup is unsupported or the mapping unresolved, report it rather than guessing. Registration/default changes require task authority.
 
 2. Use the current `obsidian-cli` command surface.
    ```bash
-   "$OBSIDIAN_CLI_PATH" print-default
+   "$OBSIDIAN_CLI_PATH" list-vaults --json
    "$OBSIDIAN_CLI_PATH" list --vault "${OBSIDIAN_VAULT_NAME}" "Daily Notes"
    "$OBSIDIAN_CLI_PATH" print --vault "${OBSIDIAN_VAULT_NAME}" "Daily Notes/2024-01-15.md"
    "$OBSIDIAN_CLI_PATH" search-content --vault "${OBSIDIAN_VAULT_NAME}" "query text"
    ```
-Treat legacy `obsidian vault-info/read/eval/files/property:*` examples as invalid for this skill unless the installed `obsidian-cli` binary explicitly documents those commands in `--help` output.
+Run only commands exposed by the selected binary's help. Official app commands such as `obsidian read`, `eval`, or `property:*` belong to a separate surface; their absence from community help does not mean the app lacks them. Consult the official app documentation and its own help when that surface is selected.
 
 3. Prefer exact vault-relative paths when the target is known. Use name-based lookup only when the note title is intentionally ambiguous and the command supports that mode.
 
@@ -50,24 +50,25 @@ If `create` returns success but the nested file is absent, use a bounded direct 
    ```bash
    command -v obsidian-cli
    command -v obsidian || true
-   "$OBSIDIAN_CLI_PATH" print-default
+   "$OBSIDIAN_CLI_PATH" --help
    ```
-Do not use the Obsidian.app wrapper as a substitute for `obsidian-cli` in cron or headless workflows.
+Use registry inspection supported by that binary. Do not silently substitute the app CLI in a headless workflow: NotesMD works without the app running, while app commands require their documented runtime prerequisites.
 
 7. Avoid deletion, trash, prune, unlink, or cleanup primitives unless the operator explicitly approved the exact target in the current turn. Report the target path and approval source before executing any destructive command.
 
 ## Requirements
 
-- `obsidian-cli` v0.2.3 or newer, available through `${OBSIDIAN_CLI_PATH}` or `PATH`.
+- Community `notesmd-cli` or its `obsidian-cli` alias, available through `${OBSIDIAN_CLI_PATH}` or `PATH`, with required operations verified in installed help.
 - `${OBSIDIAN_VAULT_PATH}` points to the vault root; `${OBSIDIAN_VAULT_NAME}` is the registered vault name.
-- The target vault is registered as the default vault for `obsidian-cli print-default`.
+- The target vault name resolves to the expected root in that CLI's registry; use explicit `--vault` selection.
+- Use the [community CLI documentation](https://github.com/Yakitrak/notesmd-cli) for NotesMD and the [official app CLI documentation](https://help.obsidian.md/cli) for `obsidian`.
 
 ## Common Rationalizations
 
 | Rationalization | Reality |
 |---|---|
 | "The CLI printed success, so the note exists." | Nested `create` calls can report success without materializing the file. Verify the exact filesystem path and print the note back. |
-| "The `obsidian` binary is close enough." | The Obsidian.app wrapper and `obsidian-cli` expose different command surfaces. Use the binary verified by `obsidian-cli --version` and `print-default`. |
+| "The `obsidian` binary is close enough." | The official app CLI and community NotesMD CLI expose different surfaces. Verify the selected binary's version, help, and vault mapping. |
 | "A full path in the example is clearer." | Host-specific paths leak runtime state. Use `${OBSIDIAN_VAULT_PATH}` plus vault-relative paths. |
 | "Search output is enough to identify the note." | Search can be broad or stale. Verify the final candidate with `print` or exact readback before editing. |
 | "Cleanup is part of the smoke test." | Vault deletion requires explicit current-turn approval for the exact target. Leave smoke artifacts in place or ask for approval when interactive. |
@@ -83,7 +84,7 @@ Do not use the Obsidian.app wrapper as a substitute for `obsidian-cli` in cron o
 ## Verification
 
 - [ ] `"$OBSIDIAN_CLI_PATH" --version` reports the expected installed CLI version.
-- [ ] `"$OBSIDIAN_CLI_PATH" print-default` reports the expected vault and matches `${OBSIDIAN_VAULT_PATH}`.
+- [ ] Supported registry inspection resolves `${OBSIDIAN_VAULT_NAME}` to `${OBSIDIAN_VAULT_PATH}`; no default or registry was changed merely for preflight.
 - [ ] The target note is verified with `print` or exact filesystem readback after any write.
 - [ ] No host-specific path or secret appears in changed package files.
 - [ ] Destructive operations have explicit current-turn approval for the exact target, or are skipped.

@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-"""Tests for skillify skill-format validator (v4 contract)."""
+"""Tests for skillify's package selection and format contract."""
 from __future__ import annotations
 
 import json
+import os
+import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -57,11 +60,17 @@ class SkillFormatValidatorTest(unittest.TestCase):
                     evals: str | None = GOOD_EVALS, triggers: str | None = GOOD_TRIGGERS) -> Path:
         d = root / "skills" / name
         d.mkdir(parents=True)
+        if not (root / ".git").exists():
+            self._git(root, "init")
         (d / "SKILL.md").write_text(skill_md, encoding="utf-8")
         if changelog is not None:
             (d / "CHANGELOG.md").write_text(changelog, encoding="utf-8")
         corpus = root / "tests" / name / "evals"
         corpus.mkdir(parents=True)
+        if evals == GOOD_EVALS:
+            evals = json.dumps({**json.loads(GOOD_EVALS), "skill": name}, ensure_ascii=False)
+        if triggers == GOOD_TRIGGERS:
+            triggers = json.dumps({**json.loads(GOOD_TRIGGERS), "skill": name}, ensure_ascii=False)
         if evals is not None:
             (corpus / "evals.json").write_text(evals, encoding="utf-8")
         if triggers is not None:
@@ -84,6 +93,16 @@ class SkillFormatValidatorTest(unittest.TestCase):
             self._make_skill(root, "demo", happy_only, GOOD_CHANGELOG)
             result = self.run_validator(root)
             self.assertEqual(result.returncode, 1)
+            self.assertIn("CONTRACT_LACKS_FAILURE_BRANCH", result.stdout)
+
+    def test_nonstop_is_not_a_failure_marker(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            body = GOOD_SKILL.replace("Missing input stops the run with a message.",
+                                      "Produce nonstop output.")
+            self._make_skill(root, "demo", body, GOOD_CHANGELOG)
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
             self.assertIn("CONTRACT_LACKS_FAILURE_BRANCH", result.stdout)
 
     def test_rejects_traversal_link_out_of_package(self) -> None:
@@ -110,21 +129,64 @@ class SkillFormatValidatorTest(unittest.TestCase):
             result = self.run_validator(root)
             self.assertEqual(result.returncode, 1)
             self.assertIn("MISSING_REFERENCED_PATH", result.stdout)
-            self.assertIn("scripts/deploy.py", result.stdout)
             self.assertNotIn("references/schema.md", result.stdout)
             (d / "scripts").mkdir()
             (d / "scripts" / "deploy.py").write_text("", encoding="utf-8")
             result = self.run_validator(root)
             self.assertEqual(result.returncode, 0, result.stdout)
 
-    def test_rejects_missing_eval_corpus(self) -> None:
+    def test_repository_test_reference_is_not_package_local(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG, evals=None)
+            body = GOOD_SKILL + "\nUse repo-root `tests/demo/evals/evals.json` for scenarios.\n"
+            self._make_skill(root, "demo", body, GOOD_CHANGELOG)
             result = self.run_validator(root)
-            self.assertEqual(result.returncode, 1)
-            self.assertIn("NO_EVAL_CORPUS", result.stdout)
-            self.assertIn("evals.json", result.stdout)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_unreadable_package_inputs_fail_closed_even_when_advisory(self) -> None:
+        wrapper = """import pathlib, runpy, sys
+filename = sys.argv.pop(1)
+script = sys.argv.pop(1)
+original = pathlib.Path.read_text
+def checked_read(path, *args, **kwargs):
+    if path.name == filename:
+        raise PermissionError('injected read failure: ' + filename)
+    return original(path, *args, **kwargs)
+pathlib.Path.read_text = checked_read
+runpy.run_path(script, run_name='__main__')
+"""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG)
+            for filename in ("SKILL.md", "evals.json"):
+                for flags in ((), ("--advisory",)):
+                    with self.subTest(filename=filename, flags=flags):
+                        result = subprocess.run(
+                            [sys.executable, "-c", wrapper, filename, str(SCRIPT),
+                             "--root", str(root), *flags],
+                            cwd=root, text=True, capture_output=True, check=False,
+                        )
+                        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                        self.assertIn("injected read failure", result.stderr)
+
+    def test_corpus_absence_does_not_impose_a_quality_quota(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG, evals=None, triggers=None)
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertNotIn("NO_EVAL_CORPUS", result.stdout)
+
+    def test_supplied_small_corpus_is_checked_without_fixed_minimum(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            evals = json.loads(GOOD_EVALS)
+            evals["cases"] = evals["cases"][:1]
+            triggers = {"should_trigger": ["demo this"], "should_not_trigger": []}
+            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG,
+                             evals=json.dumps(evals), triggers=json.dumps(triggers))
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_rejects_malformed_eval_corpus(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -133,16 +195,40 @@ class SkillFormatValidatorTest(unittest.TestCase):
                 {"id": "a", "prompt": "p", "expected_behavior": "e", "grading": "verifiable"},
                 {"id": "b", "prompt": "p", "expected_behavior": "e", "grading": "subjective", "assertions": ["x"]},
             ]})
-            bad_triggers = json.dumps({"skill": "demo", "should_trigger": ["only one"], "should_not_trigger": []})
+            bad_triggers = json.dumps({"skill": "demo", "should_trigger": [42], "should_not_trigger": "not a list"})
             self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG, evals=bad_evals, triggers=bad_triggers)
             result = self.run_validator(root)
             self.assertEqual(result.returncode, 1)
             out = result.stdout
-            self.assertIn("has 2 cases < 3", out)
             self.assertIn("verifiable case a needs non-empty `assertions`", out)
             self.assertIn("subjective case b needs non-empty `rubric`", out)
-            self.assertIn("`should_trigger` needs >= 8", out)
-            self.assertIn("`should_not_trigger` needs >= 8", out)
+            self.assertIn("`should_trigger` must be a list", out)
+            self.assertIn("`should_not_trigger` must be a list", out)
+
+    def test_duplicate_ids_and_scalar_assertions_are_malformed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            evals = json.loads(GOOD_EVALS)
+            evals["cases"][0]["assertions"] = "not a list"
+            evals["cases"][1]["id"] = evals["cases"][0]["id"]
+            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG, evals=json.dumps(evals))
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("duplicate case id", result.stdout)
+            self.assertIn("string list", result.stdout)
+
+    def test_wrong_corpus_owner_and_unhashable_grading_are_findings(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            evals = json.loads(GOOD_EVALS)
+            evals["skill"] = "other"
+            evals["cases"][0]["grading"] = []
+            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG, evals=json.dumps(evals))
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("does not match its owner", result.stdout)
+            self.assertIn("grading must be", result.stdout)
+            self.assertNotIn("Traceback", result.stderr)
 
     def test_accepts_well_formed_package(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -594,16 +680,13 @@ class SkillFormatValidatorTest(unittest.TestCase):
             check=True, capture_output=True, text=True,
         ).stdout.strip()
 
-    def test_diff_base_sibling_reference_change_not_enforced(self) -> None:
-        """Regression: a package whose SKILL.md is unchanged but whose sibling
-        references/*.md changed must NOT be pulled into diff-base enforcement.
-        A package whose own SKILL.md changed MUST be enforced."""
+    def test_support_changes_select_the_actual_package(self) -> None:
+        """References and primary-body changes both select their owners."""
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             skills_dir = root / "skills"
 
-            # pkg-a: BAD SKILL.md (missing metadata). Only its references/ file
-            # will change after the base commit → must NOT be enforced.
+            # A bad package is relevant when its support file changes.
             bad_skill_a = (
                 GOOD_SKILL
                 .replace("name: demo", "name: pkg-a")
@@ -634,7 +717,316 @@ class SkillFormatValidatorTest(unittest.TestCase):
             self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
             self.assertIn("pkg-b", result.stdout)
             self.assertIn("NO_METADATA", result.stdout)
-            self.assertNotIn("pkg-a", result.stdout)
+            self.assertIn("pkg-a", result.stdout)
+
+    def _git(self, root: Path, *args: str) -> None:
+        subprocess.run(["git", "-C", str(root), *args], check=True, capture_output=True)
+
+    def test_four_git_states_select_support_without_widening_to_legacy(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name in ("committed", "staged", "unstaged", "untracked", "legacy"):
+                skill = GOOD_SKILL.replace("name: demo", f"name: {name}")
+                if name == "legacy":
+                    skill = skill.replace("metadata:\n  version: 1.0.0\n", "")
+                package = self._make_skill(root, name, skill, GOOD_CHANGELOG)
+                (package / "references").mkdir()
+                (package / "references" / "notes.md").write_text("original\n")
+            self._init_git_repo(root)
+            base = self._git_head(root)
+            (root / "skills/committed/references/notes.md").write_text("committed\n")
+            self._git(root, "add", "skills/committed")
+            self._git(root, "commit", "-m", "committed support")
+            (root / "skills/staged/references/notes.md").write_text("staged\n")
+            self._git(root, "add", "skills/staged")
+            (root / "skills/unstaged/references/notes.md").write_text("unstaged\n")
+            (root / "skills/untracked/references/new\n notes.md").write_text("untracked\n")
+            (root / "skills/untracked/references/new\\ notes.md").write_text("literal backslash\n")
+            result = self.run_validator(root, "--diff-base", base)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            for name in ("committed", "staged", "unstaged", "untracked"):
+                self.assertIn(f"scope: package skills/{name}\n", result.stdout)
+            self.assertNotIn("legacy", result.stdout)
+            full = self.run_validator(root)
+            self.assertEqual(full.returncode, 1, full.stdout + full.stderr)
+            self.assertIn("NO_METADATA", full.stdout)
+
+    def test_staged_then_unstaged_cancellation_still_selects_owner(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            package = self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG)
+            self._init_git_repo(root)
+            base = self._git_head(root)
+            (package / "CHANGELOG.md").write_text(GOOD_CHANGELOG + "staged\n")
+            self._git(root, "add", ".")
+            (package / "CHANGELOG.md").write_text(GOOD_CHANGELOG)
+            result = self.run_validator(root, "--diff-base", base)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("scope: package skills/demo", result.stdout)
+
+    def test_corpus_only_change_is_validated(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG)
+            self._init_git_repo(root)
+            base = self._git_head(root)
+            (root / "tests/demo/evals/evals.json").write_text("{broken")
+            result = self.run_validator(root, "--diff-base", base)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("BAD_EVAL_CORPUS", result.stdout)
+
+    def test_new_untracked_and_explicit_owners_form_a_deduplicated_union(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG)
+            self._init_git_repo(root)
+            base = self._git_head(root)
+            self._make_skill(root, "new-skill", GOOD_SKILL.replace("name: demo", "name: new-skill"),
+                             GOOD_CHANGELOG, evals=None, triggers=None)
+            result = self.run_validator(root, "--diff-base", base, "--package", "skills/demo",
+                                        "--package", "skills/new-skill", "--package", "skills/demo")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertEqual(result.stdout.count("scope: package skills/demo\n"), 1)
+            self.assertEqual(result.stdout.count("scope: package skills/new-skill\n"), 1)
+            explicit = self.run_validator(root, "--package", "skills/new-skill")
+            self.assertEqual(explicit.returncode, 0, explicit.stdout + explicit.stderr)
+            self.assertNotIn("scope: package skills/demo", explicit.stdout)
+
+    def test_invalid_base_and_range_fail_even_in_advisory_mode(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG)
+            self._init_git_repo(root)
+            for base in ("missing-ref", "HEAD...HEAD", "HEAD..HEAD", "--help"):
+                with self.subTest(base=base):
+                    result = self.run_validator(root, f"--diff-base={base}", "--advisory")
+                    self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                    self.assertIn("input error", result.stderr)
+
+    def test_non_git_diff_scope_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            result = self.run_validator(Path(tmp), "--diff-base", "HEAD", "--advisory")
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            self.assertIn("Git", result.stderr)
+
+    def test_missing_git_binary_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG)
+            empty_bin = root / "empty-bin"
+            empty_bin.mkdir()
+            for scope in ((), ("--package", "skills/demo"), ("--diff-base", "HEAD")):
+                for advisory in ((), ("--advisory",)):
+                    with self.subTest(scope=scope, advisory=advisory):
+                        result = subprocess.run(
+                            [sys.executable, str(SCRIPT), "--root", str(root),
+                             *scope, *advisory],
+                            env={**os.environ, "PATH": str(empty_bin)},
+                            capture_output=True, text=True, check=False,
+                        )
+                        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                        self.assertIn("Git", result.stderr)
+
+    def test_failed_git_inventory_is_not_an_empty_result(self) -> None:
+        wrapper = """import runpy, subprocess, sys
+script = sys.argv.pop(1)
+original = subprocess.run
+def checked_run(argv, *args, **kwargs):
+    if argv[:2] == ['git', 'ls-files']:
+        raise subprocess.CalledProcessError(128, argv, stderr=b'injected inventory denial')
+    return original(argv, *args, **kwargs)
+subprocess.run = checked_run
+runpy.run_path(script, run_name='__main__')
+"""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG)
+            for scope in ((), ("--package", "skills/demo")):
+                for advisory in ((), ("--advisory",)):
+                    with self.subTest(scope=scope, advisory=advisory):
+                        result = subprocess.run(
+                            [sys.executable, "-c", wrapper, str(SCRIPT),
+                             "--root", str(root), *scope, *advisory],
+                            capture_output=True, text=True, check=False,
+                        )
+                        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                        self.assertIn("injected inventory denial", result.stderr)
+
+    def test_repeated_diff_base_is_an_input_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG)
+            self._init_git_repo(root)
+            for last in ("HEAD", "missing-ref"):
+                for advisory in ((), ("--advisory",)):
+                    with self.subTest(last=last, advisory=advisory):
+                        result = self.run_validator(
+                            root, "--diff-base", "HEAD", "--diff-base", last, *advisory,
+                        )
+                        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                        self.assertIn("only once", result.stderr)
+
+    def test_full_scan_rejects_missing_skills_root(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._init_git_repo(root)
+            for advisory in ((), ("--advisory",)):
+                with self.subTest(advisory=advisory):
+                    result = self.run_validator(root, *advisory)
+                    self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                    self.assertIn("skills/", result.stderr)
+
+    def test_git_scope_rejects_untracked_and_staged_external_symlinks(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as outside:
+            root = Path(tmp)
+            package = self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG)
+            self._init_git_repo(root)
+            base = self._git_head(root)
+            external = Path(outside) / "fixture.md"
+            external.write_text("Fixture outside the repository.\n")
+            reference = package / "references/external.md"
+            reference.parent.mkdir()
+            reference.symlink_to(external)
+            for state in ("untracked", "staged"):
+                if state == "staged":
+                    self._git(root, "add", "skills/demo/references/external.md")
+                for advisory in ((), ("--advisory",)):
+                    with self.subTest(state=state, advisory=advisory):
+                        result = self.run_validator(root, "--diff-base", base, *advisory)
+                        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                        self.assertIn("escapes root", result.stderr)
+
+    def test_shared_contract_change_selects_skillify_not_unrelated_debt(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._make_skill(root, "skillify",
+                             GOOD_SKILL.replace("name: demo", "name: skillify"), GOOD_CHANGELOG)
+            bad = GOOD_SKILL.replace("name: demo", "name: legacy").replace(
+                "metadata:\n  version: 1.0.0\n", "")
+            self._make_skill(root, "legacy", bad, GOOD_CHANGELOG)
+            (root / "AGENTS.md").write_text("original\n")
+            self._init_git_repo(root)
+            (root / "AGENTS.md").write_text("updated contract\n")
+            result = self.run_validator(root, "--diff-base", "HEAD")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("scope: package skills/skillify", result.stdout)
+            self.assertNotIn("legacy", result.stdout)
+
+    def test_explicit_owner_rejects_escape_and_non_owner(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as outside:
+            root = Path(tmp)
+            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG)
+            (root / "skills/external").symlink_to(outside, target_is_directory=True)
+            for package in ("skills", "skills/missing", "skills/*", "../skills/demo",
+                            "skills/../skills/demo", "skills/demo/SKILL.md",
+                            "skills/./demo", "skills//demo", "skills/demo/", "./skills/demo",
+                            str(root / "skills/demo"), "skills/external"):
+                with self.subTest(package=package):
+                    result = self.run_validator(root, "--package", package, "--advisory")
+                    self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+
+    def test_late_head_and_index_owners_remain_retirement_evidence(self) -> None:
+        for state in ("head", "index"):
+            with self.subTest(state=state), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG)
+                self._init_git_repo(root)
+                base = self._git_head(root)
+                late = self._make_skill(
+                    root, "late", GOOD_SKILL.replace("name: demo", "name: late"),
+                    GOOD_CHANGELOG,
+                )
+                self._git(root, "add", "skills/late", "tests/late")
+                if state == "head":
+                    self._git(root, "commit", "-m", "new owner after base")
+                shutil.rmtree(late)
+                partial = self.run_validator(root, "--diff-base", base)
+                self.assertEqual(partial.returncode, 1, partial.stdout + partial.stderr)
+                self.assertIn("INCOMPLETE_RETIREMENT", partial.stdout)
+                shutil.rmtree(root / "tests/late")
+                retired = self.run_validator(root, "--diff-base", base)
+                self.assertEqual(retired.returncode, 0, retired.stdout + retired.stderr)
+                self.assertIn("scope: tombstone skills/late", retired.stdout)
+                self.assertNotIn("scope: package skills/demo", retired.stdout)
+
+    def test_retirement_requires_no_files_or_inbound_package_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            package = self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG)
+            (root / "README.md").write_text("Read `skills/demo/SKILL.md`.\n")
+            self._init_git_repo(root)
+            base = self._git_head(root)
+            (package / "SKILL.md").unlink()
+            partial = self.run_validator(root, "--diff-base", base)
+            self.assertEqual(partial.returncode, 1, partial.stdout + partial.stderr)
+            self.assertIn("INCOMPLETE_RETIREMENT", partial.stdout)
+            self._git(root, "rm", "-r", "-f", "skills/demo")
+            test_remains = self.run_validator(root, "--diff-base", base)
+            self.assertEqual(test_remains.returncode, 1, test_remains.stdout + test_remains.stderr)
+            self.assertIn("INCOMPLETE_RETIREMENT", test_remains.stdout)
+            self._git(root, "rm", "-r", "-f", "tests/demo")
+            dangling = self.run_validator(root, "--diff-base", base)
+            self.assertEqual(dangling.returncode, 1, dangling.stdout + dangling.stderr)
+            self.assertIn("DANGLING_PACKAGE_REFERENCE", dangling.stdout)
+            (root / "README.md").write_text("No active package paths.\n")
+            retired = self.run_validator(root, "--diff-base", base)
+            self.assertEqual(retired.returncode, 0, retired.stdout + retired.stderr)
+            self.assertIn("scope: tombstone skills/demo", retired.stdout)
+
+    def test_retirement_checks_script_references_but_not_ignored_scratch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG)
+            consumer = self._make_skill(
+                root, "consumer", GOOD_SKILL.replace("name: demo", "name: consumer"),
+                GOOD_CHANGELOG, evals=None, triggers=None,
+            )
+            (root / ".gitignore").write_text("skills/**/evals/\n")
+            script = consumer / "scripts" / "consume.py"
+            script.parent.mkdir()
+            script.write_text("resource = 'skills/demo/SKILL.md'\n")
+            self._init_git_repo(root)
+            base = self._git_head(root)
+            self._git(root, "rm", "-r", "-f", "skills/demo", "tests/demo")
+            dangling = self.run_validator(root, "--diff-base", base)
+            self.assertEqual(dangling.returncode, 1, dangling.stdout + dangling.stderr)
+            self.assertIn("DANGLING_PACKAGE_REFERENCE", dangling.stdout)
+            script.unlink()
+            scratch = consumer / "evals" / "capture.md"
+            scratch.parent.mkdir()
+            scratch.write_text("Historical command: skills/demo/SKILL.md\n")
+            retired = self.run_validator(root, "--diff-base", base)
+            self.assertEqual(retired.returncode, 0, retired.stdout + retired.stderr)
+            self.assertNotIn("DANGLING_PACKAGE_REFERENCE", retired.stdout)
+
+    def test_rename_tracks_old_and_new_owners(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG)
+            self._init_git_repo(root)
+            base = self._git_head(root)
+            self._git(root, "mv", "skills/demo", "skills/renamed")
+            self._git(root, "mv", "tests/demo", "tests/renamed")
+            (root / "skills/renamed/SKILL.md").write_text(
+                GOOD_SKILL.replace("name: demo", "name: renamed"))
+            for file in (root / "tests/renamed/evals").iterdir():
+                data = json.loads(file.read_text())
+                data["skill"] = "renamed"
+                file.write_text(json.dumps(data, ensure_ascii=False))
+            result = self.run_validator(root, "--diff-base", base)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("scope: tombstone skills/demo", result.stdout)
+            self.assertIn("scope: package skills/renamed", result.stdout)
+
+    def test_unowned_support_path_is_not_silently_ignored(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._init_git_repo(root)
+            (root / "scripts").mkdir()
+            (root / "scripts/unowned.py").write_text("pass\n")
+            result = self.run_validator(root, "--diff-base", "HEAD")
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            self.assertIn("unresolved package/support ownership", result.stderr)
 
 
 if __name__ == "__main__":

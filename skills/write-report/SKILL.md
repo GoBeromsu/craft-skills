@@ -2,7 +2,7 @@
 name: write-report
 description: 'Scaffolds and authors a project''s one-off canonical technical report against a single YAML frame (technical-report.yaml) whose depth is the enforced table of contents — section, then heading, then required must-content. Use when asked to "scaffold a technical report" or "기술 보고서", when writing or restructuring a report section against that frame, or when checking a section''s structure and pinned sources for "TOC enforcement" against its source manifest. Not for ongoing project documentation, READMEs, ADRs, or changelogs (use `document`) — write-report owns exactly one canonical, one-off deliverable per project.'
 metadata:
-  version: 1.0.1
+  version: 1.0.2
 ---
 
 # write-report
@@ -22,7 +22,7 @@ a reader can start the work by reading the report alone.
 - `TECHNICAL_REPORT_BOOK` — directory holding the canonical markdown (Index + section
   files). Default `./book`.
 
-Copy `.env.example` to `.env` and set both, or export them in the shell. New project: copy
+Copy `env.example` to `.env` and set both, or export them in the shell. New project: copy
 `templates/technical-report.template.yaml` to `$TECHNICAL_REPORT_YAML` and fill it via
 Scaffold mode.
 
@@ -104,6 +104,10 @@ Keep headings and table cells terse if needed; full sentences in body paragraphs
 7. Submit for approval; only the `governance`-named approver's acceptance moves the draft
    into `TECHNICAL_REPORT_BOOK`, including any Index status line or TOC update.
 
+## Output contract
+
+Return the frame or section-draft paths, actual structure/source validator results, and the governance approval status. If a required source, frame decision, validator result, or canonical-write approval is missing, stop the affected completion claim and retain the draft as a proposal; do not invent evidence or present it as an accepted canonical section.
+
 ## Validators
 
 `scripts/validate.py` treats the YAML `document` depth as truth and parses the real
@@ -136,7 +140,7 @@ rendered markdown, is always what becomes canonical.
 - `references/source-model.md` — source manifest format, `source_of_truth` status,
   `must_coverage`, sensitivity rules.
 - `scripts/validate.py` / `scripts/validate_sources.py` — structure + source validators.
-- `.env.example` — per-project path template.
+- `env.example` — per-project path template.
 
 ## Requirements
 

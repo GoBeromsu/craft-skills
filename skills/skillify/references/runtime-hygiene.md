@@ -28,37 +28,52 @@ Do not paste secret values into chat, commit messages, PR bodies, logs, summarie
 
 ## 2. Validator playbook
 
-Run these checks before every commit that touches a skill package:
+Run the relevant checks on the actual authoring snapshot before admission or an authorized commit.
+Resolve and record one intended base commit:
 
 ```bash
-# Package format: frontmatter shape, name==dir, semver, CHANGELOG presence, no nested SKILL.md.
-python3 skills/skillify/scripts/validate-skill-format.py --diff-base origin/main...HEAD
+set -e
+BASE=$(git merge-base origin/main HEAD)
+
+# Format selection unions committed, staged, unstaged and untracked changes.
+python3 skills/skillify/scripts/validate-skill-format.py --diff-base "$BASE"
+
+# Select an additional existing owner explicitly; repeat --package to add owners.
+python3 skills/skillify/scripts/validate-skill-format.py --diff-base "$BASE" --package skills/skillify
 
 # Secret / real-path leakage on newly changed lines.
-python3 skills/skillify/scripts/validate-runtime-hygiene.py --diff-base origin/main...HEAD
+python3 skills/skillify/scripts/validate-runtime-hygiene.py --diff-base "$BASE"
 
 # Sentence-boundary line breaks (contract §4) on the changed package's Markdown; --fix reflows.
 python3 skills/skillify/scripts/reflow-sentences.py skills/<skill-name>
 ```
 
-The two validators run in CI in `--diff-base` mode: only packages changed in the PR are enforced.
-Run either script without `--diff-base` for a full non-blocking inventory of legacy gaps (`validate-skill-format.py --advisory`).
+The format validator maps body, references, scripts, assets and repo-root test changes to actual owners.
+Every mode requires Git and the actual worktree root; `--root` is not a standalone non-Git package directory.
+It rejects repeated base flags, revision ranges, noncanonical or escaping paths, nonexistent package selectors, and unresolved support ownership; input/Git failures still fail in advisory mode.
+Deleted owners receive tombstone and concrete inbound-path checks; independent review still owns semantic routing and retirement adequacy.
+Without either selector it scans all packages.
+Add `--advisory` only for an explicitly non-blocking format inventory.
+Neither lexical validation nor a supplied corpus count demonstrates behavioral quality; preserve relevant script tests and scenario evidence.
 
 **Guard-first sequencing.**
-When a hygiene gap is discovered in already-committed content, add or update the guard before doing broad cleanup, and keep the guard scoped to newly changed lines (`--diff-base origin/main...HEAD`) so old debt never blocks an unrelated PR.
+When a hygiene gap is discovered in already-committed content, add or update the guard before broad cleanup and keep changed-line hygiene scoped to the recorded base so unrelated legacy debt does not block a different package.
 For a large cleanup, prefer two separate PRs: one adds the guard + tests + CI step, the next externalizes the legacy paths/secrets it now catches.
 In cleanup PRs, keep prose examples as placeholders (`<VAR>`, `${VAR}`), and make executable scripts declare inputs with argparse flags or shell positional or flag arguments; a runtime-owned non-secret setting may default from a `getenv`-style read of one documented variable, and secrets use `getenv` after declaration in the runtime's secret manifest.
 
 Avoid ambient configuration / implicit inputs and language-in-language heredocs.
 The runtime's security scanner cannot distinguish a script that dumps the environment from one that passes arguments through it, and neither can a reader of `--help`.
 
-Post-merge, re-sync `main` and rerun both scripts against it; confirm `git status --short --branch` is clean or explicitly report a remaining stash.
+After an authorized merge/update, verify the actual resulting revision and rerun the relevant checks.
+Report unrelated work without stashing or changing the operator's branch implicitly.
 
 ## 3. Diff-mode pitfall
 
 `--diff-base` must validate the content that would be committed, not a stale `HEAD` snapshot.
 A three-dot range like `origin/main...HEAD` passed directly to `git diff` can miss uncommitted cleanup.
-Resolve the range to its merge base first, then diff that base against the current worktree — both validators already implement this via `diff_compare_base()`.
+Resolve the intended base explicitly; do not pass a range to the format selector.
+Package selection unions the four Git states even when a staged change and an unstaged reversal cancel in a net diff; format checks then read current content.
+Changed-line secret checks have a different purpose from package selection; do not claim identical coverage merely because both scripts accept `--diff-base`.
 Regression-test shape when changing either script: a clean base commit; a next commit that adds a leaked value; a worktree that replaces it with a placeholder; `--diff-base <base>` must PASS against the worktree state, and a negative case with an uncommitted leak must FAIL.
 
 A line containing an env placeholder can still contain a second hardcoded value on the same line — do not exempt a whole line just because `${VAR}` appears somewhere in it.
@@ -82,7 +97,7 @@ A PR opened after the leak does not remove it from history — cleanup requires 
    git rev-list --objects --all | awk '{print $2}' | grep -E '(^|/)\.env($|\.)|\.env\.example$|env\.example$' | sort -u || true
    ```
 
-3. Rewrite local history to remove the real env file(s). Keep `.env.example` only if it holds placeholders; if in doubt, strip it from history too and recreate a clean example afterward.
+3. Obtain approval for the exact local history rewrite and preserve unrelated work before using a destructive history command. Revoke or rotate the exposed credential through the authorized provider procedure; history cleanup does not invalidate it. Remove only approved real env paths, and retain safe examples or recreate them afterward.
 
    ```bash
    REMOTE_URL=$(git remote get-url origin)

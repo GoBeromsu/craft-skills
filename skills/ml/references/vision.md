@@ -2,7 +2,7 @@
 
 Vision models fail silently at the input pipeline more often than at the architecture — a wrong resize, a leaked augmentation, or an un-inspected failure case costs more accuracy than the next model size up. Fix the pipeline and look at the errors before reaching for a bigger model.
 
-This reference layers on top of `references/training.md` — the discipline ladder there (smoke test, baseline, one variable, seeds, eval discipline) still applies in full; the rules below are vision-specific additions.
+This reference layers on top of `references/training.md` — its task-appropriate smoke tests, baselines, attribution, randomness, and evaluation discipline still apply; the rules below are vision-specific additions.
 
 ## Table of Contents
 

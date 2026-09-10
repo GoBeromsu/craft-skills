@@ -153,7 +153,7 @@ Never auto-detect completion and never tear down without explicit user confirmat
 | `${WORKTREE_ROOT}` | Where worktrees are created | No — defaults to `<repo-parent>/<repo>-worktrees` |
 | `${CRAFT_WT_REMOTE_HOST}` | Tailscale hostname or `user@host` for remote execution | No — omit to use local-only mode |
 
-Set in `.env` (gitignored). See `../.env.example` for the placeholder.
+Set in `.env` (gitignored). See `../env.example` for the placeholder.
 
 Dependencies: `git` >= 2.5 (worktree support); `tmux` + `tailscale` (or equivalent) only for the optional Tailscale remote extension.
 
