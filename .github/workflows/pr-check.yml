@@ -128,7 +128,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - run: python3 skills/skillify/scripts/validate-skill-format.py --diff-base origin/main...HEAD
+      - name: Validate actual changed package owners
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          BASE=$(git merge-base "origin/$BASE_REF" HEAD)
+          python3 skills/skillify/scripts/validate-skill-format.py --diff-base "$BASE"
+      - name: Exercise package-selection regressions
+        run: python3 -m unittest discover -s tests/skillify -p test_validate_skill_format.py
 
   layer1-hygiene:
     name: layer1-hygiene
@@ -137,7 +144,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - run: python3 skills/skillify/scripts/validate-runtime-hygiene.py --diff-base origin/main...HEAD
+      - name: Validate changed-line hygiene
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          BASE=$(git merge-base "origin/$BASE_REF" HEAD)
+          python3 skills/skillify/scripts/validate-runtime-hygiene.py --diff-base "$BASE"
 
   distribution-version:
     name: distribution-version

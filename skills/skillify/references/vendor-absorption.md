@@ -25,6 +25,10 @@ Small things count — a validator's exact character bound or a "run baselines i
 
 For each mechanism ask: **would this still be true for a skill running on a runtime this vendor does not control?**
 
+Also label its authority: native compatibility requirement, upstream recommendation, or local repository policy.
+A runner's example count or a prompting recommendation is not automatically a universal admission requirement.
+Distinguish model/API guidance from that vendor's skill loader, plugin packaging, and permission semantics.
+
 - **Yes → universal craft.** Candidate for core (`contract.md`, `evaluation.md`, `lifecycle.md` — whichever owns the topic, §9 MECE).
 - **No → vendor plumbing.** Metadata files only one runtime reads, CLI invocations only one runtime exposes, packaging formats, UI-surface fields. These go in the lens, never core.
 
@@ -58,4 +62,5 @@ Section 5 makes re-absorption idempotent: when the vendor ships an update, diff 
 - Update `skills-manifest.yaml`: the package `version` and `provenance.absorbed_from`.
 - Register the new vendor's repo namespace (e.g. `openai`, `NousResearch`) in `external_repos` of `scripts/governance/fixtures/repos.portable.json` and the cross-repo fixture — the provenance checker blocks any `absorbed_from` entry whose namespace it cannot resolve.
 - Bump per contract §8 — an absorption that adds lenses or capabilities is MINOR.
-- Re-run the scenario and trigger evals (contract §7): absorbed rules must not shift existing behavior or routing. Then the standard delivery flow (`lifecycle.md` §6).
+- Run the relevant script, scenario, and routing checks from contract §7, with a rationale for the selected evidence; do not impose all corpus or runtime combinations on every absorption.
+- Reuse the existing approved common-policy/domain boundary and exact evidence at destination admission, then use only authorized delivery effects (`lifecycle.md` §6).

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate craft-skills skill-package format against the v4 authoring contract
+"""Validate craft-skills skill-package format against the authoring contract
 (`skills/skillify/references/contract.md`).
 
 Each skill package is a single directory `skills/<skill-name>/` containing at
@@ -25,25 +25,21 @@ least `SKILL.md` + `CHANGELOG.md`. This validator enforces, per package:
  10. SKILL.md body carries a literal `## Output contract` heading whose section names at
      least one cannot-succeed behavior (a line mentioning cannot / stop / no-result /
      partial / unavailable / ambiguous / missing) (contract §4).
- 11. Every package-relative path the body mentions (`scripts/`, `references/`,
-     `templates/`, `assets/`, `tests/`, `agents/`) exists in the package, and no markdown
-     link climbs out of the package with `../` (contract §12).
- 12. The committed eval corpus exists at repo-root `tests/<name>/evals/evals.json`
-     (>= 3 cases, each with id/prompt/expected_behavior/grading; `verifiable` cases
-     carry `assertions`, `subjective` cases carry `rubric`) and
-     `tests/<name>/evals/triggers.json` (>= 8 `should_trigger` + >= 8 `should_not_trigger`)
-     (contract §7).
+ 11. Every package-relative support path the body mentions (`scripts/`, `references/`,
+     `templates/`, `assets/`, `agents/`) exists in the package, and no markdown link
+     climbs out of the package with `../` (contract §12). Repository-root
+     `tests/<name>/` paths are not package-local support paths.
+ 12. Supplied eval corpora at repo-root `tests/<name>/evals/` have typed cases
+     and prompts. Corpus presence and case counts do not establish adequacy:
+     the authoring evidence and independent review own that judgment.
 
 Modes:
   (default)       full scan; reports every violation; exit 1 if any hard error found.
-  --diff-base REF only enforce packages whose own SKILL.md or CHANGELOG.md changed
-                  vs REF (PR mode). A package is "changed" ONLY when its own
-                  ``skills/<skill>/SKILL.md`` or ``skills/<skill>/CHANGELOG.md``
-                  appears in the git diff name-list. Changes to sibling files
-                  (references/*, scripts/*, etc.) do NOT pull the package into
-                  enforcement scope. Legacy packages stay green until their own
-                  SKILL.md/CHANGELOG.md is next touched.
-  --advisory      print violations but always exit 0 (use for a non-blocking report).
+  --diff-base REF select the union of committed, staged, unstaged and untracked
+                  package/support changes against one commit, not a revision range.
+  --package PATH select an existing skills/<owner> directory; repeatable and
+                  additive to --diff-base, never a glob or an escaping path.
+  --advisory      report format findings without failing; input/Git errors exit 2.
 
 Warnings (description-length shape) never affect the exit code, in any mode.
 This validator owns FORMAT only. Secret/real-path leakage is owned by
@@ -53,11 +49,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SKILLS_DIR = REPO_ROOT / "skills"
@@ -100,8 +97,6 @@ PACKAGE_PATH_DIRS = ("scripts", "references", "templates", "assets", "tests", "a
 PACKAGE_PATH_RE = re.compile(
     r"(?:\$SKILL_DIR/|\$\{SKILL_DIR\}/|(?<![A-Za-z0-9_./-]))(?:" + "|".join(PACKAGE_PATH_DIRS) + r")/[A-Za-z0-9_./-]*[A-Za-z0-9_]"
 )
-EVALS_MIN_CASES = 3
-TRIGGERS_MIN_EACH = 8
 GRADING_KINDS = {"verifiable", "subjective"}
 
 
@@ -272,64 +267,168 @@ def parse_frontmatter(text: str) -> "dict[str, object] | None":
 
 def tracked_env_files(skill_dir: Path) -> list[str]:
     rel = skill_dir.relative_to(REPO_ROOT).as_posix()
-    try:
-        out = subprocess.run(
-            ["git", "ls-files", rel],
-            cwd=REPO_ROOT, capture_output=True, text=True, check=True,
-        ).stdout
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        return []
-    hits = []
-    for f in out.splitlines():
-        name = f.rsplit("/", 1)[-1]
-        if name == ".env.example":
-            continue
-        if REAL_ENV_RE.search(f):
-            hits.append(f)
-    return hits
+    return sorted(
+        path for path in git_paths("ls-files", "-z", "--", rel)
+        if PurePosixPath(path).name != ".env.example" and REAL_ENV_RE.search(path)
+    )
 
 
-def changed_skill_dirs(diff_base: str) -> set[Path] | None:
-    """Return top-level skill-package directories whose own SKILL.md or
-    CHANGELOG.md changed vs diff_base."""
+def git_output(*args: str) -> bytes:
+    """Read Git without shell parsing or silent input-error fallbacks."""
     try:
-        out = subprocess.run(
-            ["git", "diff", "--name-only", diff_base],
-            cwd=REPO_ROOT, capture_output=True, text=True, check=True,
+        return subprocess.run(
+            ["git", *args], cwd=REPO_ROOT, capture_output=True, check=True,
         ).stdout
     except (subprocess.CalledProcessError, FileNotFoundError) as exc:
-        print(f"ERROR: could not compute diff against {diff_base!r}: {exc}", file=sys.stderr)
-        return None
-    dirs: set[Path] = set()
-    for rel in out.splitlines():
-        p = REPO_ROOT / rel
-        if p.name not in ("SKILL.md", "CHANGELOG.md"):
-            continue
-        pkg_dir = p.parent
-        if pkg_dir.parent != SKILLS_DIR:
-            continue
-        if not (pkg_dir / "SKILL.md").exists():
-            continue
-        # A history correction — CHANGELOG.md edited without adding a bullet and
-        # without touching SKILL.md — is not new work and does not ratchet.
-        if p.name == "CHANGELOG.md" and not _changelog_adds_bullet(diff_base, rel):
-            continue
-        dirs.add(pkg_dir)
-    return dirs
+        detail = os.fsdecode(getattr(exc, "stderr", b"") or b"").strip()
+        raise ValueError(f"Git {' '.join(args)!r} failed: {detail or exc}") from exc
 
 
-def _changelog_adds_bullet(diff_base: str, rel: str) -> bool:
-    """True when the diff adds at least one dated bullet line to ``rel``."""
-    try:
-        out = subprocess.run(
-            ["git", "diff", "--unified=0", diff_base, "--", rel],
-            cwd=REPO_ROOT, capture_output=True, text=True, check=True,
-        ).stdout
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        return True
-    added = sum(1 for line in out.splitlines() if line.startswith("+") and CHANGELOG_BULLET_RE.match(line[1:]))
-    removed = sum(1 for line in out.splitlines() if line.startswith("-") and CHANGELOG_BULLET_RE.match(line[1:]))
-    return added > removed
+def safe_repo_path(value: str) -> Path:
+    path = PurePosixPath(value)
+    if (not value or "\0" in value or path.is_absolute()
+            or ".." in path.parts or path.as_posix() != value):
+        raise ValueError(f"noncanonical repository path: {value!r}")
+    candidate = REPO_ROOT / path
+    if candidate.relative_to(REPO_ROOT).as_posix() != value:
+        raise ValueError(f"noncanonical repository path: {value!r}")
+    if not candidate.resolve().is_relative_to(REPO_ROOT.resolve()):
+        raise ValueError(f"repository path escapes root: {value!r}")
+    return candidate
+
+
+def git_paths(*args: str) -> set[str]:
+    paths = {os.fsdecode(value) for value in git_output(*args).split(b"\0") if value}
+    for value in paths:
+        safe_repo_path(value)
+    return paths
+
+
+def package_owners(paths: set[str]) -> set[str]:
+    return {
+        str(PurePosixPath(path).parent)
+        for path in paths
+        if path.startswith("skills/") and path.endswith("/SKILL.md")
+    }
+
+
+def nearest_owner(path: str, owners: set[str]) -> str | None:
+    matches = [owner for owner in owners if path == owner or path.startswith(owner + "/")]
+    return max(matches, key=len) if matches else None
+
+
+def current_owners() -> set[str]:
+    owners: set[str] = set()
+    for skill in SKILLS_DIR.rglob("SKILL.md"):
+        if not skill.resolve().is_relative_to(SKILLS_DIR.resolve()):
+            raise ValueError(f"SKILL.md escapes skills/: {skill.relative_to(REPO_ROOT)}")
+        owners.add(skill.parent.relative_to(REPO_ROOT).as_posix())
+    return owners
+
+
+def explicit_owner(value: str, owners: set[str]) -> str:
+    path = PurePosixPath(value)
+    candidate = safe_repo_path(value)
+    if ("\\" in value or any(char in value for char in "*?[]") or not path.parts
+            or path.parts[0] != "skills"):
+        raise ValueError(f"invalid --package {value!r}: use a repository-relative skills/ owner")
+    normalized = path.as_posix()
+    if normalized not in owners:
+        raise ValueError(f"--package {value!r} is not an existing SKILL.md owner")
+    if not candidate.resolve().is_relative_to(SKILLS_DIR.resolve()):
+        raise ValueError(f"--package {value!r} escapes skills/")
+    return normalized
+
+
+def select_packages(diff_base: str | None, packages: list[str]) -> tuple[list[Path], list[Finding]]:
+    if not REPO_ROOT.is_dir():
+        raise ValueError("repository root must be an existing directory")
+    git_root = Path(os.fsdecode(git_output("rev-parse", "--show-toplevel").removesuffix(b"\n")))
+    if git_root.resolve() != REPO_ROOT.resolve():
+        raise ValueError("--root must identify the Git worktree root")
+    if diff_base is None and not SKILLS_DIR.is_dir():
+        raise ValueError("full or explicit scan requires a skills/ directory")
+    owners = current_owners()
+    selected = {explicit_owner(value, owners) for value in packages}
+    findings: list[Finding] = []
+    if diff_base is None:
+        return [REPO_ROOT / owner for owner in sorted(selected if packages else owners)], findings
+    if not diff_base or diff_base.startswith("-") or ".." in diff_base:
+        raise ValueError("--diff-base requires one commit-ish, not a range or option")
+    base = git_output("rev-parse", "--verify", "--end-of-options", diff_base + "^{commit}").decode().strip()
+    head = git_output("rev-parse", "--verify", "HEAD^{commit}").decode().strip()
+    changed: set[str] = set()
+    for args in (
+        ("diff", "--name-only", "-z", "--no-renames", base, head),
+        ("diff", "--cached", "--name-only", "-z", "--no-renames", head),
+        ("diff", "--name-only", "-z", "--no-renames"),
+        ("ls-files", "--others", "--exclude-standard", "-z"),
+    ):
+        changed.update(git_paths(*args))
+    previous = package_owners(
+        git_paths("ls-tree", "-r", "--name-only", "-z", base)
+        | git_paths("ls-tree", "-r", "--name-only", "-z", head)
+        | git_paths("ls-files", "--cached", "-z")
+    )
+    tombstones: set[str] = set()
+    for rel in sorted(changed):
+        mapped = "skills/" + rel[len("tests/"):] if rel.startswith("tests/") else rel
+        owner = nearest_owner(mapped, owners)
+        old_owner = nearest_owner(mapped, previous)
+        if owner:
+            selected.add(owner)
+        if old_owner and old_owner not in owners:
+            tombstones.add(old_owner)
+        if owner or old_owner:
+            continue
+        # These shared surfaces invoke or document skillify's format contract.
+        if (rel in {"AGENTS.md", "skills/PROVENANCE.md", ".github/workflows/pr-check.yml",
+                    ".github/workflows/test-plugin-install.yml"}
+                or rel.startswith(("scripts/governance/", "tests/governance/"))):
+            if "skills/skillify" not in owners:
+                raise ValueError(f"shared format owner skills/skillify is missing for {rel!r}")
+            selected.add("skills/skillify")
+        elif rel.startswith(("skills/", "tests/", "scripts/")):
+            raise ValueError(f"unresolved package/support ownership for {rel!r}")
+        else:
+            print(f"scope: excluded {rel!r} (outside package-format ownership)")
+    # Check current Git-visible references, not ignored runtime captures or archives.
+    reference_paths = (
+        git_paths("ls-files", "--cached", "--others", "--exclude-standard", "-z")
+        if tombstones else set()
+    )
+    for removed in sorted(tombstones):
+        print(f"scope: tombstone {removed}")
+        for rel_root in (removed, "tests/" + removed.removeprefix("skills/")):
+            directory = REPO_ROOT / rel_root
+            if (directory.is_file() or directory.is_symlink()
+                    or any(p.is_file() or p.is_symlink() for p in directory.rglob("*"))):
+                findings.append(Finding(removed, "INCOMPLETE_RETIREMENT",
+                                        f"SKILL.md was removed but files remain under {rel_root}"))
+        reference = re.compile(
+            r"(?:^|[\s`'\"(=])(?:\$\{?\w+\}?/)?"
+            + re.escape(removed) + r"(?=/|[\s`'\"),#]|$)", re.MULTILINE,
+        )
+        for rel in sorted(reference_paths):
+            if PurePosixPath(rel).parts[0] in {".git", ".gjc", "archive"}:
+                continue
+            candidate = REPO_ROOT / rel
+            if candidate.name == "CHANGELOG.md" or not candidate.is_file():
+                continue
+            if not candidate.resolve().is_relative_to(REPO_ROOT.resolve()):
+                raise ValueError(f"reference file escapes repository: {candidate}")
+            try:
+                text = candidate.read_text(encoding="utf-8")
+            except UnicodeError:
+                continue
+            if reference.search(text):
+                mapped = "skills/" + rel[len("tests/"):] if rel.startswith("tests/") else rel
+                consumer = nearest_owner(mapped, owners)
+                if consumer:
+                    selected.add(consumer)
+                findings.append(Finding(consumer or rel, "DANGLING_PACKAGE_REFERENCE",
+                                        f"{rel} still references removed owner {removed}"))
+    return [REPO_ROOT / owner for owner in sorted(selected)], findings
 
 
 def check_contract_sections(name: str, body: str) -> list[Finding]:
@@ -374,7 +473,7 @@ def check_referenced_paths(name: str, skill_dir: Path, body: str) -> list[Findin
 def _load_json(path: Path) -> object | None:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
+    except json.JSONDecodeError:
         return None
 
 
@@ -383,17 +482,15 @@ def check_eval_corpus(name: str, skill_dir: Path) -> list[Finding]:
     evals_path = corpus_dir(skill_dir) / "evals.json"
     triggers_path = corpus_dir(skill_dir) / "triggers.json"
 
-    if not evals_path.exists():
-        findings.append(Finding(name, "NO_EVAL_CORPUS", "missing tests/<name>/evals/evals.json at the repo root (contract §7)"))
-    else:
+    if evals_path.exists():
         data = _load_json(evals_path)
+        if isinstance(data, dict) and "skill" in data and data["skill"] != name:
+            findings.append(Finding(name, "BAD_EVAL_CORPUS", "eval corpus `skill` does not match its owner"))
         cases = data.get("cases") if isinstance(data, dict) else None
         if not isinstance(cases, list):
             findings.append(Finding(name, "BAD_EVAL_CORPUS", "tests/evals/evals.json must be an object with a `cases` list"))
         else:
-            if len(cases) < EVALS_MIN_CASES:
-                findings.append(Finding(name, "BAD_EVAL_CORPUS",
-                                        f"tests/evals/evals.json has {len(cases)} cases < {EVALS_MIN_CASES}"))
+            seen_ids: set[str] = set()
             for i, case in enumerate(cases):
                 label = case.get("id", f"#{i}") if isinstance(case, dict) else f"#{i}"
                 if not isinstance(case, dict):
@@ -402,34 +499,44 @@ def check_eval_corpus(name: str, skill_dir: Path) -> list[Finding]:
                 for key in ("id", "prompt", "expected_behavior", "grading"):
                     if not isinstance(case.get(key), str) or not case[key].strip():
                         findings.append(Finding(name, "BAD_EVAL_CORPUS", f"case {label} lacks non-empty `{key}`"))
+                case_id = case.get("id")
+                if isinstance(case_id, str):
+                    if case_id in seen_ids:
+                        findings.append(Finding(name, "BAD_EVAL_CORPUS", f"duplicate case id {case_id!r}"))
+                    seen_ids.add(case_id)
                 grading = case.get("grading")
-                if grading not in GRADING_KINDS:
+                if not isinstance(grading, str) or grading not in GRADING_KINDS:
                     findings.append(Finding(name, "BAD_EVAL_CORPUS",
                                             f"case {label} grading must be one of {sorted(GRADING_KINDS)}"))
-                elif grading == "verifiable" and not case.get("assertions"):
-                    findings.append(Finding(name, "BAD_EVAL_CORPUS", f"verifiable case {label} needs non-empty `assertions`"))
-                elif grading == "subjective" and not case.get("rubric"):
-                    findings.append(Finding(name, "BAD_EVAL_CORPUS", f"subjective case {label} needs non-empty `rubric`"))
+                else:
+                    key = "assertions" if grading == "verifiable" else "rubric"
+                    values = case.get(key)
+                    if (not isinstance(values, list) or not values
+                            or not all(isinstance(value, str) and value.strip() for value in values)):
+                        findings.append(Finding(name, "BAD_EVAL_CORPUS",
+                                                f"{grading} case {label} needs non-empty `{key}` string list"))
 
-    if not triggers_path.exists():
-        findings.append(Finding(name, "NO_EVAL_CORPUS", "missing tests/<name>/evals/triggers.json at the repo root (contract §7)"))
-    else:
+    if triggers_path.exists():
         data = _load_json(triggers_path)
         if not isinstance(data, dict):
             findings.append(Finding(name, "BAD_EVAL_CORPUS", "tests/evals/triggers.json must be an object"))
         else:
+            if "skill" in data and data["skill"] != name:
+                findings.append(Finding(name, "BAD_EVAL_CORPUS", "trigger corpus `skill` does not match its owner"))
             for key in ("should_trigger", "should_not_trigger"):
                 items = data.get(key)
-                if not isinstance(items, list) or len(items) < TRIGGERS_MIN_EACH \
+                if not isinstance(items, list) \
                         or not all(isinstance(x, str) and x.strip() for x in items):
                     findings.append(Finding(name, "BAD_EVAL_CORPUS",
-                                            f"tests/evals/triggers.json `{key}` needs >= {TRIGGERS_MIN_EACH} non-empty prompts"))
+                                            f"tests/evals/triggers.json `{key}` must be a list of non-empty prompts"))
     return findings
 
 
 def check_skill(skill_dir: Path) -> list[Finding]:
     name = skill_dir.name
     findings: list[Finding] = []
+    if skill_dir.parent != SKILLS_DIR:
+        findings.append(Finding(name, "NESTED_SKILL_MD", "craft packages must be flat under skills/"))
     skill_md = skill_dir / "SKILL.md"
     text = skill_md.read_text(encoding="utf-8")
 
@@ -550,8 +657,10 @@ def check_skill(skill_dir: Path) -> list[Finding]:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="Validate craft-skills skill-package format.")
-    ap.add_argument("--diff-base", help="only enforce packages changed vs this git ref")
-    ap.add_argument("--advisory", action="store_true", help="report but always exit 0")
+    ap.add_argument("--diff-base", action="append",
+                    help="single base commit, supplied once; union committed/staged/unstaged/untracked changes")
+    ap.add_argument("--package", action="append", default=[], help="existing skills/<owner>; repeatable, additive")
+    ap.add_argument("--advisory", action="store_true", help="report format findings; input/Git errors still fail")
     ap.add_argument("--root", help="repo root override (default: derived from script path)")
     args = ap.parse_args()
 
@@ -561,24 +670,17 @@ def main() -> int:
         SKILLS_DIR = REPO_ROOT / "skills"
         TESTS_DIR = REPO_ROOT / "tests"
 
-    all_skill_dirs = sorted(
-        p for p in SKILLS_DIR.iterdir() if p.is_dir() and (p / "SKILL.md").exists()
-    ) if SKILLS_DIR.exists() else []
-
-    if args.diff_base:
-        scope = changed_skill_dirs(args.diff_base)
-        if scope is None:
-            return 2
-        targets = [d for d in all_skill_dirs if d in scope]
-        if not targets:
-            print("skill-format: no changed skill packages to validate.")
-            return 0
-    else:
-        targets = all_skill_dirs
-
-    findings: list[Finding] = []
-    for d in targets:
-        findings.extend(check_skill(d))
+    try:
+        if args.diff_base and len(args.diff_base) != 1:
+            raise ValueError("--diff-base may be supplied only once")
+        diff_base = args.diff_base[0] if args.diff_base else None
+        targets, findings = select_packages(diff_base, args.package)
+        for directory in targets:
+            print(f"scope: package {directory.relative_to(REPO_ROOT).as_posix()}")
+            findings.extend(check_skill(directory))
+    except (ValueError, OSError, RuntimeError) as exc:
+        print(f"skill-format: input error: {exc}", file=sys.stderr)
+        return 2
 
     errors = [f for f in findings if f.severity == "error"]
     warnings = [f for f in findings if f.severity == "warning"]

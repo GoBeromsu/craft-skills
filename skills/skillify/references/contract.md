@@ -62,7 +62,7 @@ trigger phrases woven in naturally>. Not for <nearest-neighbor boundary — use 
 - A standalone uppercase `ANY` — bounded by ASCII alphanumeric/underscore adjacency — may occur at most once inside that clause and nowhere else in the description.
 - Semantic boundedness means explicit inclusion edges plus exclusion or hand-off edges for the nearest sibling domains; it is not a finite enumeration, and passing the lexical validator never proves MECE ownership or routing quality.
 - Sentence-case forms such as `Must use` remain ordinary prose.
-- Any description beginning with the standalone all-caps token `MUST` is reserved for the exact grammar; lookalikes such as `MUST  USE`, `MUST USE:`, `MUST-USE`, `MUST: USE`, `MUST - USE`, or `MUST_USE` are invalid because they exert directive pressure without passing the evidence gate.
+- Any description beginning with the standalone all-caps token `MUST` is reserved for the exact grammar; lookalikes such as `MUST USE`, `MUST USE:`, `MUST-USE`, `MUST: USE`, `MUST - USE`, or `MUST_USE` are invalid because they exert directive pressure without passing the evidence gate.
 - Third person ("Routes…", "Scaffolds…", "Owns…"), never "I" / "You".
 - Both *what* the skill does and *when* to use it are present; the primary use case leads the sentence.
 - Trigger phrases are real things a user types, embedded in prose — never a bare quoted list, never keyword stuffing.
@@ -70,13 +70,13 @@ trigger phrases woven in naturally>. Not for <nearest-neighbor boundary — use 
 - Write against undertriggering: runtimes consult a skill only when its description names the situation at hand, and they err toward not consulting. Name the concrete situations that need the skill — including ones where the user never says the skill's name — rather than merely permitting use. The boundary sentence keeps this assertiveness precise: trigger phrases widen recall, "Not for X" guards the near-misses.
 - The description is the only triggering surface — the body loads after the decision, so "when to use" prose in the body is dead weight there.
 - 300–700 characters is the target shape; 1024 is the hard ceiling. The validator warns (non-blocking) under 200 or over 700 chars, and hard-fails only outside 1..1024.
-- At most one Korean trigger phrase, and only if that is genuinely how the operator invokes the skill in practice.
+- Use the languages operators actually use for the relevant intent; do not impose a language quota or pad the description with duplicate trigger phrases.
 
 ## 4. Body
 
-- 150 lines is the target for a leaf skill; 500 lines is the hard ceiling the validator enforces. When the draft runs long, move depth to `references/*.md` — don't trim useful material, relocate it.
+- Preserve useful decision guidance rather than optimizing line count. The validator's 500-line ceiling is a repository format policy, not an upstream compatibility requirement or a quality measure; move optional depth to `references/*.md` without discarding it.
 - Structure: title → 1–2 sentence purpose with success criteria → `## Output contract` → the workflow/decision content → boundaries/hand-offs → any `## Requirements`, `## Anti-patterns`, `## Verification`. Cut preamble and restated-obvious practice — an agent is already competent; only add context it doesn't already have.
-- `## Output contract` is the one contract section every package carries as a literal `##` heading (the validator checks for it), because it is what the evals grade against. It states what a correct run leaves behind — artifact and location, format and required sections, link or field rules, the summary returned to the user — and what the run does when it cannot succeed: at least one line for the no-result, partial-success, stop, or ambiguity case, phrased as condition → behavior. Specify only constraints that matter; where several surface forms are equally valid, say so instead of pinning one.
+- `## Output contract` is the repository's literal contract heading. State the artifact, location, relevant format and summary, and what happens on an applicable no-result, partial-success, stop, or ambiguity case. The validator checks structure and lexical markers only; a matching word such as “stop” never proves an adequate failure policy. Scenarios and independent review judge that meaning. Specify only constraints that matter.
 - Everything else the contract needs already has an owner: the trigger and the "Not for X" boundary live in the description (§3); the goal is the purpose sentence under the title; inputs and dependencies live in `## Requirements` (§10); agent mistakes that break the contract live in `## Anti-patterns`; the eval corpus that proves the contract lives in repo-root `tests/<skill-name>/evals/` (§7). Do not add `## Goal`, `## Non-goals`, or `## Failure modes` sections — they restate those owners.
 - Outcome over process: state the goal and constraints. Give numbered steps only where the exact sequence matters (a fragile or deterministic operation) — prose for judgment calls, scripts for mechanics.
 - Implement only what the requested outcome requires; no speculative features, refactors, or abstractions. Do not add fallbacks or validation for impossible internal states; validate system boundaries. Keep complete end-to-end behavior.
@@ -99,7 +99,7 @@ A package is one directory with required root `SKILL.md` and `CHANGELOG.md`, plu
 
 - Packages carry no `tests/`; tests live at repo-root `tests/<skill-name>/` so install bundles never ship fixtures.
 
-Plan the parts from concrete examples before authoring: walk 2–3 real invocations of the workflow and ask what a fresh run would redo each time.
+Plan package parts from relevant concrete invocations and identify what a fresh run would redo; do not repeat an arbitrary example quota for a small correction.
 Code every run would rewrite → `scripts/`.
 Knowledge every run would re-derive (schemas, flag meanings, domain rules) → `references/`.
 A fixed artifact shape every run would re-type → `templates/`.
@@ -140,28 +140,40 @@ The cross-skill lineage snapshot lives in `skills/PROVENANCE.md`; update its row
 
 ## 7. Eval-first authoring loop
 
-Replaces any committee review or manual sign-off process as the quality gate.
-Before authoring a package, draft its eval corpus under repo-root `tests/<skill-name>/evals/` — it is committed with the package, because the corpus is the reviewable form of the contract block (§4):
+Choose evidence from the requested behavior before drafting the body; the name of this loop does not impose a corpus on every edit.
+Script changes need regressions against the actual production code, including relevant errors and effect boundaries.
+Judgment-heavy changes need realistic scenarios and independent qualitative assessment.
+Routing changes need included intents, overlapping sibling negatives, and the discovery surface on which the claim is made.
+A prose correction can use focused contract review; explain the selection instead of manufacturing model runs.
+Do not impose fixed case counts, a provider quorum, or the entire model-by-runtime matrix.
 
-- `tests/<skill-name>/evals/evals.json` — about 3 realistic scenarios: `{"skill": "<name>", "cases": [{"id": "<kebab-id>", "prompt": "<realistic user request>", "expected_behavior": "<what a correct run does>", "grading": "verifiable" | "subjective", "assertions": ["<checkable statement about the output>"], "rubric": ["<quality criterion>"]}]}`.
-- `tests/<skill-name>/evals/triggers.json` — `{"skill": "<name>", "should_trigger": [8 prompts], "should_not_trigger": [8 near-miss prompts drawn from sibling skills' domains]}`.
+When a reusable corpus is appropriate, use repo-root `tests/<skill-name>/evals/`:
 
-Grade each case by its kind.
-A `verifiable` case produces an objectively checkable result — a file transform, an extracted value, a command run, a fixed artifact shape — and carries `assertions` a script or a reader can mark pass/fail against the `## Output contract`.
-A `subjective` case produces judgment-quality output — prose, a review, a design call — and carries a `rubric` that a fresh-eyes judge scores; never force assertions onto it, and never let a rubric stand in for an assertion the output could actually satisfy.
-Every case names at least one negative expectation when the contract block lists a non-goal or failure mode that the prompt could plausibly hit.
+- `evals.json`: an object with a `cases` list; each case has a unique nonempty `id`, `prompt`, `expected_behavior`, and `grading`. Use `verifiable` with a nonempty string-list `assertions`, or `subjective` with a nonempty string-list `rubric`.
+- `triggers.json`: an object with string lists `should_trigger` and `should_not_trigger`. Choose prompts from the relevant intents and nearest siblings; report actual denominators.
 
-Run each scenario without the skill, then with the drafted `SKILL.md`; the skill's value is the delta between the two arms, not the with-skill output alone.
-Transcripts, judge notes, and per-run scores go to the gitignored `evals/` scratch directory, never into repo-root `tests/<skill-name>/evals/`.
-Iterate the body until behavior matches `expected_behavior`.
-Run the 16 trigger prompts against the drafted `description`; any near-miss that would plausibly match tightens the "Not for X" boundary sentence (§3).
-Before using the optional §3 directive, freeze those 16 trigger prompts as 6 should-trigger plus 6 should-NOT-trigger tuning cases and 2+2 held-out cases.
-Tune without consulting the held-out verdicts, then freeze the candidate and judge it blind.
-The directive is eligible only when it repairs at least one baseline miss, preserves every baseline success, routes all 8 positives correctly, produces zero false positives across all 8 negatives, and passes all 4 held-out cases.
-A universal directive records the runtime, model or human judge, and actual discovery/index surface for every supported runtime that consumes the shared description; an unavailable or failing runtime keeps the description in ordinary prose rather than weakening the gate.
-A perfect baseline ships the general capability without self-applying the directive because no routing delta exists.
-How to run the arms, judge with fresh eyes, read transcripts, and iterate without overfitting: `references/evaluation.md`.
-The corpus under repo-root `tests/<skill-name>/evals/` changes with the contract block; the run output under `evals/` is temporal working notes — never commit it.
+The format validator checks supplied corpus structure, not corpus sufficiency.
+Absence of a corpus is not a format failure, but missing evidence for a required behavior remains an admission blocker.
+Do not replace objective assertions with a subjective rubric, or treat test-only helper success as deployed-agent compliance.
+Include negative expectations whenever the requested operation could encounter a meaningful error, permission, recipient ambiguity, uncertain-send retry, or destructive effect.
+
+Use matched baseline and candidate runs when claiming an improvement or comparing competing designs.
+For updates, preserve the current package snapshot rather than comparing the candidate to nothing.
+Record the exact task, base commit and package digest, actual runtime/model or human judge, invoked surface, results, and limitations.
+Uncommitted work requires its own content identity; the base commit does not identify it.
+Do not report a release commit, PR, measured delta, or successful live effect before it exists.
+
+For a stronger routing directive, freeze prompts and labels before tuning, keep unseen prompts for generalization, and judge the final candidate independently.
+The evidence identifies included intents and sibling exclusions, demonstrates any claimed repaired miss, and checks regressions on the evaluated surface.
+Use ordinary prose when stronger routing pressure is not justified.
+Never extrapolate the observed runtime result into verified support for unavailable runtimes.
+Keep transcripts and private judge notes in gitignored scratch; commit only approved reusable fixtures with the package change.
+
+Skillify owns authoring and useful evidence; the destination gate owns formal admission, routing, packaging, and release.
+Reuse evidence only when it covers the current task, exact snapshot, and requested effect; a stale historical receipt is not permission.
+Review a common policy once and use domain batches for its dependent changes, not a full workflow per skill.
+An active selected runtime workflow still owns its genuine verification and terminal rules.
+See `references/evaluation.md` for matched runs, independent judgment, and avoiding overfitting.
 
 ## 8. Version-bump rubric
 
@@ -203,10 +215,11 @@ Do not create a fact inventory or validator for this contract.
 
 ## 11. Core portability
 
-Universal `SKILL.md` recipes must work without alteration on Hermes, Claude Code, Codex, Cursor, and Grok-native runtimes.
+Write core recipes without dependency on one vendor's loader; record actual support and verification for the selected runtimes.
 They may require standard tools only when the package documents them; they must not require one vendor's CLI, plugin command, frontmatter field, or proprietary tool.
 Put runtime-specific fields, installation commands, plugin metadata, and plumbing in that runtime's vendor lens.
-If a workflow cannot meet this law, make its boundary and supported runtime explicit in the relevant lens rather than presenting it as universal core guidance.
+If a workflow needs vendor-specific behavior, state that boundary in its lens rather than claiming universal compatibility.
+Model support does not add another CLI to deployment scope, and an absent runtime receives honest support guidance rather than installation solely to complete a test matrix.
 
 ## 12. Referenced paths
 

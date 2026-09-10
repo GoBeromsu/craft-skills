@@ -2,12 +2,16 @@
 name: ml
 description: Applies ML/DL research engineering discipline — reproducible project layout, leakage-safe dataset construction, and a training-discipline ladder — to classical ML, deep learning, fine-tuning, and vision work. Use when scaffolding a new ML project, asked to "build a dataset" or "데이터셋 구축", running or reviewing a "train a model" experiment, or building a "vision model" pipeline (augmentation, detection, segmentation). Not for per-file Python discipline (typing, TDD loop) — use `programming` — not for building or changing LLM-agent behavior (prompts, tools, agent evals) — use `agents` — and not for GPU/CUDA environment setup or shared-host job launch — use `gpu`.
 metadata:
-  version: 2.3.2
+  version: 2.3.3
 ---
 
 # ml
 
-Run ML/DL research and engineering work under one discipline: reproducibility first, evaluation honesty second, novelty third. A result nobody can rerun is not a result; a number bought by peeking at the test set is not a number; a fancier architecture only counts once a boring baseline is on the board. This skill is an index — shared rules live here, the per-topic iron list lives in `references/`; load the matching reference before touching a project layout, a dataset, or a training run.
+Run ML/DL research and engineering work under one discipline: reproducibility first, evaluation honesty second, novelty third. Label preliminary or non-reproducible observations honestly; do not present test-tuned numbers as independent evidence or claim an improvement without a comparable baseline. This skill is an index — shared rules live here, per-topic methods live in `references/`; load the matching reference before touching a project layout, a dataset, or a training run.
+
+## Output contract
+
+Produce the requested modeling artifact or review with the relevant dataset, configuration, source identity, observed outcomes, and verification limits. Preserve the incumbent environment and distinguish intended commands from actual runs. Missing launch authority, unresolved input identity, or a failed required recovery test blocks that launch, not unrelated read-only diagnosis. Report missing evidence explicitly; never invent a metric, successful run, or reproducibility receipt.
 
 ## Task gate — run first, every time
 
@@ -26,10 +30,10 @@ Example: labeling and splitting an image dataset that will then be trained on ma
 
 ## Core rules
 
-- **Reproducibility receipt.** Every run that produces a reported number is reproducible from a git SHA, a config file, and a data manifest hash — missing any one means the number should not be cited. `references/training.md` has the full experiment-tracking contract.
+- **Reproducibility receipt.** Bind a compared result to its source revision and frozen current-content identity, configuration, data manifest, actual invocation, and observed outcomes. Qualify missing evidence rather than inventing it. `references/training.md` owns the full tracking contract, including reported generative evaluations.
 - **Split before you fit anything.** Train/validation/test separate before any statistic is computed from the data — scaling, imputation, vocabulary, augmentation parameters. `references/datasets.md` gives the three leakage classes and their detection commands.
 - **A baseline exists before a novel approach is judged.** "Better than the majority-class/linear/frozen-pretrained baseline," not "better than nothing." `references/training.md` covers the discipline ladder in full.
-- **The test set is touched once** — reported at the end, never inside a tuning loop.
+- **Reserve test data for frozen final evaluation**, never model selection or tuning; disclose repeated evaluation rather than calling a reused test set fresh evidence.
 - **Mutable library/runtime facts.** For framework APIs, installation, compatibility, or runtime behavior, consult the library's official documentation first. Disclose conflicts; a more-specific local contract or reproducible evidence for the matching library version and platform may override general or stale documentation. If unresolved, leave it unknown and stop or use the applicable safe fallback — never invent a capability or command.
 
 ## Requirements
@@ -46,7 +50,7 @@ Example: labeling and splitting an image dataset that will then be trained on ma
 | "It's just a quick experiment script, skip the project layout." | A throwaway exploration still needs a smoke test and must respect the incumbent environment and layout; the full baseline, comparison, and variance ladder applies when its result will be reported or used for a decision. |
 | "I already know the data is clean, skip split-before-fit." | Leakage is invisible in code, visible only in an eval number that quietly stops meaning anything. |
 | "The new architecture is obviously better, no baseline needed." | "Obviously better" without a baseline number is an opinion, not a result. |
-| "I peeked at the test metric once, that's not really tuning on it." | One peek biases every decision made afterward, even unconsciously. The test set is touched once, full stop. |
+| "I used the test metric to choose the next candidate, but it is still held out." | Use validation data for selection. A test-informed candidate no longer has independent evidence from that test set; disclose the reuse and evaluate accordingly. |
 | "This is mostly a fine-tuning job, so `ml` covers it" (even though it calls tools). | If the feature calls tools, reasons over retrieved context, or drives multi-step LLM behavior, route to `agents` regardless of what else it touches. |
 
 ## Red flags
@@ -54,8 +58,8 @@ Example: labeling and splitting an image dataset that will then be trained on ma
 - A greenfield project with no locked environment or importable training code, or an unrelated feature that rewrites an established project's packaging.
 - A preprocessing/scaling/vocabulary step that runs before the split, or on the concatenation of all three.
 - A "novel" result reported with no baseline number in the same table.
-- A training run launched with uncommitted changes, so its git SHA doesn't describe the code that ran.
-- A claim of improvement from a single seed with no variance reported.
+- A compared run whose actual code/configuration inputs cannot be recovered from its recorded revision and frozen snapshot.
+- A robust-improvement claim without uncertainty evidence appropriate to the task, or invented variance for a single run.
 - An augmentation transform present in the validation or eval data loader.
 
 ## Boundaries
@@ -69,5 +73,5 @@ Not for wrapping a trained model behind a serving API — load `backend` — or 
 - [ ] Every fitted statistic (scaler, vocabulary, augmentation parameter) is fit on the train split only.
 - [ ] A baseline number exists in the same report as any novel-approach number.
 - [ ] Each reported result has a reproducibility receipt: the code revision, configuration, data manifest, and recorded outcome identify what ran.
-- [ ] The test set was touched exactly once, to report the final number.
-- [ ] Claims of improvement report variance over ≥3 seeds, not a single run.
+- [ ] Test data did not drive tuning or model selection, and any frozen evaluation replay is disclosed.
+- [ ] Claims report the actual sampling/repeat count and appropriate uncertainty; limited evidence is labeled without a universal seed quota.

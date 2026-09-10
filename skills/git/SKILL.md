@@ -2,7 +2,7 @@
 name: git
 description: 'Guides version-control craft: a ground-truth and incumbent-style detection gate before the first git mutation, the atomic-commit `git add -p` split protocol, commit/branch/PR conventions matched to the repo''s own history, and non-interactive-safe history surgery (fixup, reword, split, scripted bisect, undo). Use when committing a change ("commit this", "커밋해줘"), rebasing or squashing history, sizing a PR, recovering from a broken rebase, or running "git wt" to create an isolated worktree with the git-guard rails. Not for hook-enforcement mechanics (runtime/lint/pre-commit guard authoring) — that belongs to guardrails.'
 metadata:
-  version: 2.2.3
+  version: 2.2.4
 ---
 
 # git
@@ -190,7 +190,9 @@ One PR per slice, each targeting the previous branch; rebase the next slice when
 - Writing the commit message before reading `git diff --staged` in full → read every hunk first; memory drifts from what's actually staged.
 - Abandoning a rebase without `git rebase --abort`, leaving conflict markers or a lingering `.git/rebase-merge` → run `git rebase --abort` and reassess.
 
-## Verification
+## Output contract
+
+Report the requested investigation evidence or the actual authorized Git changes, with remaining worktree/index state and verification limitations. If the target, comparison base, or required mutation authority is unresolved, stop the affected mutation and preserve useful read-only findings; never imply a commit or push occurred from a proposed command.
 
 - [ ] Ground-truth block ran before the first Git mutation (staging, commit, or rebase) this session.
 - [ ] Repo-style detection ran before the first commit.

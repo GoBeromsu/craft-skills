@@ -1,200 +1,78 @@
 # Gajae-Code Lens
 
-GJC-specific orchestration for authoring and refining portable skill packages.
-The generated package remains runtime-neutral; this lens never changes the package contract.
+Use GJC for authoring orchestration and durable execution when the operator selects it.
+Keep the resulting skill portable; a consumer does not need GJC merely because GJC authored the package.
 
-## Table of Contents
+## Sources and support boundary
 
-1. [Sources and support boundary](#1-sources-and-support-boundary)
-2. [Ownership boundary](#2-ownership-boundary)
-3. [Preflight the built-in profiles](#3-preflight-the-built-in-profiles)
-4. [Select one profile](#4-select-one-profile)
-5. [Run the complete workflow](#5-run-the-complete-workflow)
-6. [Evaluation and evidence](#6-evaluation-and-evidence)
-7. [Failure and retry behavior](#7-failure-and-retry-behavior)
-8. [Portability boundary](#8-portability-boundary)
-9. [Runtime plumbing (GJC-only)](#9-runtime-plumbing-gjc-only)
+Consult the installed `gjc --help` and `gjc --version` before using version-dependent commands.
+Use the [SDK application guide](https://github.com/Yeachan-Heo/gajae-code/blob/main/docs/sdk-app-guide.md), [models and profiles](https://github.com/Yeachan-Heo/gajae-code/blob/main/docs/models.md), and the installed workflow instructions for the selected runtime.
+Treat profile availability, command syntax, discovery precedence, and update behavior as observed runtime facts, not portable authoring requirements.
+When an update changes a consumed capability, check the affected official documentation and rerun the relevant package scenarios.
 
-## 1. Sources and support boundary
+## Ownership and sequencing
 
-Official sources:
+Skillify owns the package contract, useful authoring evidence, and local refinement.
+The destination admission gate owns formal acceptance, routing, packaging, and release delivery.
+GJC owns the selected session, orchestration, execution continuity, and durable workflow state.
+Reuse the task-bound authoring evidence at admission instead of creating a second evaluator for the same behavior.
 
-- [SDK application guide](https://github.com/Yeachan-Heo/gajae-code/blob/main/docs/sdk-app-guide.md)
-- [SDK contract](https://github.com/Yeachan-Heo/gajae-code/blob/main/docs/sdk.md)
-- [SDK session CLI](https://github.com/Yeachan-Heo/gajae-code/blob/main/docs/sdk-session-cli.md)
-- [Models and profiles](https://github.com/Yeachan-Heo/gajae-code/blob/main/docs/models.md)
-- [Multi-vendor profiles](https://github.com/Yeachan-Heo/gajae-code/blob/main/docs/multi-vendor-profiles.md)
+Use an existing approved plan when it covers the requested change.
+For a coordinated library reform, review the common policy once and implement domain batches within that contract.
+Do not start a full interview, consensus plan, or execution workflow for every package.
+A small, concrete change can use direct repository tools and focused verification; use a planning workflow only when selected by the operator or required by the active runtime contract.
+A workflow explicitly selected by the operator retains its own admission and terminal rules.
+Never dispatch from a terminal blocked plan or relabel an unreviewed draft as approved.
 
-This route requires an installed GJC that exposes:
+Use the current authorized session and an available capable route.
+Do not require named profiles, a provider family count, or a new session for a package edit.
+When selecting a different route is necessary, inspect the runtime's real catalog and record the actual provider/model reported by the completed run.
+Do not alter the operator's startup default or inspect private endpoint credentials to discover a route.
 
-- the Q27 `models.profiles.list` query as a complete profile catalog with exact profile IDs, `source`, and boolean `available`.
-- session-scoped `--mpreset` activation.
-- the built-in `opus-codex` and `codex-pro` profiles.
-- native `ralplan` and `ultragoal` workflows.
+## Delegation and verification
 
-Probe the installed version with `gjc --version`, then verify capabilities rather than inferring them from a version number.
-The route was exercised with GJC 0.15.4; that observation is not a claimed minimum version.
-Current GJC documentation describes Q27 as the full catalog with explicit availability, although a narrower row example elsewhere in the SDK document omits that field.
-The installed response is authoritative for the run: a missing or non-boolean `available` value stops this route and requires re-planning.
+Keep one owner for each contract and file set.
+Delegate independent implementation surfaces when worthwhile; keep shared decisions with the leader.
+Reuse a worker's retained context for the same domain when the runtime supports resumption.
+Record targets, constraints, evidence, and conflicts rather than asking workers to expose internal reasoning.
 
-## 2. Ownership boundary
+An independent reviewer judges the finished artifacts, not the author's explanation of intended behavior.
+Use the evidence policy in [evaluation.md](evaluation.md): actual script regressions for executable changes, relevant scenarios for judgment, and negative cases for routing or external effects.
+Do not use synthetic-only helpers, an agreeing model count, or lexical validation as deployed-behavior proof.
+When comparison is necessary, preserve the baseline and candidate identities and run matched arms without authoring context.
 
-GJC owns only orchestration:
+At a shared verification boundary, freeze the actual change set and review it as a unit.
+Reuse that exact evidence in the destination's admission receipt; changed behavior outside its coverage requires updated evidence.
+Do not rerun equivalent committees merely because several packages share the same change.
+Run only the gates required by the selected workflow and the actual effect; do not weaken an active runtime gate to manufacture completion.
 
-- selecting one built-in profile before planning.
-- Ralplan consensus and approval.
-- Ultragoal execution continuity and evidence tracking.
-- native session and workflow state.
+## Evidence and approval
 
-Skillify continues to own:
+Bind a draft to its base commit and current package/tree digest; the base commit alone does not identify uncommitted work.
+Record the actual release commit only after an authorized commit exists.
+Keep private transcripts and workflow state outside distributed packages.
+A sanitized receipt names the task, source snapshot, checks, independent findings, unresolved limitations, and delivery state; it never contains endpoint tokens or credentials.
 
-- admission and package planning.
-- `tests/<name>/evals/evals.json` and `tests/<name>/evals/triggers.json`.
-- baseline-versus-candidate evaluation.
-- package format and deterministic validators.
-- versioning, changelog, provenance, and branch-to-PR delivery.
+An approval for the same target, command, and effect is reusable within its authorized scope.
+A new target or expanded effect needs its own decision; a routine reversible correction does not create another approval round.
+Commit, push, merge, install, unregister, removal, and restart are distinct effects: do not infer permission from a successful test or plan.
+When an active workflow cannot prompt, record the human-only dependency using its native blocker mechanism and continue other authorized work.
 
-Ralplan references those existing gates instead of defining replacements.
-Ultragoal may track their evidence but never waives or duplicates them.
+## Failure handling
 
-## 3. Preflight the built-in profiles
+Preserve useful work and the real error when a command, provider, or artifact publication fails.
+Follow the runtime's retry and resumption rules; do not replace a complete artifact with a probe or placeholder to test publication.
+Do not clear ledgers, change budgets, or start another run merely to evade a terminal limit.
+Unavailable verification remains explicitly unverified, not unsupported and not passed.
 
-Run preflight under the same effective agent directory and repository authority that the native authoring session will use.
-Use a broker-indexed preflight session and the public SDK session CLI; never inspect endpoint records, bearer tokens, or private WebSockets.
+## Native distribution
 
-```bash
-gjc sdk session list
-gjc sdk session inspect <preflight-session-id>
-gjc sdk session raw query <preflight-session-id> \
-  --query models.profiles.list
-```
+Use the runtime's supported marketplace/plugin lifecycle for official releases.
+The repository install matrix owns concrete distribution commands; verify those commands against installed help before use.
+Record registered source, installed package content, and current effective load independently.
+Inspect every applicable registration and scope, including recursive references, scripts, and assets; a list entry or matching manifest version cannot prove delivery.
 
-Follow every continuation cursor until the response reports a complete page set.
-A partial page cannot prove that a profile is absent or unavailable.
-For each candidate, require one exact effective row with:
-
-- the exact requested ID.
-- `source: builtin`.
-- a boolean `available` value.
-
-A same-name `source: configured` row is a configured override, not the requested built-in profile.
-Treat ambiguous rows, incomplete pagination, registry failure, missing fields, or an authority mismatch as preflight failure.
-Record only the session ID, complete-page evidence, profile ID, source, and availability; never record credentials or endpoint data.
-
-Q27 is used only for profile provenance and availability.
-Do not expand this route to Q10 selection, activation probing, Q26 turn telemetry, broker-driven authoring, private endpoint access, or an embedding harness.
-If the installed Q27 contract cannot establish the required facts, stop and re-plan instead of inventing another surface.
-
-## 4. Select one profile
-
-Apply this deterministic priority before Ralplan starts:
-
-1. Select `opus-codex` when its exact row has `source: builtin` and `available: true`.
-2. Otherwise select `codex-pro` when its exact row has `source: builtin` and `available: true`.
-3. Otherwise stop before planning or product mutation.
-
-`opus-codex` is the primary whole-workflow profile.
-`codex-pro` is only the whole-workflow fallback when the multi-provider primary is unavailable; it is not a mandatory second reviewer.
-
-Start a new, non-resumed native session with the selected profile for this run only:
-
-```bash
-gjc --mpreset <selected-profile>
-```
-
-Never add `--default`; this workflow does not alter the operator's startup default.
-Record the selected profile in the plan and Ultragoal evidence, then keep it fixed through completion.
-
-## 5. Run the complete workflow
-
-Selecting this GJC route makes deliberate Ralplan mandatory before product edits:
-
-```text
-/skill:ralplan --deliberate "<skill change and acceptance criteria>"
-```
-
-After approval, invoke `/skill:ultragoal` from the same selected live session so the in-process workflow handoff retains that session's profile.
-Bind the state-seeding CLI call to the same session identity:
-
-```bash
-GJC_SESSION_ID=<selected-session-id> \
-  gjc ultragoal create-goals --brief-file <approved-plan>
-```
-
-The CLI command seeds durable Ultragoal state; it does not start a second model session.
-Never run it from an unbound shell or hand execution to a different GJC session.
-
-The selected profile remains active for:
-
-- Ralplan planning and review.
-- Ultragoal execution.
-- package authoring and refinement.
-- baseline and candidate eval iterations.
-- validators and completion evidence.
-
-Do not switch to `codex-pro` after Ralplan because the selected profile later fails.
-Stop and preserve the evidence; any retry begins with a new preflight, a new session, and a new complete run.
-
-## 6. Evaluation and evidence
-
-Use the provider-neutral fresh-eyes contract in [`evaluation.md`](evaluation.md).
-GJC orchestration does not prescribe a second GJC profile as the judge.
-Use a fresh, blind, read-only capable model or human independent from the authoring session, and keep the baseline and candidate arms matched as that methodology requires.
-
-Keep eval run transcripts under the gitignored `evals/` directory; the corpus itself lives in committed repo-root `tests/<name>/evals/`.
-Do not commit GJC session state, workflow IDs, profile receipts, or `.gjc` paths into a generated package.
-A useful sanitized run record contains:
-
-- the preflight session ID and completion status.
-- selected built-in profile and availability.
-- the Ralplan run or approved-plan reference.
-- the Ultragoal run and validator/eval evidence references.
-- the terminal outcome.
-
-The record never contains endpoint URLs, tokens, credentials, environment values, or private discovery files.
-
-## 7. Failure and retry behavior
-
-| Condition | Required behavior |
-|---|---|
-| Built-in `opus-codex` is available | Select it for the complete run. |
-| Primary is unavailable and built-in `codex-pro` is available | Select `codex-pro` before Ralplan for the complete run. |
-| A candidate is configured-shadowed | Disqualify that candidate and evaluate only the next priority candidate. |
-| Neither candidate qualifies | Stop before Ralplan and product mutation. |
-| Q27 is incomplete, ambiguous, or lacks boolean availability | Stop and re-plan; do not add another query or activation surface ad hoc. |
-| Native activation fails after selection | Stop; do not switch profiles in place. |
-| The selected profile fails after Ralplan | Preserve evidence and restart from preflight in a new run. |
-| Ralplan proposes a second eval or lifecycle owner | Reject that part and link to skillify's existing owner. |
-| Ultragoal lacks eval, validator, provenance, or lifecycle evidence | Keep completion open until the existing gate is satisfied. |
-| A fresh-eyes judge is unavailable | Use another independent capable model or a human; do not restore a preferred provider. |
-
-GJC owns provider retries inside the selected profile.
-Those retries do not authorize changing the workflow profile or weakening a skillify gate.
-
-## 8. Portability boundary
-
-All GJC commands, profile names, Q27 handling, session state, and retry rules belong in this lens.
-Never copy them into a universal package's root `SKILL.md`, scripts, templates, or required runtime instructions.
-
-The final skill package must run unchanged wherever its declared portable contract applies, including Claude Code, Codex, Cursor, Hermes, and Grok-native runtimes.
-A package may link to this lens as optional authoring guidance; it may not require GJC to execute its reusable craft.
-
-## 9. Runtime plumbing (GJC-only)
-
-GJC distribution is runtime plumbing: this library ships as a marketplace plugin, and GJC reads packages
-straight out of the installed plugin. There is no copy step and therefore no second tree that can go stale;
-an upgrade replaces the installed plugin and every package moves with it.
-The install and upgrade commands live in the install matrix in the repository's `AGENTS.md`, which is the
-single owner for every runtime's channel — do not restate them here.
-
-Two consequences bind authoring:
-
-- GJC advertises each package as `craft-skills:<name>`, not the bare directory name. A package must not
-  assume its own directory name is the invocation handle a user types, and must not hardcode either form
-  into portable prose.
-- A package copied into the user's GJC skill root, or reached through a `skills.customDirectories` entry
-  pointing at the versioned plugin cache, defeats the no-copy property above: the copy outranks the plugin
-  and freezes, and the versioned cache path breaks on the next upgrade. Treat any such path found while
-  authoring as a stale source, not as the package.
-
-Portable core instructions must not depend on GJC discovery, naming, or precedence behavior.
+Preserve native field experimentation separately from official packages.
+Compare unique content before removing an obsolete registration or cache path, and use only approved native update/removal operations.
+A copied package or version-pinned directory can shadow a current plugin, but do not classify a path as disposable without content and dependency evidence.
+Keep GJC-specific namespace, profile, and installation details in this lens rather than in portable core instructions.

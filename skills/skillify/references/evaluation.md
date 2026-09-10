@@ -1,7 +1,7 @@
 # Skill Evaluation Methodology
 
 How to run and judge the eval-first artifacts the contract's §7 requires.
-The contract owns *what* the gate is (which files, how many cases); this reference owns *how* to run the loop so its verdicts mean something.
+The contract owns evidence selection and corpus structure; this reference owns how to run and interpret the selected checks.
 
 ## Table of Contents
 
@@ -17,8 +17,10 @@ The contract owns *what* the gate is (which files, how many cases); this referen
 
 ## 1. Baseline delta — the value measure
 
-A skill's measured value is the delta between a with-skill run and a without-skill run on the same prompt — never the with-skill output looking good in isolation.
-A capable agent completes many tasks respectably with no skill at all; the skill earns its context cost only where the delta shows up.
+An improvement claim needs a matched comparison, not merely an attractive with-skill output.
+Use baseline/candidate arms when comparing designs, changing routing pressure, or claiming better performance.
+A format repair or safety regression need not improve an unrelated model benchmark.
+Do not impose a positive measured delta as a universal publication condition.
 
 - **Creating:** the baseline arm runs the prompt with no skill.
 - **Updating:** snapshot the current version first (`cp -r` to scratch) and run the baseline arm against the snapshot — otherwise the comparison silently tests new-vs-nothing instead of new-vs-old.
@@ -28,19 +30,19 @@ A capable agent completes many tasks respectably with no skill at all; the skill
 
 ## 2. Scenario evals
 
-For the `tests/<name>/evals/evals.json` cases (shape and count: contract §7):
+For selected `tests/<name>/evals/evals.json` cases (shape and evidence policy: contract §7):
 
 - Make each `expected_behavior` concrete enough to verify — name the artifacts, decisions, or refusals a correct run produces, not "handles it well".
 - Where a check is objective (file exists, format matches, command exits 0), script it rather than eyeballing it; the script outlives the session and re-runs on every update.
 - Subjective outputs (writing tone, visual design) take qualitative review instead — do not force assertions onto judgments that need a human eye.
-- An assertion that passes in **both** arms discriminates nothing about the skill — sharpen it or drop it.
-- Put the burden of proof on the expectation: a pass needs cited evidence from the run, an uncertain verdict grades as fail, and a surface match (right filename, empty or wrong content) never counts.
+- An assertion that passes in both arms does not prove improvement, but may still guard an important safety invariant or regression; retain it when the contract requires that protection.
+- A pass needs cited run evidence. Record unavailable or uncertain evidence as unverified/not-run with a reason, never as passed; a required uncovered behavior still blocks admission. A surface match with empty or wrong content never counts.
 - Probe each assertion for gameability — could a wrong-but-plausible output still pass it (a hallucinated document that happens to mention the right name)? If so, sharpen it until only genuine success passes.
 - A case whose verdict flips across repeat runs is telling you something: either the eval is flaky or the skill under-specifies a decision the runs are guessing at.
 
 ## 3. Trigger evals
 
-For the `tests/<name>/evals/triggers.json` prompts (counts: contract §7):
+For relevant `tests/<name>/evals/triggers.json` prompts (selection policy: contract §7):
 
 - Write queries the way users actually type: concrete file names, column letters, a line of backstory, casual phrasing, the occasional typo. Mix lengths. A polished abstract query ("Extract text from PDF") tests nothing real.
 - Should-trigger prompts cover different phrasings of the intent — including ones that never name the skill or its file type — plus cases where a sibling skill competes and this one should win.
@@ -51,19 +53,18 @@ For the `tests/<name>/evals/triggers.json` prompts (counts: contract §7):
 
 ### Evidence gate for a leading routing directive
 
-The optional `MUST USE <bounded ownership clause>. ` form in contract §3 needs behavioral evidence because its lexical shape cannot prove MECE ownership.
+The optional `MUST USE <bounded ownership clause>.
+` form in contract §3 needs behavioral evidence because its lexical shape cannot prove MECE ownership.
 
-1. Author and label exactly 8 should-trigger and 8 should-NOT-trigger cases in `tests/<name>/evals/triggers.json`.
-2. Assign stable IDs and freeze the prompts, labels, and split before candidate tuning: 6+6 tuning cases and 2+2 held-out cases.
-3. Record the frozen file hash; a justified corpus correction restarts the baseline and tuning cycle.
-4. Run the current description on the 12 tuning cases and record every success, miss, and false positive.
-5. Tune only against those 12 cases, then freeze the candidate before consulting held-out verdicts.
-6. Give a fresh blind read-only judge the final baseline and candidate surfaces, keeping cited verdict evidence separate from the authored labels.
-7. Record the runtime, model or human judge, and the actual discovery/index surface used for every verdict.
-8. Repeat the frozen corpus across every supported runtime that consumes the universal description; an unavailable runtime blocks universal promotion and keeps the ordinary description.
-9. Promote the directive only when it repairs at least one baseline miss, preserves every baseline success, routes 8/8 positives correctly, produces 0/8 negative false positives, and passes all 4 held-out cases on every recorded runtime surface.
+1. Choose positives and nearest-sibling negatives that exercise the claimed ownership boundary, not an arbitrary count.
+2. Assign stable IDs and freeze prompts, labels, and tuning/unseen partitions before tuning.
+3. Record the baseline and corpus identities; changes to either require new evidence for the affected comparison.
+4. Run matched baseline/candidate cases and record successes, misses, false positives, and actual denominators.
+5. Freeze the candidate before consulting unseen verdicts; use an independent read-only judge on the relevant discovery surface.
+6. Record the runtime, model or human judge, and surface for each result. Test distinct parser/discovery boundaries where needed, not every model/runtime combination.
+7. Demonstrate any claimed improvement and check regressions on the evaluated intents. Keep ordinary prose when stronger routing pressure is not justified.
 
-Uncertain, uncited, or flaky judgments fail the gate.
+Uncertain, uncited, or flaky judgments cannot establish the claim; report the limitation rather than inventing a clean score.
 A perfect baseline does not justify self-application; the general directive capability may still ship.
 The evidence must quote the proposed ownership class and identify its explicit included intents plus excluded or handed-off nearest-sibling intents.
 Scenario review also confirms that body prose gained neither directive syntax nor repeated caps-lock rigidity.
@@ -75,7 +76,7 @@ Record the exact runtime, model or human identity, and discovery surface so the 
 Keep the judge read-only through enforced tool or permission controls rather than prompt intent alone.
 Give it only the artifacts needed for the rubric: do not include the author's rationale or identify which A/B arm is the candidate.
 Require cited evidence for the verdict, and treat missing evidence or uncertain judgment as failure rather than letting the authoring session self-judge.
-When GJC orchestrates authoring, follow the fixed-profile and workflow boundary in [`vendor-gjc.md`](vendor-gjc.md); that route does not prescribe a second GJC profile as the judge.
+When GJC orchestrates authoring, follow the selected workflow and evidence boundary in [`vendor-gjc.md`](vendor-gjc.md); it does not prescribe a fixed profile or a second provider as the judge.
 
 ## 5. Read the transcripts, not just the outputs
 
@@ -93,7 +94,7 @@ When a run fails:
 - Prefer explaining why over adding constraints; a rule the model understands transfers to unseen cases, a bare directive does not. The contract §3 routing clause is an evidence-gated discovery signal, not permission to pile caps-lock rigidity into body prose.
 - For a stubborn failure, change the frame — a different metaphor, a different working pattern — rather than adding one more rule per failed run. Reframes are cheap to try and occasionally land something great.
 - The memorization check is §3's held-out re-judging: prompts that were not used for the tuning judge the tuned result.
-- Stop when feedback comes back clean or improvements stop being meaningful; more loops on the same three examples past that point only overfit them.
+- Stop when required behavior is supported and further improvements are not meaningful; repeated tuning on the same examples can merely overfit them.
 
 ## 7. When to go heavyweight
 
