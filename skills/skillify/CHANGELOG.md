@@ -1,5 +1,7 @@
 # Changelog
 
+- 2026-09-10 — v5.0.1: the exact `MUST USE <bounded ownership clause>.` literal was split across a newline in `references/evaluation.md`, contradicting the same grammar in the body and contract → keep the directive form on one line.
+
 - 2026-06-03 — skill governance wasn't reviewable → made skillify own skill CRUD via branch/commit/PR + a CHANGELOG bullet.
 - 2026-06-03 — hygiene regressions had no playbook → linked the runtime-hygiene PR playbook from skillify's notes.
 - 2026-06-03 — session corrections stayed chat-only → added a review mode that patches the governing skill instead.

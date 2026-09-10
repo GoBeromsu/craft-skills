@@ -53,8 +53,7 @@ For relevant `tests/<name>/evals/triggers.json` prompts (selection policy: contr
 
 ### Evidence gate for a leading routing directive
 
-The optional `MUST USE <bounded ownership clause>.
-` form in contract §3 needs behavioral evidence because its lexical shape cannot prove MECE ownership.
+The optional `MUST USE <bounded ownership clause>.` form in contract §3 needs behavioral evidence because its lexical shape cannot prove MECE ownership.
 
 1. Choose positives and nearest-sibling negatives that exercise the claimed ownership boundary, not an arbitrary count.
 2. Assign stable IDs and freeze prompts, labels, and tuning/unseen partitions before tuning.
