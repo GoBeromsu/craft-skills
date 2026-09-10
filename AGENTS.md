@@ -13,7 +13,7 @@ No nested `SKILL.md` files — every skill is one level deep.
 `tests/<name>/evals/` holds a supplied reusable corpus (`evals.json` and/or `triggers.json`); corpus presence and counts are not universal quality gates.
 `evals/` directories are local, gitignored scratch for private transcripts and are never committed.
 
-The 29 packages (alphabetical): `agents`, `api`, `ast-grep`, `backend`, `browser`, `cicd`, `db`, `debug`, `defuddle`, `design`, `distil`, `document`, `frontend`, `git`, `gpu`, `guardrails`, `init`, `ml`, `obsidian`, `programming`, `refactor`, `research`, `security`, `skillify`, `tailscale`, `testing`, `vmware`, `write-prd`, `write-report`.
+The 30 packages (alphabetical): `agents`, `api`, `ast-grep`, `backend`, `browser`, `cicd`, `db`, `debug`, `defuddle`, `design`, `distil`, `document`, `frontend`, `git`, `gpu`, `guardrails`, `init`, `ml`, `obsidian`, `orca`, `programming`, `refactor`, `research`, `security`, `skillify`, `tailscale`, `testing`, `vmware`, `write-prd`, `write-report`.
 `browser` is one flat package: it owns one router and exactly three references for Aside, agent-browser, and existing-session.
 `obsidian` is one thick package whose sub-recipes live under `references/`.
 `design` owns root `DESIGN.md`, UX/UI judgment, bad-UX audits, and rendered evidence.

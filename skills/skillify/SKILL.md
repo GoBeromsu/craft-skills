@@ -86,8 +86,7 @@ The body carries `## Output contract` right after the purpose sentence; the work
 Every package path the body cites must ship with the package ([contract §12](references/contract.md#12-referenced-paths)).
 Description is third person, states what + when, weaves in 3–6 real trigger phrases, writes against undertriggering, and adds a "Not for X" line when a sibling overlaps.
 Default to ordinary prose.
-Use contract §3's exact leading `MUST USE <bounded ownership clause>.
-` form only when relevant routing evidence justifies the stronger directive; lexical validity alone never proves ownership or behavioral quality.
+Use contract §3's exact leading `MUST USE <bounded ownership clause>.` form only when relevant routing evidence justifies the stronger directive; lexical validity alone never proves ownership or behavioral quality.
 Preserve useful guidance and move optional depth to `references/`; the repository's 500-line ceiling is a local format policy, not a quality score or an upstream compatibility law.
 Keep package content MECE: each rule has one owning section or reference, and nearby locations link to it instead of restating it.
 Full rules: `references/contract.md`.
