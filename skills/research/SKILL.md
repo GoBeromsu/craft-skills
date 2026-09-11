@@ -2,13 +2,21 @@
 name: research
 description: 'Runs a decision research workflow ending in a docs/research/{slug}.md artifact — scope the question and the decision it feeds, sweep official/primary sources before secondary ones, verify claims in proportion to risk, synthesize source-linked findings with options compared side by side, then state gaps and confidence — never the decision itself. Use when asked to "research this before we decide", "do a deep dive on X", "compare these options", "what does the evidence say", or "조사해줘". Fans out source sweeps when subagents are available, otherwise runs sequentially. Not for filing or template questions (use document) and not for making the call — document authors the ADR once research lands.'
 metadata:
-  version: 1.1.1
+  version: 1.2.0
 ---
 
 # research
 
 Turn an open question into a `docs/research/{slug}.md` artifact a future decision can be made from.
 Success: findings and their evidence are traceable, options sit side by side, and the file names its own gaps — it commits to nothing itself.
+
+## Output contract
+
+- Synthesis: `docs/research/{slug}.md`, authored from `../document/templates/research.md`.
+- Verbatim capture: `docs/research/references/{slug}.md` per repeatedly-cited source, from `../document/templates/references.md`.
+
+Slug matches the filename exactly; `document` owns the `docs/` layout, slug convention, and lifecycle rules for both paths — load it for those, not this skill.
+When evidence is inaccessible or inconclusive, retain the gap and label the affected finding unresolved rather than supplying an unsupported conclusion.
 
 ## Phase 1 — Scope
 
@@ -18,6 +26,8 @@ A research pass with no named decision downstream is either premature or belongs
 ## Phase 2 — Sweep
 
 Official/primary sources first — vendor docs, specs, source repositories, primary data — then quality secondary sources (well-reviewed write-ups, case studies) only to fill gaps primary sources leave open.
+For a source-specific corpus, start with its native index when available and broaden the search when coverage is insufficient. Record available stable IDs, URLs, and publication dates at retrieval time; distinguish observation dates from publication dates and leave unknown metadata unknown.
+Use search snippets for discovery, not as proof that the underlying source was read. Read the relevant record or body before making a source-backed finding; when access fails, record the limitation and keep the finding unresolved.
 A source dense enough that paraphrasing loses precision, or one likely to be cited more than once, gets captured verbatim as `docs/research/references/{slug}.md` (`../document/templates/references.md`) before synthesis starts — re-quoting it from memory later drifts from the original.
 
 ## Phase 3 — Verify risk
@@ -43,13 +53,6 @@ An empty "open questions" section is valid when none remain; state why the evide
 Default: when the runtime exposes a subagent/Task tool, split Phase 2 across parallel sub-tasks — one per source cluster or comparison dimension — then merge captures before Phase 3.
 Escape hatch: no subagent support, or the topic is narrow enough that one sweep covers it → run all five phases sequentially in one pass.
 Either path produces exactly one `docs/research/{slug}.md`; fan-out changes how Phase 2 runs, never the output shape.
-
-## Output
-
-- Synthesis: `docs/research/{slug}.md`, authored from `../document/templates/research.md`.
-- Verbatim capture: `docs/research/references/{slug}.md` per repeatedly-cited source, from `../document/templates/references.md`.
-
-Slug matches the filename exactly; `document` owns the `docs/` layout, slug convention, and lifecycle rules for both paths — load it for those, not this skill.
 
 ## Boundaries
 
