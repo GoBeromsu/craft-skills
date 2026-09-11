@@ -1,5 +1,7 @@
 # Changelog
 
+- 2026-09-11 — v5.1.0: the `## Output contract` keyword scan proved nothing — it fired on one package ever, none today, and any single word satisfied it → drop the lexical failure-token check and keep the heading requirement, which still finds 15 craft packages without a contract section. The cannot-succeed wording stays an authoring obligation judged by review.
+
 - 2026-09-10 — v5.0.1: the exact `MUST USE <bounded ownership clause>.` literal was split across a newline in `references/evaluation.md`, contradicting the same grammar in the body and contract → keep the directive form on one line.
 
 - 2026-06-03 — skill governance wasn't reviewable → made skillify own skill CRUD via branch/commit/PR + a CHANGELOG bullet.

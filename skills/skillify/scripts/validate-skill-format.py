@@ -22,9 +22,9 @@ least `SKILL.md` + `CHANGELOG.md`. This validator enforces, per package:
   7. SKILL.md body contains no `## Change Log` (history lives in CHANGELOG.md).
   8. CHANGELOG.md exists beside SKILL.md with >= 1 dated bullet `- YYYY-MM-DD ...`.
   9. No tracked real `.env` file in the package (only `.env.example` may be committed).
- 10. SKILL.md body carries a literal `## Output contract` heading whose section names at
-     least one cannot-succeed behavior (a line mentioning cannot / stop / no-result /
-     partial / unavailable / ambiguous / missing) (contract §4).
+ 10. SKILL.md body carries a literal `## Output contract` heading (contract §4).  The
+     section must also state the cannot-succeed behavior, but that is judged by review,
+     not by scanning for a keyword.
  11. Every package-relative support path the body mentions (`scripts/`, `references/`,
      `templates/`, `assets/`, `agents/`) exists in the package, and no markdown link
      climbs out of the package with `../` (contract §12). Repository-root
@@ -89,10 +89,6 @@ DELIMITER = ". "
 ANY_TOKEN = re.compile(r"(?<![A-Za-z0-9_])ANY(?![A-Za-z0-9_])")
 ALL_CAPS_DIRECTIVE_LOOKALIKE = re.compile(r"^MUST(?![A-Za-z0-9])")
 CONTRACT_SECTION = "Output contract"
-CANNOT_SUCCEED_RE = re.compile(
-    r"\b(cannot|can't|stop|stops|no-result|no result|partial|unavailable|ambiguous|ambiguity|missing)\b",
-    re.IGNORECASE,
-)
 PACKAGE_PATH_DIRS = ("scripts", "references", "templates", "assets", "tests", "agents")
 PACKAGE_PATH_RE = re.compile(
     r"(?:\$SKILL_DIR/|\$\{SKILL_DIR\}/|(?<![A-Za-z0-9_./-]))(?:" + "|".join(PACKAGE_PATH_DIRS) + r")/[A-Za-z0-9_./-]*[A-Za-z0-9_]"
@@ -436,10 +432,9 @@ def check_contract_sections(name: str, body: str) -> list[Finding]:
     if match is None:
         return [Finding(name, "MISSING_CONTRACT_SECTION",
                         f"SKILL.md body lacks `## {CONTRACT_SECTION}` (contract §4)")]
-    if not CANNOT_SUCCEED_RE.search(match.group(1)):
-        return [Finding(name, "CONTRACT_LACKS_FAILURE_BRANCH",
-                        f"`## {CONTRACT_SECTION}` never says what the run does when it cannot succeed "
-                        "(no-result / partial / stop / ambiguous case) (contract §4)")]
+    # The section must state the cannot-succeed behavior, but that is an authoring
+    # obligation judged by scenarios and review.  A keyword scan only proved that a
+    # word was present, so it is not enforced here.
     return []
 
 
