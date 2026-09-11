@@ -86,24 +86,21 @@ class SkillFormatValidatorTest(unittest.TestCase):
             self.assertEqual(result.returncode, 1)
             self.assertIn("MISSING_CONTRACT_SECTION", result.stdout)
 
-    def test_rejects_output_contract_without_failure_branch(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            happy_only = GOOD_SKILL.replace("Missing input stops the run with a message.\n", "")
-            self._make_skill(root, "demo", happy_only, GOOD_CHANGELOG)
-            result = self.run_validator(root)
-            self.assertEqual(result.returncode, 1)
-            self.assertIn("CONTRACT_LACKS_FAILURE_BRANCH", result.stdout)
-
-    def test_nonstop_is_not_a_failure_marker(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            body = GOOD_SKILL.replace("Missing input stops the run with a message.",
-                                      "Produce nonstop output.")
-            self._make_skill(root, "demo", body, GOOD_CHANGELOG)
-            result = self.run_validator(root)
-            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
-            self.assertIn("CONTRACT_LACKS_FAILURE_BRANCH", result.stdout)
+    def test_contract_failure_wording_is_not_lexically_enforced(self) -> None:
+        """The section is required; its cannot-succeed wording is judged, not scanned."""
+        for replacement in ("", "Produce nonstop output."):
+            with self.subTest(replacement=replacement):
+                with tempfile.TemporaryDirectory() as tmp:
+                    root = Path(tmp)
+                    body = GOOD_SKILL.replace(
+                        "Missing input stops the run with a message.\n" if not replacement
+                        else "Missing input stops the run with a message.",
+                        replacement,
+                    )
+                    self._make_skill(root, "demo", body, GOOD_CHANGELOG)
+                    result = self.run_validator(root)
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                    self.assertNotIn("CONTRACT_LACKS_FAILURE_BRANCH", result.stdout)
 
     def test_rejects_traversal_link_out_of_package(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

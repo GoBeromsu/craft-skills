@@ -2,7 +2,7 @@
 name: skillify
 description: Owns the full lifecycle of craft-skills skill packages — creating, updating, moving/renaming, retiring them, and absorbing frontier labs' skill-creators into vendor lenses — through evidence-proportional authoring and deterministic format validation. Use when a user says things like "make a skill", "skillify this workflow", "turn this into a skill", "update this skill", "move this skill", "absorb openai's new skill-creator", or "스킬 만들자", or when a recurring workflow correction needs to be encoded into a governing skill. Not for one-off project scripts or private field experiments, which stay local until a requested harvest.
 metadata:
-  version: 5.0.1
+  version: 5.1.0
 ---
 
 # skillify
@@ -15,7 +15,7 @@ The core contract stays vendor-agnostic; what any one runtime needs lives in tha
 
 A formal authoring run leaves a reviewable package under `skills/<name>/` on its own branch; publication and deployment retain their separate approvals:
 
-- `SKILL.md` whose body carries `## Output contract` — the one literal heading the validator checks and the evals grade against, stating the artifact and what the run does when it cannot succeed ([contract §4](references/contract.md#4-body)).
+- `SKILL.md` whose body carries `## Output contract` — the one literal heading the validator checks and the evals grade against, stating the artifact and what the run does when it cannot succeed. The wording of that failure branch is judged by review, not scanned for keywords ([contract §4](references/contract.md#4-body)).
 - Relevant script tests and scenario/routing evidence under `tests/<name>/`; when a corpus is supplied, use `verifiable` cases with assertions or `subjective` cases with a rubric ([contract §7](references/contract.md#7-eval-first-authoring-loop)).
 - A task-bound authoring receipt identifying the base commit, current content digest, intended effects, chosen verification and its rationale, actual results, independent judgment where needed, and any unverified obligation.
 - Every package-relative `scripts/`, `references/`, `templates/`, `assets/`, or `agents/` support path the body mentions exists in the package ([contract §12](references/contract.md#12-referenced-paths)). Refer to tests from repo-root `tests/<name>/`, not from the installed package, and verify their commands in the authoring evidence.
