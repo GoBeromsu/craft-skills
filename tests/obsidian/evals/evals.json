@@ -1,1 +1,52 @@
-{"skill":"obsidian","cases":[{"id":"cli-note-readback","prompt":"Create a vault note with obsidian-cli and verify it.","expected_behavior":"Selects the CLI sub-recipe, resolves the vault and note path, and reads back the exact result.","grading":"verifiable","assertions":["Uses the obsidian-cli sub-recipe.","Requires exact readback after mutation."]},{"id":"binary-distinction","prompt":"Which Obsidian command should I use for the official app CLI?","expected_behavior":"Distinguishes the Obsidian.app obsidian binary from the Yakitrak obsidian-cli binary and uses their safe probes.","grading":"verifiable","assertions":["Names both distinct binaries.","Does not treat their command surfaces as interchangeable."]},{"id":"taxonomy-boundary","prompt":"Decide where this personal note belongs in my vault.","expected_behavior":"Reports that personal taxonomy belongs to the composing knowledge-management policy owner.","grading":"verifiable","assertions":["Does not choose a personal taxonomy.","Names the policy boundary."]}]}
+{
+  "skill": "obsidian",
+  "cases": [
+    {"id":"cli-note-readback","prompt":"Create a vault note with obsidian-cli and verify it.","expected_behavior":"Selects the CLI sub-recipe, resolves the vault and note path, and reads back the exact result.","grading":"verifiable","assertions":["Uses the obsidian-cli sub-recipe.","Requires exact readback after mutation."]},
+    {"id":"binary-distinction","prompt":"Which Obsidian command should I use for the official app CLI?","expected_behavior":"Distinguishes the Obsidian.app obsidian binary from the Yakitrak obsidian-cli binary and uses their safe probes.","grading":"verifiable","assertions":["Names both distinct binaries.","Does not treat their command surfaces as interchangeable."]},
+    {"id":"taxonomy-boundary","prompt":"Decide where this personal note belongs in my vault.","expected_behavior":"Reports that personal taxonomy belongs to the composing knowledge-management policy owner.","grading":"verifiable","assertions":["Does not choose a personal taxonomy.","Names the policy boundary."]},
+    {
+      "id": "institutional-policy-composition",
+      "prompt": "Use the same Obsidian tools for my personal and team vaults. A team note sits in an agent-writable folder but contains a human Thinking section and another writer's draft. The team policy has not been loaded. Update the note using my personal template and author fields.",
+      "expected_behavior": "Reads the exact team target and its governing policy before any write, preserves human and other-writer content, and does not transplant personal taxonomy, metadata values or template rules. Missing write authority blocks that write, not permitted inspection.",
+      "grading": "subjective",
+      "rubric": [
+        "Composes reusable mechanics with the target vault's personal or institutional policy instead of copying the personal policy.",
+        "Distinguishes a writable zone from exact-note ownership and preserves protected human sections and existing provenance.",
+        "Reports the missing policy/authority without claiming an update or preventing authorized read-only inspection."
+      ]
+    },
+    {
+      "id": "existing-supervisor-and-git-parity",
+      "prompt": "Reproduce an existing headless Sync setup on another OS. The current PM2 process uses a different restart limit from the recipe, and the Git backup trigger is unknown. Can I copy the example ecosystem file and add a ten-minute backup job?",
+      "expected_behavior": "Inspects the existing process, boot integration and separate Git owner first; preserves observed behavior while resolving replica-specific paths and binaries. Does not overwrite restart settings or invent a Git schedule.",
+      "grading": "subjective",
+      "rubric": [
+        "Treats the ecosystem snippet as an example, not authority to replace an existing process definition or create a duplicate.",
+        "Separates process-dump persistence from OS boot integration and resolves each replica's paths independently.",
+        "Leaves unknown Git trigger/branch/retention as an unmet backup prerequisite rather than a new schedule or Sync success claim."
+      ]
+    },
+    {
+      "id": "same-account-distinct-remote",
+      "prompt": "My account already syncs a personal vault. Connect a separate empty remote to a populated team vault. Does using another remote also prevent the agent from accessing my personal vault through the account?",
+      "expected_behavior": "Distinguishes account authentication, remote pairing and credential scope; requires exact local/remote identity, content and a usable recovery point before setup. Does not infer account-level isolation or discard populated local data because the remote is empty.",
+      "grading": "subjective",
+      "rubric": [
+        "Verifies the selected remote and local replica separately from account login and does not imply that pairing constrains all credential access.",
+        "Requires observed contents, expected initial direction and recoverability before staged Sync; does not treat pull-only as deletion-proof.",
+        "Keeps authentication and encryption secrets in the supported interactive flow, outside command arguments, shared configuration and evidence logs."
+      ]
+    },
+    {
+      "id": "online-without-content-evidence",
+      "prompt": "PM2 reports online with zero restarts. The latest note has not appeared on the user's device, and Git has only a local commit. Mark the replica, restart recovery and backup as verified.",
+      "expected_behavior": "Reports missing end-to-end and remote-backup evidence. Requires an authorized content roundtrip and controlled restart readback; does not equate supervisor health or a local commit with successful Sync or backup.",
+      "grading": "subjective",
+      "rubric": [
+        "Refuses the requested completion claim without fabricating content or user confirmation.",
+        "Checks replica-to-device content and device edits returning to the replica, then verifies pairing and content after an authorized restart.",
+        "Keeps remote Git revision/content readback separate and stops on wrong-vault, unexplained deletion or a crash loop instead of repeated restarts."
+      ]
+    }
+  ]
+}
