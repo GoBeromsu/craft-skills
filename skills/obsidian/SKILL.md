@@ -2,7 +2,7 @@
 name: obsidian
 description: Routes one thick Obsidian skill. Use for in-vault note create/edit/cleanup (“옵시디언 노트 정리”; not filing/taxonomy) with wikilinks/callouts/properties/house style; create/debug `.base` or embedded base blocks, filters/views, `groupBy`/`sort`/`limit`, Dataview-to-Bases; Obsidian JSON Canvas `.canvas` mind maps/flowcharts/nodes/edges; Mermaid that must render in Obsidian; `obsidian-cli` read/create/search/move/property/write/inspect, readback verification, `Vault not found`, wrapper confusion; Web Clipper templates for any site/type (YouTube/GitHub/Recipe/Article), variables/filters/frontmatter; “플러그인 고쳐줘”, silent plugin failures, API skew, Templater `ReferenceError`/`<%`; or headless `ob` Sync (“headless sync 점검”, “obsidian sync status”, “볼트 동기화 복구”, “pull-only로 맞춰줘”, daemon restart). Not for web-page-to-Markdown extraction/scraping, CommonMark, Dataview queries, React Flow, Mermaid CLI/non-Obsidian rendering, outside-vault files, non-plugin core bugs, desktop Sync/Dropbox/other replication, or filing/provenance.
 metadata:
-  version: 1.2.3
+  version: 1.2.4
 ---
 # Obsidian
 
@@ -12,6 +12,7 @@ Apply Obsidian-specific mechanics through one package so the requested artifact 
 
 Return the verified artifact or runtime state, selected sub-recipe, readback evidence, and every unavailable prerequisite.
 If the vault is unresolved, the runtime or command surface is unavailable or unsupported, or readback evidence is missing, stop and report the condition without inventing an operation.
+Missing target-vault policy or write authority blocks the dependent mutation, not otherwise authorized read-only inspection.
 
 ## Requirements
 
@@ -46,7 +47,7 @@ A Mermaid fence inside a note uses `mermaid.md` for renderer compatibility and `
 ## Shared operating contract
 
 1. **Resolve the exact artifact.** Identify the vault, note-relative path, `.base`/`.canvas` file, plugin id, template, or Sync pairing before changing it.
-2. **Read before writing.** Preserve unrelated content, metadata, IDs, edge references, and source URLs.
+2. **Read before writing.** Load the target vault's policy and applicable template before a note mutation; preserve unrelated content, existing provenance, IDs, edge references, and source URLs. A writable folder does not grant ownership of an existing note: confirm exact-note authority, preserve protected human sections and other writers' changes, and stop the conflicting write rather than overwrite them.
 3. **Apply the matching sub-recipe.** Do not substitute generic Markdown, JSON, shell file editing, or browser assumptions for Obsidian-specific behavior.
 4. **Use the least destructive surface.** Prefer `obsidian-cli` for vault-aware note operations. Treat delete, unlink, reset, mirror, cleanup, and bulk replacement as destructive operations requiring explicit scope and approval.
 5. **Read back the result.** Verify the exact file or runtime state after every mutation. A successful exit code without materialized output is not completion.
@@ -56,7 +57,8 @@ A Mermaid fence inside a note uses `mermaid.md` for renderer compatibility and `
 ## Boundaries
 
 This package owns reusable Obsidian mechanics and formats.
-A personal knowledge-management skill may own what a note means, where it belongs, required provenance, and which template frame applies; compose that policy with this package rather than duplicating it here.
+A personal or institutional knowledge-management policy owns what a note means, where it belongs, required provenance, protected content, write permissions, and which template frame applies; compose that policy with this package rather than duplicating it here.
+Share the tool without copying private accounts, note content, taxonomy, metadata values, or operating context between vaults.
 Static public-page extraction belongs to an extractor such as `defuddle`, not Web Clipper or browser automation.
 Generic Mermaid outside Obsidian does not inherit Obsidian’s bundled-renderer compatibility baseline.
 Generic file synchronization, Git conflicts, and backup systems are outside the headless Obsidian Sync sub-recipe.
@@ -69,7 +71,7 @@ Generic file synchronization, Git conflicts, and backup systems are outside the 
 - Trusting a Web Clipper selector without testing the real page → inspect the page and verify every selector before shipping JSON.
 - Editing plugin state files or bundled plugin code directly → follow `doctor.md` and use the plugin/runtime’s supported mutation surface.
 - Enabling bidirectional or continuous headless Sync before a one-shot pull-only verification → follow `sync.md`’s staged promotion gate.
-- Letting this reusable package decide a personal vault’s taxonomy or filing zone → load the personal policy owner for those decisions.
+- Letting this reusable package impose one vault's taxonomy, metadata, or write permissions on another → load the target vault's policy owner for those decisions.
 
 ## Verification
 

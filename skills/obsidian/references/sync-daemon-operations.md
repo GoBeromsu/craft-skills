@@ -3,6 +3,25 @@
 Use a process supervisor only after the one-shot pull-only and bidirectional verification gates pass.
 The supervisor owns process lifetime; `ob` owns sync configuration.
 
+## Contents
+
+- [Existing installation](#existing-installation)
+- [Environment](#environment)
+- [pm2](#pm2)
+- [Remote inspection](#remote-inspection)
+- [Stop and recover](#stop-and-recover)
+- [Health evidence](#health-evidence)
+
+## Existing installation
+
+Inspect the registered process definition, binary, vault path, restart settings, logs, and OS boot integration before adapting an existing replica.
+Preserve observed behavior and privileges; change only the necessary replica-specific paths, binaries, or approved boot wiring.
+Treat the ecosystem snippet below as an example for a missing definition, not permission to overwrite an existing definition or start a duplicate process.
+Verify the exact local and remote vault, their contents, expected initial transfer direction, and a usable recovery point using [Sync preflight](sync.md#1-preflight).
+An empty remote does not authorize deleting populated local content, and pull-only still propagates remote deletions.
+Account authentication, vault pairing, and credential access scope are separate: a distinct remote does not prove the credentials cannot access another vault.
+Keep login and encryption secrets in the supported interactive flow, outside shared configuration, command arguments, and evidence logs.
+
 ## Environment
 
 Resolve these values on the replica:
@@ -57,6 +76,9 @@ pm2 save
 `pm2 save` updates the boot-time process dump.
 Confirm the boot integration separately with the supervisor’s supported startup command for the operating system.
 
+Keep existing Git backup ownership separate from Sync: observe its actual trigger, branch, remote, retention, and failure reporting before making an approved adaptation.
+Do not infer a backup cadence from continuous Sync or add a scheduler to fill an unknown; use the Git workflow owner for unresolved backup behavior.
+
 ## Remote inspection
 
 Keep inspection read-only until the failure mechanism is known:
@@ -84,8 +106,14 @@ Do not restart repeatedly: each restart may replay the same destructive or faili
 
 A healthy daemon has:
 
-- Supervisor state is `online` with a low stable restart count.
+- Supervisor state is `online` with a stable restart count compared with the observed baseline.
 - A recent successful sync heartbeat is present.
 - `ob sync-status` points at the exact intended vault path.
 - No concurrent Obsidian desktop process uses the same replica vault.
 - Git status and file count remain plausible after a controlled one-shot check.
+- An authorized test note reaches the user's device, and a controlled edit there returns to the exact replica with content readback in both directions.
+- After an authorized process restart, the same pairing and controlled content flow still work without new errors or a rising restart count.
+
+Supervisor health alone does not prove Sync, restart recovery, or backup success.
+For the separate Git backup, read the intended content from the actual remote branch and revision after its observed trigger; a local commit is not remote-backup evidence.
+Report each unavailable content, restart, or backup check as unverified rather than inferring it from `online`.
