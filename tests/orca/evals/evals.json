@@ -2,6 +2,57 @@
   "skill": "orca",
   "cases": [
     {
+      "id": "logical-target-distinct-repositories",
+      "prompt": "My knowledge system's source and backup are different Git repositories but one thing in my head. Separate source and Remote project cards confuse me. Can they be one group?",
+      "expected_behavior": "Explains a shared visual work target with distinct repository identities and purpose labels; checks native grouping support before any authorized implementation.",
+      "grading": "verifiable",
+      "assertions": [
+        "Distinguishes conceptual work target from Git repository identity",
+        "Suggests source and backup roles inside one visual cluster, with execution location in host metadata",
+        "Does not rewrite origins or fake upstream metadata to combine canonical IDs",
+        "Does not mutate the user's setup merely because they asked an informational question",
+        "Does not claim unsupported nesting is implemented"
+      ]
+    },
+    {
+      "id": "shared-project-not-prefixes",
+      "prompt": "Organize Orca with PARA across my connected hosts. A folder registration contains three Git repos, the same repo appears locally and remotely, and agent roles differ. Do not disrupt any terminals.",
+      "expected_behavior": "Creates real groups, verifies nested Git roots and identities, preserves agent roles and live folder workspaces, and checks both the sidebar and runtime before claiming consolidation.",
+      "grading": "verifiable",
+      "assertions": [
+        "Uses actual Projects, Areas, Resources, Archives groups rather than repeated name prefixes or a numbered vault directory mirror",
+        "Does not infer non-Git status from a folder registration or merge repositories by display name",
+        "Verifies origin and fork/provider metadata and reuses a matching local checkout before proposing a clone",
+        "Preserves terminal IDs, paths, worktrees, and distinct agent roles",
+        "Reports disconnected hosts and missing visible UI proof as unverified rather than complete"
+      ]
+    },
+    {
+      "id": "cleanup-is-not-workspace-removal",
+      "prompt": "Reduce old branch clutter in Orca. A is merged into both default refs and has no worktree; its commit and branch reflog are 45 days old. B has an old commit but was created today. C is merged but checked out in another worktree. D is unmerged. E has no branch reflog. A remote host has similar names. Local safe cleanup is approved.",
+      "expected_behavior": "Audits and revalidates A for safe deletion, preserves B through E, does not extrapolate approval to remote-host refs, and verifies retained work.",
+      "grading": "verifiable",
+      "assertions": [
+        "Only A is eligible after rechecking its tip, both default refs, age, and all worktrees",
+        "Uses git branch -d and preserves a branch if Git refuses rather than forcing deletion",
+        "Preserves B due to recent reflog activity, C due to its worktree, D due to unmerged commits, and E due to unknown activity",
+        "Does not delete remote refs, remote-host branches, workspace directories, or running sessions",
+        "Checks deleted refs absent and retained refs, HEAD, worktree registrations, and terminal IDs unchanged"
+      ]
+    },
+    {
+      "id": "filtered-api-field-and-fork-metadata",
+      "prompt": "Orca accepted a group-order update but read-back is unchanged and the sidebar still splits the project. Two different origins share a canonical ID because of an upstream field. One setup has an active terminal. Just delete the duplicate and edit the internal state file.",
+      "expected_behavior": "Rejects destructive shortcuts, checks version-specific supported capabilities and real fork identity, and reports a partial result if no supported repair is available.",
+      "grading": "verifiable",
+      "assertions": [
+        "Does not treat a successful mutation response as persistence or visible UI proof",
+        "Does not merge different origins without confirming real provider/fork relationships",
+        "Preserves the active setup and does not edit internal state files",
+        "Uses installed capability discovery or a verified native UI operation and stops with a precise limitation if unsupported"
+      ]
+    },
+    {
       "id": "unregistered-sibling-checkout",
       "prompt": "orca worktree current says no Orca-managed worktree contains this directory, but it is a normal git repo and orca status looks fine. Get orca terminal create working here.",
       "expected_behavior": "Reads selector_not_found as a repo-registration verdict rather than a runtime or network fault, registers the repo root, and re-runs the command that failed plus one selector-dependent call.",
@@ -9,7 +60,7 @@
       "assertions": [
         "The response classifies `selector_not_found` as a registration failure while the runtime is healthy",
         "The response registers the repo root with `orca repo add --path <repo-root>`",
-        "The response explains that the inherited `ORCA_WORKSPACE_ID` names the launching workspace, not the current checkout",
+        "The response explains that inherited Orca workspace identity names the launching workspace, not the current checkout",
         "The response re-runs `orca worktree current` and a `--worktree active` command as proof rather than declaring success from the registration call"
       ]
     },
