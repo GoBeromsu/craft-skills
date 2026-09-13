@@ -27,6 +27,7 @@ In a monorepo, keep tests within the owning package unless an existing cross-pac
 ## Fixture isolation
 
 Keep mutable fixtures at the narrowest scope that safely serves their consumers.
+Create scenario-only files and data inside the test that needs them, not in a common bootstrap run by unrelated tests.
 
 Return a factory or fresh object whenever a test can mutate the fixture.
 
@@ -49,3 +50,5 @@ Do not require one builder per entity or force every object through a shared fix
 Avoid giant shared fixture files that make unrelated tests depend on one complete object shape.
 
 Prefer readable local setup over helpers that conceal the oracle or important preconditions.
+For a narrow regression, reuse the existing consumer harness and parameterize cases that share an oracle instead of copying a matrix across isolated and assembled suites.
+Keep both layers only when each exposes a distinct residual failure mode.

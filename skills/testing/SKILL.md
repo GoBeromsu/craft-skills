@@ -2,7 +2,7 @@
 name: testing
 description: Designs, improves, and audits test suites around behavior and risk, independent oracles, counterfactual evidence, deterministic diagnosis, and cost. Use for generated-test review, unit/component/integration/e2e or smoke placement, test-suite health, flaky-test policy, fixtures, and test audits. Not for production-code red-green implementation, which belongs to programming; diagnosis or repair of one currently failing or intermittent test, which belongs to debug; structural-change characterization, which belongs to refactor; or ML and agent evaluation methodology, which belongs to ml and agents.
 metadata:
-  version: 2.5.0
+  version: 2.5.1
 ---
 
 # testing
@@ -25,6 +25,8 @@ When behavior is ambiguous, ask which contract governs it before choosing a test
 Read `references/admission.md` before placing, retaining, rewriting, deleting, or adding a test.
 Admit a test only when it names a behavior or invariant, covers a distinct failure mode, uses an independent oracle, and runs at the cheapest layer that can observe the failure.
 Record `add`, `rewrite`, `delete`, or `no-test` in `templates/test-strategy.md` before implementation.
+When the task is codebase reduction, use the existing justification column to account for retired, retained, and replacement implementation or support code; more tests or new guards do not substitute for that objective.
+Apply `references/structure.md` to keep regression setup proportional and `references/integration.md` before replacing a fake.
 Require an observed red for the named reason in a disposable consumer before production implementation when adding or behavior-changing a test.
 Classify audit evidence as `observed`, `safely demonstrable`, or `unavailable` as defined in `references/conventions.md`.
 Do not delete a historical test from unavailable evidence alone.
@@ -83,6 +85,7 @@ Do not turn unknown incumbent output into a permanent golden master without an i
 - A test that mirrors implementation copy locks in an answer without proving the contract → rewrite it against the specification or approved fixture.
 - Fixture-generator, source-string-mutation, or checker-of-checker layers without an independent oracle protect test topology rather than product risk → test the public checker contract directly or delete the layer.
 - Test count as a metric rewards volume rather than unique evidence → review distinct failure modes and decision rows instead.
+- A narrow regression or fixture retirement grows shared catalogs, duplicate test matrices, or a replacement application emulator → preserve the reduction objective with case-local inputs and the smallest faithful consumer proof; retain necessary boundary coverage rather than imposing filename bans or line-count quotas.
 
 ## Portable runtime facts
 
