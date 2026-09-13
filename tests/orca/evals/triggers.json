@@ -1,6 +1,10 @@
 {
   "skill": "orca",
   "should_trigger": [
+    "Organize Orca into actual PARA groups without repeating prefixes",
+    "Reduce sidebar clutter in Orca while preserving my agent sessions",
+    "The same repo appears separately on two Orca hosts; consolidate its project identity",
+    "Safely clean old branches cluttering my Orca projects",
     "orca worktree current reports selector_not_found even though this is a git repo",
     "Register this checkout with Orca so --worktree active resolves",
     "My saved Orca environment answers remote_runtime_unavailable",
@@ -11,6 +15,8 @@
     "orca에 연결이 안된다"
   ],
   "should_not_trigger": [
+    "Reorganize my Obsidian vault folders into PARA",
+    "Delete a merged Git branch in this standalone repository; Orca is not involved",
     "My Tailscale peer disappeared after I switched to another account profile",
     "Decide whether this tailnet failure is network-layer or SSH service-layer",
     "Create an isolated git worktree and branch for this task",

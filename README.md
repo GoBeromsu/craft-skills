@@ -2,7 +2,7 @@
 
 Work-craft Agent Skills for research and engineering by Beomsu Koh.
 
-Own your craft, vendor-neutral: all 29 packages use the plain Agent Skills `SKILL.md` layout.
+Own your craft, vendor-neutral: all 30 packages use the plain Agent Skills `SKILL.md` layout.
 The portable core contains no runtime-specific behavior; Claude Code, Codex, Hermes, Cursor, and Grok-native integration lives in runtime lenses and generated instruction-file adapters.
 This is a task-oriented library for software and research work — kept separate from [`bstack`](https://github.com/GoBeromsu/bstack) (personal / life / second-brain automation) so the two domains never bleed into each other's context.
 
@@ -31,6 +31,7 @@ This is a task-oriented library for software and research work — kept separate
 | `init` | Own the hierarchical `AGENTS.md` lifecycle as prose — map, read-only audit, stale reporting — with one script for marker-region edits; bare `init` runs ordinary deep-init. |
 | `ml` | Apply ML/DL research-engineering discipline — reproducible project layout, leakage-safe dataset construction, and a training-discipline ladder — to classical ML, deep learning, fine-tuning, and vision work. |
 | `obsidian` | Route reusable Obsidian Markdown, Bases, Canvas, Mermaid, CLI, Web Clipper, plugin-doctor, and headless Sync work through one thick skill with selectively loaded sub-recipes. |
+| `orca` | Organize low-clutter work targets across hosts while preserving distinct Git identities and live sessions, safely clean old branches, and diagnose connection failures at their actual layer. |
 | `programming` | Apply correctness-first, type-strict engineering discipline when writing or editing Python or TypeScript. |
 | `refactor` | Restructure code without changing what it does, each move backed by a detection command and threshold, gated behind a characterization-test protocol for untested legacy code. |
 | `research` | Run a decision-depth research workflow ending in a `docs/research/{slug}.md` artifact — sweep primary sources, synthesize with a citation on every claim, and state gaps and confidence, never the decision itself. |
@@ -65,7 +66,7 @@ Use the Claude Code marketplace channel:
 /plugin install craft-skills@craft-skills
 ```
 
-Then invoke any of the 29 skills above by name, e.g. `api`, `ast-grep`, `defuddle`, `design`, `document`, `init`, `skillify`, `programming`, `research`, `write-prd`, `debug`.
+Then invoke any of the 30 skills above by name, e.g. `api`, `ast-grep`, `defuddle`, `design`, `document`, `init`, `skillify`, `programming`, `research`, `write-prd`, `debug`, `orca`.
 
 ---
 
