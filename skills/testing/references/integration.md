@@ -13,6 +13,9 @@ Use integration evidence when boundary semantics are the named risk and preserve
 Use a real dependency in a container when engine, major version, configuration, migrations, query semantics, ordering, transaction behavior, or protocol behavior is the risk.
 
 Use a faithful in-memory or wire-level fake only when it preserves the semantics relevant to the named risk at lower cost.
+Do not grow a project-internal fake into a second implementation of application business rules merely to avoid exercising the real boundary.
+When retiring such a fake, map its meaningful consumers to retained evidence before deletion; moving the emulator or rebuilding its catalog is not retirement.
+Keep narrow test arrangements outside runtime routes and dependency graphs, and make undeclared intercepted requests fail rather than return a default success.
 
 Use a narrow mock only under the admission rules below.
 
