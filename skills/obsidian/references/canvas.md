@@ -217,6 +217,19 @@ Generate 16-character lowercase hexadecimal strings (64-bit random value):
 | File preview | 300-500 | 200-400 |
 | Link preview | 250-400 | 100-200 |
 
+## Reaching a Canvas from a Note
+
+Note-side link and embed syntax belongs to [markdown.md](markdown.md); canvas embeds are in [markdown-embeds.md](markdown-embeds.md).
+One consequence matters while building a canvas: a `.canvas` target needs its extension, so `[[Project Overview]]` does not reach `Project Overview.canvas`.
+
+A canvas is indexed as soon as it exists, so the file being present proves nothing about a link reaching it.
+Check the destination itself rather than the linking note's whole link map, which legitimately holds unresolved date and person placeholders:
+
+```js
+app.metadataCache.getFirstLinkpathDest("Project Overview.canvas", "<linking note path>.md");
+// expect the canvas TFile; null means the link does not reach it
+```
+
 ## Validation Checklist
 
 After creating or editing a canvas file, verify:
@@ -229,6 +242,7 @@ After creating or editing a canvas file, verify:
 6. `fromEnd`/`toEnd` values are one of: `none`, `arrow`
 7. Color presets are `"1"` through `"6"` or valid hex (e.g., `"#FF0000"`)
 8. JSON is valid and parseable
+9. Each note link intended for this canvas reaches the canvas `TFile` via `getFirstLinkpathDest`, not merely a file that exists
 
 If validation fails, check for duplicate IDs, dangling edge references, or malformed JSON strings (especially unescaped newlines in text content).
 

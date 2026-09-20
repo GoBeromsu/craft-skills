@@ -38,6 +38,14 @@
 ![[document.pdf#height=400]]
 ```
 
+## Embed Canvas
+
+```markdown
+![[My canvas.canvas]]
+```
+
+Embedded canvases display shapes but not the text inside cards; open the canvas directly to read full content ([Embed files](https://help.obsidian.md/embeds)).
+
 ## Embed Lists
 
 ```markdown

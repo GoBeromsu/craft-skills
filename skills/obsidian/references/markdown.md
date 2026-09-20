@@ -251,6 +251,15 @@ After -- the same content split into headings, a numbered plan, a table, and sho
 [[Note Name#Heading]]                  Link to heading
 [[Note Name#^block-id]]                Link to block
 [[#Heading in same note]]              Same-note heading link
+[[Diagram.canvas]]                     Non-Markdown target needs its extension
+```
+
+A target that is not Markdown -- `.canvas`, `.png`, `.pdf` -- must carry its file extension: "links to file formats other than Markdown needs to include a file extension" ([Internal links](https://help.obsidian.md/links)).
+Without it the link does not reach that file; it resolves to a same-stem note when one exists, and otherwise stays unresolved while the target file remains present and indexed.
+Confirm a non-Markdown target by asking the app for that destination, not by confirming the file exists:
+
+```js
+app.metadataCache.getFirstLinkpathDest("Diagram.canvas", "<linking note path>.md");
 ```
 
 Define a block ID by appending `^block-id` to any paragraph:
