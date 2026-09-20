@@ -17,8 +17,8 @@ Vault root assumed: `${OBSIDIAN_VAULT_PATH}` Registry path: `references/doctor-p
 # Option A: read manifest directly (Obsidian need not be running)
 cat "${OBSIDIAN_VAULT_PATH}/.obsidian/plugins/<plugin-id>/manifest.json"
 
-# Option B: list all installed plugins via obsidian-cli (Obsidian must be running)
-obsidian plugin:list
+# Option B: list all installed plugins via the official obsidian CLI (Obsidian must be running)
+obsidian plugins filter=community versions
 
 # List all plugin directories to discover available plugin-ids
 ls "${OBSIDIAN_VAULT_PATH}/.obsidian/plugins/"
@@ -60,7 +60,7 @@ obsidian templater:create-from-template \
   file="_smoketest/diag-probe"
 
 # Clean up probe note regardless of outcome
-obsidian note:delete file="_smoketest/diag-probe"
+obsidian delete path="_smoketest/diag-probe.md"
 ```
 
 ### Classification decision tree
@@ -140,8 +140,12 @@ Matching pattern string or fetched fix recipe.
 ### Commands
 
 ```bash
-# Edit a vault note (template, script, config note) via obsidian-cli
-obsidian note:edit file="<vault-relative-path>"
+# Edit a vault note (template, script, config note) via the official obsidian CLI.
+# There is no note:edit command; compose the edit from the real write surface.
+obsidian read    path="<vault-relative-path>"
+obsidian append  path="<vault-relative-path>" content="<text>"
+obsidian prepend path="<vault-relative-path>" content="<text>"
+obsidian create  path="<vault-relative-path>" content="<full new body>" overwrite
 
 # Run a Templater template to test a patch interactively
 obsidian templater:create-from-template \
@@ -151,7 +155,7 @@ obsidian templater:create-from-template \
 # Reload the plugin after a data.json change (use eval to mutate config in-memory first)
 obsidian plugin:reload id="<plugin-id>"
 
-# Runtime JS evaluation (for in-memory config mutation — avoid if note:edit suffices)
+# Runtime JS evaluation (for in-memory config mutation — avoid if a plain note write suffices)
 obsidian eval code="app.plugins.plugins['<plugin-id>'].settings.<key> = <value>; await app.plugins.plugins['<plugin-id>'].saveSettings();"
 ```
 
@@ -218,7 +222,7 @@ obsidian templater:create-from-template \
 obsidian dev:screenshot
 
 # Delete the smoke test note after verification
-obsidian note:delete file="_smoketest/plugin-doctor-smoke"
+obsidian delete path="_smoketest/plugin-doctor-smoke.md"
 ```
 
 ### Pass criteria

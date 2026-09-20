@@ -14,7 +14,7 @@ A first sync or repaired config starts in `pull-only`, runs once, and earns prom
 ## Boundaries
 
 Use this skill for the headless `ob` client, its local/remote vault pairing, sync modes, and daemon lifecycle.
-Use `obsidian-cli` for note reads and writes, [`doctor.md`](doctor.md) for plugins and templates, and the desktop app for GUI Sync settings.
+Use the official `obsidian` CLI via [`cli.md`](cli.md) for note reads and writes, and for read-only Sync state on a vault the desktop app already syncs (`sync:status`, `sync:history`, `diff filter=sync`). Use [`doctor.md`](doctor.md) for plugins and templates, and the desktop app for GUI Sync settings.
 Do not use `mirror-remote` as a shortcut for conflict resolution.
 
 ## Topology

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Inspect installed plugin manifests, classify the symptom against a growing `doctor-plugins.yaml` registry, fetch fresh docs when the registry misses, patch via `obsidian-cli`, verify with `obsidian dev:errors`, and record the fix back into the registry so the next run is faster.
+Inspect installed plugin manifests, classify the symptom against a growing `doctor-plugins.yaml` registry, fetch fresh docs when the registry misses, patch via the official `obsidian` CLI, verify with `obsidian dev:errors`, and record the fix back into the registry so the next run is faster.
 
 ## Vault Access
 
@@ -25,7 +25,7 @@ See [`cli.md`](cli.md) for the command surface and required preconditions (Obsid
 
 ## Dependencies
 
-1. [`cli.md`](cli.md) applies and Obsidian must be running (`obsidian status`).
+1. [`cli.md`](cli.md) applies and Obsidian must be running (`obsidian version` responds).
 2. `doctor-plugins.yaml` ships with this package as a seed registry — the accumulating store of plugin knowledge. Append to it; never delete or blank it.
 3. Plugin manifest path: `${OBSIDIAN_VAULT_PATH}/.obsidian/plugins/{plugin-id}/manifest.json` — readable without Obsidian running.
 
@@ -39,11 +39,11 @@ Summary:
 Identify the plugin involved and its installed version.
 
 ```bash
-# Read the manifest directly (no obsidian-cli needed)
+# Read the manifest directly (no CLI needed, app need not be running)
 cat "${OBSIDIAN_VAULT_PATH}/.obsidian/plugins/<plugin-id>/manifest.json"
 
 # Or list all installed plugins
-obsidian plugin:list
+obsidian plugins versions
 ```
 
 Expected output: `{ "id": "...", "version": "2.19.3", ... }`.
@@ -90,12 +90,13 @@ If the plugin is **not in the registry**, or the registry entry has no `key_patt
 
 ### Step 4 — Patch
 
-Apply the fix using `obsidian-cli`.
+Apply the fix using the official `obsidian` CLI.
 Never hand-edit `.obsidian/plugins/*/data.json` directly.
 
 ```bash
 # Edit a template note
-obsidian note:edit file="<vault-relative-path>"
+obsidian read path="<vault-relative-path>"
+obsidian append path="<vault-relative-path>" content="<text>"
 
 # Run a Templater template against a test file
 obsidian templater:create-from-template template="<template-path>" file="<output-path>"
@@ -133,7 +134,7 @@ The rendered note contains no literal `<% ... %>` strings.
 Cleanup after smoke test:
 
 ```bash
-obsidian note:delete file="_smoketest/plugin-doctor-smoke"
+obsidian delete path="_smoketest/plugin-doctor-smoke.md"
 ```
 
 **Handoff:** clean error log + rendered note evidence → Step 6.
@@ -238,7 +239,7 @@ Confirm: file renamed to the value, heading resolved, Base block filters contain
 | Rationalization | Reality |
 |---|---|
 | "I can skip registry lookup — I know what the fix is." | Registry lookup takes one `yq` call. Skipping it means the fix is never recorded and the next occurrence requires full re-diagnosis. |
-| "I'll edit `data.json` directly — it's faster than obsidian-cli." | Direct edits to `.obsidian/plugins/*/data.json` bypass Obsidian's in-memory state and can corrupt plugin config on next load. Always use `obsidian eval` or `obsidian plugin:reload`. |
+| "I'll edit `data.json` directly — it's faster than the CLI." | Direct edits to `.obsidian/plugins/*/data.json` bypass Obsidian's in-memory state and can corrupt plugin config on next load. Always use `obsidian eval` or `obsidian plugin:reload`. |
 | "The template error is obvious — no need to run `dev:errors`." | `dev:errors` may surface a second unrelated error in the same plugin that is masked by the first. Always run it before declaring done. |
 | "I'll update the registry later." | Later never comes. The learn step is part of the pipeline; committing without it means the registry drifts from reality. |
 | "I can guess the docs URL without fetching it." | The registry stores the fetched URL. A wrong URL causes the next fetch to fail silently. Always verify before writing. |
@@ -254,11 +255,11 @@ Confirm: file renamed to the value, heading resolved, Base block filters contain
 
 ## Verification
 
-- [ ] `obsidian plugin:list` or manifest read returned the plugin-id and version before any edit.
+- [ ] `obsidian plugins versions` or a manifest read returned the plugin-id and version before any edit.
 - [ ] `obsidian dev:errors` ran before the patch and its output was inspected.
 - [ ] Symptom classified into one of the five categories (undefined-variable, api-mismatch, known-regression, config-drift, missing-dependency).
 - [ ] Registry consulted via `yq` before patching; if plugin absent, docs fetched and entry appended.
-- [ ] Patch applied via `obsidian-cli` commands only — no raw file edits inside `.obsidian/plugins/`.
+- [ ] Patch applied via official `obsidian` CLI commands only — no raw file edits inside `.obsidian/plugins/`.
 - [ ] Smoke test ran (`obsidian templater:create-from-template` or equivalent) and produced the expected note.
 - [ ] `obsidian dev:errors` ran after the patch and returned clean (or only pre-existing unrelated errors).
 - [ ] Smoke test note deleted after verification.
