@@ -9,8 +9,8 @@
 #   SKIP_MARKETPLACES=1 bash ...             # skip the claude/codex CLI job
 #   PR_SIZE_OVERRIDE=1 bash ...              # accept churn over the threshold
 #
-# The two Layer-1 validators run with a single-ref base so uncommitted worktree
-# changes are validated too (see skills/skillify/references/runtime-hygiene.md §3);
+# The two Layer-1 validators run against one verified merge-base so uncommitted
+# worktree changes are validated too (see skills/skillify/references/runtime-hygiene.md §3);
 # the remaining jobs run CI-exact. Label-gated Codex install/replacement jobs are
 # CI-only and intentionally not mirrored.
 set -uo pipefail
@@ -23,6 +23,7 @@ cd "$REPO_ROOT"
 # identically from a hook, a terminal, or CI.
 unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_OBJECT_DIRECTORY GIT_COMMON_DIR GIT_PREFIX GIT_QUARANTINE_PATH
 DIFF_BASE="${DIFF_BASE:-origin/main}"
+INTEGRATION_BASE="$(git merge-base "$DIFF_BASE" HEAD)"
 SCRATCH="$(mktemp -d)"
 trap 'rm -rf "$SCRATCH"' EXIT
 
@@ -98,26 +99,29 @@ PY
 }
 
 job_layer1_format() {
-  python3 skills/skillify/scripts/validate-skill-format.py --diff-base "$DIFF_BASE"
+  python3 skills/skillify/scripts/validate-skill-format.py --diff-base "$INTEGRATION_BASE" &&
+  python3 -m unittest discover -s tests/skillify -p test_validate_skill_format.py &&
+  python3 -m unittest tests.skillify.test_reflow_sentences
 }
 
 job_layer1_hygiene() {
-  python3 skills/skillify/scripts/validate-runtime-hygiene.py --diff-base "$DIFF_BASE"
+  python3 skills/skillify/scripts/validate-runtime-hygiene.py --diff-base "$INTEGRATION_BASE" &&
+  python3 -m unittest discover -s tests/skillify -p test_validate_runtime_hygiene.py
 }
 
 job_distribution_version() {
-  python3 scripts/governance/tools/check_version_bump.py --diff-base "${DIFF_BASE}...HEAD" &&
+  python3 scripts/governance/tools/check_version_bump.py --diff-base "$INTEGRATION_BASE" &&
   python3 -m unittest \
     scripts.governance.tests.test_check_version_bump \
     scripts.governance.tests.test_verify_plugin_install \
-    scripts.governance.tests.test_resolve_plugin_revision
+    scripts.governance.tests.test_resolve_plugin_revision \
+    scripts.governance.tests.test_install_sh \
+    tests.init.test_agents_region \
+    tests.init.test_package_contract
 }
 
-job_harness_portable() {
-  python3 scripts/governance/harness.py --profile portable \
-    --config scripts/governance/fixtures/repos.portable.json \
-    --json-out "$SCRATCH/governance-report.json" \
-    --text-out "$SCRATCH/governance-report.txt"
+job_typescript_baseline() {
+  python3 -m unittest tests.programming.test_typescript_baseline
 }
 
 job_marketplaces() {
@@ -154,7 +158,7 @@ run_job "pr-size"              job_pr_size
 run_job "layer1-format"        job_layer1_format
 run_job "layer1-hygiene"       job_layer1_hygiene
 run_job "distribution-version" job_distribution_version
-run_job "harness-portable"     job_harness_portable
+run_job "typescript-baseline"  job_typescript_baseline
 run_job "marketplaces"         job_marketplaces
 
 echo ""

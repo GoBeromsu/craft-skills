@@ -1,12 +1,13 @@
 # craft-skills 감사 매트릭스 (20 skills × 9 fields)
+이 문서는 2026-07 이니셔티브의 당시 관측 기록이다. 현재 수용·배포 증명이나 운영 요구가 아니며, 당시 `audit_matrix_lint.py` 행 수 쿼터와 하네스는 은퇴했다. 현재 검사는 루트 `AGENTS.md`와 실소유자가 정한다. 아래 행·처분은 당시 감사 결과이며 재실행하거나 반증하지 않았다.
 
 수집: read-only subagent 4군 병렬 감사(2026-07-12) + 정합 재감사(신규 api·cicd·write-prd 3종, 변경 5종 재검증; 2026-07-12).
 근거 문서: [omo 분석](../research/omo-analysis.md) · 스펙: deep-interview-craft-skills-omo-enhancement (fact-6/12/13은 IR-1로 superseded).
-검증: `python3 scripts/governance/tools/audit_matrix_lint.py docs/governance/audit-matrix.md --rows 20`
+당시 검증 명령(은퇴): `python3 scripts/governance/tools/audit_matrix_lint.py docs/governance/audit-matrix.md --rows 20`
 
 처분 요약: change 19 / no-change 1 → 리배칭 k=ceil(19/5)=4 PR (5+5+5+4, 매트릭스 행 순서).
 
-CI 참고: GitHub Actions는 계정 billing lock으로 모든 잡이 미기동 상태("account is locked due to a billing issue") — 코드 결함 아님, 운영자 결제 액션 필요. 게이트 증거는 로컬 실행으로 대체 기록.
+CI 참고(2026-07 관측, 현재 미검증): 당시 GitHub Actions는 계정 billing lock으로 모든 잡이 미기동 상태("account is locked due to a billing issue")로 기록됨 — 당시 코드 결함으로 보지 않았고, 당시 운영자 결제 액션으로 적혀 있다. 현재 운영 할 일이 아니다. 당시 게이트 증거는 로컬 실행으로 대체 기록되었다.
 
 | skill | 계약준수 | 과잉지시 | 라우팅겹침 | 가이드정합 | 원칙반영도 | Layer-1 | 처분 | 증거링크 |
 |---|---|---|---|---|---|---|---|---|
