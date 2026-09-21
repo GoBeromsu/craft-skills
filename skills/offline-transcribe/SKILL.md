@@ -2,7 +2,7 @@
 name: offline-transcribe
 description: Transcribes already-local audio or video with an already-prefetched local Whisper model and writes a finite JSON transcript plus SRT, VTT, TXT, TSV, and timestamped Markdown. Use when a user says "transcribe this wav offline", "local mlx whisper", "no upload transcript", "강의.part.01.wav 로컬 전사", or "write srt next to this file without fetching a model". Not for OpenAI cloud transcription, URL/download acquisition, diarization, vault writes, or publishing.
 metadata:
-  version: 1.0.0
+  version: 1.0.1
 ---
 
 # offline-transcribe
@@ -20,8 +20,10 @@ When an input, model directory, or option is missing, remote, or incomplete, sto
 
 ## Invoke
 
+Hermes skills-hub installs support files with mode `0644` and does not preserve Git executable bits, so invoke the installed launcher explicitly through `sh`:
+
 ```bash
-sh skills/offline-transcribe/scripts/transcribe_offline.sh \
+sh /path/to/installed/offline-transcribe/scripts/transcribe_offline.sh \
   --input "강의.part.01.wav" \
   --model-dir /path/to/prefetched-whisper \
   --output-dir /path/to/out

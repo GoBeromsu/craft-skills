@@ -508,7 +508,14 @@ class OfflineTranscribeTest(unittest.TestCase):
 
 
 class LauncherTest(unittest.TestCase):
-    def _launch(self, arguments: list[str], exit_code: int):
+    def _launch(
+        self,
+        arguments: list[str],
+        exit_code: int,
+        *,
+        launcher: Path = LAUNCHER,
+        via_sh: bool = False,
+    ):
         with tempfile.TemporaryDirectory(prefix="offline launcher 공간 ") as tmp:
             root = Path(tmp)
             fake_python = root / "python3"
@@ -537,11 +544,14 @@ class LauncherTest(unittest.TestCase):
                 "SYNTHETIC_EXIT": str(exit_code),
                 **{name: "caller-value" for name in OFFLINE_ENV},
             }
+            command = [str(launcher), *arguments]
+            if via_sh:
+                command.insert(0, "/bin/sh")
             result = subprocess.run(
                 [
                     "/bin/sh", "-c",
                     '"$@"\nchild_status=$?\npython3 --inspect-parent\nexit "$child_status"',
-                    "synthetic-parent", str(LAUNCHER), *arguments,
+                    "synthetic-parent", *command,
                 ],
                 env=environment,
                 capture_output=True,
@@ -572,6 +582,23 @@ class LauncherTest(unittest.TestCase):
                 status, child, _parent = self._launch(arguments, exit_code)
                 self.assertEqual(status, exit_code)
                 self.assertEqual(child["args"], [str(SCRIPT), *arguments])
+
+    def test_non_executable_launcher_runs_through_sh(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            installed_scripts = Path(tmp) / "installed" / "scripts"
+            installed_scripts.mkdir(parents=True)
+            launcher = installed_scripts / "transcribe_offline.sh"
+            launcher.write_bytes(LAUNCHER.read_bytes())
+            launcher.chmod(0o644)
+            status, child, parent = self._launch([], 0, launcher=launcher, via_sh=True)
+
+        self.assertEqual(status, 0)
+        self.assertEqual(child["credentials_present"], [])
+        self.assertEqual(child["flags"], OFFLINE_ENV)
+        self.assertEqual(
+            parent["credentials_present"], ["HF_TOKEN", "HUGGING_FACE_HUB_TOKEN"],
+        )
+        self.assertEqual(parent["flags"], {name: "caller-value" for name in OFFLINE_ENV})
 
 
 class OfflineContextTest(unittest.TestCase):
