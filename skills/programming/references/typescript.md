@@ -115,7 +115,11 @@ try {
 
 ## tsconfig — beyond `strict: true`
 
-`"strict": true` alone is not strict. Add:
+`"strict": true` alone is not strict.
+The reusable compiler configuration owner is this package's `assets/tsconfig.strict.json`.
+It enables `strict` plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`, `noFallthroughCasesInSwitch`, `noPropertyAccessFromIndexSignature`, and `noUnusedLocals`.
+It does not enable `noUnusedParameters`.
+Do not add project-specific `module`, `target`, or build choices to that portable baseline.
 
 | Flag | Catches |
 |---|---|
@@ -124,6 +128,11 @@ try {
 | `verbatimModuleSyntax` | forces `import type` for type-only imports |
 | `noFallthroughCasesInSwitch` | a forgotten `break` / `return` |
 | `noPropertyAccessFromIndexSignature` | `.key` on an index signature → bracket notation |
+| `noUnusedLocals` | unused locals and unused imports fail the type check |
+
+When `tsc` reports unused locals or unused imports, remove the genuinely unused code.
+Do not suppress the diagnostic with a compiler escape.
+Unused parameters stay permitted under this baseline.
 
 HTTP rule: production code never uses bare `fetch()` — it has no retry, timeout, or error policy. Use `ky` by default; use the `undici` direct API when a Node backend needs pooling, HTTP/2, or pipelining.
 

@@ -2,7 +2,7 @@
 name: programming
 description: Guides correctness-first, type-strict Python and TypeScript implementation. Use when asked to write a `.py` or `.ts` file, scaffold a Python/TypeScript project, add strict types, assess an implementation diff for correctness or type holes, or fix a reproducible defect. Not for smell-only assessment or behavior-preserving restructuring — use refactor; not for suite-level test architecture — use testing.
 metadata:
-  version: 2.3.4
+  version: 2.4.0
 ---
 
 # programming
@@ -17,7 +17,7 @@ Load only the references the task needs before touching code; a one-off script d
 |---|---|
 | Any implementation or code edit | `references/workflow.md` — understand → plan → change → verify → report, and the completion contract |
 | `.py`, `.pyi`, or Python task | `references/python.md` — tooling table, iron list, data-modeling map |
-| `.ts`, `.tsx`, `.mts`, `.cts`, or TypeScript task | `references/typescript.md` — tooling table, iron list, tsconfig flags; load `references/typescript/clean-code.md` when naming, function shape, or structure is in scope |
+| `.ts`, `.tsx`, `.mts`, `.cts`, or TypeScript task | `references/typescript.md` — tooling table, iron list, and this package's `assets/tsconfig.strict.json`; load `references/typescript/clean-code.md` when naming, function shape, or structure is in scope |
 | Smell-only review | Route to `refactor`; it owns the code-smell catalog and the resulting restructuring |
 
 ## Write only what the task needs
@@ -83,7 +83,7 @@ When the language or tooling is not covered by a reference, or a required toolch
 Use the repository's incumbent package manager, type checker, linter, test runner, and LOC measurement first; use these defaults only when the project has no established equivalent:
 
 - Python: `uv`, `basedpyright` (`typeCheckingMode = "all"`), `ruff` (`select = ["ALL"]`), `pytest`.
-- TypeScript: `bun` (or `pnpm`), `tsc` (strict + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` + `verbatimModuleSyntax`), `biome`.
+- TypeScript: `bun` (or `pnpm`), `tsc` with this package's `assets/tsconfig.strict.json`, `biome`.
 - `awk` + `wc` for the fallback LOC measurement.
 - Runtime sources: [Python documentation](https://docs.python.org/3/) and [Node.js documentation](https://nodejs.org/docs/latest/api/); consult the matching installed runtime version before relying on mutable behavior.
 - Before choosing language-specific tooling, safely record `python3 --version` for Python work and `node --version` for TypeScript work. Also run the incumbent package manager's, type checker's, and test runner's documented version probe; do not substitute a guessed command when an incumbent tool lacks one.
