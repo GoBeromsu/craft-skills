@@ -492,5 +492,136 @@ class OfflineTranscribeTest(unittest.TestCase):
             self.assertFalse(path.exists())
 
 
+class NativePublicationTest(unittest.TestCase):
+    @staticmethod
+    def _publication_set(
+        root: Path,
+    ) -> tuple[Path, dict[str, Path], dict[str, Path]]:
+        output = root / "out"
+        output.mkdir()
+        staging_dir = output / ".staging"
+        staging_dir.mkdir()
+        destination_bundle = output / STEM
+        extensions = ("json", "srt", "vtt", "txt", "tsv", "md", "receipt.json")
+        staging = {
+            ext: staging_dir
+            / (f"{STEM}.receipt.json" if ext == "receipt.json" else f"{STEM}.{ext}")
+            for ext in extensions
+        }
+        destinations = {
+            ext: destination_bundle
+            / (f"{STEM}.receipt.json" if ext == "receipt.json" else f"{STEM}.{ext}")
+            for ext in extensions
+        }
+        for ext, path in staging.items():
+            path.write_text(f"staged-{ext}\n", encoding="utf-8")
+        return output, staging, destinations
+
+    def test_native_publication_commits_one_complete_bundle(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="offline-transcribe-native-") as tmp:
+            root = Path(tmp)
+            output, staging, destinations = self._publication_set(root)
+            staging_dir = next(iter(staging.values())).parent
+            destination_bundle = output / STEM
+            if sys.platform != "darwin":
+                with self.assertRaisesRegex(
+                    mod.ItemError,
+                    "exclusive directory publication is unsupported on this platform",
+                ):
+                    mod.publish_complete_set(staging, destinations)
+                self.assertTrue(staging_dir.is_dir())
+                self.assertFalse(destination_bundle.exists())
+                return
+
+            mod.publish_complete_set(staging, destinations)
+
+            self.assertTrue(destination_bundle.is_dir())
+            self.assertFalse(destination_bundle.is_symlink())
+            self.assertFalse(staging_dir.exists())
+            self.assertEqual(
+                {entry.name for entry in destination_bundle.iterdir()},
+                {path.name for path in destinations.values()},
+            )
+            for ext, path in destinations.items():
+                self.assertEqual(path.read_text(encoding="utf-8"), f"staged-{ext}\n")
+
+    def test_native_eexist_preserves_existing_empty_directory_file_and_symlink(self) -> None:
+        for kind in ("directory", "file", "symlink"):
+            with self.subTest(kind=kind):
+                with tempfile.TemporaryDirectory(prefix="offline-transcribe-native-") as tmp:
+                    root = Path(tmp)
+                    output, staging, destinations = self._publication_set(root)
+                    staging_dir = next(iter(staging.values())).parent
+                    destination_bundle = output / STEM
+                    if sys.platform != "darwin":
+                        with self.assertRaisesRegex(
+                            mod.ItemError,
+                            "exclusive directory publication is unsupported on this platform",
+                        ):
+                            mod.publish_complete_set(staging, destinations)
+                        self.assertTrue(staging_dir.is_dir())
+                        self.assertFalse(destination_bundle.exists())
+                        continue
+
+                    target = root / f"{kind}-target"
+                    if kind == "symlink":
+                        target.write_text("existing-target\n", encoding="utf-8")
+
+                    real_native = mod._native_exclusive_directory_rename
+
+                    def inject_collision(
+                        parent: Path,
+                        _staging_name: str,
+                        destination_name: str,
+                        _staging_dir: Path,
+                        collision_kind: str = kind,
+                        collision_target: Path = target,
+                    ) -> None:
+                        destination = parent / destination_name
+                        if collision_kind == "directory":
+                            destination.mkdir()
+                        elif collision_kind == "file":
+                            destination.write_text("existing-file\n", encoding="utf-8")
+                        else:
+                            destination.symlink_to(collision_target)
+                        real_native(parent, _staging_name, destination_name, _staging_dir)
+
+                    mod._native_exclusive_directory_rename = inject_collision
+                    try:
+                        with self.assertRaisesRegex(
+                            mod.ItemError, "refusing to overwrite existing bundle"
+                        ):
+                            mod.publish_complete_set(staging, destinations)
+                    finally:
+                        mod._native_exclusive_directory_rename = real_native
+
+                    self.assertTrue(staging_dir.is_dir())
+                    self.assertEqual(
+                        {entry.name for entry in staging_dir.iterdir()},
+                        {path.name for path in staging.values()},
+                    )
+                    if kind == "directory":
+                        self.assertTrue(destination_bundle.is_dir())
+                        self.assertFalse(destination_bundle.is_symlink())
+                        self.assertEqual(list(destination_bundle.iterdir()), [])
+                    elif kind == "file":
+                        self.assertTrue(destination_bundle.is_file())
+                        self.assertFalse(destination_bundle.is_symlink())
+                        self.assertEqual(
+                            destination_bundle.read_text(encoding="utf-8"),
+                            "existing-file\n",
+                        )
+                    else:
+                        self.assertTrue(destination_bundle.is_symlink())
+                        self.assertEqual(
+                            destination_bundle.read_text(encoding="utf-8"),
+                            "existing-target\n",
+                        )
+                        self.assertEqual(
+                            target.read_text(encoding="utf-8"),
+                            "existing-target\n",
+                        )
+
+
 if __name__ == "__main__":
     unittest.main()
