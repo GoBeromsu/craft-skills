@@ -1,0 +1,496 @@
+#!/usr/bin/env python3
+"""Filesystem and integrity behavior for offline-transcribe."""
+from __future__ import annotations
+
+import importlib.util
+import json
+import math
+import os
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+SCRIPT = Path(__file__).resolve().parents[2] / "skills/offline-transcribe/scripts/transcribe_offline.py"
+SPEC = importlib.util.spec_from_file_location("transcribe_offline", SCRIPT)
+assert SPEC is not None and SPEC.loader is not None
+mod = importlib.util.module_from_spec(SPEC)
+sys.modules[SPEC.name] = mod
+SPEC.loader.exec_module(mod)
+
+STEM = "강의.part.01"
+AUDIO = f"{STEM}.wav"
+OPTIONS = {"language": None, "word_timestamps": False, "condition_on_previous_text": True}
+
+
+def _model_dir(root: Path, name: str = "model") -> Path:
+    path = root / name
+    path.mkdir()
+    (path / "config.json").write_text('{"n_mels": 80}\n', encoding="utf-8")
+    (path / "weights.npz").write_bytes(b"npz-bytes")
+    return path
+
+
+def _audio(root: Path, name: str = AUDIO) -> Path:
+    path = root / name
+    path.write_bytes(b"RIFF-fake")
+    return path
+
+
+def _backend(text: str = "hello", start: float = 0.0, end: float = 1.0):
+    def run(_audio_path: Path, _model_dir: Path, _options: dict) -> dict:
+        return {
+            "text": text,
+            "language": "en",
+            "segments": [{"start": start, "end": end, "text": text}],
+        }
+    return run
+
+
+def _duration(_path: Path) -> float:
+    return 1.0
+
+
+def _pcm(samples: int):
+    class Fake:
+        def flatten(self):
+            return self
+
+        def astype(self, _dtype):
+            return self
+
+        def __truediv__(self, _other):
+            return self
+
+    def decode(_path: Path):
+        return Fake(), float(samples) / float(mod.SAMPLE_RATE)
+
+    return decode
+
+
+def _bundle(out: Path) -> Path:
+    return out / STEM
+
+
+def _output(out: Path, ext: str) -> Path:
+    return _bundle(out) / (f"{STEM}.receipt.json" if ext == "receipt.json" else f"{STEM}.{ext}")
+
+
+class OfflineTranscribeTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self._native_rename = mod._native_exclusive_directory_rename
+        mod._native_exclusive_directory_rename = self._commit_staging
+
+    def tearDown(self) -> None:
+        mod._native_exclusive_directory_rename = self._native_rename
+
+    @staticmethod
+    def _commit_staging(
+        parent: Path,
+        staging_name: str,
+        destination_name: str,
+        _staging_dir: Path,
+    ) -> None:
+        os.rename(parent / staging_name, parent / destination_name)
+
+    def test_unicode_internal_dot_stem_and_reuse(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out = root / "out"
+            out.mkdir()
+            model = _model_dir(root)
+            audio = _audio(root)
+            first = mod.transcribe_item(
+                audio, model, out, OPTIONS, backend=_backend(), duration_fn=_duration,
+            )
+            self.assertEqual(first["status"], "complete")
+            self.assertEqual(first["outputs"]["json"], str(_output(out, "json")))
+            self.assertFalse((out / f"{STEM}.json").exists())
+            for ext in ("json", "srt", "vtt", "txt", "tsv", "md", "receipt.json"):
+                path = _output(out, ext)
+                self.assertTrue(path.is_file(), path)
+                self.assertFalse(path.is_symlink())
+            payload = json.loads(_output(out, "json").read_text(encoding="utf-8"))
+            self.assertEqual(payload["duration_seconds"], 1.0)
+            self.assertTrue(payload["raw_asr"])
+            self.assertIn("controller_sha256", payload["backend"])
+            reused = mod.transcribe_item(
+                audio, model, out, OPTIONS, backend=_backend("CHANGED"), duration_fn=_duration,
+            )
+            self.assertEqual(reused["status"], "reused")
+            self.assertEqual(json.loads(_output(out, "json").read_text(encoding="utf-8"))["text"], "hello")
+
+    def test_nonfinite_and_out_of_range_timestamps_fail(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out = root / "out"
+            out.mkdir()
+            model = _model_dir(root)
+            audio = _audio(root)
+            with self.assertRaises(mod.ItemError):
+                mod.transcribe_item(
+                    audio, model, out, OPTIONS, backend=_backend(end=float("nan")), duration_fn=_duration,
+                )
+            with self.assertRaises(mod.ItemError):
+                mod.transcribe_item(
+                    audio, model, out, OPTIONS, backend=_backend(end=9.0), duration_fn=_duration,
+                )
+            self.assertEqual(list(out.iterdir()), [])
+
+    def test_negative_duration_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out = root / "out"
+            out.mkdir()
+            with self.assertRaises(mod.ItemError):
+                mod.transcribe_item(
+                    _audio(root), _model_dir(root), out, OPTIONS,
+                    backend=_backend(), duration_fn=lambda _p: -1.0,
+                )
+
+    def test_decoded_pcm_duration_is_used(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out = root / "out"
+            out.mkdir()
+            model = _model_dir(root)
+            seen = {}
+            audio = _audio(root)
+            decoded_waveform, decoded_duration = _pcm(8000)(audio)
+
+            def infer(waveform, _model, _options):
+                seen["waveform"] = waveform
+                return _backend(end=0.5)(audio, model, OPTIONS)
+
+            result = mod.transcribe_item(
+                audio, model, out, OPTIONS,
+                decode_fn=lambda _path: (decoded_waveform, decoded_duration), infer_fn=infer,
+            )
+            self.assertEqual(result["status"], "complete")
+            payload = json.loads(_output(out, "json").read_text(encoding="utf-8"))
+            self.assertEqual(payload["duration_seconds"], 0.5)
+            self.assertIs(seen["waveform"], decoded_waveform)
+
+    def test_repetition_is_flagged_not_rewritten(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out = root / "out"
+            out.mkdir()
+
+            def repeating(_a, _m, _o):
+                return {
+                    "text": "hi hi hi",
+                    "language": "en",
+                    "segments": [
+                        {"start": 0.0, "end": 0.2, "text": "hi"},
+                        {"start": 0.2, "end": 0.4, "text": "hi"},
+                        {"start": 0.4, "end": 1.0, "text": "hi"},
+                    ],
+                }
+
+            result = mod.transcribe_item(
+                _audio(root), _model_dir(root), out, OPTIONS,
+                backend=repeating, duration_fn=_duration,
+            )
+            self.assertIn("suspicious_repetition", result["warnings"])
+            payload = json.loads(_output(out, "json").read_text(encoding="utf-8"))
+            self.assertEqual([seg["text"] for seg in payload["segments"]], ["hi", "hi", "hi"])
+
+    def test_writer_failure_is_all_or_nothing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out = root / "out"
+            out.mkdir()
+            original = mod.write_markdown
+
+            def boom(*_args, **_kwargs):
+                raise RuntimeError("writer boom")
+
+            mod.write_markdown = boom
+            try:
+                with self.assertRaises(mod.ItemError):
+                    mod.transcribe_item(
+                        _audio(root), _model_dir(root), out, OPTIONS,
+                        backend=_backend(), duration_fn=_duration,
+                    )
+            finally:
+                mod.write_markdown = original
+            self.assertEqual(list(out.iterdir()), [])
+
+    def test_callback_before_commit_observes_complete_staging_and_no_bundle(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out = root / "out"
+            out.mkdir()
+            seen = {}
+
+            def callback(parent, staging_name, destination_name, staging_dir):
+                destination = parent / destination_name
+                self.assertFalse(destination.exists())
+                self.assertFalse(destination.is_symlink())
+                self.assertEqual(staging_dir, parent / staging_name)
+                self.assertEqual(
+                    {path.name for path in staging_dir.iterdir()},
+                    {
+                        f"{STEM}.json",
+                        f"{STEM}.srt",
+                        f"{STEM}.vtt",
+                        f"{STEM}.txt",
+                        f"{STEM}.tsv",
+                        f"{STEM}.md",
+                        f"{STEM}.receipt.json",
+                    },
+                )
+                seen["called"] = True
+                seen["count"] = seen.get("count", 0) + 1
+                os.rename(staging_dir, destination)
+
+            original = mod._native_exclusive_directory_rename
+            mod._native_exclusive_directory_rename = callback
+            try:
+                result = mod.transcribe_item(
+                    _audio(root), _model_dir(root), out, OPTIONS,
+                    backend=_backend(), duration_fn=_duration,
+                )
+            finally:
+                mod._native_exclusive_directory_rename = original
+            self.assertTrue(seen["called"])
+            self.assertEqual(seen["count"], 1)
+            self.assertEqual(result["status"], "complete")
+            self.assertTrue(_bundle(out).is_dir())
+
+    def test_failed_commit_publishes_nothing_without_destination_unlink(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out = root / "out"
+            out.mkdir()
+            sentinel = root / "user.txt"
+            sentinel.write_text("keep-me\n", encoding="utf-8")
+
+            def fail(*_args):
+                raise mod.ItemError("native commit failed")
+
+            original = mod._native_exclusive_directory_rename
+            mod._native_exclusive_directory_rename = fail
+            try:
+                with self.assertRaises(mod.ItemError):
+                    mod.transcribe_item(
+                        _audio(root), _model_dir(root), out, OPTIONS,
+                        backend=_backend(), duration_fn=_duration,
+                    )
+            finally:
+                mod._native_exclusive_directory_rename = original
+            self.assertFalse(_bundle(out).exists())
+            self.assertFalse(_bundle(out).is_symlink())
+            self.assertEqual(sentinel.read_text(encoding="utf-8"), "keep-me\n")
+
+    def test_collision_at_commit_preserves_empty_directory_file_and_symlink(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            model = _model_dir(root)
+            audio = _audio(root)
+            for kind in ("directory", "file", "symlink"):
+                out = root / f"out-{kind}"
+                out.mkdir()
+                target = root / f"{kind}-target"
+                if kind == "symlink":
+                    target.write_text("keep-target\n", encoding="utf-8")
+
+                def collide(parent, _staging_name, destination_name, _staging_dir):
+                    destination = parent / destination_name
+                    if kind == "directory":
+                        destination.mkdir()
+                    elif kind == "file":
+                        destination.write_text("keep-file\n", encoding="utf-8")
+                    else:
+                        destination.symlink_to(target)
+                    raise mod.ItemError("refusing to overwrite existing bundle")
+
+                original = mod._native_exclusive_directory_rename
+                mod._native_exclusive_directory_rename = collide
+                try:
+                    with self.assertRaises(mod.ItemError):
+                        mod.transcribe_item(
+                            audio, model, out, OPTIONS,
+                            backend=_backend(), duration_fn=_duration,
+                        )
+                finally:
+                    mod._native_exclusive_directory_rename = original
+                destination = out / STEM
+                self.assertTrue(destination.is_symlink() if kind == "symlink" else destination.exists())
+                if kind == "directory":
+                    self.assertEqual(list(destination.iterdir()), [])
+                elif kind == "file":
+                    self.assertEqual(destination.read_text(encoding="utf-8"), "keep-file\n")
+                else:
+                    self.assertEqual(target.read_text(encoding="utf-8"), "keep-target\n")
+
+    def test_occupied_bundle_symlink_is_not_followed_for_resume(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            model = _model_dir(root)
+            audio = _audio(root)
+            out = root / "out"
+            out.mkdir()
+            target = root / "target-bundle"
+            target.mkdir()
+            marker = target / "marker.txt"
+            marker.write_text("do-not-follow\n", encoding="utf-8")
+            (out / STEM).symlink_to(target, target_is_directory=True)
+            with self.assertRaises(mod.ItemError):
+                mod.transcribe_item(
+                    audio, model, out, OPTIONS, backend=_backend(), duration_fn=_duration,
+                )
+            self.assertEqual(marker.read_text(encoding="utf-8"), "do-not-follow\n")
+
+    def test_changed_input_model_options_backend_and_output_invalidate_resume(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out = root / "out"
+            out.mkdir()
+            model = _model_dir(root)
+            audio = _audio(root)
+            first = mod.transcribe_item(audio, model, out, OPTIONS, backend=_backend(), duration_fn=_duration)
+            self.assertEqual(first["status"], "complete")
+            audio.write_bytes(b"changed-bytes")
+            with self.assertRaises(mod.ItemError):
+                mod.transcribe_item(audio, model, out, OPTIONS, backend=_backend(), duration_fn=_duration)
+            audio.write_bytes(b"RIFF-fake")
+            (model / "weights.npz").write_bytes(b"npz-changed")
+            with self.assertRaises(mod.ItemError):
+                mod.transcribe_item(audio, model, out, OPTIONS, backend=_backend(), duration_fn=_duration)
+            (model / "weights.npz").write_bytes(b"npz-bytes")
+            with self.assertRaises(mod.ItemError):
+                mod.transcribe_item(
+                    audio, model, out,
+                    {"language": "ko", "word_timestamps": False, "condition_on_previous_text": True},
+                    backend=_backend(), duration_fn=_duration,
+                )
+            receipt = json.loads(_output(out, "receipt.json").read_text(encoding="utf-8"))
+            receipt["backend"]["controller_sha256"] = "deadbeef"
+            _output(out, "receipt.json").write_text(json.dumps(receipt), encoding="utf-8")
+            with self.assertRaises(mod.ItemError):
+                mod.transcribe_item(audio, model, out, OPTIONS, backend=_backend(), duration_fn=_duration)
+            original = json.loads(_output(out, "json").read_text(encoding="utf-8"))
+            original["text"] = "tampered"
+            _output(out, "json").write_text(json.dumps(original), encoding="utf-8")
+            with self.assertRaises(mod.ItemError):
+                mod.transcribe_item(audio, model, out, OPTIONS, backend=_backend(), duration_fn=_duration)
+
+    def test_unrelated_model_sentinel_is_not_fingerprinted(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out = root / "out"
+            out.mkdir()
+            model = _model_dir(root)
+            sentinel = model / "secret.bin"
+            sentinel.write_bytes(b"do-not-read")
+            opened = []
+            original = Path.read_bytes
+
+            def tracked(self, *args, **kwargs):
+                opened.append(str(self))
+                return original(self, *args, **kwargs)
+
+            Path.read_bytes = tracked
+            try:
+                mod.transcribe_item(
+                    _audio(root), model, out, OPTIONS, backend=_backend(), duration_fn=_duration,
+                )
+            finally:
+                Path.read_bytes = original
+            self.assertFalse(any(path.endswith("secret.bin") for path in opened))
+            (model / "secret.bin").write_bytes(b"changed-secret")
+            reused = mod.transcribe_item(
+                _audio(root), model, out, OPTIONS, backend=_backend(), duration_fn=_duration,
+            )
+            self.assertEqual(reused["status"], "reused")
+
+    def test_missing_upstream_model_files_are_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            model = root / "model"
+            model.mkdir()
+            (model / "weights.bin").write_bytes(b"not-upstream")
+            with self.assertRaises(mod.ItemError):
+                mod.model_material(model)
+
+    def test_interrupted_receipt_is_not_reuse(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out = root / "out"
+            out.mkdir()
+            model = _model_dir(root)
+            audio = _audio(root)
+            mod.transcribe_item(audio, model, out, OPTIONS, backend=_backend(), duration_fn=_duration)
+            receipt = json.loads(_output(out, "receipt.json").read_text(encoding="utf-8"))
+            receipt["status"] = "partial"
+            _output(out, "receipt.json").write_text(json.dumps(receipt), encoding="utf-8")
+            with self.assertRaises(mod.ItemError):
+                mod.transcribe_item(audio, model, out, OPTIONS, backend=_backend(), duration_fn=_duration)
+
+    def test_mixed_batch_preserves_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            out = root / "out"
+            good = _audio(root, AUDIO)
+            missing = root / "no-such.wav"
+            receipt = mod.run_batch(
+                [good, missing],
+                _model_dir(root),
+                out,
+                OPTIONS,
+                backend=_backend(),
+                duration_fn=_duration,
+            )
+            self.assertEqual(receipt["status"], "failed")
+            self.assertEqual(receipt["failed"], 1)
+            self.assertEqual(receipt["items"][0]["status"], "complete")
+            self.assertEqual(receipt["items"][1]["status"], "failed")
+            self.assertTrue(_output(out, "json").is_file())
+
+    def test_batch_json_sentinel_and_symlink_are_not_touched(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            model = _model_dir(root)
+            audio = _audio(root)
+            out = root / "out"
+            out.mkdir()
+            sentinel = out / "offline-transcribe.batch.json"
+            sentinel.write_text("keep-sentinel\n", encoding="utf-8")
+            result = mod.run_batch(
+                [audio], model, out, OPTIONS, backend=_backend(), duration_fn=_duration,
+            )
+            self.assertEqual(result["status"], "complete")
+            self.assertEqual(sentinel.read_text(encoding="utf-8"), "keep-sentinel\n")
+
+            out2 = root / "out2"
+            out2.mkdir()
+            target = root / "batch-target"
+            target.write_text("keep-target\n", encoding="utf-8")
+            batch_link = out2 / "offline-transcribe.batch.json"
+            batch_link.symlink_to(target)
+            result = mod.run_batch(
+                [audio], model, out2, OPTIONS, backend=_backend(), duration_fn=_duration,
+            )
+            self.assertEqual(result["status"], "complete")
+            self.assertTrue(batch_link.is_symlink())
+            self.assertEqual(target.read_text(encoding="utf-8"), "keep-target\n")
+
+    def test_url_and_missing_model_are_usage_errors(self) -> None:
+        with self.assertRaises(mod.UsageError):
+            mod.require_local_path("https://example.com/a.wav", kind="input")
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(mod.UsageError):
+                mod.require_model_dir(str(Path(tmp) / "missing-model"))
+
+    def test_strict_json_rejects_nan(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "bad.json"
+            with self.assertRaises(ValueError):
+                mod.write_strict_json(path, {"n": math.nan})
+            self.assertFalse(path.exists())
+
+
+if __name__ == "__main__":
+    unittest.main()
