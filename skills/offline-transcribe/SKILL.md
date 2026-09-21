@@ -21,13 +21,18 @@ When an input, model directory, or option is missing, remote, or incomplete, sto
 ## Invoke
 
 ```bash
-python3 skills/offline-transcribe/scripts/transcribe_offline.py \
+sh skills/offline-transcribe/scripts/transcribe_offline.sh \
   --input "강의.part.01.wav" \
   --model-dir /path/to/prefetched-whisper \
   --output-dir /path/to/out
 ```
 
 `--input` may be repeated. `--input-list` reads extra local paths, one per line.
+Prepare dependencies and the local model separately before invoking the launcher.
+Activate the caller's prepared virtual environment or use a prepared uv environment whose `PATH` selects its `python3`; the launcher uses that interpreter without installing anything.
+The launcher removes `HF_TOKEN` and `HUGGING_FACE_HUB_TOKEN` from the child environment before Python starts and sets `HF_HUB_OFFLINE=1`, `TRANSFORMERS_OFFLINE=1`, `HF_HUB_DISABLE_TELEMETRY=1`, and `HF_HUB_DISABLE_IMPLICIT_TOKEN=1` for that process only.
+It forwards arguments and the interpreter's exit status without changing the caller's environment.
+The Python implementation checks those non-secret flag values before SDK use and fails with a usage error when context is missing; use the launcher rather than invoking the implementation directly.
 Prefetch is owned by official Hugging Face tooling with `token=False`; this script never downloads.
 
 ## Boundaries
@@ -35,6 +40,7 @@ Prefetch is owned by official Hugging Face tooling with `token=False`; this scri
 - Serial inference only. No URL inputs, Hub repo IDs, diarization, vault writes, or publish.
 - Reject a missing or non-directory local model before `load_model` so it cannot become a Hub id.
 - Decode with ffmpeg `protocol_whitelist=file,crypto,data` so a local playlist cannot pull remote media.
+- Treat process flags and the decoder protocol whitelist as specific controls, not a universal filesystem or network sandbox; SDK cache and token files are not audited by this package.
 - Do not treat last-segment time as media completeness.
 - Flag suspicious repetition; do not invent coverage or rewrite speech.
 - Reject out-of-range ASR timestamps rather than silently clamping them. A `coverage_gap` warning can reflect trailing silence and does not prove missing speech.
@@ -44,6 +50,6 @@ Prefetch is owned by official Hugging Face tooling with `token=False`; this scri
 
 ## Requirements
 
-- `python3`, `ffmpeg`, local `mlx-whisper` plus `mlx`.
+- POSIX `sh`, `env` with `-u`, `dirname`, and a prepared `python3` on `PATH` with local `mlx-whisper`, `mlx`, and `numpy`; `ffmpeg` must also be on `PATH`.
 - Related official skills and CLI/agent runtimes follow the `skillify` skill's contract §10.
 - Cloud OpenAI transcribe remains the vendor skill under its official name; do not shadow it.

@@ -3,15 +3,21 @@
 from __future__ import annotations
 
 import importlib.util
+import io
 import json
 import math
 import os
+import shlex
+import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stderr
 from pathlib import Path
+from unittest import mock
 
 SCRIPT = Path(__file__).resolve().parents[2] / "skills/offline-transcribe/scripts/transcribe_offline.py"
+LAUNCHER = SCRIPT.with_suffix(".sh")
 SPEC = importlib.util.spec_from_file_location("transcribe_offline", SCRIPT)
 assert SPEC is not None and SPEC.loader is not None
 mod = importlib.util.module_from_spec(SPEC)
@@ -21,6 +27,12 @@ SPEC.loader.exec_module(mod)
 STEM = "강의.part.01"
 AUDIO = f"{STEM}.wav"
 OPTIONS = {"language": None, "word_timestamps": False, "condition_on_previous_text": True}
+OFFLINE_ENV = {
+    "HF_HUB_OFFLINE": "1",
+    "TRANSFORMERS_OFFLINE": "1",
+    "HF_HUB_DISABLE_TELEMETRY": "1",
+    "HF_HUB_DISABLE_IMPLICIT_TOKEN": "1",
+}
 
 
 def _model_dir(root: Path, name: str = "model") -> Path:
@@ -78,6 +90,9 @@ def _output(out: Path, ext: str) -> Path:
 
 class OfflineTranscribeTest(unittest.TestCase):
     def setUp(self) -> None:
+        offline_env = mock.patch.dict(os.environ, OFFLINE_ENV)
+        offline_env.start()
+        self.addCleanup(offline_env.stop)
         self._native_rename = mod._native_exclusive_directory_rename
         mod._native_exclusive_directory_rename = self._commit_staging
 
@@ -490,6 +505,129 @@ class OfflineTranscribeTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 mod.write_strict_json(path, {"n": math.nan})
             self.assertFalse(path.exists())
+
+
+class LauncherTest(unittest.TestCase):
+    def _launch(self, arguments: list[str], exit_code: int):
+        with tempfile.TemporaryDirectory(prefix="offline launcher 공간 ") as tmp:
+            root = Path(tmp)
+            fake_python = root / "python3"
+            probe = (
+                "import json, os, sys\n"
+                "print(json.dumps({\n"
+                "    'args': sys.argv[1:],\n"
+                "    'credentials_present': [name for name in "
+                "('HF_TOKEN', 'HUGGING_FACE_HUB_TOKEN') if name in os.environ],\n"
+                f"    'flags': {{name: os.getenv(name) for name in {tuple(OFFLINE_ENV)!r}}},\n"
+                "}, ensure_ascii=False))\n"
+                "sys.exit(0 if sys.argv[1:] == ['--inspect-parent'] "
+                "else int(os.getenv('SYNTHETIC_EXIT')))\n"
+            )
+            fake_python.write_text(
+                "#!/bin/sh\n"
+                f"exec {shlex.quote(sys.executable)} -c {shlex.quote(probe)} \"$@\"\n",
+                encoding="utf-8",
+            )
+            fake_python.chmod(0o755)
+            # A complete synthetic environment: never pass host credentials.
+            environment = {
+                "PATH": f"{root}:/usr/bin:/bin",
+                "HF_TOKEN": "synthetic-hf-token",
+                "HUGGING_FACE_HUB_TOKEN": "synthetic-hub-token",
+                "SYNTHETIC_EXIT": str(exit_code),
+                **{name: "caller-value" for name in OFFLINE_ENV},
+            }
+            result = subprocess.run(
+                [
+                    "/bin/sh", "-c",
+                    '"$@"\nchild_status=$?\npython3 --inspect-parent\nexit "$child_status"',
+                    "synthetic-parent", str(LAUNCHER), *arguments,
+                ],
+                env=environment,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(result.stderr, "")
+            child, parent = [json.loads(line) for line in result.stdout.splitlines()]
+            return result.returncode, child, parent
+
+    def test_launcher_removes_credentials_before_python_and_scopes_flags(self) -> None:
+        status, child, parent = self._launch([], 0)
+        self.assertEqual(status, 0)
+        self.assertEqual(child["credentials_present"], [])
+        self.assertEqual(child["flags"], OFFLINE_ENV)
+        self.assertEqual(
+            parent["credentials_present"], ["HF_TOKEN", "HUGGING_FACE_HUB_TOKEN"],
+        )
+        self.assertEqual(parent["flags"], {name: "caller-value" for name in OFFLINE_ENV})
+
+    def test_launcher_forwards_exact_arguments_and_exit_status(self) -> None:
+        arguments = [
+            "--input", "강의.part.01 file.wav", "", "--output-dir",
+            "literal * $HOME ; $(false) ' \"\nsecond line", "--", "-leading-dash",
+        ]
+        for exit_code in (0, 2, 37):
+            with self.subTest(exit_code=exit_code):
+                status, child, _parent = self._launch(arguments, exit_code)
+                self.assertEqual(status, exit_code)
+                self.assertEqual(child["args"], [str(SCRIPT), *arguments])
+
+
+class OfflineContextTest(unittest.TestCase):
+    def test_missing_or_wrong_flag_stops_batch_before_inference_or_output(self) -> None:
+        for name in OFFLINE_ENV:
+            for value in (None, "0", "true", ""):
+                with self.subTest(flag=name, value=value):
+                    environment = dict(OFFLINE_ENV)
+                    if value is None:
+                        del environment[name]
+                    else:
+                        environment[name] = value
+                    with tempfile.TemporaryDirectory() as tmp:
+                        root = Path(tmp)
+                        output = root / "out"
+                        backend = mock.Mock(side_effect=AssertionError("inference ran"))
+                        with mock.patch.dict(os.environ, environment, clear=True):
+                            with mock.patch.object(mod, "snapshot_identities") as identity:
+                                with self.assertRaisesRegex(mod.UsageError, "transcribe_offline.sh"):
+                                    mod.run_batch(
+                                        [root / AUDIO], root / "model", output, OPTIONS,
+                                        backend=backend,
+                                    )
+                                identity.assert_not_called()
+                        backend.assert_not_called()
+                        self.assertFalse(output.exists())
+
+    def test_missing_context_blocks_direct_sdk_entrypoints(self) -> None:
+        with mock.patch.dict(os.environ, {}, clear=True):
+            with mock.patch("builtins.__import__", side_effect=AssertionError("SDK import ran")):
+                with self.assertRaisesRegex(mod.UsageError, "required offline context"):
+                    mod.backend_identity()
+                with self.assertRaisesRegex(mod.UsageError, "required offline context"):
+                    mod.infer_mlx(object(), Path("/missing-model"), OPTIONS)
+                with self.assertRaisesRegex(mod.UsageError, "required offline context"):
+                    mod.transcribe_item(
+                        Path("/missing-audio"), Path("/missing-model"), Path("/unused"), OPTIONS,
+                    )
+
+    def test_main_reports_missing_context_as_usage_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            model = _model_dir(root)
+            audio = _audio(root)
+            output = root / "out"
+            error = io.StringIO()
+            with mock.patch.dict(os.environ, {}, clear=True), redirect_stderr(error):
+                status = mod.main([
+                    "--input", str(audio), "--model-dir", str(model),
+                    "--output-dir", str(output),
+                ])
+            self.assertEqual(status, 2)
+            payload = json.loads(error.getvalue())
+            self.assertEqual(payload["status"], "usage_error")
+            self.assertIn("transcribe_offline.sh", payload["error"])
+            self.assertFalse(output.exists())
 
 
 class NativePublicationTest(unittest.TestCase):

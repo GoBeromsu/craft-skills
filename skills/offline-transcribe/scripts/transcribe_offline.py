@@ -37,13 +37,17 @@ class UsageError(Exception):
     pass
 
 
-def configure_offline_env() -> None:
-    os.environ["HF_HUB_OFFLINE"] = "1"
-    os.environ["TRANSFORMERS_OFFLINE"] = "1"
-    os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
-    os.environ["HF_HUB_DISABLE_IMPLICIT_TOKEN"] = "1"
-    os.environ.pop("HF_TOKEN", None)
-    os.environ.pop("HUGGING_FACE_HUB_TOKEN", None)
+def require_offline_context() -> None:
+    if (
+        os.getenv("HF_HUB_OFFLINE") != "1"
+        or os.getenv("TRANSFORMERS_OFFLINE") != "1"
+        or os.getenv("HF_HUB_DISABLE_TELEMETRY") != "1"
+        or os.getenv("HF_HUB_DISABLE_IMPLICIT_TOKEN") != "1"
+    ):
+        raise UsageError(
+            "required offline context is missing; invoke transcribe_offline.sh "
+            "with a prepared Python environment"
+        )
 
 
 def sha256_file(path: Path) -> str:
@@ -145,6 +149,7 @@ def module_version(name: str) -> str:
 
 
 def backend_identity() -> dict[str, str]:
+    require_offline_context()
     whisper_version = module_version("mlx_whisper")
     if whisper_version in {"unavailable", "unknown"}:
         try:
@@ -208,7 +213,7 @@ def decode_audio(path: Path) -> tuple[Any, float]:
 
 
 def infer_mlx(waveform: Any, model_dir: Path, options: dict[str, Any]) -> dict[str, Any]:
-    configure_offline_env()
+    require_offline_context()
     model_material(model_dir)
     from mlx_whisper.transcribe import transcribe
     return transcribe(
@@ -447,6 +452,7 @@ def transcribe_item(
     decode_fn: DecodeFn | None = None,
     infer_fn: InferFn | None = None,
 ) -> dict[str, Any]:
+    require_offline_context()
     if not input_path.is_file() or input_path.is_symlink():
         raise ItemError("input is not a local regular file")
     paths = owned_paths(output_dir, input_path)
@@ -555,7 +561,7 @@ def run_batch(
     decode_fn: DecodeFn | None = None,
     infer_fn: InferFn | None = None,
 ) -> dict[str, Any]:
-    configure_offline_env()
+    require_offline_context()
     output_dir.mkdir(parents=True, exist_ok=True)
     items = []
     failures = 0
