@@ -13,25 +13,20 @@ least `SKILL.md` + `CHANGELOG.md`. This validator enforces, per package:
   2. `name` equals the package directory name, is kebab-case, and is <= 64
      characters.
   3. `description` is 1..1024 characters (hard bounds); a shape warning
-     (non-blocking) fires under 200 or over 700 characters. Its optional
-     routing directive is checked for parsed shape only, never semantic proof.
+     (non-blocking) fires under 200 or over 700 characters. Lexical routing
+     phrases are not a format gate.
   4. `metadata.version` is present and is semver `MAJOR.MINOR.PATCH`.
-  5. SKILL.md body (everything after the frontmatter block) is <= 500 lines.
+  5. SKILL.md body compactness is authoring guidance, not a format failure.
   6. No SKILL.md is nested anywhere inside the package below the top-level one
      (every skill is one flat directory).
   7. SKILL.md body contains no `## Change Log` (history lives in CHANGELOG.md).
-  8. CHANGELOG.md exists beside SKILL.md with >= 1 dated bullet `- YYYY-MM-DD ...`.
+  8. CHANGELOG.md exists beside SKILL.md with >= 1 dated bullet `- YYYY-MM-DD ...`
+     and is at or under 100 lines (contract §6).
   9. No tracked real `.env` file in the package (only `.env.example` may be committed).
- 10. SKILL.md body carries a literal `## Output contract` heading (contract §4).  The
-     section must also state the cannot-succeed behavior, but that is judged by review,
-     not by scanning for a keyword.
- 11. Every package-relative support path the body mentions (`scripts/`, `references/`,
+ 10. Every package-relative support path the body mentions (`scripts/`, `references/`,
      `templates/`, `assets/`, `agents/`) exists in the package, and no markdown link
      climbs out of the package with `../` (contract §12). Repository-root
      `tests/<name>/` paths are not package-local support paths.
- 12. Supplied eval corpora at repo-root `tests/<name>/evals/` have typed cases
-     and prompts. Corpus presence and case counts do not establish adequacy:
-     the authoring evidence and independent review own that judgment.
 
 Modes:
   (default)       full scan; reports every violation; exit 1 if any hard error found.
@@ -60,16 +55,11 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 SKILLS_DIR = REPO_ROOT / "skills"
 TESTS_DIR = REPO_ROOT / "tests"
 
-
-def corpus_dir(skill_dir: Path) -> Path:
-    """Eval corpus lives at repo-root tests/<name>/evals/, never inside the package."""
-    return TESTS_DIR / skill_dir.name / "evals"
-
 SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
 KEBAB_CASE_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 CHANGELOG_BULLET_RE = re.compile(r"^- \d{4}-\d{2}-\d{2}\b")
 CHANGE_LOG_HEADING_RE = re.compile(r"^## +Change Log\b", re.MULTILINE)
-REAL_ENV_RE = re.compile(r"(^|/)\.env(\.[A-Za-z0-9_-]+)?$")
+REAL_ENV_NAME_RE = re.compile(r"^\.env(?:\..+)?$")
 
 ALLOWED_TOP_KEYS = {
     "name",
@@ -79,21 +69,15 @@ ALLOWED_TOP_KEYS = {
     "compatibility",
     "allowed-tools",
 }
-BODY_LINE_LIMIT = 500
+CHANGELOG_LINE_LIMIT = 100
 DESCRIPTION_MIN_WARN = 200
 DESCRIPTION_MAX_WARN = 700
 DESCRIPTION_HARD_MAX = 1024
 NAME_MAX_LENGTH = 64
-PREFIX = "MUST USE "
-DELIMITER = ". "
-ANY_TOKEN = re.compile(r"(?<![A-Za-z0-9_])ANY(?![A-Za-z0-9_])")
-ALL_CAPS_DIRECTIVE_LOOKALIKE = re.compile(r"^MUST(?![A-Za-z0-9])")
-CONTRACT_SECTION = "Output contract"
 PACKAGE_PATH_DIRS = ("scripts", "references", "templates", "assets", "tests", "agents")
 PACKAGE_PATH_RE = re.compile(
     r"(?:\$SKILL_DIR/|\$\{SKILL_DIR\}/|(?<![A-Za-z0-9_./-]))(?:" + "|".join(PACKAGE_PATH_DIRS) + r")/[A-Za-z0-9_./-]*[A-Za-z0-9_]"
 )
-GRADING_KINDS = {"verifiable", "subjective"}
 
 
 @dataclass
@@ -136,51 +120,6 @@ def parse_scalar(value: str) -> object:
         return float(value)
     return value
 
-
-def validate_description_directive(description: str) -> tuple[str, str] | None:
-    """Return one routing-directive shape finding, without semantic inference."""
-    prefix_count = description.count(PREFIX)
-    if prefix_count > 1:
-        return "MULTIPLE_MUST_USE", "description has multiple exact 'MUST USE ' prefixes"
-    if prefix_count == 0:
-        if ALL_CAPS_DIRECTIVE_LOOKALIKE.search(description):
-            return "BAD_MUST_USE_LOOKALIKE", (
-                "leading all-caps MUST/USE lookalikes are reserved; use the exact "
-                "'MUST USE <clause>. <remainder>' grammar or ordinary sentence case"
-            )
-        if ANY_TOKEN.search(description):
-            return "MISPLACED_DIRECTIVE_ANY", (
-                "standalone uppercase ANY requires a valid MUST USE directive"
-            )
-        return None
-    if not description.startswith(PREFIX):
-        return "MISPLACED_MUST_USE", "exact 'MUST USE ' prefix must start at character 0"
-
-    delimiter_index = description.find(DELIMITER, len(PREFIX))
-    if delimiter_index == -1:
-        return "BAD_MUST_USE_CLAUSE", (
-            "MUST USE directive needs a nonempty clause and remainder separated by '. '"
-        )
-    clause = description[len(PREFIX):delimiter_index]
-    remainder = description[delimiter_index + len(DELIMITER):]
-    if (
-        not clause
-        or not remainder
-        or clause != clause.strip()
-        or remainder != remainder.strip()
-    ):
-        return "BAD_MUST_USE_CLAUSE", (
-            "MUST USE directive needs canonical nonempty clause and remainder spacing around '. '"
-        )
-    if ANY_TOKEN.search(remainder):
-        return "MISPLACED_DIRECTIVE_ANY", (
-            "standalone uppercase ANY is allowed only in the directive clause"
-        )
-    if len(ANY_TOKEN.findall(clause)) > 1:
-        return "DIRECTIVE_ANY_LIMIT", (
-            "MUST USE directive clause may contain at most one standalone uppercase ANY"
-        )
-    return None
 
 
 def parse_frontmatter(text: str) -> "dict[str, object] | None":
@@ -265,7 +204,8 @@ def tracked_env_files(skill_dir: Path) -> list[str]:
     rel = skill_dir.relative_to(REPO_ROOT).as_posix()
     return sorted(
         path for path in git_paths("ls-files", "-z", "--", rel)
-        if PurePosixPath(path).name != ".env.example" and REAL_ENV_RE.search(path)
+        if PurePosixPath(path).name != ".env.example"
+        and REAL_ENV_NAME_RE.match(PurePosixPath(path).name)
     )
 
 
@@ -379,7 +319,7 @@ def select_packages(diff_base: str | None, packages: list[str]) -> tuple[list[Pa
             continue
         # These shared surfaces invoke or document skillify's format contract.
         if (rel in {"AGENTS.md", "skills/PROVENANCE.md", ".github/workflows/pr-check.yml",
-                    ".github/workflows/test-plugin-install.yml"}
+                    ".github/workflows/test-plugin-install.yml", "scripts/ci-local.sh"}
                 or rel.startswith(("scripts/governance/", "tests/governance/"))):
             if "skills/skillify" not in owners:
                 raise ValueError(f"shared format owner skills/skillify is missing for {rel!r}")
@@ -427,20 +367,28 @@ def select_packages(diff_base: str | None, packages: list[str]) -> tuple[list[Pa
     return [REPO_ROOT / owner for owner in sorted(selected)], findings
 
 
-def check_contract_sections(name: str, body: str) -> list[Finding]:
-    match = re.search(rf"^## +{re.escape(CONTRACT_SECTION)}\s*$(.*?)(?=^## |\Z)", body, re.MULTILINE | re.DOTALL | re.IGNORECASE)
-    if match is None:
-        return [Finding(name, "MISSING_CONTRACT_SECTION",
-                        f"SKILL.md body lacks `## {CONTRACT_SECTION}` (contract §4)")]
-    # The section must state the cannot-succeed behavior, but that is an authoring
-    # obligation judged by scenarios and review.  A keyword scan only proved that a
-    # word was present, so it is not enforced here.
-    return []
 
 
 TRAVERSAL_LINK_RE = re.compile(
     r"\]\(\.\./|(?:references|templates|scripts|assets|examples)/(?:[^\s)`\"'<>]*/)?\.\.(?:/|$)"
 )  # mirrors the Hermes tap fetcher's traversal abort
+
+
+def _support_path_inside_package(skill_dir: Path, rel: str) -> bool:
+    """True when rel exists inside this package after resolving symlinks.
+
+    Sibling-package and repo-root containment are not enough. Dangling or
+    escaping links count as missing. Do not read target contents.
+    """
+    candidate = skill_dir / rel
+    try:
+        if not candidate.exists() and not candidate.is_symlink():
+            return False
+        resolved = candidate.resolve()
+        package_root = skill_dir.resolve()
+        return resolved.is_relative_to(package_root) and resolved.exists()
+    except OSError:
+        return False
 
 
 def check_referenced_paths(name: str, skill_dir: Path, body: str) -> list[Finding]:
@@ -459,72 +407,11 @@ def check_referenced_paths(name: str, skill_dir: Path, body: str) -> list[Findin
         seen.add(rel)
         if rel.split("/", 1)[0] not in PACKAGE_PATH_DIRS:
             continue
-        if not (skill_dir / rel).exists():
+        if not _support_path_inside_package(skill_dir, rel):
             findings.append(Finding(name, "MISSING_REFERENCED_PATH",
                                     f"SKILL.md mentions `{rel}` but the package does not ship it (contract §12)"))
     return findings
 
-
-def _load_json(path: Path) -> object | None:
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return None
-
-
-def check_eval_corpus(name: str, skill_dir: Path) -> list[Finding]:
-    findings: list[Finding] = []
-    evals_path = corpus_dir(skill_dir) / "evals.json"
-    triggers_path = corpus_dir(skill_dir) / "triggers.json"
-
-    if evals_path.exists():
-        data = _load_json(evals_path)
-        if isinstance(data, dict) and "skill" in data and data["skill"] != name:
-            findings.append(Finding(name, "BAD_EVAL_CORPUS", "eval corpus `skill` does not match its owner"))
-        cases = data.get("cases") if isinstance(data, dict) else None
-        if not isinstance(cases, list):
-            findings.append(Finding(name, "BAD_EVAL_CORPUS", "tests/evals/evals.json must be an object with a `cases` list"))
-        else:
-            seen_ids: set[str] = set()
-            for i, case in enumerate(cases):
-                label = case.get("id", f"#{i}") if isinstance(case, dict) else f"#{i}"
-                if not isinstance(case, dict):
-                    findings.append(Finding(name, "BAD_EVAL_CORPUS", f"case {label} is not an object"))
-                    continue
-                for key in ("id", "prompt", "expected_behavior", "grading"):
-                    if not isinstance(case.get(key), str) or not case[key].strip():
-                        findings.append(Finding(name, "BAD_EVAL_CORPUS", f"case {label} lacks non-empty `{key}`"))
-                case_id = case.get("id")
-                if isinstance(case_id, str):
-                    if case_id in seen_ids:
-                        findings.append(Finding(name, "BAD_EVAL_CORPUS", f"duplicate case id {case_id!r}"))
-                    seen_ids.add(case_id)
-                grading = case.get("grading")
-                if not isinstance(grading, str) or grading not in GRADING_KINDS:
-                    findings.append(Finding(name, "BAD_EVAL_CORPUS",
-                                            f"case {label} grading must be one of {sorted(GRADING_KINDS)}"))
-                else:
-                    key = "assertions" if grading == "verifiable" else "rubric"
-                    values = case.get(key)
-                    if (not isinstance(values, list) or not values
-                            or not all(isinstance(value, str) and value.strip() for value in values)):
-                        findings.append(Finding(name, "BAD_EVAL_CORPUS",
-                                                f"{grading} case {label} needs non-empty `{key}` string list"))
-
-    if triggers_path.exists():
-        data = _load_json(triggers_path)
-        if not isinstance(data, dict):
-            findings.append(Finding(name, "BAD_EVAL_CORPUS", "tests/evals/triggers.json must be an object"))
-        else:
-            if "skill" in data and data["skill"] != name:
-                findings.append(Finding(name, "BAD_EVAL_CORPUS", "trigger corpus `skill` does not match its owner"))
-            for key in ("should_trigger", "should_not_trigger"):
-                items = data.get(key)
-                if not isinstance(items, list) \
-                        or not all(isinstance(x, str) and x.strip() for x in items):
-                    findings.append(Finding(name, "BAD_EVAL_CORPUS",
-                                            f"tests/evals/triggers.json `{key}` must be a list of non-empty prompts"))
-    return findings
 
 
 def check_skill(skill_dir: Path) -> list[Finding]:
@@ -572,11 +459,6 @@ def check_skill(skill_dir: Path) -> list[Finding]:
                                 f"{len(str(desc))} > {DESCRIPTION_MAX_WARN} chars (shape warning)",
                                 severity="warning"))
 
-    if isinstance(desc, str) and desc:
-        directive_finding = validate_description_directive(desc)
-        if directive_finding is not None:
-            code, detail = directive_finding
-            findings.append(Finding(name, code, detail))
 
     metadata = fm.get("metadata")
     if not isinstance(metadata, dict):
@@ -621,14 +503,8 @@ def check_skill(skill_dir: Path) -> list[Finding]:
                                 "## Change Log belongs in CHANGELOG.md, not SKILL.md"))
 
     body = text[text.find("\n---", 3) + 4:]
-    body_lines = len(body.splitlines())
-    if body_lines > BODY_LINE_LIMIT:
-        findings.append(Finding(name, "BODY_TOO_LONG",
-                                f"body is {body_lines} lines > {BODY_LINE_LIMIT} hard ceiling"))
 
-    findings.extend(check_contract_sections(name, body))
     findings.extend(check_referenced_paths(name, skill_dir, body))
-    findings.extend(check_eval_corpus(name, skill_dir))
 
     for nested in sorted(skill_dir.rglob("SKILL.md")):
         if nested != skill_md:
@@ -639,11 +515,28 @@ def check_skill(skill_dir: Path) -> list[Finding]:
         findings.append(Finding(name, "TRACKED_ENV", f"committed real env file: {env}"))
 
     changelog = skill_dir / "CHANGELOG.md"
-    if not changelog.exists():
+    if not changelog.exists() and not changelog.is_symlink():
         findings.append(Finding(name, "NO_CHANGELOG", "missing CHANGELOG.md beside SKILL.md"))
     else:
-        cl = changelog.read_text(encoding="utf-8")
-        if not any(CHANGELOG_BULLET_RE.match(line) for line in cl.splitlines()):
+        try:
+            if changelog.is_symlink() or changelog.exists():
+                resolved = changelog.resolve()
+                if not resolved.is_relative_to(REPO_ROOT.resolve()):
+                    raise ValueError(f"CHANGELOG.md escapes root: {changelog.relative_to(REPO_ROOT)}")
+                if not resolved.exists():
+                    findings.append(Finding(name, "NO_CHANGELOG", "missing CHANGELOG.md beside SKILL.md"))
+                    return findings
+                cl = resolved.read_text(encoding="utf-8")
+            else:
+                findings.append(Finding(name, "NO_CHANGELOG", "missing CHANGELOG.md beside SKILL.md"))
+                return findings
+        except OSError as exc:
+            raise ValueError(f"unreadable CHANGELOG.md: {exc}") from exc
+        lines = cl.splitlines()
+        if len(lines) > CHANGELOG_LINE_LIMIT:
+            findings.append(Finding(name, "CHANGELOG_TOO_LONG",
+                                    f"CHANGELOG.md is {len(lines)} lines > {CHANGELOG_LINE_LIMIT}"))
+        if not any(CHANGELOG_BULLET_RE.match(line) for line in lines):
             findings.append(Finding(name, "CHANGELOG_NO_DATED_BULLET",
                                     "CHANGELOG.md has no '- YYYY-MM-DD ...' bullet"))
 

@@ -1,13 +1,19 @@
 # OpenAI Lens (Codex / OpenAI)
 
+Local context for targeting Codex or consulting OpenAI skill-creator craft.
+Official OpenAI skills and Codex distribution stay unmodified on their official channels; this file records uncovered library boundaries, source links, and divergences — not copied product instructions or a re-hosted evaluator harness.
+Consult current official docs when a runtime form is unknown; apply [contract §10](contract.md#10-external-facts-and-dependencies) on create/update.
+
 ## 1. Source
 
-Retrieved 2026-08-28:
+Official surfaces to consult first:
 
-- [`openai/skills` at `49f948faa9258a0c61caceaf225e179651397431`](https://github.com/openai/skills/tree/49f948faa9258a0c61caceaf225e179651397431), especially the historical `skills/.system/skill-creator` package. This repository remains a useful creator-pattern source, but is **deprecated as a distribution source**.
-- [`openai/plugins` at `6d99ee149c9fe3c7a55b96cab062cadc1ad36a9d`](https://github.com/openai/plugins/tree/6d99ee149c9fe3c7a55b96cab062cadc1ad36a9d), the current OpenAI distribution source.
-- [OpenAI latest-model guide](https://developers.openai.com/api/docs/guides/latest-model).
+- [OpenAI latest-model guide](https://developers.openai.com/api/docs/guides/latest-model)
+- Current Codex / OpenAI plugin and skills documentation on their official channels
+- [`openai/plugins`](https://github.com/openai/plugins), the current OpenAI distribution source at last comparison (`6d99ee149c9fe3c7a55b96cab062cadc1ad36a9d`)
 
+Historical comparison snapshot (deprecated as a distribution source, not a local SSOT): [`openai/skills` at `49f948faa9258a0c61caceaf225e179651397431`](https://github.com/openai/skills/tree/49f948faa9258a0c61caceaf225e179651397431), especially the historical `skills/.system/skill-creator` package.
+A coordinator-verified working-host fact at authoring time was Codex `0.155.1`; that is not multi-runtime compatibility evidence and must be re-probed per [contract §10](contract.md#10-external-facts-and-dependencies).
 Use the selected model's current guide for Astra-specific controls; model guidance and the Codex runtime's native distribution are separate contracts.
 
 ## 2. Portable lesson
@@ -24,10 +30,11 @@ Put detailed reference material behind an explicit need, not in the default read
 **Prompts set action boundaries.**
 Keep each instruction owned in one authoritative place.
 Use lean, direct portable prompts, and state which actions proceed autonomously and which require approval rather than leaving that boundary to inference.
+Do not add generic repeated consent for reversible in-scope work.
 
 **Change evidence before model or effort.**
-Before changing model or effort settings, run representative evaluations for the actual task.
-Use task-shaped deterministic processing for repeatable, order-sensitive work rather than optimizing a generic benchmark.
+Before changing model or effort settings, run representative checks for the actual task.
+Use task-shaped deterministic processing for repeatable, order-sensitive work rather than optimizing a generic benchmark or copying an upstream eval harness.
 
 ## 3. Runtime plumbing (OpenAI-only)
 
@@ -36,13 +43,15 @@ Use task-shaped deterministic processing for repeatable, order-sensitive work ra
 - Verify each API-specific processing mechanism against its actual provider documentation instead of promoting a vendor feature name into a portable requirement.
 - The historical creator package demonstrates the `scripts/`, `references/`, and `assets/` layout and its recommended `agents/openai.yaml` adapter. Its repository status does not make that adapter a universal package requirement.
 - `openai/plugins` is the distribution path; do not infer a distribution command from this lens. Follow the current runtime's documented installation surface.
+- Do not copy OpenAI evaluator scripts or require their generated outputs in this repository.
 
 ## 4. Divergences from this library
 
+- **Official originals.** OpenAI product usage stays on official channels. This library does not fork, patch, or republish those skills.
 - **Distribution.** This library keeps runtime-neutral source packages; OpenAI distribution metadata is isolated in a lens or adapter. The deprecated `openai/skills` checkout is never treated as the current OpenAI distribution mechanism.
 - **Frontmatter and product fields.** `agents/openai.yaml` and any OpenAI-only fields are not admitted into the portable contract.
 - **Prompt tuning.** Model-specific parameters and API mechanics remain in their runtime boundary. Improve instructions, task shape, and evidence first.
-- **Evidence policy.** Upstream evaluation suggestions are not universal corpus counts or proof that every supported runtime was tested. Local acceptance follows the actual requested behavior and effect.
+- **Evidence policy.** Upstream evaluation suggestions are not universal corpus counts, wording-locked harnesses, or proof that every supported runtime was tested. Local acceptance follows the actual requested behavior and effect (`contract.md` §7).
 
 ## 5. Absorbed into core
 
