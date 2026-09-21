@@ -2,13 +2,14 @@
 
 ## Overview
 
-Inspect installed plugin manifests, classify the symptom against a growing `doctor-plugins.yaml` registry, fetch fresh docs when the registry misses, patch via the official `obsidian` CLI, verify with `obsidian dev:errors`, and record the fix back into the registry so the next run is faster.
+Inspect installed plugin manifests, classify the symptom against a growing `doctor-plugins.yaml` registry, fetch fresh docs when the registry misses, patch via the `obsidian` executable from the native `obsidian-cli` skill, verify with `obsidian dev:errors`, and record the fix back into the registry so the next run is faster.
 
 ## Vault Access
 
-Use [`cli.md`](cli.md) for all note creation, edit, search, and property mutation inside the vault.
+Discover the official `obsidian-cli` skill by package identity for vault note creation, editing, search, and property mutation. Invoke its `obsidian` executable against the running Obsidian app; that native skill owns the command surface, while this recipe owns plugin diagnosis and registry learning.
+Apply the local [result-evidence boundary](cli.md#result-evidence) to empty app-bridge responses and mutation readback; it does not define CLI commands.
 Do not shell out to raw `cat`/`sed` on vault paths.
-See [`cli.md`](cli.md) for the command surface and required preconditions (Obsidian must be running).
+If the native skill, executable, app bridge, or requested command is unavailable, report the specific capability gap instead of substituting a generic writer.
 
 ## When to Use
 
@@ -21,11 +22,11 @@ See [`cli.md`](cli.md) for the command surface and required preconditions (Obsid
 **NOT for:**
 - Vault-wide link rot, orphan notes, or frontmatter schema drift — those are not plugin-scoped.
 - Core Obsidian bugs unrelated to any plugin.
-- Template format problems that have nothing to do with plugin API (e.g., pure Markdown structure issues) — use [`markdown.md`](markdown.md).
+- Template format problems that have nothing to do with plugin API (e.g., pure Markdown structure issues) — discover the official `obsidian-markdown` skill; template selection remains with the target-vault/OMS or personal policy owner.
 
 ## Dependencies
 
-1. [`cli.md`](cli.md) applies and Obsidian must be running (`obsidian version` responds).
+1. The native `obsidian-cli` skill is available and Obsidian must be running (`obsidian version` responds).
 2. `doctor-plugins.yaml` ships with this package as a seed registry — the accumulating store of plugin knowledge. Append to it; never delete or blank it.
 3. Plugin manifest path: `${OBSIDIAN_VAULT_PATH}/.obsidian/plugins/{plugin-id}/manifest.json` — readable without Obsidian running.
 
@@ -90,7 +91,7 @@ If the plugin is **not in the registry**, or the registry entry has no `key_patt
 
 ### Step 4 — Patch
 
-Apply the fix using the official `obsidian` CLI.
+Apply the fix using the `obsidian` executable from the native `obsidian-cli` skill.
 Never hand-edit `.obsidian/plugins/*/data.json` directly.
 
 ```bash
@@ -259,7 +260,7 @@ Confirm: file renamed to the value, heading resolved, Base block filters contain
 - [ ] `obsidian dev:errors` ran before the patch and its output was inspected.
 - [ ] Symptom classified into one of the five categories (undefined-variable, api-mismatch, known-regression, config-drift, missing-dependency).
 - [ ] Registry consulted via `yq` before patching; if plugin absent, docs fetched and entry appended.
-- [ ] Patch applied via official `obsidian` CLI commands only — no raw file edits inside `.obsidian/plugins/`.
+- [ ] Patch applied via the native `obsidian-cli` skill's `obsidian` executable only — no raw file edits inside `.obsidian/plugins/`.
 - [ ] Smoke test ran (`obsidian templater:create-from-template` or equivalent) and produced the expected note.
 - [ ] `obsidian dev:errors` ran after the patch and returned clean (or only pre-existing unrelated errors).
 - [ ] Smoke test note deleted after verification.

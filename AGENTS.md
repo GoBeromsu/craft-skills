@@ -16,7 +16,7 @@ Do not require a wording- or procedure-locking corpus.
 
 Discover available packages from `skills/*/SKILL.md`; do not maintain a second package inventory here.
 `browser` is a thin personal-boundary package: Aside is the sole managed route, official aside-browser and current aside guide own product usage, and this library records only uncovered identity, existing-app protection, same-session continuation, and observed-result composition.
-`obsidian` is one thick package whose sub-recipes live under `references/`.
+`obsidian` composes unchanged official native owners `obsidian-markdown`, `obsidian-bases`, `json-canvas`, and `obsidian-cli` for format and CLI mechanics, keeping only uncovered local app/Sync coordination and live-vault/OMS policy.
 `design` owns root `DESIGN.md`, UX/UI judgment, bad-UX audits, and rendered evidence.
 
 The authoring contract — frontmatter shape, naming, description rules, body limits, CHANGELOG format, upstream-first create/update, and focused outcome verification — lives at `skills/skillify/references/contract.md`.

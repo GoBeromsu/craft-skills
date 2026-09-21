@@ -2,7 +2,7 @@
 name: programming
 description: Guides correctness-first, type-strict Python and TypeScript implementation. Use when asked to write a `.py` or `.ts` file, scaffold a Python/TypeScript project, add strict types, assess an implementation diff for correctness or type holes, or fix a reproducible defect. Not for smell-only assessment or behavior-preserving restructuring — use refactor; not for suite-level test architecture — use testing.
 metadata:
-  version: 2.4.0
+  version: 2.4.1
 ---
 
 # programming
@@ -34,7 +34,12 @@ Stop at the first rung that holds, after the correctness requirements are alread
 
 When two rungs hold, take the higher one. When two options are the same size, take the one correct on edge cases — fewer lines never means the flimsier algorithm. Validation at trust boundaries, error handling that prevents data loss, security, and accessibility are correctness, not brevity — never skimp on these.
 
-Deletion beats addition, boring beats clever, fewest files wins — and a complex request earns one question before it earns code: "do you actually need X, or does Y already cover it?" A bug report names a symptom, not the cause: grep every caller of the function you touch and fix the shared function once — one guard there is a smaller diff than one per caller, and patching only the reported path leaves a sibling caller broken.
+Deletion beats addition, boring beats clever, fewest files wins — and a complex request earns one question before it earns code: "do you actually need X, or does Y already cover it?" A bug report names a symptom, not the cause: inspect affected callers of the function you touch and fix the shared function once — one guard there is a smaller diff than one per caller, and patching only the reported path leaves a sibling caller broken.
+
+For symbol operations, prefer available language-server definitions, references, rename, and diagnostics; confirm support in the source project rather than inferring it from another workspace's server status.
+Use an available AST tool when syntax-aware matching or transformation helps; consult an existing code graph only for a concrete dependency or impact question, checking its coverage and freshness.
+When semantic support is unavailable, use bounded text search and source inspection, disclose coverage limits, and validate with the project's checks rather than claiming semantic proof or complete caller coverage.
+Stop when that fallback cannot establish the safety the change needs; do not assume missing support requires installing a server, hook, or skill wrapper.
 
 A deliberate shortcut carries a `craft:` comment naming its ceiling and upgrade path, so a reader sees intent, not ignorance:
 

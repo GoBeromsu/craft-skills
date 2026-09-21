@@ -14,7 +14,11 @@ A first sync or repaired config starts in `pull-only`, runs once, and earns prom
 ## Boundaries
 
 Use this skill for the headless `ob` client, its local/remote vault pairing, sync modes, and daemon lifecycle.
-Use the official `obsidian` CLI via [`cli.md`](cli.md) for note reads and writes, and for read-only Sync state on a vault the desktop app already syncs (`sync:status`, `sync:history`, `diff filter=sync`). Use [`doctor.md`](doctor.md) for plugins and templates, and the desktop app for GUI Sync settings.
+Discover the official `obsidian-cli` skill by package identity for note reads and writes, and for read-only Sync state on a vault the desktop app already syncs (`sync:status`, `sync:history`, `diff filter=sync`); invoke its `obsidian` executable. The native skill owns CLI mechanics, while this reference owns only headless Sync coordination. Use [`doctor.md`](doctor.md) for plugins and templates, and the desktop app for GUI Sync settings.
+If the native skill, executable, app bridge, or requested read-only command is unavailable, report that gap rather than treating `ob` as a replacement for the desktop-app surface.
+Apply the local [result-evidence boundary](cli.md#result-evidence) to desktop-app responses; empty output is not proof of a healthy pairing or absent content.
+Apply the [package's write-authority boundary](../SKILL.md#boundaries) to content probes as well as ordinary edits; Sync access does not authorize a test-note write.
+Preserve the observed supervisor and the separate Git backup mechanism through [daemon operations](sync-daemon-operations.md); pairing or restart work does not authorize replacing either.
 Do not use `mirror-remote` as a shortcut for conflict resolution.
 
 ## Topology
@@ -27,6 +31,9 @@ Assign roles before running a command:
 
 Resolve `${OBSIDIAN_VAULT_PATH}` separately on each machine.
 Never copy an absolute path from one host to another; `ob` keys local configuration by the literal path, including its casing.
+A remote-vault pairing selects a synchronization destination, not an account-credential isolation boundary.
+Do not infer separate credentials or permissions from different vault IDs, local paths, device names, or supervisor processes.
+If credential isolation is required, verify the native capability and actual credential scope without exposing secrets; report the gap rather than claiming the pairing provides it.
 
 ## Workflow
 
@@ -34,7 +41,7 @@ Never copy an absolute path from one host to another; `ob` keys local configurat
 
 If the signal is a large or unexplained deletion set, stop every Sync client and load [`sync-recovery.md`](sync-recovery.md) before running normal Preflight.
 Do not create a normal pre-sync tag and treat the already-damaged tree as a restore point.
-Preserve forensic evidence outside the vault, identify a known-good recovery source, and return to the staged workflow only after restoration.
+Preserve forensic evidence outside the vault, identify a known-good recovery source, and return to the staged workflow only after the incident is resolved and verified under the recovery authority boundary.
 
 ### 1. Preflight
 
@@ -100,6 +107,17 @@ Verify all of the following before promotion:
 
 Stop the workflow when any check is unexplained.
 Follow [sync-recovery.md](sync-recovery.md); do not “try bidirectional” to see whether it heals itself.
+
+### Content roundtrip evidence
+
+File counts, plausible diffs, and a live process are safety and liveness signals, not proof that authorized content completed a roundtrip.
+For a requested end-to-end check, use an exact note and reversible content change admitted by the [write-authority owner](../SKILL.md#boundaries), preserving its provenance and protected content.
+Read back the actual content on the source and receiving replica after synchronization; where bidirectional behavior is in scope, make the authorized return change on the replica and read it back on the source.
+Use only the direction already admitted: a pull-only run cannot prove a return trip and does not authorize promotion merely to complete a test.
+Restore probe content only within the same approved effect and verify that restoration across the participating replicas; do not silently delete a probe note.
+Record the paths, direction, observed content or privacy-safe content identity, and any unverified leg.
+Without note authority, a native write surface, or access to a receiving replica, report a partial check rather than inventing a successful roundtrip.
+Keep [restart recovery and remote-backup readback](sync-daemon-operations.md#health-evidence) as separate evidence.
 
 ### 4. Promote deliberately
 
@@ -174,5 +192,6 @@ A restart alone does not justify changing configuration.
 - [ ] File-count, Git diff, logs, and representative files agree with the expected change.
 - [ ] The desktop app is not racing the headless client on the replica.
 - [ ] Supervisor status and recent logs show a stable heartbeat with a low restart count.
+- [ ] Requested content roundtrip, scoped restart recovery, and remote-backup readback have distinct observed results or explicit gaps.
 
 See [cli-commands.md](sync-cli-commands.md) for the command surface and [recovery.md](sync-recovery.md) for incident containment and restoration.
