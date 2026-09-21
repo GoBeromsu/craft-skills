@@ -1,6 +1,9 @@
 # Sync Incident Recovery
 
-Contain first, preserve evidence second, restore third, and re-admit continuous sync only after a clean staged run.
+Contain first, preserve evidence second, restore only when needed and authorized, and re-admit continuous sync only after a clean staged run.
+Apply the [package authority boundary](../SKILL.md#boundaries) to the exact vault, notes, provenance, and protected content.
+An incident diagnosis does not authorize reset, restore, unlink, account changes, or replacement of the existing supervisor or Git backup.
+Reuse matching task-bound authority; where it is absent, report the proposed effect and missing authority without performing it.
 
 ## 1. Contain
 
@@ -33,7 +36,7 @@ Distinguish these failure classes before restoring:
 |---|---|---|
 | Remote vault missing | `sync-list-remote` lacks the expected vault; stored config reports missing vault. | Preserve local state and create or select a verified remote; never reuse the stale identifier. |
 | Wrong local path | `sync-status` path differs by folder or casing. | Unlink only the verified bad path, then pair the exact path in pull-only mode. |
-| Concurrent clients | Desktop app and headless daemon touched the same replica vault. | Stop both, restore to a known point, then select one client for that vault. |
+| Concurrent clients | Desktop app and headless daemon touched the same replica vault. | Stop both within incident scope, inspect for actual damage, and select one client; restore only when needed and authorized. |
 | Remote deletion propagated | Git shows broad deletions after a successful pull. | Restore from the named rollback point, verify the remote state, and keep the replica offline until the remote is safe. |
 | Authentication or subscription | Error names login, token, password, or subscription. | Stop the crash loop; repair account state through an interactive login, then run one bounded sync. |
 | Supervisor/runtime | Native-module, binary path, environment, or restart errors without vault mutations. | Repair the runtime definition, then inspect status before starting sync. |
@@ -42,6 +45,7 @@ Distinguish these failure classes before restoring:
 
 Choose the recovery source explicitly: the primary vault, a named Git rollback point, or a tested external backup.
 Do not assume the remote service is authoritative merely because it is remote.
+Verify the recovery source's actual revision and relevant content; for Git backup evidence, use the [separate remote-backup readback](sync-daemon-operations.md#separate-git-backup), not a local tag or file count alone.
 
 For a Git-backed vault, inspect before restoring:
 
@@ -51,6 +55,7 @@ git -C "${OBSIDIAN_VAULT_PATH}" diff --stat "<rollback-tag>" --
 ```
 
 A destructive reset requires explicit approval for the exact vault and target revision.
+Any restore also needs authority for the exact affected content and effect; preserve unrelated edits and protected content rather than using a broad replacement by default.
 After restoration, verify file count, representative files, links/assets relevant to the incident, and repository status.
 
 ## 4. Re-admit sync safely
@@ -74,5 +79,7 @@ Record:
 - File-count and diff evidence before and after restoration.
 - One-shot pull-only and bidirectional verification results.
 - Final supervisor state.
+- Exact content restored and read back, including preservation of provenance and protected content.
+- Authorized [content roundtrip](sync.md#content-roundtrip-evidence), scoped [restart recovery](sync-daemon-operations.md#health-evidence), and remote-backup readback results, each with any missing authority or capability stated separately.
 
 Do not record tokens, passphrases, encryption keys, or raw auth files.

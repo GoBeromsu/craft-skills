@@ -1,63 +1,19 @@
 # Embeds Reference
 
-## Embed Notes
+## Native owners
 
-```markdown
-![[Note Name]]
-![[Note Name#Heading]]
-![[Note Name#^block-id]]
-```
+Discover the official `obsidian-markdown` skill for Obsidian embed syntax and the official `json-canvas` skill for `.canvas` structure and graph edits. Those native skills own their formats, schemas, examples, and validation; this reference does not reproduce them.
 
-## Embed Images
+## Embed Canvas
 
-```markdown
-![[image.png]]
-![[image.png|640x480]]    Width x Height
-![[image.png|300]]        Width only (maintains aspect ratio)
-```
+The [official embed documentation](https://help.obsidian.md/embeds) states that embedded canvases show shapes only, not text inside cards. Open the Canvas in the target app to inspect its complete content; do not treat the documented shape-only result as a broken destination or promise readable card text in the embed.
 
-## External Images
+Use [Markdown's exact non-Markdown destination identity and readback owner](markdown.md#non-markdown-targets-and-destination-readback) for the source note's context. Preserve the source note's vault-relative path, resolve the intended `.canvas` destination through the supported native app surface, and compare the returned identity with the exact target path. Filesystem existence or successful link resolution alone is not rendering evidence.
 
-```markdown
-![Alt text](https://example.com/image.png)
-![Alt text|300](https://example.com/image.png)
-```
+Check the actual target app and renderer separately after destination readback. If the app, index, renderer, or target vault is unavailable, report the Canvas rendering/readback leg as unverified rather than inferring it from source text. Do not define a local Canvas schema or edit procedure here.
 
-## Embed Audio
+## Verification
 
-```markdown
-![[audio.mp3]]
-![[audio.ogg]]
-```
-
-## Embed PDF
-
-```markdown
-![[document.pdf]]
-![[document.pdf#page=3]]
-![[document.pdf#height=400]]
-```
-
-## Embed Lists
-
-```markdown
-![[Note#^list-id]]
-```
-
-Where the list has a block ID:
-
-```markdown
-- Item 1
-- Item 2
-- Item 3
-
-^list-id
-```
-
-## Embed Search Results
-
-````markdown
-```query
-tag:#project status:done
-```
-````
+- [ ] The native `obsidian-markdown` and `json-canvas` skills were discovered by identity.
+- [ ] Source-context destination identity and exact readback used [`markdown.md`](markdown.md#non-markdown-targets-and-destination-readback).
+- [ ] Actual Canvas rendering was checked separately, or its unavailable leg was reported.

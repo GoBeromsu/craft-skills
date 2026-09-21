@@ -2,7 +2,7 @@
 name: init
 description: Maps a repository into a maintained hierarchical AGENTS.md knowledge base. Use when asked to "init this repo" for AGENTS, deep-init a codebase, generate or update AGENTS.md, map repository conventions, audit existing AGENTS coverage, or report stale managed AGENTS regions. Not for package-manager or plugin initialization, docs scaffolding or authoring (use `document`), or git-hook installation (use `git`).
 metadata:
-  version: 4.2.0
+  version: 4.3.0
 ---
 
 # init
@@ -92,7 +92,7 @@ When a `CLAUDE.md` holds anything other than the exact adapter bytes, migrate it
 
 - `python3` — official source: <https://docs.python.org/3/>; safe probe: `python3 --version`; support boundary: Python 3.10+ for the region script and its test module.
 - Dependency trigger — a selected Python release or a changed probe result requires official-documentation review and rerunning `python3 -m unittest discover -s skills/init/tests -p 'test_*.py'` before trusting this recipe.
-- [Tool preflight](references/tool-preflight.md) records mutable CLI probes, support boundaries, incompatibilities, and CHANGELOG verification receipts.
+- [Tool preflight](references/tool-preflight.md) records mutable CLI probes, support boundaries, incompatibilities, and official-update plus sibling-repair outcomes.
 
 ## Anti-patterns
 

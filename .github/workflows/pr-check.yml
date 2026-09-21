@@ -2,7 +2,16 @@ name: pr-check
 
 on:
   pull_request:
-    types: [opened, edited, synchronize, reopened, ready_for_review, labeled, unlabeled]
+    types:
+      [
+        opened,
+        edited,
+        synchronize,
+        reopened,
+        ready_for_review,
+        labeled,
+        unlabeled,
+      ]
 
 permissions:
   contents: read
@@ -14,9 +23,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Enforce PR logic churn policy
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9.0.0
         env:
-          CHURN_THRESHOLD: '1000'
+          CHURN_THRESHOLD: "1000"
           ALLOWED_BASES: '["main", "release/*", "hotfix/*"]'
           NON_LOGIC_GLOBS: '["**/test/**", "**/tests/**", "*_test.*", "test_*.*", "test_*.py", "*.spec.*", "*.test.*", "docs/**", "*.md", "pnpm-lock.yaml", "uv.lock", "package-lock.json", "yarn.lock", "Cargo.lock", "go.sum", "poetry.lock", "**/migrations/**", "**/generated/**", "**/data/**"]'
           SIZE_LABELS: '["size/S", "size/M", "size/L", "size/XL"]'
@@ -125,7 +134,7 @@ jobs:
     name: layer1-format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
       - name: Validate actual changed package owners
@@ -136,12 +145,14 @@ jobs:
           python3 skills/skillify/scripts/validate-skill-format.py --diff-base "$BASE"
       - name: Exercise package-selection regressions
         run: python3 -m unittest discover -s tests/skillify -p test_validate_skill_format.py
+      - name: Exercise optional sentence-reflow helper tests
+        run: python3 -m unittest tests.skillify.test_reflow_sentences
 
   layer1-hygiene:
     name: layer1-hygiene
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
       - name: Validate changed-line hygiene
@@ -150,22 +161,45 @@ jobs:
         run: |
           BASE=$(git merge-base "origin/$BASE_REF" HEAD)
           python3 skills/skillify/scripts/validate-runtime-hygiene.py --diff-base "$BASE"
+      - name: Exercise hygiene regressions
+        run: python3 -m unittest discover -s tests/skillify -p test_validate_runtime_hygiene.py
 
   distribution-version:
     name: distribution-version
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
       - name: Verify package and plugin version bumps
-        run: python3 scripts/governance/tools/check_version_bump.py --diff-base origin/${{ github.base_ref }}...HEAD
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          BASE=$(git merge-base "origin/${BASE_REF}" HEAD)
+          python3 scripts/governance/tools/check_version_bump.py --diff-base "$BASE"
       - name: Run distribution guard tests
-        run: python3 -m unittest scripts.governance.tests.test_check_version_bump scripts.governance.tests.test_verify_plugin_install scripts.governance.tests.test_resolve_plugin_revision
+        run: python3 -m unittest scripts.governance.tests.test_check_version_bump scripts.governance.tests.test_verify_plugin_install scripts.governance.tests.test_resolve_plugin_revision scripts.governance.tests.test_install_sh tests.init.test_agents_region tests.init.test_package_contract
 
-  harness-portable:
-    name: harness-portable
+  typescript-baseline:
+    name: typescript-baseline
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: python3 scripts/governance/harness.py --profile portable --config scripts/governance/fixtures/repos.portable.json --json-out build/governance/report.json --text-out build/governance/report.txt
+      - uses: actions/checkout@v7.0.1
+      - name: Install current official TypeScript compiler
+        run: npm install --global typescript@latest
+      - name: Verify unused-local and parameter boundaries
+        run: python3 -m unittest tests.programming.test_typescript_baseline
+
+  offline-transcribe-macos:
+    name: offline-transcribe-macos
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Create isolated Python environment and install current offline dependencies
+        run: |
+          python3 -m venv "$RUNNER_TEMP/offline-transcribe-venv"
+          "$RUNNER_TEMP/offline-transcribe-venv/bin/python" -m pip install --upgrade pip
+          "$RUNNER_TEMP/offline-transcribe-venv/bin/python" -m pip install --upgrade mlx-whisper huggingface-hub
+      - name: Exercise offline transcription tests
+        run: |
+          "$RUNNER_TEMP/offline-transcribe-venv/bin/python" -B -m unittest discover -s tests/offline-transcribe -p test_transcribe_offline.py

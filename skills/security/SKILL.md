@@ -1,15 +1,19 @@
 ---
 name: security
-description: Finds and fixes vulnerabilities in code the user owns across web, API, and LLM surfaces, mapping every trust boundary first and triaging by production reachability and severity second. Use when asked for a security review, "is this safe to ship," "check for vulnerabilities," or "보안 점검," when auditing secrets hygiene or dependency risk, or when reviewing a PR or feature for security regressions before release. Not for building or changing LLM-agent systems themselves (use `agents`) or for installing the enforcement hook, lint, or pre-commit that closes a finding permanently (use `guardrails`); this skill finds and fixes, it never attacks.
+description: Finds and fixes vulnerabilities in code the user owns across web, API, and LLM surfaces, and owns confidentiality for authorized remote credential handoffs. Use for a security review, "is this safe to ship," "check for vulnerabilities," "보안 점검," secrets hygiene, dependency risk, PR security regressions, or "hand a secret to a remote agent." Not for building LLM-agent systems (use `agents`), Orca session operation (use official `orca-cli`), or enforcement hooks and gates (use `guardrails`); this skill never attacks.
 metadata:
-  version: 2.3.3
+  version: 2.4.0
 ---
 
 # security
 
 Find and fix vulnerabilities in your own systems under one discipline: **map every trust boundary first, triage by real-world reachability and severity second, fix at the source third.** A review is done when every ingress channel has a parse/validate/limit decision, every finding carries a reachability-and-severity verdict backed by `file:line` evidence, and every applied fix is proven closed by a test or a re-run of the detection command that surfaced it.
 
-## PHASE 0 — trust-boundary mapping (run first, every time)
+For an authorized remote secret handoff, use [remote-secret-handoff.md](references/remote-secret-handoff.md) instead of the code-review phases below.
+Map that transfer's identity, authorization, transport, storage, and reporting boundaries; return only its nonsecret receipt or scoped blocker.
+An operational handoff alone does not require a repository-wide dependency audit.
+
+## PHASE 0 — code-review trust-boundary mapping
 
 Do not propose a fix before this gate.
 
@@ -55,6 +59,7 @@ For audit-tool output, framework security behavior, and version-dependent remedi
 |---|---|
 | Review-only request | Read code and configs; run the detection commands that match the routed surfaces; report every finding with `file:line` evidence and the command that surfaced it. Do not apply fixes. |
 | Explicit fix request | Fix confirmed vulnerabilities at their source in code the user owns, subject to the Ask first boundary below, and add or update a test or re-run the detection command to prove each fix stays closed. |
+| Authorized remote secret handoff | Apply [the handoff owner](references/remote-secret-handoff.md) to the exact approved transfer; reuse matching authority without widening host, account, session, task, purpose, destination, or retention. |
 | Ask first | Propose the change and apply it only once explicitly accepted: authentication/session/authorization model changes; rotating or revoking a live credential; a major-version dependency bump taken as the fix; modifying a CI/CD security gate; deleting or overwriting data discovered during the audit; disclosing a finding to anyone outside the immediate team. |
 | Never do | Write or run exploit code beyond the minimal local proof needed to confirm a fix works; probe, access, or scan any system, account, or endpoint outside what the user explicitly owns or authorized; paste, log, or otherwise expose a real secret found during the audit — redact it in every report; leave a known exploitable path live "to see if it gets hit." |
 
@@ -86,11 +91,14 @@ Reachability, not a demonstrated exploit, drives the tree — a finding with cle
 ## Hand-offs
 
 - Building or changing an LLM-agent system itself — a new agent, prompt authoring, eval sets — is owned by `agents`; this skill finds and fixes vulnerabilities in what's already built, including prompt injection, tool-permission scope, and consumption guards in agent/LLM code (`references/llm.md`).
+- Orca session operation belongs to the unchanged official `orca-cli` skill and its version-matched guide, not `agents`; remote secret confidentiality stays with [the handoff owner](references/remote-secret-handoff.md).
 - Turning a finding into enforced prevention — a pre-commit hook, a CI lint gate, a runtime guard — is owned by `guardrails`.
 - The parse-don't-validate typed-boundary idiom referenced in PHASE 0 step 2 is owned by `programming`; this skill states the security requirement, `programming` owns the implementation pattern.
 - Offensive tooling, exploit development, penetration-testing infrastructure, and probing systems the user does not own or hold written authorization to test are out of scope entirely — this skill finds and fixes, it never attacks.
 
 ## Requirements
+
+For code reviews, use only the tools required by the routed audit surface:
 
 - POSIX `grep`, `find`, `awk` for the detection commands in every reference file.
 - `git` for tracked-file and history secret scans.
@@ -99,8 +107,9 @@ Reachability, not a demonstrated exploit, drives the tree — a finding with cle
 
 ## Output contract
 
-Produce, in the completion summary, a findings list that gives each finding `file:line` evidence, severity, reachability triage, applied or proposed remediation, and evidence from the re-run that verifies the remediation. State the trust-boundary map and every detection command that informed the list there.
+For code reviews, produce a completion findings list that gives each finding `file:line` evidence, severity, reachability triage, applied or proposed remediation, and evidence from the re-run that verifies the remediation. State the trust-boundary map and every detection command that informed the list there.
 Stop and report that no result is available when the trust boundary cannot be established or required audit tooling is unavailable; do not certify the review or propose unsupported remediation.
+For remote handoffs, use only the [session receipt](references/remote-secret-handoff.md#session-receipt) and its scoped failure boundary.
 
 ## Anti-patterns
 
@@ -112,7 +121,7 @@ Stop and report that no result is available when the trust boundary cannot be es
 - Assuming "the framework already handles that by default" without confirming → confirm with the detection command; a config flag left off or a default changed between versions silently reopens the hole.
 - Waiting for a proof-of-concept before acting because "there's no working exploit shown, so it's not real yet" → triage on reachability plus severity alone; demanding a PoC first is how known, reachable bugs sit unfixed.
 - Letting a user-controlled or model-generated string reach `exec`/`eval`/a shell call/a raw SQL string/an HTML-rendering sink with no parse step in between → add a parse/validate step at the boundary before the value reaches the sink.
-- Leaving a secret-shaped string (`AKIA…`, `ghp_…`, `sk-…`, `BEGIN PRIVATE KEY`) in a tracked file or anywhere in `git log -p` → rotate the credential immediately and scrub it from history.
+- Leaving a secret-shaped string (`AKIA…`, `ghp_…`, `sk-…`, `BEGIN PRIVATE KEY`) in a tracked file or anywhere in `git log -p` → contain exposure and escalate rotation and history cleanup under the Action boundary; a handoff does not authorize automatic rotation or deletion.
 - Tracking a `.env` file in git with no `.env.example` sibling → untrack the `.env` file, add it to `.gitignore`, and commit a `.env.example` template instead.
 - Leaving no dependency lockfile committed while the audit command reports unresolved high/critical findings → commit the lockfile and resolve the reported high/critical findings before shipping.
 - Implementing authorization as "is authenticated" instead of "is authenticated AND permitted for this specific object" → check both authentication and object-level permission on every access.
@@ -125,6 +134,8 @@ Stop and report that no result is available when the trust boundary cannot be es
 - Adding a policy test with no case that fails when the policy is violated → ship the mutation case with it; a green suite over an unfalsifiable policy proves nothing.
 
 ## Verification
+
+Apply this checklist to code reviews; verify remote handoffs through their reference's destination, authentication, retention, and failure checks.
 
 - [ ] Every ingress channel for the reviewed feature is enumerated with a parse/validate/limit decision.
 - [ ] PHASE 0 routed to every matching reference before any fix was proposed; `references/secrets-supply-chain.md` was read only when its routing row applied.

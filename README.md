@@ -30,13 +30,13 @@ This is a task-oriented library for software and research work — kept separate
 | `guardrails` | Turn a convention into local, deterministic enforcement — runtime hooks, linter and formatter configuration, and pre-commit guards — so a violation is blocked before it happens, not corrected after. |
 | `init` | Own the hierarchical `AGENTS.md` lifecycle as prose — map, read-only audit, stale reporting — with one script for marker-region edits; bare `init` runs ordinary deep-init. |
 | `ml` | Apply ML/DL research-engineering discipline — reproducible project layout, leakage-safe dataset construction, and a training-discipline ladder — to classical ML, deep learning, fine-tuning, and vision work. |
-| `obsidian` | Route reusable Obsidian Markdown, Bases, Canvas, Mermaid, CLI, Web Clipper, plugin-doctor, and headless Sync work through one thick skill with selectively loaded sub-recipes. |
+| `obsidian` | Compose unchanged official native owners `obsidian-markdown`, `obsidian-bases`, `json-canvas`, and `obsidian-cli` for format and CLI mechanics, keeping only uncovered local app/Sync coordination and live-vault/OMS policy. |
 | `orca` | Organize low-clutter work targets across hosts while preserving distinct Git identities and live sessions, safely clean old branches, and diagnose connection failures at their actual layer. |
 | `programming` | Apply correctness-first, type-strict engineering discipline when writing or editing Python or TypeScript. |
 | `refactor` | Restructure code without changing what it does, each move backed by a detection command and threshold, gated behind a characterization-test protocol for untested legacy code. |
 | `research` | Run a decision-depth research workflow ending in a `docs/research/{slug}.md` artifact — sweep primary sources, synthesize with a citation on every claim, and state gaps and confidence, never the decision itself. |
 | `security` | Find and fix vulnerabilities across web, API, and LLM surfaces, mapping every trust boundary first and triaging by production reachability and severity second. |
-| `skillify` | Own the full lifecycle of craft-skills packages — create, update, move, retire — through an eval-first authoring loop and deterministic format validation. |
+| `skillify` | Own the full lifecycle of craft-skills packages — create, update, move, retire — leaving official skills unmodified, holding only uncovered local context, and verifying with focused functional, security, and data-integrity evidence plus Layer-1 format validation. |
 | `tailscale` | Verify and repair the Tailscale tailnet that carries cross-host work — SSH, remote process inspection, `scp` — before a dependent workflow runs, triaging failures as network-layer versus service-layer across macOS daemon variants. |
 | `testing` | Architect and audit the test suite — classify each test by taxonomy and resource-based size, place it via a decision tree, and enforce the prove-it law that every bug fix ships with a failing-then-passing test. |
 | `vmware` | Operate VMware Fusion guests through VM lifecycle checks and VNC-backed input automation. |
@@ -170,7 +170,7 @@ The script is idempotent and safe to re-run.
 
 ## Validation
 
-`scripts/ci-local.sh` mirrors every required CI gate locally (pr-size, both Layer-1 validators, distribution-version, harness-portable, marketplace validation) and is the merge gate whenever GitHub Actions cannot run:
+`scripts/ci-local.sh` mirrors every required CI gate locally (pr-size, both Layer-1 validators, distribution-version, marketplace validation) and is the merge gate whenever GitHub Actions cannot run:
 
 ```bash
 bash scripts/ci-local.sh

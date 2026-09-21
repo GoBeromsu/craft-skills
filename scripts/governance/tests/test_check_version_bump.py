@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -54,9 +55,10 @@ class CheckVersionBumpTest(unittest.TestCase):
     def tearDown(self) -> None:
         self.tempdir.cleanup()
 
-    def _run(self) -> subprocess.CompletedProcess[str]:
+    def _run(self, *extra: str) -> subprocess.CompletedProcess[str]:
+        args = [sys.executable, str(_TOOL), *(extra or ("--diff-base", "HEAD~1"))]
         return subprocess.run(
-            [sys.executable, str(_TOOL), "--diff-base", "HEAD~1"],
+            args,
             cwd=self.root,
             text=True,
             capture_output=True,
@@ -89,27 +91,10 @@ class CheckVersionBumpTest(unittest.TestCase):
         result = self._run()
         self.assertEqual(result.returncode, 0, result.stdout)
 
-    def test_accepts_deleted_package_removed_from_manifest(self) -> None:
-        manifest = {"schema_version": 1, "packages": [{"name": "demo"}]}
-        (self.root / "skills-manifest.yaml").write_text(json.dumps(manifest), encoding="utf-8")
-        subprocess.run(["git", "add", "skills-manifest.yaml"], cwd=self.root, check=True)
-        subprocess.run(
-            ["git", "commit", "-m", "add manifest"],
-            cwd=self.root,
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-
-        manifest["packages"] = []
-        (self.root / "skills-manifest.yaml").write_text(json.dumps(manifest), encoding="utf-8")
+    def test_accepts_retired_package_with_git_owner(self) -> None:
         subprocess.run(["git", "rm", "-r", "skills/demo"], cwd=self.root, check=True, capture_output=True)
         self._write_plugin_versions("0.5.1")
-        subprocess.run(
-            ["git", "add", "skills-manifest.yaml", ".codex-plugin", ".claude-plugin"],
-            cwd=self.root,
-            check=True,
-        )
+        subprocess.run(["git", "add", ".codex-plugin", ".claude-plugin"], cwd=self.root, check=True)
         subprocess.run(
             ["git", "commit", "-m", "delete package"],
             cwd=self.root,
@@ -117,10 +102,44 @@ class CheckVersionBumpTest(unittest.TestCase):
             capture_output=True,
             text=True,
         )
-
         result = self._run()
         self.assertEqual(result.returncode, 0, result.stdout)
-        self.assertIn("demo: deleted package removed from manifest", result.stdout)
+        self.assertIn("retired package with Git-established former owner", result.stdout)
+
+    def test_rejects_partial_retirement_remnant(self) -> None:
+        skill = self.root / "skills" / "demo" / "SKILL.md"
+        skill.unlink()
+        remnant = self.root / "skills" / "demo" / "notes.md"
+        remnant.write_text("left behind\n", encoding="utf-8")
+        self._write_plugin_versions("0.5.1")
+        subprocess.run(["git", "add", "skills", ".codex-plugin", ".claude-plugin"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-m", "partial retirement"],
+            cwd=self.root,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        result = self._run()
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("retired package still has remnant files", result.stdout)
+
+    def test_rejects_missing_skill_without_former_owner(self) -> None:
+        package = self.root / "skills" / "ghost"
+        package.mkdir()
+        (package / "notes.md").write_text("not a skill\n", encoding="utf-8")
+        self._write_plugin_versions("0.5.1")
+        subprocess.run(["git", "add", "skills", ".codex-plugin", ".claude-plugin"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-m", "unowned remnant"],
+            cwd=self.root,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        result = self._run()
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("missing SKILL.md with no Git-established former owner", result.stdout)
 
     def test_package_local_tests_tree_is_not_a_package_change(self) -> None:
         tests_dir = self.root / "skills" / "demo" / "tests"
@@ -302,6 +321,86 @@ class CheckVersionBumpTest(unittest.TestCase):
         result = self._run()
         self.assertEqual(result.returncode, 1)
         self.assertIn("new-demo: CHANGELOG.md must gain a dated bullet", result.stdout)
+
+    def test_covers_unstaged_unicode_support_filename(self) -> None:
+        support = self.root / "skills" / "demo" / "references"
+        support.mkdir()
+        (support / "강의.part notes.md").write_text("updated support\n", encoding="utf-8")
+        (self.root / "skills" / "demo" / "SKILL.md").write_text(_skill("1.0.1", "updated guidance"), encoding="utf-8")
+        (self.root / "skills" / "demo" / "CHANGELOG.md").write_text(
+            "- 2026-07-12 — updated guidance\n- 2026-01-01 — initial release\n",
+            encoding="utf-8",
+        )
+        self._write_plugin_versions("0.5.1")
+        result = self._run("--diff-base", "HEAD")
+        self.assertEqual(result.returncode, 0, result.stdout)
+
+    def test_rejects_range_and_option_diff_base(self) -> None:
+        for base in ("HEAD...HEAD", "HEAD..HEAD", "--help"):
+            with self.subTest(base=base):
+                result = self._run(f"--diff-base={base}")
+                self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                self.assertIn("one commit-ish", result.stdout)
+
+    def test_rejects_redirected_git_worktree_env(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            base_repo = Path(tmp) / "base"
+            target = Path(tmp) / "target"
+            for repo in (base_repo, target):
+                repo.mkdir()
+                subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
+                subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo, check=True)
+                subprocess.run(["git", "config", "user.name", "Test User"], cwd=repo, check=True)
+                subprocess.run(["git", "commit", "--allow-empty", "-m", "init"], cwd=repo, check=True, capture_output=True, text=True)
+            plugin = target / ".claude-plugin"
+            plugin.mkdir()
+            (plugin / "plugin.json").write_text("{not-json\n", encoding="utf-8")
+            ordinary = subprocess.run(
+                [sys.executable, str(_TOOL), "--diff-base=HEAD"],
+                cwd=target,
+                text=True,
+                capture_output=True,
+                check=False,
+                env={key: value for key, value in os.environ.items() if not key.startswith("GIT_")},
+            )
+            self.assertEqual(ordinary.returncode, 1, ordinary.stdout + ordinary.stderr)
+            redirected = dict(os.environ)
+            redirected["GIT_DIR"] = str(base_repo / ".git")
+            redirected["GIT_WORK_TREE"] = str(base_repo)
+            result = subprocess.run(
+                [sys.executable, str(_TOOL), "--diff-base=HEAD"],
+                cwd=target,
+                text=True,
+                capture_output=True,
+                check=False,
+                env=redirected,
+            )
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            self.assertIn("Git worktree root", result.stdout)
+            self.assertNotIn("note:", result.stdout)
+
+    def test_escaping_live_plugin_symlink_is_input_error(self) -> None:
+        with tempfile.TemporaryDirectory() as outside:
+            secret = Path(outside) / "plugin.json"
+            secret.write_text('{"name": "craft-skills", "version": "9.9.9", "sentinel": "SENTINEL-OUTSIDE-PLUGIN"}\n', encoding="utf-8")
+            plugin = self.root / ".claude-plugin" / "plugin.json"
+            plugin.unlink()
+            plugin.symlink_to(secret)
+            result = self._run("--diff-base", "HEAD")
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            self.assertIn("escapes root", result.stdout)
+            self.assertNotIn("SENTINEL-OUTSIDE-PLUGIN", result.stdout)
+            self.assertNotIn("SENTINEL-OUTSIDE-PLUGIN", result.stderr)
+
+    def test_contained_live_plugin_is_still_checked(self) -> None:
+        plugin = self.root / ".claude-plugin" / "plugin.json"
+        target = self.root / "contained-plugin.json"
+        target.write_bytes(plugin.read_bytes())
+        plugin.unlink()
+        plugin.symlink_to(target)
+        result = self._run("--diff-base", "HEAD")
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("root plugin version must increase", result.stdout)
 
 
 if __name__ == "__main__":

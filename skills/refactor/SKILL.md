@@ -2,7 +2,7 @@
 name: refactor
 description: "Restructures code without changing what it does — extracting functions, renaming, removing duplication, flattening nested conditionals, and other mechanical moves backed by a detection command and threshold. Use when the user says \"refactor this\", \"clean up this code\", \"리팩토링 해줘\", or \"this function is a mess\", or a named smell (long function, deep nesting, feature envy) surfaces while reading code with no intended behavior change. Gates untested legacy code behind a characterization-test protocol first. Not for diagnosing why something is broken — use debug — or for behavior-changing feature work and bug fixes, which belong to programming's red-green-refactor loop."
 metadata:
-  version: 2.5.0
+  version: 2.5.1
 ---
 
 # refactor
@@ -50,7 +50,9 @@ Before touching structure: a test suite exists for the path and is green right n
 - Which mechanical move fixes which smell, with worked Python/TypeScript examples → `references/catalog.md`.
 - Shrinking a whole package rather than one function — measure candidate linter rule sets, enable what pays, autofix, then hand-simplify what lint cannot express → `references/lint-first.md`. Prefer linter configuration to a bespoke script, and keep the mechanical and judgment commits separate.
 - A one-shot terminal scan across a whole directory → `scripts/detect-smells.sh <dir>` when the stated refactor concerns a smell class the script can detect (a reporter, always exits 0 — review relevant findings; false-positive profile documented per rule). Route it by the skill package's own directory, not the target project's cwd, since the agent's cwd at invocation time is the project being scanned: `bash <skill-dir>/scripts/detect-smells.sh <target-dir>`.
-- When symbol safety matters, prefer language-server diagnostics, definition, references, or rename over text search; check server status first and restore it before relying on textual results when it is unavailable.
+- When symbol safety matters, prefer available language-server definitions, references, rename, and diagnostics; confirm support in the source project, not from another workspace's server status.
+- Use an available AST tool when syntax-aware matching or transformation helps; consult an existing code graph only for a concrete dependency or impact question, checking its coverage and freshness.
+- Without semantic support, use bounded text search and source inspection, disclose coverage limits, and validate with project checks; text matches are not semantic proof or complete reference coverage. Stop when that fallback cannot establish the move's safety rather than assuming a server, hook, or skill wrapper must be installed.
 - File-size ceiling (250 pure LOC) and its escape hatches → `programming`; this skill owns function-level size, not file-level.
 - Turning any rule here into an enforced lint/hook/pre-commit check → `guardrails`.
 

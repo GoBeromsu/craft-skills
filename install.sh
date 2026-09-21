@@ -26,6 +26,41 @@ note()  { printf '  NOTE: %s\n' "$1"; }
 header(){ printf '\n=== %s ===\n' "$1"; }
 hr()    { printf -- '----------------------------------------------------------------------\n'; }
 
+plugin_named_craft_skills() {
+  python3 -c '
+import json, sys
+path = sys.argv[1]
+try:
+    data = json.load(open(path, encoding="utf-8"))
+except Exception:
+    sys.exit(1)
+sys.exit(0 if isinstance(data, dict) and data.get("name") == "craft-skills" else 1)
+' "$1"
+}
+
+is_native_craft_checkout() {
+  _dir="$1"
+  if [ -f "${_dir}/.codex-plugin/plugin.json" ] && plugin_named_craft_skills "${_dir}/.codex-plugin/plugin.json"; then
+    return 0
+  fi
+  if [ -f "${_dir}/.claude-plugin/plugin.json" ] && plugin_named_craft_skills "${_dir}/.claude-plugin/plugin.json"; then
+    return 0
+  fi
+  return 1
+}
+
+path_inside() {
+  _base="$1"
+  _path="$2"
+  python3 -c '
+import os, sys
+base = os.path.realpath(sys.argv[1])
+path = os.path.realpath(sys.argv[2])
+base_pref = base if base.endswith(os.sep) else base + os.sep
+sys.exit(0 if path == base or path.startswith(base_pref) else 1)
+' "$_base" "$_path"
+}
+
 # ── Claude Code ────────────────────────────────────────────────────────────────
 
 install_claude() {
@@ -67,7 +102,7 @@ install_codex() {
     return 1
   fi
   # Physical normalization: resolve symlinks so a link pointing into the
-  # repository cannot bypass the prefix check or the marker-pair walk.
+  # repository cannot bypass the prefix check or the native-identity walk.
   PROJECT_ROOT="$(cd -P "${PROJECT_ROOT}" && pwd -P)"
   REPO_DIR_P="$(cd -P "${REPO_DIR}" && pwd -P)"
   case "${PROJECT_ROOT}/" in
@@ -76,14 +111,23 @@ install_codex() {
       return 1
       ;;
   esac
-  # Walk ancestors: a marker pair anywhere above also means we are inside a craft-skills checkout.
   ANCESTOR="${PROJECT_ROOT}"
   while [ "${ANCESTOR}" != "/" ]; do
-    if [ -f "${ANCESTOR}/.codex-plugin/plugin.json" ] && [ -f "${ANCESTOR}/skills-manifest.yaml" ]; then
-      printf 'REFUSED: --clone must target a consumer project, not the craft-skills repository (marker pair at %s).\n' "${ANCESTOR}" >&2
+    if is_native_craft_checkout "${ANCESTOR}"; then
+      printf 'REFUSED: --clone must target a consumer project, not the craft-skills repository (native plugin identity at %s).\n' "${ANCESTOR}" >&2
       return 1
     fi
     ANCESTOR="$(dirname "${ANCESTOR}")"
+  done
+
+  for REL in .agents .agents/skills .agents/skills/craft-skills; do
+    CANDIDATE="${PROJECT_ROOT}/${REL}"
+    if [ -L "${CANDIDATE}" ] || [ -e "${CANDIDATE}" ]; then
+      if ! path_inside "${PROJECT_ROOT}" "${CANDIDATE}"; then
+        printf 'REFUSED: clone destination %s escapes the consumer project.\n' "${CANDIDATE}" >&2
+        return 1
+      fi
+    fi
   done
 
   (
@@ -123,7 +167,21 @@ install_hermes() {
   note "The tap scans every file in the unit; only a safe verdict installs without --force."
 
   TAPS_FILE="${HERMES_HOME:-${HOME}/.hermes}/skills/.hub/taps.json"
-  if [ -f "${TAPS_FILE}" ] && grep -q "\"${TAP_REPO}\"" "${TAPS_FILE}"; then
+  if [ -f "${TAPS_FILE}" ] && python3 -c '
+import json, sys
+path, repo = sys.argv[1], sys.argv[2]
+try:
+    data = json.load(open(path, encoding="utf-8"))
+except Exception:
+    sys.exit(1)
+taps = data.get("taps") if isinstance(data, dict) else None
+if not isinstance(taps, list):
+    sys.exit(1)
+for tap in taps:
+    if isinstance(tap, dict) and tap.get("repo") == repo and tap.get("path") == "skills/":
+        sys.exit(0)
+sys.exit(1)
+' "${TAPS_FILE}" "${TAP_REPO}"; then
     ok "tap ${TAP_REPO} is registered in ${TAPS_FILE}."
     return 0
   fi
@@ -149,7 +207,37 @@ install_gjc() {
     note "gjc is not on PATH; nothing to verify."
     return 1
   fi
-  if gjc plugin list 2>/dev/null | grep -q 'craft-skills@craft-skills'; then
+  if ! LIST_JSON="$(gjc plugin list --json)"; then
+    note "gjc plugin list --json failed; craft-skills@craft-skills is not verified."
+    return 1
+  fi
+  if printf '%s' "${LIST_JSON}" | python3 -c '
+import json, sys
+try:
+    data = json.load(sys.stdin)
+except Exception:
+    sys.exit(1)
+if not isinstance(data, dict):
+    sys.exit(1)
+market = data.get("marketplace")
+if not isinstance(market, list):
+    sys.exit(1)
+wanted = "craft-skills@craft-skills"
+for item in market:
+    if not isinstance(item, dict) or item.get("id") != wanted:
+        continue
+    entries = item.get("entries")
+    if not isinstance(entries, list) or not entries:
+        sys.exit(1)
+    for entry in entries:
+        if not isinstance(entry, dict):
+            sys.exit(1)
+        for key in ("installPath", "installedAt", "lastUpdated", "scope", "version"):
+            if key not in entry:
+                sys.exit(1)
+    sys.exit(0)
+sys.exit(1)
+'; then
     ok "craft-skills@craft-skills is installed."
     return 0
   fi

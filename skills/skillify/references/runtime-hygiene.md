@@ -41,7 +41,7 @@ python3 skills/skillify/scripts/validate-skill-format.py --diff-base "$BASE"
 # Select an additional existing owner explicitly; repeat --package to add owners.
 python3 skills/skillify/scripts/validate-skill-format.py --diff-base "$BASE" --package skills/skillify
 
-# Secret / real-path leakage on newly changed lines.
+# Secret / real-path leakage on newly changed tracked lines plus full untracked files.
 python3 skills/skillify/scripts/validate-runtime-hygiene.py --diff-base "$BASE"
 
 # Sentence-boundary line breaks (contract §4) on the changed package's Markdown; --fix reflows.
@@ -51,9 +51,15 @@ python3 skills/skillify/scripts/reflow-sentences.py skills/<skill-name>
 The format validator maps body, references, scripts, assets and repo-root test changes to actual owners.
 Every mode requires Git and the actual worktree root; `--root` is not a standalone non-Git package directory.
 It rejects repeated base flags, revision ranges, noncanonical or escaping paths, nonexistent package selectors, and unresolved support ownership; input/Git failures still fail in advisory mode.
-Deleted owners receive tombstone and concrete inbound-path checks; independent review still owns semantic routing and retirement adequacy.
+Deleted owners receive tombstone and concrete inbound-path checks; independent review still owns semantic routing, outcome/failure wording, and retirement adequacy.
 Without either selector it scans all packages.
 Add `--advisory` only for an explicitly non-blocking format inventory.
+It does not require an exact `## Output contract` heading, anti-pattern registry wording, `MUST USE`/`ANY` description grammar, or generated eval corpus.
+When optional `tests/<name>/evals/{evals.json,triggers.json}` files exist, it checks their data shape; absence is not a format failure.
+It requires `CHANGELOG.md` with at least one dated bullet and at most 100 lines (`CHANGELOG_TOO_LONG`).
+Tracked real env files match `.env` and `.env` with any extra suffixes (including `.env.production.local`); only the exact name `.env.example` is exempt.
+Referenced support paths must resolve inside the owning package after symlink resolution; a sibling-package file that exists in the repository still fails (`MISSING_REFERENCED_PATH`).
+Retained functional and safety checks: frontmatter/runtime compatibility keys, nested `SKILL.md` prohibition, `## Change Log` not in `SKILL.md`, tracked-env prohibition, referred support-file existence inside the package, traversal-link abort (`TRAVERSAL_LINK`), Git four-state selection, symlink containment, and retirement tombstones.
 Neither lexical validation nor a supplied corpus count demonstrates behavioral quality; preserve relevant script tests and scenario evidence.
 
 **Guard-first sequencing.**
@@ -74,6 +80,12 @@ A three-dot range like `origin/main...HEAD` passed directly to `git diff` can mi
 Resolve the intended base explicitly; do not pass a range to the format selector.
 Package selection unions the four Git states even when a staged change and an unstaged reversal cancel in a net diff; format checks then read current content.
 Changed-line secret checks have a different purpose from package selection; do not claim identical coverage merely because both scripts accept `--diff-base`.
+The hygiene script reuses the format validator's Git and containment helpers: one verified commit, four-state path union, fail-closed Git/decode/path errors, no silent whole-tree fallback.
+Tracked files are scanned on added lines only so unrelated legacy leaks do not block a different package; untracked files are scanned in full.
+Explicit path arguments scan those files entirely and exit 2 for missing, unreadable, or escaping selections.
+Containment is checked before any content read; escaped symlinks are not followed into outside files.
+Real env filenames match `.env` and `.env` with any extra suffixes (including `.env.production.local`); only the exact name `.env.example` is exempt, independent of text-extension filtering.
+Diagnostics name the path, line, and rule; they never echo a matched secret or host path value.
 Regression-test shape when changing either script: a clean base commit; a next commit that adds a leaked value; a worktree that replaces it with a placeholder; `--diff-base <base>` must PASS against the worktree state, and a negative case with an uncommitted leak must FAIL.
 
 A line containing an env placeholder can still contain a second hardcoded value on the same line — do not exempt a whole line just because `${VAR}` appears somewhere in it.

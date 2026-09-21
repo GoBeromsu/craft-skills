@@ -237,16 +237,6 @@
       "forbidden_neighbors": ["craft-skills/defuddle", "craft-skills/obsidian", "craft-skills/vmware"]
     },
     {
-      "trigger": "Submit this form in my existing Chrome tab",
-      "expected_package": "craft-skills/browser",
-      "forbidden_neighbors": ["craft-skills/frontend", "craft-skills/api", "craft-skills/testing"]
-    },
-    {
-      "trigger": "Use agent-browser to capture a JavaScript app snapshot",
-      "expected_package": "craft-skills/browser",
-      "forbidden_neighbors": ["craft-skills/defuddle", "craft-skills/research", "craft-skills/frontend"]
-    },
-    {
       "trigger": "Create the root DESIGN.md for this product",
       "expected_package": "craft-skills/design",
       "forbidden_neighbors": ["craft-skills/document", "craft-skills/frontend", "craft-skills/init"]

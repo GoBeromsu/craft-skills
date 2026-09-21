@@ -2,6 +2,7 @@
 
 The permanent, self-contained authoring contract for every `SKILL.md` in this library.
 `SKILL.md` links here for the full rules; this file is the canonical source authors and reviewers check a package against.
+Root policy in `AGENTS.md` and `references/evaluation.md` must agree with this file.
 
 ## Table of Contents
 
@@ -38,6 +39,7 @@ metadata:
 The Agent Skills spec also permits `license`, `compatibility`, and experimental `allowed-tools`.
 Add one of those optional keys only when the package cannot meet its support boundary without it, and record the affected-runtime support caveat in that runtime's vendor lens.
 Do not add vendor-specific fields to the portable baseline.
+Keep a frontmatter field only when a current consumer or independent safety obligation needs it.
 
 ## 2. Naming
 
@@ -55,14 +57,9 @@ trigger phrases woven in naturally>. Not for <nearest-neighbor boundary — use 
 ```
 
 - The default is ordinary prose in the shape above.
-- A skill with evidence-backed, mutually exclusive routing ownership may instead begin its parsed description with exactly `MUST USE <bounded ownership clause>. `, followed by the complete ordinary description shape above.
-- The optional directive is a narrow language: the exact case-sensitive `MUST USE ` prefix starts at character zero, occurs once, and the first ASCII `. ` ends a nonempty clause before a nonempty ordinary remainder.
-- Double-quoted descriptions use JSON-compatible escapes; the validator decodes that scalar before checking the directive and rejects YAML-only escape forms so encoded letters cannot bypass the grammar.
-- Clause and remainder text carry no leading or trailing padding beyond the single delimiter space.
-- A standalone uppercase `ANY` — bounded by ASCII alphanumeric/underscore adjacency — may occur at most once inside that clause and nowhere else in the description.
-- Semantic boundedness means explicit inclusion edges plus exclusion or hand-off edges for the nearest sibling domains; it is not a finite enumeration, and passing the lexical validator never proves MECE ownership or routing quality.
+- A skill with evidence-backed, mutually exclusive routing ownership may lead with a stronger discovery signal. Semantic boundedness means explicit inclusion edges plus exclusion or hand-off edges for the nearest sibling domains; it is not a finite enumeration, and no lexical phrase, heading, or grammar check proves MECE ownership or routing quality.
+- There is no universal format gate for `MUST USE`, `ANY`, or similar routing phrases: this library has no demonstrated native parser that consumes that grammar. Independent review judges routing evidence.
 - Sentence-case forms such as `Must use` remain ordinary prose.
-- Any description beginning with the standalone all-caps token `MUST` is reserved for the exact grammar; lookalikes such as `MUST USE`, `MUST USE:`, `MUST-USE`, `MUST: USE`, `MUST - USE`, or `MUST_USE` are invalid because they exert directive pressure without passing the evidence gate.
 - Third person ("Routes…", "Scaffolds…", "Owns…"), never "I" / "You".
 - Both *what* the skill does and *when* to use it are present; the primary use case leads the sentence.
 - Trigger phrases are real things a user types, embedded in prose — never a bare quoted list, never keyword stuffing.
@@ -74,24 +71,25 @@ trigger phrases woven in naturally>. Not for <nearest-neighbor boundary — use 
 
 ## 4. Body
 
-- Preserve useful decision guidance rather than optimizing line count. The validator's 500-line ceiling is a repository format policy, not an upstream compatibility requirement or a quality measure; move optional depth to `references/*.md` without discarding it.
-- Structure: title → 1–2 sentence purpose with success criteria → `## Output contract` → the workflow/decision content → boundaries/hand-offs → any `## Requirements`, `## Anti-patterns`, `## Verification`. Cut preamble and restated-obvious practice — an agent is already competent; only add context it doesn't already have.
-- `## Output contract` is the repository's literal contract heading. State the artifact, location, relevant format and summary, and what happens on an applicable no-result, partial-success, stop, or ambiguity case. The validator checks only that the heading exists; it deliberately does not scan for failure keywords, because a matching word such as “stop” never proved an adequate failure policy. Scenarios and independent review judge that meaning. Specify only constraints that matter.
-- Everything else the contract needs already has an owner: the trigger and the "Not for X" boundary live in the description (§3); the goal is the purpose sentence under the title; inputs and dependencies live in `## Requirements` (§10); agent mistakes that break the contract live in `## Anti-patterns`; the eval corpus that proves the contract lives in repo-root `tests/<skill-name>/evals/` (§7). Do not add `## Goal`, `## Non-goals`, or `## Failure modes` sections — they restate those owners.
+- Preserve useful decision guidance rather than optimizing line count. Compact bodies (around 150 lines of decision-depth) are authoring guidance, not a native loader limit or format failure; move optional depth to `references/*.md` without discarding it.
+- Structure: title → 1–2 sentence purpose with success criteria → the workflow and decision content → boundaries and hand-offs → any requirements, recorded mistakes, or verification notes the package actually needs. Cut preamble and restated-obvious practice — an agent is already competent; only add context it doesn't already have.
+- State the artifact, location, relevant format and summary, and what happens on an applicable no-result, partial-success, stop, or ambiguity case. Independent review judges that meaning. Do not require an exact heading, procedural phrase, anti-pattern registry wording, or arbitrary section order: a self-imposed wording validator is not an independent runtime consumer or safety owner.
+- Everything else the contract needs already has an owner: the trigger and the "Not for X" boundary live in the description (§3); the goal is the purpose sentence under the title; inputs and dependencies live with §10; recorded unwanted behaviors live in one registry when needed; focused functional, security, and data-integrity evidence lives in repo-root `tests/<skill-name>/` (§7). Do not add restating sections that duplicate those owners.
 - Outcome over process: state the goal and constraints. Give numbered steps only where the exact sequence matters (a fragile or deterministic operation) — prose for judgment calls, scripts for mechanics.
 - Implement only what the requested outcome requires; no speculative features, refactors, or abstractions. Do not add fallbacks or validation for impossible internal states; validate system boundaries. Keep complete end-to-end behavior.
 - Keep instructions lean and single-owned: state the action, its autonomy boundary, and any required approval at the owner; link from every other location. Report progress through observable evidence and decisions, not private chain-of-thought, and never ask a user to reveal or transcribe internal reasoning.
 - Delegate independent lanes when the runtime supports delegation; keep dependent decisions with their owner and specify the hand-off evidence.
 - Match freedom to fragility. High freedom (prose heuristics) where many routes are valid and context decides; medium freedom (a preferred pattern with parameters) where one way is better but variation is fine; low freedom (an exact script, few knobs) where the operation is fragile and order-sensitive. A narrow bridge gets guardrails; an open field gets a compass — the wrong choice either straitjackets judgment or lets a fragile step wobble.
 - One default per decision, with one named escape hatch. No option menus.
-- No ALL-CAPS rigidity walls and no "MUST/NEVER/LAW" shouting in body prose — where strict adherence matters, one short clause of why is enough. The description-only routing exception in §3 never authorizes a body directive. A single sparing **bold** is fine.
+- No ALL-CAPS rigidity walls and no "MUST/NEVER/LAW" shouting in body prose — where strict adherence matters, one short clause of why is enough. A routing phrase in the description never authorizes a body directive. A single sparing **bold** is fine.
 - Break lines only where a sentence ends — one sentence per line in paragraphs, one item per line in lists; never hard-wrap mid-sentence at a column width. Markdown renders both identically, but sentence-boundary lines read and diff cleaner. Deterministic enforcement: `scripts/reflow-sentences.py <files>` exits 1 on violations; `--fix` reflows a wrapped file in place.
 - References sit exactly one level deep (`references/*.md`); any reference over 100 lines opens with a table of contents. Templates live in `templates/`, scripts in `scripts/`. No nested `SKILL.md` anywhere inside a package — including `agents/` — every skill is one flat directory.
 - Present-tense imperative throughout; no history, no provenance credit, no vendor lock (no Claude-only frontmatter or `/plugin` instructions in the body). Use `${ENV_VAR}` placeholders, forward-slash paths, and no time-sensitive language ("new", "recently", bare dates). `${ENV_VAR}` indirection is for avoiding hardcoded paths in prose; it is never a script-to-script argument channel — scripts declare inputs as flags.
 - Preserve the skill's distinctive craft — detection commands, decision tables, hard-won laws survive, compressed rather than deleted. If genuinely valuable content doesn't fit in the body, move it to `references/`; don't cut it.
 - A table the body already earns (a routing table, a gate) stays a table.
-- `## Anti-patterns` is the single registry for recorded unwanted behaviors — one line per entry, shaped `- <unwanted behavior> → <what to do instead>.`, accumulated from real operator corrections (see the lifecycle's record-a-correction flow), not invented upfront. It subsumes `## Red Flags` and `## Common Rationalizations`; a package carries at most this one such section.
-- Document external-binary requirements (`git`, `python3`, …) in a short `## Requirements` section only if the skill actually shells out to them.
+- Recorded unwanted behaviors live in one registry when the package needs them — one line per entry, shaped `- <unwanted behavior> → <what to do instead>.`, accumulated from real operator corrections (see the lifecycle's record-a-correction flow), not invented upfront. Exact registry heading text is not a format gate.
+- Document external-binary requirements (`git`, `python3`, …) only if the skill actually shells out to them.
+- The agent chooses method and recovery inside this contract. Do not add generic repeated consent for reversible in-scope work; gate only new irreversible effects that lack an existing approval.
 
 ## 5. Package parts
 
@@ -113,8 +111,8 @@ What remains — the judgment and sequencing — is the `SKILL.md` body.
 | `templates/` | The skill emits a canonical artifact with a fixed shape. |
 | `assets/` | Files the deliverable copies or fills in — boilerplate trees, fonts, images — that the agent never reads as text. They are not background reference material. |
 | `agents/` | A bounded subagent role needs a charter or runtime metadata. Each file defines that role's scope, inputs, outputs, and hand-off; it is never a child skill and never contains `SKILL.md`. |
-| repo-root `tests/<skill-name>/` | Any `scripts/` file ships with a matching test module. Packages carry no `tests/`; tests and the committed eval corpus live at repo root so install bundles never ship fixtures. |
-| `evals/` | Local scratch for eval-run transcripts and judge notes (§7) — **gitignored, never committed**. The committed corpus lives under repo-root `tests/<skill-name>/evals/`; only run output is scratch. |
+| repo-root `tests/<skill-name>/` | Focused functional, security, and data-integrity fixtures for the requested effects. Any `scripts/` file ships with a matching test module. Packages carry no `tests/`; tests live at repo root so install bundles never ship fixtures. |
+| `evals/` | Local scratch for generated run transcripts, scores, and judge notes (§7) — **gitignored, never committed, never a pass condition**. Optional reusable scenarios may live under repo-root `tests/<skill-name>/evals/`; they are not a required wording- or procedure-locking corpus. |
 | `.env` / `.env.example` | Any credential, token, or host-specific value. Commit only `.env.example` with placeholders. |
 
 An additional directory needs a concrete execution purpose not covered by these parts; document that purpose in the package rather than using it for grouping.
@@ -132,7 +130,11 @@ One line per entry:
 
 Lead with the trigger, not the artifact — full detail lives in git history, the bullet is the summary.
 Link any referenced skill or file with `[text](path)`.
-Newest last; append, never rewrite a past bullet (a one-time reformat to this convention is the only sanctioned exception, already spent for this library).
+Newest last among retained entries; append a new bullet, and never rewrite a retained past bullet (a one-time reformat to this convention is the only sanctioned rewrite exception, already spent for this library).
+Keep the file at or under 100 lines.
+When a new bullet would exceed that, drop the oldest whole entries until the file fits.
+Do not cut an entry in the middle or grow a sidecar archive; dropped history remains in Git.
+The format validator fails a CHANGELOG over 100 lines (`CHANGELOG_TOO_LONG`) and still requires at least one dated bullet.
 `## Change Log` inside `SKILL.md` is forbidden — history lives only in `CHANGELOG.md`.
 
 When a change derives from operator-supplied source material — a doc, repo, article, or conversation handed over during authoring — record it in two places: append a `Provenance:` clause to that bullet that names what was taken and links a public source as `[name](url)` — e.g. `Provenance: reuse rung from [ponytail](https://github.com/DietrichGebert/ponytail)`; a local source uses its plain path — and land any substantive excerpt worth re-consulting as a `references/*.md` file (rewritten to reference-style voice, §4) rather than leaving it only in chat history.
@@ -140,21 +142,21 @@ The cross-skill lineage snapshot lives in `skills/PROVENANCE.md`; update its row
 
 ## 7. Eval-first authoring loop
 
-Choose evidence from the requested behavior before drafting the body; the name of this loop does not impose a corpus on every edit.
-Script changes need regressions against the actual production code, including relevant errors and effect boundaries.
+Choose evidence from the requested behavior before drafting the body; the name of this loop does not impose a corpus, generated run output, or wording-locked harness on every edit.
+The agent chooses the verification method and recovery path.
+Script and security-sensitive changes need regressions against the actual production code, including relevant errors, permission, concurrency, atomicity, and effect boundaries.
 Judgment-heavy changes need realistic scenarios and independent qualitative assessment.
 Routing changes need included intents, overlapping sibling negatives, and the discovery surface on which the claim is made.
 A prose correction can use focused contract review; explain the selection instead of manufacturing model runs.
-Do not impose fixed case counts, a provider quorum, or the entire model-by-runtime matrix.
+Do not impose fixed case counts, a provider quorum, the entire model-by-runtime matrix, generated eval/run outputs as a pass condition, or a replacement checker-of-checker.
+Keep a schema field, check, gate, or receipt only when it has a current consumer or an independent safety obligation.
 
-When a reusable corpus is appropriate, use repo-root `tests/<skill-name>/evals/`:
-
-- `evals.json`: an object with a `cases` list; each case has a unique nonempty `id`, `prompt`, `expected_behavior`, and `grading`. Use `verifiable` with a nonempty string-list `assertions`, or `subjective` with a nonempty string-list `rubric`.
-- `triggers.json`: an object with string lists `should_trigger` and `should_not_trigger`. Choose prompts from the relevant intents and nearest siblings; report actual denominators.
-
-The format validator checks supplied corpus structure, not corpus sufficiency.
-Absence of a corpus is not a format failure, but missing evidence for a required behavior remains an admission blocker.
-Do not replace objective assertions with a subjective rubric, or treat test-only helper success as deployed-agent compliance.
+Optional reusable scenarios may live at repo-root `tests/<skill-name>/evals/`.
+They are authored inputs an evaluator or reviewer may choose; they are not a universal JSON vocabulary, a format gate, or generated run output.
+Presence, case count, grading shape, and wording snapshots are not quality gates and are not checked by the format validator.
+Absence of a corpus is not a format failure, and generated transcripts or scores must not be committed as SSOT.
+Missing evidence for a required functional, security, or data-integrity behavior remains an admission blocker.
+Do not replace objective behavioral assertions with a wording snapshot, or treat test-only helper success as deployed-agent compliance.
 Include negative expectations whenever the requested operation could encounter a meaningful error, permission, recipient ambiguity, uncertain-send retry, or destructive effect.
 
 Use matched baseline and candidate runs when claiming an improvement or comparing competing designs.
@@ -191,27 +193,43 @@ Ask: "does a caller already using this skill need to change anything?" → MAJOR
 
 Inside one skill package, each rule has exactly one owner: the body for always-read routing or gates, a reference for deep topic rules, a script for deterministic checks, and `CHANGELOG.md` for history.
 If another section needs the same rule, link to the owner instead of restating it.
-Overlapping warning sections (`Red Flags`, `Common Rationalizations`, repeated anti-pattern tables) are an anti-pattern; keep one `## Anti-patterns` registry in `SKILL.md` and let references link back or add topic-specific rules only when they do not duplicate the package-level entry.
+Overlapping warning sections are an anti-pattern; keep one recorded-mistake registry when needed and let references link back or add topic-specific rules only when they do not duplicate the package-level entry.
+Exact registry heading text is not a format gate.
 
 ## 10. External facts and dependencies
 
-This section owns authoring rules and package-local maintenance for mutable facts about external CLIs, APIs, services, and runtimes.
+This section owns authoring rules and package-local maintenance for mutable facts about external CLIs, APIs, services, runtimes, and official vendor skills.
 It excludes conceptual guidance, writing guidance, and procedures that are purely local.
+
+Official vendor skills stay unmodified originals on their official distribution and update channels.
+Local packages hold only uncovered personal or library context — workflow glue, environment links, and gaps those originals do not own.
+Do not copy, patch, or rewrite official product usage into this library.
+If no related official skill exists, record that absence; do not invent a fallback.
 
 When a fact is unknown, ambiguous, or version-dependent, consult the official primary documentation first.
 Encode the resulting runtime form in the affected package, or link to the exact official source when reproducing it would be brittle or excessive.
 When sources conflict, disclose the conflict where the fact is used; prefer a more-specific repository-local contract or reproducible evidence matching the target version and platform over general or stale documentation.
 Leave an unresolved fact unknown rather than inventing a value, behavior, or command.
 
-For every mutable CLI, API, service, or runtime requirement, the affected package records its name, official source URL, installed-version probe, support boundary, and release or update trigger in its `## Requirements` section or a linked reference.
+For every mutable CLI, API, service, runtime, or related official skill requirement, the affected package records its name, official source URL, installed-version probe, support boundary, and release or update trigger in its requirements notes or a linked reference.
 Record `verified_against: <tool>@<version>` in the affected package's CHANGELOG bullet whenever its recipe depends on a probed mutable tool.
 The probe is an exact safe command or API query that reports the installed or selected version; the boundary says which version range, platform, or capability the recipe supports.
-For a selected dependency/runtime release or a changed probe/capability, that trigger requires official-documentation review and affected evals, then update the recipe if its runtime form changed, bump the package version, and append its CHANGELOG entry.
+
+Every create or update compares related official skills and CLI/agent runtimes to the official latest stable, including major, then applies these outcomes before the run can succeed:
+
+- **Current** — installed and resulting versions already match that latest stable. Record the verified no-op.
+- **Stale** — actually update through the official channel on the working host, then verify the resulting versions and repair and verify impacted siblings. Detecting staleness without updating is incomplete.
+- **Update or verification failure** — leave the authoring run incomplete. Do not report success, skip the update, or invent an unsupported blanket fallback.
+- **Other devices** — perform the same update when that skill is deployed there, not as a substitute for the working-host update.
+- **Unrelated tools** — leave them untouched.
+
+The agent chooses how to probe, update, recover, and verify within this contract.
+Do not add generic repeated consent for reversible in-scope work.
 Keep this maintenance beside the dependent package; do not build a global dependency inventory, background daemon, or separate update framework.
 This contract applies to skillify immediately and to every other package when it is next touched or its own dependency trigger fires; do not create mass churn to retrofit untouched packages.
 
-Exercise applicable ambiguity, conflict, and unknown cases through the existing eval-first loop (§7), including the expected disclosure or unknown outcome.
-Do not create a fact inventory or validator for this contract.
+Exercise applicable ambiguity, conflict, unknown, and current/stale/failure cases through the existing focused-verification loop (§7), including the expected disclosure, unknown, or incomplete outcome.
+Do not create a fact inventory, wording-locked harness, or checker-of-checker for this contract.
 
 ## 11. Core portability
 
@@ -220,10 +238,12 @@ They may require standard tools only when the package documents them; they must 
 Put runtime-specific fields, installation commands, plugin metadata, and plumbing in that runtime's vendor lens.
 If a workflow needs vendor-specific behavior, state that boundary in its lens rather than claiming universal compatibility.
 Model support does not add another CLI to deployment scope, and an absent runtime receives honest support guidance rather than installation solely to complete a test matrix.
+Official vendor skills remain the product-usage SSOT; local recipes do not replace them.
 
 ## 12. Referenced paths
 
-Every package-relative path a `SKILL.md` mentions — `scripts/<file>`, `references/<file>`, `templates/<file>`, `assets/<file>`, `agents/<file>` — must exist in the package tree; test paths resolve under repo-root `tests/<skill-name>/`.
+Every package-relative path a `SKILL.md` mentions — `scripts/<file>`, `references/<file>`, `templates/<file>`, `assets/<file>`, `agents/<file>` — must exist inside that package after resolving symlinks; test paths resolve under repo-root `tests/<skill-name>/`.
 A recipe step that points at a script or reference the package does not ship is a broken recipe, and a reviewer cannot tell it from a real one by reading.
-The validator (`scripts/validate-skill-format.py`, `MISSING_REFERENCED_PATH`) fails the package on the first missing path; fix it by adding the file or by removing the mention, never by leaving a placeholder.
+The validator (`scripts/validate-skill-format.py`, `MISSING_REFERENCED_PATH`) fails the package on the first missing, dangling, or out-of-package path, including a link whose target lives in a sibling package even when that sibling file exists in the repository; fix it by adding the file inside this package or by removing the mention, never by leaving a placeholder.
 A markdown link that climbs out of the package (`](../other/...)`) is never allowed: cross-package pointers are prose that names the skill and its file, because the Hermes tap fetcher treats a `../` link as a traversal attempt and aborts the whole install (`TRAVERSAL_LINK`).
+In-package symlinks to contained files are valid; escaping or dangling links are missing.

@@ -10,16 +10,18 @@ Keep personal accounts, knowledge policy, and private operating context in `bsta
 A package is one flat directory: `skills/<name>/SKILL.md` plus whichever of `references/`, `templates/`, `scripts/`, `assets/`, and `CHANGELOG.md` it needs; tests live at repo-root `tests/<name>/`.
 Runtime-owned `agents/` directories are optional plumbing, not part of the portable core.
 No nested `SKILL.md` files — every skill is one level deep.
-`tests/<name>/evals/` holds a supplied reusable corpus (`evals.json` and/or `triggers.json`); corpus presence and counts are not universal quality gates.
-`evals/` directories are local, gitignored scratch for private transcripts and are never committed.
+`tests/<name>/` holds focused functional, security, and data-integrity fixtures; optional reusable scenarios may live under `tests/<name>/evals/`.
+Generated run transcripts and scores stay in gitignored `evals/` scratch and are never quality gates.
+Do not require a wording- or procedure-locking corpus.
 
-The 30 packages (alphabetical): `agents`, `api`, `ast-grep`, `backend`, `browser`, `cicd`, `db`, `debug`, `defuddle`, `design`, `distil`, `document`, `frontend`, `git`, `gpu`, `guardrails`, `init`, `ml`, `obsidian`, `orca`, `programming`, `refactor`, `research`, `security`, `skillify`, `tailscale`, `testing`, `vmware`, `write-prd`, `write-report`.
-`browser` is one flat package: it owns one router and exactly three references for Aside, agent-browser, and existing-session.
-`obsidian` is one thick package whose sub-recipes live under `references/`.
+Discover available packages from `skills/*/SKILL.md`; do not maintain a second package inventory here.
+`browser` is a thin personal-boundary package: Aside is the sole managed route, official aside-browser and current aside guide own product usage, and this library records only uncovered identity, existing-app protection, same-session continuation, and observed-result composition.
+`obsidian` composes unchanged official native owners `obsidian-markdown`, `obsidian-bases`, `json-canvas`, and `obsidian-cli` for format and CLI mechanics, keeping only uncovered local app/Sync coordination and live-vault/OMS policy.
 `design` owns root `DESIGN.md`, UX/UI judgment, bad-UX audits, and rendered evidence.
 
-The authoring contract — frontmatter shape, naming, description rules, body limits, CHANGELOG format, and the eval-first loop — lives at `skills/skillify/references/contract.md`.
+The authoring contract — frontmatter shape, naming, description rules, body limits, CHANGELOG format, upstream-first create/update, and focused outcome verification — lives at `skills/skillify/references/contract.md`.
 The `skillify` skill owns create/update/move/retire work and keeps the portable core neutral across Claude Code, Codex, Hermes, Cursor, and Grok; it accommodates optional `agents/` and `assets/` without admitting runtime-specific fields to the core.
+Official vendor skills stay unmodified on their official distribution and update channels; local packages hold only uncovered context.
 
 ## Install matrix
 
@@ -45,14 +47,17 @@ The `skillify` skill owns create/update/move/retire work and keeps the portable 
 ## Rails
 
 - Formal changes use `skillify` authoring, task- and content-bound destination admission, and authorized branch → PR delivery. Edits under `skills/skillify/` require explicit task approval; a prior unrelated approval is not reusable.
+- Official tool skills remain unmodified originals; install and update them through their official channels. Local skills hold only context those originals do not cover. Do not fork, copy, or rewrite official product usage into this library.
+- Every `skillify` create or update checks related official skills and CLI/agent runtimes against the official latest stable, including major. Current matching versions are a verified no-op. Stale relevant dependencies are actually updated on the working host, then resulting versions are verified and impacted siblings are repaired and verified before the run can succeed. Check-only detection or a failed update/verification leaves the run incomplete. Other devices perform the same update when that skill is deployed. Do not bulk-update unrelated tools.
 - Preserve native local field learning without immediate canonical edits or version bumps. Harvest only on request, distinguishing `canonical_package`, `proposed_pr`, `field_package`, and `reference_evidence` with owner, privacy, provenance, and admission state.
 - Do not harvest all MEMORY/USER/conversation files, edit official installed caches as an authoring shortcut, or add an automatic harvesting service.
-- Choose verification by behavior and risk: real script/error/effect tests, independent judgment for subjective output, and relevant routing positives/near-misses. Supplied corpus structure is checked, but no fixed case count, provider quorum, universal baseline improvement, or full model/runtime matrix establishes quality.
-- Structural and lexical checks are not semantic or deployed-behavior proof. Distinguish official compatibility requirements, upstream recommendations, and local repository policy.
+- Choose verification by observable behavior and risk: real script, error, effect, security, and data-integrity fixtures, plus independent judgment for subjective output and relevant routing positives/near-misses. Do not require generated eval/run outputs, wording- or procedure-locking corpora, or a replacement checker-of-checker. The agent chooses method and recovery. Do not add generic repeated consent for reversible in-scope work.
+- Keep a schema field, check, gate, or receipt only when it has a current consumer or an independent safety obligation. Structural and lexical checks are not semantic or deployed-behavior proof. Distinguish official compatibility requirements, upstream recommendations, and local repository policy.
 - Reuse a common approved policy and exact authoring evidence across coherent domain batches; do not restart a full GJC workflow per package or duplicate admission committees.
 - Reuse an unchanged task-bound approval tuple (target, command, effect). New publication, install, removal, or restart effects require their own authorization; a plan or passing test alone grants none.
 - Record source base plus current recursive content digest, actual checks, independent findings, and unverified effects. A release commit, installed content, and effective load are separate facts.
 - Keep out-of-scope findings separate without automatically expanding the change or publishing an issue. Publish a concrete issue only within the operator's authorization.
-- CHANGELOG bullets are one compact line: `- YYYY-MM-DD — [vX.Y.Z: ]why → what.`
+- CHANGELOG bullets are one compact line: `- YYYY-MM-DD — [vX.Y.Z: ]why → what.` Keep each package CHANGELOG at or under 100 lines by dropping oldest whole entries; do not grow a sidecar archive.
 - Provenance is two-tier: per-change credit lives in the package's own `CHANGELOG.md`; the current cross-skill lineage snapshot lives in `skills/PROVENANCE.md`.
-- Governance harness: `python3 scripts/governance/harness.py --config <repos.json>` where `repos.json` is `{"repos":[{"name":"craft-skills","path":"<repo root>"}]}`.
+- Root policy owners are this file, `skills/skillify/references/contract.md`, Layer-1 format and runtime-hygiene validators, native distribution/version checks, and NOTICE/LICENSE/upstream attribution. Keep private operating context out of public packages. Optional authored examples are not a forced evals/triggers schema; compact bodies are guidance; CHANGELOG files stay at or under 100 lines.
+- Do not require a manifest-driven governance aggregator or checker-of-checker. Keep or drop an individual check only with a current consumer or independent safety owner.

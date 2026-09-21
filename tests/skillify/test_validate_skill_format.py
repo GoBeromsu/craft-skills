@@ -13,6 +13,24 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = REPO_ROOT / "skills/skillify/scripts/validate-skill-format.py"
+_GIT_IDENTITY = {
+    "GIT_AUTHOR_NAME": "Test",
+    "GIT_AUTHOR_EMAIL": "test@example.com",
+    "GIT_COMMITTER_NAME": "Test",
+    "GIT_COMMITTER_EMAIL": "test@example.com",
+}
+
+
+def _isolated_git_env(extra: dict[str, str] | None = None) -> dict[str, str]:
+    env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+    env.update(_GIT_IDENTITY)
+    env["GIT_CONFIG_NOSYSTEM"] = "1"
+    env["GIT_CONFIG_GLOBAL"] = os.devnull
+    env["GIT_CONFIG_SYSTEM"] = os.devnull
+    env["GIT_TEMPLATE_DIR"] = ""
+    if extra:
+        env.update(extra)
+    return env
 
 GOOD_SKILL = """---
 name: demo
@@ -23,7 +41,6 @@ metadata:
 
 # demo
 
-## Output contract
 A demo transcript in the working directory.
 Missing input stops the run with a message.
 
@@ -54,6 +71,7 @@ class SkillFormatValidatorTest(unittest.TestCase):
         return subprocess.run(
             ["python3", str(SCRIPT), "--root", str(root), *args],
             cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
+            env=_isolated_git_env(),
         )
 
     def _make_skill(self, root: Path, name: str, skill_md: str, changelog: str | None,
@@ -61,7 +79,12 @@ class SkillFormatValidatorTest(unittest.TestCase):
         d = root / "skills" / name
         d.mkdir(parents=True)
         if not (root / ".git").exists():
-            self._git(root, "init")
+            self._git(root, "init", "--template=")
+            self._git(root, "config", "--local", "user.email", "test@example.com")
+            self._git(root, "config", "--local", "user.name", "Test")
+            self._git(root, "config", "--local", "commit.gpgsign", "false")
+            self._git(root, "config", "--local", "tag.gpgsign", "false")
+            self._git(root, "config", "--local", "core.hooksPath", "/dev/null")
         (d / "SKILL.md").write_text(skill_md, encoding="utf-8")
         if changelog is not None:
             (d / "CHANGELOG.md").write_text(changelog, encoding="utf-8")
@@ -77,17 +100,16 @@ class SkillFormatValidatorTest(unittest.TestCase):
             (corpus / "triggers.json").write_text(triggers, encoding="utf-8")
         return d
 
-    def test_rejects_missing_contract_section(self) -> None:
+    def test_does_not_require_output_contract_heading(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            no_contract = GOOD_SKILL.replace("## Output contract\nA demo transcript in the working directory.\nMissing input stops the run with a message.\n\n", "")
-            self._make_skill(root, "demo", no_contract, GOOD_CHANGELOG)
+            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG)
             result = self.run_validator(root)
-            self.assertEqual(result.returncode, 1)
-            self.assertIn("MISSING_CONTRACT_SECTION", result.stdout)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertNotIn("MISSING_CONTRACT_SECTION", result.stdout)
 
     def test_contract_failure_wording_is_not_lexically_enforced(self) -> None:
-        """The section is required; its cannot-succeed wording is judged, not scanned."""
+        """Outcome/failure meaning is judged, not scanned for headings or keywords."""
         for replacement in ("", "Produce nonstop output."):
             with self.subTest(replacement=replacement):
                 with tempfile.TemporaryDirectory() as tmp:
@@ -101,6 +123,7 @@ class SkillFormatValidatorTest(unittest.TestCase):
                     result = self.run_validator(root)
                     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                     self.assertNotIn("CONTRACT_LACKS_FAILURE_BRANCH", result.stdout)
+                    self.assertNotIn("MISSING_CONTRACT_SECTION", result.stdout)
 
     def test_rejects_traversal_link_out_of_package(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -132,6 +155,59 @@ class SkillFormatValidatorTest(unittest.TestCase):
             result = self.run_validator(root)
             self.assertEqual(result.returncode, 0, result.stdout)
 
+    def test_sibling_package_support_file_is_not_this_package(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            sibling = self._make_skill(
+                root, "skillify", GOOD_SKILL.replace("name: demo", "name: skillify"),
+                GOOD_CHANGELOG, evals=None, triggers=None,
+            )
+            (sibling / "references").mkdir()
+            (sibling / "references" / "schema.md").write_text("# sibling\n", encoding="utf-8")
+            body = GOOD_SKILL + "\nRead `references/schema.md`.\n"
+            demo = self._make_skill(root, "demo", body, GOOD_CHANGELOG)
+            (demo / "references").mkdir()
+            (demo / "references" / "schema.md").symlink_to(sibling / "references" / "schema.md")
+            result = self.run_validator(root, "--package", "skills/demo")
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("MISSING_REFERENCED_PATH", result.stdout)
+
+    def test_in_package_symlink_to_contained_file_is_valid(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            body = GOOD_SKILL + "\nRead `references/alias.md`.\n"
+            demo = self._make_skill(root, "demo", body, GOOD_CHANGELOG)
+            (demo / "references").mkdir()
+            (demo / "references" / "schema.md").write_text("# local\n", encoding="utf-8")
+            (demo / "references" / "alias.md").symlink_to("schema.md")
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertNotIn("MISSING_REFERENCED_PATH", result.stdout)
+
+    def test_dangling_in_package_symlink_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            body = GOOD_SKILL + "\nRead `references/missing.md`.\n"
+            demo = self._make_skill(root, "demo", body, GOOD_CHANGELOG)
+            (demo / "references").mkdir()
+            (demo / "references" / "missing.md").symlink_to("no-such.md")
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("MISSING_REFERENCED_PATH", result.stdout)
+
+    def test_support_symlink_escaping_the_package_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as outside:
+            root = Path(tmp)
+            body = GOOD_SKILL + "\nRead `references/external.md`.\n"
+            demo = self._make_skill(root, "demo", body, GOOD_CHANGELOG)
+            external = Path(outside) / "fixture.md"
+            external.write_text("outside\n", encoding="utf-8")
+            (demo / "references").mkdir()
+            (demo / "references" / "external.md").symlink_to(external)
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("MISSING_REFERENCED_PATH", result.stdout)
+
     def test_repository_test_reference_is_not_package_local(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -155,13 +231,14 @@ runpy.run_path(script, run_name='__main__')
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG)
-            for filename in ("SKILL.md", "evals.json"):
+            for filename in ("SKILL.md", "CHANGELOG.md"):
                 for flags in ((), ("--advisory",)):
                     with self.subTest(filename=filename, flags=flags):
                         result = subprocess.run(
                             [sys.executable, "-c", wrapper, filename, str(SCRIPT),
                              "--root", str(root), *flags],
                             cwd=root, text=True, capture_output=True, check=False,
+                            env=_isolated_git_env(),
                         )
                         self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
                         self.assertIn("injected read failure", result.stderr)
@@ -174,58 +251,22 @@ runpy.run_path(script, run_name='__main__')
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertNotIn("NO_EVAL_CORPUS", result.stdout)
 
-    def test_supplied_small_corpus_is_checked_without_fixed_minimum(self) -> None:
+    def test_optional_eval_files_are_not_a_format_gate(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             evals = json.loads(GOOD_EVALS)
             evals["cases"] = evals["cases"][:1]
-            triggers = {"should_trigger": ["demo this"], "should_not_trigger": []}
-            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG,
-                             evals=json.dumps(evals), triggers=json.dumps(triggers))
+            evals["cases"][0]["assertions"] = "not a list"
+            evals["skill"] = "other"
+            triggers = {"should_trigger": [42], "should_not_trigger": "not a list"}
+            self._make_skill(
+                root, "demo", GOOD_SKILL, GOOD_CHANGELOG,
+                evals=json.dumps(evals), triggers=json.dumps(triggers),
+            )
             result = self.run_validator(root)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-
-    def test_rejects_malformed_eval_corpus(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            bad_evals = json.dumps({"skill": "demo", "cases": [
-                {"id": "a", "prompt": "p", "expected_behavior": "e", "grading": "verifiable"},
-                {"id": "b", "prompt": "p", "expected_behavior": "e", "grading": "subjective", "assertions": ["x"]},
-            ]})
-            bad_triggers = json.dumps({"skill": "demo", "should_trigger": [42], "should_not_trigger": "not a list"})
-            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG, evals=bad_evals, triggers=bad_triggers)
-            result = self.run_validator(root)
-            self.assertEqual(result.returncode, 1)
-            out = result.stdout
-            self.assertIn("verifiable case a needs non-empty `assertions`", out)
-            self.assertIn("subjective case b needs non-empty `rubric`", out)
-            self.assertIn("`should_trigger` must be a list", out)
-            self.assertIn("`should_not_trigger` must be a list", out)
-
-    def test_duplicate_ids_and_scalar_assertions_are_malformed(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            evals = json.loads(GOOD_EVALS)
-            evals["cases"][0]["assertions"] = "not a list"
-            evals["cases"][1]["id"] = evals["cases"][0]["id"]
-            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG, evals=json.dumps(evals))
-            result = self.run_validator(root)
-            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
-            self.assertIn("duplicate case id", result.stdout)
-            self.assertIn("string list", result.stdout)
-
-    def test_wrong_corpus_owner_and_unhashable_grading_are_findings(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            evals = json.loads(GOOD_EVALS)
-            evals["skill"] = "other"
-            evals["cases"][0]["grading"] = []
-            self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG, evals=json.dumps(evals))
-            result = self.run_validator(root)
-            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
-            self.assertIn("does not match its owner", result.stdout)
-            self.assertIn("grading must be", result.stdout)
-            self.assertNotIn("Traceback", result.stderr)
+            self.assertNotIn("BAD_EVAL_CORPUS", result.stdout)
+            self.assertNotIn("NO_EVAL_CORPUS", result.stdout)
 
     def test_accepts_well_formed_package(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -336,6 +377,52 @@ runpy.run_path(script, run_name='__main__')
             self.assertEqual(result.returncode, 1)
             self.assertIn("CHANGELOG_NO_DATED_BULLET", result.stdout)
 
+    def test_accepts_changelog_at_100_lines(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            lines = ["# Changelog", "", "- 2026-06-07 — initial; created the demo skill."]
+            lines.extend([""] * (100 - len(lines)))
+            self.assertEqual(len(lines), 100)
+            self._make_skill(root, "demo", GOOD_SKILL, "\n".join(lines) + "\n")
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertNotIn("CHANGELOG_TOO_LONG", result.stdout)
+
+    def test_rejects_changelog_over_100_lines(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            lines = ["# Changelog", "", "- 2026-06-07 — initial; created the demo skill."]
+            lines.extend([""] * (101 - len(lines)))
+            self.assertEqual(len(lines), 101)
+            self._make_skill(root, "demo", GOOD_SKILL, "\n".join(lines) + "\n")
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("CHANGELOG_TOO_LONG", result.stdout)
+            self.assertNotIn("CHANGELOG_NO_DATED_BULLET", result.stdout)
+
+    def test_escaping_changelog_symlink_is_input_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as outside:
+            root = Path(tmp)
+            secret = Path(outside) / "secret.md"
+            secret.write_text("SENTINEL-OUTSIDE-CHANGELOG\n", encoding="utf-8")
+            demo = self._make_skill(root, "demo", GOOD_SKILL, None)
+            (demo / "CHANGELOG.md").symlink_to(secret)
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            self.assertIn("escapes root", result.stderr)
+            self.assertNotIn("SENTINEL-OUTSIDE-CHANGELOG", result.stdout)
+            self.assertNotIn("SENTINEL-OUTSIDE-CHANGELOG", result.stderr)
+
+    def test_contained_changelog_symlink_is_read(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            demo = self._make_skill(root, "demo", GOOD_SKILL, None)
+            real = demo / "HISTORY.md"
+            real.write_text("- 2026-06-07 — initial; created the demo skill.\n", encoding="utf-8")
+            (demo / "CHANGELOG.md").symlink_to("HISTORY.md")
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_advisory_always_exit_zero(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -415,14 +502,14 @@ runpy.run_path(script, run_name='__main__')
                     self.assertEqual(result.returncode, 1)
                     self.assertIn("FORBIDDEN_KEY", result.stdout)
 
-    def test_rejects_body_over_line_limit(self) -> None:
+    def test_long_body_is_not_a_format_failure(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             huge = GOOD_SKILL + ("\nline\n" * 600)
             self._make_skill(root, "demo", huge, GOOD_CHANGELOG)
             result = self.run_validator(root)
-            self.assertEqual(result.returncode, 1)
-            self.assertIn("BODY_TOO_LONG", result.stdout)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertNotIn("BODY_TOO_LONG", result.stdout)
 
     def test_rejects_nested_skill_md(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -473,10 +560,6 @@ runpy.run_path(script, run_name='__main__')
             self.assertEqual(result.returncode, 1)
             self.assertIn("DESCRIPTION_TOO_LONG", result.stdout)
 
-    # ------------------------------------------------------------------
-    # parsed description routing-directive grammar
-    # ------------------------------------------------------------------
-
     def _description_result(self, description: str, *args: str) -> subprocess.CompletedProcess[str]:
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
@@ -488,32 +571,22 @@ runpy.run_path(script, run_name='__main__')
         self._make_skill(root, "demo", skill, GOOD_CHANGELOG)
         return self.run_validator(root, *args)
 
-    def test_description_without_directive_tokens_remains_compatible(self) -> None:
-        result = self._description_result("Use this skill for ordinary requests.")
-        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertNotIn("DIRECTIVE_", result.stdout)
-        self.assertNotIn("MUST_USE", result.stdout)
-
-    def test_accepts_valid_directive_with_and_without_any(self) -> None:
+    def test_routing_phrases_are_not_a_format_gate(self) -> None:
         for description in (
+            "Use this skill for ordinary requests.",
             "MUST USE for deployment requests. Handle production deployments.",
             "MUST USE for ANY deployment request. Handle production deployments.",
+            "MUST  USE this skill for deployment requests.",
+            "MUST-USE this skill for deployment requests.",
+            "Must use ANY deployment skill.",
+            "Use this skill for ANY deployment.",
         ):
             with self.subTest(description=description):
                 result = self._description_result(description)
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-
-    def test_validates_decoded_double_quoted_description(self) -> None:
-        valid = self._description_result(
-            r'"\u004dUST USE for ANY deployment request. Handle production deployments."'
-        )
-        self.assertEqual(valid.returncode, 0, valid.stdout + valid.stderr)
-
-        hidden_any = self._description_result(
-            r'"\u004dUST USE for deployment requests. Handle \u0041NY deployment."'
-        )
-        self.assertEqual(hidden_any.returncode, 1)
-        self.assertIn("MISPLACED_DIRECTIVE_ANY", hidden_any.stdout)
+                self.assertNotIn("MUST_USE", result.stdout)
+                self.assertNotIn("DIRECTIVE_", result.stdout)
+                self.assertNotIn("MISPLACED_DIRECTIVE_ANY", result.stdout)
 
     def test_rejects_noncanonical_double_quoted_yaml_escape(self) -> None:
         result = self._description_result(
@@ -522,61 +595,6 @@ runpy.run_path(script, run_name='__main__')
         self.assertEqual(result.returncode, 1)
         self.assertIn("NO_DESCRIPTION", result.stdout)
 
-    def test_accepts_lowercase_any_and_non_tokens(self) -> None:
-        for description in (
-            "MUST USE for any deployment request. Handle production deployments.",
-            "MUST USE for ANYTHING and ANY_1. Handle production deployments.",
-            "MUST USE for API and CI requests. Handle production deployments.",
-        ):
-            with self.subTest(description=description):
-                result = self._description_result(description)
-                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-
-    def test_accepts_sentence_case_must_use_without_any(self) -> None:
-        for description in (
-            "Must use this skill for deployment requests.",
-            "must use this skill for deployment requests.",
-        ):
-            with self.subTest(description=description):
-                result = self._description_result(description)
-                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-
-    def test_rejects_leading_all_caps_directive_lookalikes(self) -> None:
-        for description in (
-            "MUST  USE this skill for deployment requests.",
-            "MUST USE: this skill for deployment requests.",
-            "MUST-USE this skill for deployment requests.",
-            "MUST: USE this skill for deployment requests.",
-            "MUST - USE this skill for deployment requests.",
-            "MUST_USE this skill for deployment requests.",
-            "MUST\tUSE this skill for deployment requests.",
-            "MUST  USE ANY deployment skill.",
-            "MUST USE: ANY deployment skill.",
-            "MUST-USE ANY deployment skill.",
-        ):
-            with self.subTest(description=description):
-                result = self._description_result(description)
-                self.assertEqual(result.returncode, 1)
-                self.assertIn("BAD_MUST_USE_LOOKALIKE", result.stdout)
-
-    def test_sentence_case_must_use_still_rejects_standalone_any(self) -> None:
-        for description in (
-            "Must use ANY deployment skill.",
-            "must use ANY deployment skill.",
-        ):
-            with self.subTest(description=description):
-                result = self._description_result(description)
-                self.assertEqual(result.returncode, 1)
-                self.assertIn("MISPLACED_DIRECTIVE_ANY", result.stdout)
-
-    def test_plain_scalar_comments_do_not_create_hidden_directives(self) -> None:
-        result = self._description_result(
-            "Use this skill for ordinary requests. # MUST USE for ANY deployment."
-        )
-        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertNotIn("DIRECTIVE_", result.stdout)
-        self.assertNotIn("MUST_USE", result.stdout)
-
     def test_rejects_multiline_description_scalar(self) -> None:
         result = self._description_result(
             ">-\n  MUST USE for ANY deployment request. Handle deployments."
@@ -584,77 +602,44 @@ runpy.run_path(script, run_name='__main__')
         self.assertEqual(result.returncode, 1)
         self.assertIn("NO_DESCRIPTION", result.stdout)
 
-    def test_rejects_every_directive_grammar_branch(self) -> None:
-        cases = (
-            ("MUST USE first clause. Remainder. MUST USE second clause. Remainder.",
-             "MULTIPLE_MUST_USE"),
-            ("Use this skill. MUST USE for deployment requests. Handle deployments.",
-             "MISPLACED_MUST_USE"),
-            ("MUST USE clause without a delimiter", "BAD_MUST_USE_CLAUSE"),
-            ("MUST USE    . Remainder.", "BAD_MUST_USE_CLAUSE"),
-            ("MUST USE clause.    ", "BAD_MUST_USE_CLAUSE"),
-            ("MUST USE  clause. Remainder.", "BAD_MUST_USE_CLAUSE"),
-            ("MUST USE clause . Remainder.", "BAD_MUST_USE_CLAUSE"),
-            ("MUST USE clause.  Remainder.", "BAD_MUST_USE_CLAUSE"),
-            ("MUST USE for deployments. Handle ANY deployment.", "MISPLACED_DIRECTIVE_ANY"),
-            ("Use this skill for ANY deployment.", "MISPLACED_DIRECTIVE_ANY"),
-            ("MUST USE for ANY deployment and ANY rollback. Handle deployments.",
-             "DIRECTIVE_ANY_LIMIT"),
-        )
-        for description, code in cases:
-            with self.subTest(description=description):
-                result = self._description_result(description)
-                self.assertEqual(result.returncode, 1)
-                self.assertIn(code, result.stdout)
-
-    def test_directive_finding_precedence(self) -> None:
-        cases = (
-            # MULTIPLE_MUST_USE outranks every lower directive finding.
-            ("Use MUST USE first clause. MUST USE second clause.", "MULTIPLE_MUST_USE"),
-            ("MUST USE no delimiter ANY MUST USE second directive.", "MULTIPLE_MUST_USE"),
-            ("MUST USE clause. ANY MUST USE second directive.", "MULTIPLE_MUST_USE"),
-            ("MUST USE ANY and ANY. Remainder. MUST USE second directive.", "MULTIPLE_MUST_USE"),
-            # MISPLACED_MUST_USE outranks BAD_MUST_USE_CLAUSE,
-            # MISPLACED_DIRECTIVE_ANY, and DIRECTIVE_ANY_LIMIT.
-            ("Use this. MUST USE no delimiter", "MISPLACED_MUST_USE"),
-            ("Use ANY. MUST USE clause. Remainder.", "MISPLACED_MUST_USE"),
-            ("Use this. MUST USE ANY and ANY. Remainder.", "MISPLACED_MUST_USE"),
-            # BAD_MUST_USE_CLAUSE outranks the two ANY findings.
-            ("MUST USE no delimiter ANY", "BAD_MUST_USE_CLAUSE"),
-            ("MUST USE no delimiter ANY ANY", "BAD_MUST_USE_CLAUSE"),
-            # MISPLACED_DIRECTIVE_ANY outranks DIRECTIVE_ANY_LIMIT.
-            ("MUST USE ANY and ANY. Remainder ANY", "MISPLACED_DIRECTIVE_ANY"),
-        )
-        for description, code in cases:
-            with self.subTest(description=description):
-                result = self._description_result(description)
-                self.assertEqual(result.returncode, 1)
-                self.assertIn(code, result.stdout)
-                for other_code in {
-                    "MULTIPLE_MUST_USE",
-                    "MISPLACED_MUST_USE",
-                    "BAD_MUST_USE_CLAUSE",
-                    "MISPLACED_DIRECTIVE_ANY",
-                    "DIRECTIVE_ANY_LIMIT",
-                } - {code}:
-                    self.assertNotIn(other_code, result.stdout)
-
-    def test_directive_violation_is_advisory_when_requested(self) -> None:
-        result = self._description_result(
-            "MUST USE for ANY deployment and ANY rollback. Handle deployments.",
-            "--advisory",
-        )
-        self.assertEqual(result.returncode, 0)
-        self.assertIn("DIRECTIVE_ANY_LIMIT", result.stdout)
-
-    def test_body_uppercase_any_does_not_affect_description(self) -> None:
-        skill = GOOD_SKILL + "\nANY MUST USE appears only in the body.\n"
+    def test_multi_suffix_tracked_env_is_rejected_example_exempt(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            self._make_skill(root, "demo", skill, GOOD_CHANGELOG)
+            demo = self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG)
+            (demo / ".env.example").write_text("KEY=\n", encoding="utf-8")
+            self._git(root, "add", "skills/demo/.env.example")
             result = self.run_validator(root)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-            self.assertNotIn("MISPLACED_DIRECTIVE_ANY", result.stdout)
+            self.assertNotIn("TRACKED_ENV", result.stdout)
+            secrets = (
+                ".env",
+                ".env.production.local",
+                ".env.local",
+                ".env.staging.bak",
+            )
+            for name in secrets:
+                (demo / name).write_text("SECRET=1\n", encoding="utf-8")
+                self._git(root, "add", f"skills/demo/{name}")
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            out = result.stdout
+            self.assertIn("TRACKED_ENV", out)
+            self.assertIn(".env.production.local", out)
+            self.assertNotIn(".env.example", out)
+
+    def test_unusual_tracked_env_path_names_are_still_secrets(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            demo = self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG)
+            weird = demo / "dir with tab\tand 강의.part"
+            weird.mkdir()
+            secret = weird / ".env.production.local"
+            secret.write_text("SECRET=1\n", encoding="utf-8")
+            self._git(root, "add", "-A")
+            result = self.run_validator(root)
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("TRACKED_ENV", result.stdout)
+            self.assertIn(".env.production.local", result.stdout)
 
     # ------------------------------------------------------------------
     # diff-base scoping regression
@@ -662,19 +647,21 @@ runpy.run_path(script, run_name='__main__')
 
     def _init_git_repo(self, root: Path) -> None:
         """Initialise a throwaway git repo, add all files, and make the first commit."""
-        for cmd in [
-            ["git", "init", str(root)],
-            ["git", "-C", str(root), "config", "user.email", "test@example.com"],
-            ["git", "-C", str(root), "config", "user.name", "Test"],
-            ["git", "-C", str(root), "add", "-A"],
-            ["git", "-C", str(root), "commit", "-m", "init", "--allow-empty"],
-        ]:
-            subprocess.run(cmd, check=True, capture_output=True)
+        if not (root / ".git").exists():
+            self._git(root, "init", "--template=")
+            self._git(root, "config", "--local", "user.email", "test@example.com")
+            self._git(root, "config", "--local", "user.name", "Test")
+            self._git(root, "config", "--local", "commit.gpgsign", "false")
+            self._git(root, "config", "--local", "tag.gpgsign", "false")
+            self._git(root, "config", "--local", "core.hooksPath", "/dev/null")
+        self._git(root, "add", "-A")
+        self._git(root, "commit", "-m", "init", "--allow-empty")
 
     def _git_head(self, root: Path) -> str:
         return subprocess.run(
             ["git", "-C", str(root), "rev-parse", "HEAD"],
             check=True, capture_output=True, text=True,
+            env=_isolated_git_env(),
         ).stdout.strip()
 
     def test_support_changes_select_the_actual_package(self) -> None:
@@ -717,7 +704,12 @@ runpy.run_path(script, run_name='__main__')
             self.assertIn("pkg-a", result.stdout)
 
     def _git(self, root: Path, *args: str) -> None:
-        subprocess.run(["git", "-C", str(root), *args], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "-C", str(root), *args],
+            check=True,
+            capture_output=True,
+            env=_isolated_git_env(),
+        )
 
     def test_four_git_states_select_support_without_widening_to_legacy(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -761,7 +753,7 @@ runpy.run_path(script, run_name='__main__')
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertIn("scope: package skills/demo", result.stdout)
 
-    def test_corpus_only_change_is_validated(self) -> None:
+    def test_corpus_only_change_still_selects_owner(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self._make_skill(root, "demo", GOOD_SKILL, GOOD_CHANGELOG)
@@ -769,8 +761,9 @@ runpy.run_path(script, run_name='__main__')
             base = self._git_head(root)
             (root / "tests/demo/evals/evals.json").write_text("{broken")
             result = self.run_validator(root, "--diff-base", base)
-            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
-            self.assertIn("BAD_EVAL_CORPUS", result.stdout)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("scope: package skills/demo", result.stdout)
+            self.assertNotIn("BAD_EVAL_CORPUS", result.stdout)
 
     def test_new_untracked_and_explicit_owners_form_a_deduplicated_union(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -818,7 +811,7 @@ runpy.run_path(script, run_name='__main__')
                         result = subprocess.run(
                             [sys.executable, str(SCRIPT), "--root", str(root),
                              *scope, *advisory],
-                            env={**os.environ, "PATH": str(empty_bin)},
+                            env=_isolated_git_env({"PATH": str(empty_bin)}),
                             capture_output=True, text=True, check=False,
                         )
                         self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
@@ -845,6 +838,7 @@ runpy.run_path(script, run_name='__main__')
                             [sys.executable, "-c", wrapper, str(SCRIPT),
                              "--root", str(root), *scope, *advisory],
                             capture_output=True, text=True, check=False,
+                            env=_isolated_git_env(),
                         )
                         self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
                         self.assertIn("injected inventory denial", result.stderr)
@@ -908,6 +902,36 @@ runpy.run_path(script, run_name='__main__')
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertIn("scope: package skills/skillify", result.stdout)
             self.assertNotIn("legacy", result.stdout)
+
+    def test_ci_local_change_selects_skillify_not_unrelated_debt(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._make_skill(root, "skillify",
+                             GOOD_SKILL.replace("name: demo", "name: skillify"), GOOD_CHANGELOG)
+            bad = GOOD_SKILL.replace("name: demo", "name: legacy").replace(
+                "metadata:\n  version: 1.0.0\n", "")
+            self._make_skill(root, "legacy", bad, GOOD_CHANGELOG)
+            scripts = root / "scripts"
+            scripts.mkdir()
+            (scripts / "ci-local.sh").write_text("echo original\n")
+            self._init_git_repo(root)
+            (scripts / "ci-local.sh").write_text("echo updated gates\n")
+            result = self.run_validator(root, "--diff-base", "HEAD")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("scope: package skills/skillify", result.stdout)
+            self.assertNotIn("legacy", result.stdout)
+
+    def test_ci_local_change_fails_when_shared_owner_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            scripts = root / "scripts"
+            scripts.mkdir()
+            (scripts / "ci-local.sh").write_text("echo original\n")
+            self._init_git_repo(root)
+            (scripts / "ci-local.sh").write_text("echo missing owner\n")
+            result = self.run_validator(root, "--diff-base", "HEAD")
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            self.assertIn("shared format owner skills/skillify is missing", result.stderr)
 
     def test_explicit_owner_rejects_escape_and_non_owner(self) -> None:
         with tempfile.TemporaryDirectory() as tmp, tempfile.TemporaryDirectory() as outside:
