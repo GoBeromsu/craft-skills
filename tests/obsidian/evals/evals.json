@@ -1,1 +1,103 @@
-{"skill":"obsidian","cases":[{"id":"cli-note-readback","prompt":"Create a vault note through the Obsidian CLI and verify it.","expected_behavior":"Selects the CLI sub-recipe, uses the official obsidian binary, resolves the vault and note path, and reads back the exact result.","grading":"verifiable","assertions":["Uses the official obsidian CLI, not the third-party obsidian-cli, as the default surface.","Requires exact readback after mutation."]},{"id":"binary-distinction","prompt":"Which Obsidian command should I use for the official app CLI?","expected_behavior":"Distinguishes the Obsidian.app obsidian binary from the Yakitrak obsidian-cli binary and uses their safe probes.","grading":"verifiable","assertions":["Names both distinct binaries.","Does not treat their command surfaces as interchangeable."]},{"id":"taxonomy-boundary","prompt":"Decide where this personal note belongs in my vault.","expected_behavior":"Reports that personal taxonomy belongs to the composing knowledge-management policy owner.","grading":"verifiable","assertions":["Does not choose a personal taxonomy.","Names the policy boundary."]},{"id":"cli-empty-result-retry","prompt":"`obsidian unresolved total` printed nothing and exited 0. Are there zero unresolved links?","expected_behavior":"Treats empty output with exit code 0 as indeterminate rather than zero, retries before interpreting, and states which outcome the retry produced.","grading":"verifiable","assertions":["Does not report the empty result as a count of zero or as clean.","Retries the command before interpreting the empty output.","Reports the retry outcome and names the binary that produced it."]},{"id":"cli-unavailable-one-probe","prompt":"`command -v obsidian-cli` returned nothing. Report the CLI as unavailable and use a filesystem fallback.","expected_behavior":"Refuses to declare the tool unavailable on a single probe, confirms with a second different probe, and only then reports a degraded path.","grading":"verifiable","assertions":["Runs a second, different probe before concluding.","Does not report a degraded fallback path based on one failed probe."]}]}
+{
+  "skill": "obsidian",
+  "cases": [
+    {
+      "id": "cli-note-readback",
+      "prompt": "Create a vault note through the Obsidian CLI and verify it.",
+      "expected_behavior": "Selects the CLI sub-recipe, uses the official obsidian binary, resolves the vault and note path, and reads back the exact result.",
+      "grading": "verifiable",
+      "assertions": [
+        "Uses the official obsidian CLI, not the third-party obsidian-cli, as the default surface.",
+        "Requires exact readback after mutation."
+      ]
+    },
+    {
+      "id": "binary-distinction",
+      "prompt": "Which Obsidian command should I use for the official app CLI?",
+      "expected_behavior": "Distinguishes the Obsidian.app obsidian binary from the Yakitrak obsidian-cli binary and uses their safe probes.",
+      "grading": "verifiable",
+      "assertions": [
+        "Names both distinct binaries.",
+        "Does not treat their command surfaces as interchangeable."
+      ]
+    },
+    {
+      "id": "taxonomy-boundary",
+      "prompt": "Decide where this personal note belongs in my vault.",
+      "expected_behavior": "Reports that personal taxonomy belongs to the composing knowledge-management policy owner.",
+      "grading": "verifiable",
+      "assertions": [
+        "Does not choose a personal taxonomy.",
+        "Names the policy boundary."
+      ]
+    },
+    {
+      "id": "cli-empty-result-retry",
+      "prompt": "`obsidian unresolved total` printed nothing and exited 0. Are there zero unresolved links?",
+      "expected_behavior": "Treats empty output with exit code 0 as indeterminate rather than zero, retries before interpreting, and states which outcome the retry produced.",
+      "grading": "verifiable",
+      "assertions": [
+        "Does not report the empty result as a count of zero or as clean.",
+        "Retries the command before interpreting the empty output.",
+        "Reports the retry outcome and names the binary that produced it."
+      ]
+    },
+    {
+      "id": "cli-unavailable-one-probe",
+      "prompt": "`command -v obsidian-cli` returned nothing. Report the CLI as unavailable and use a filesystem fallback.",
+      "expected_behavior": "Refuses to declare the tool unavailable on a single probe, confirms with a second different probe, and only then reports a degraded path.",
+      "grading": "verifiable",
+      "assertions": [
+        "Runs a second, different probe before concluding.",
+        "Does not report a degraded fallback path based on one failed probe."
+      ]
+    },
+    {
+      "id": "excalidraw-additive-architecture",
+      "prompt": "obsidian visualize: add source-linked runtime, sequence, deployment, and observability frames to this existing architecture drawing without changing its current elements.",
+      "expected_behavior": "Selects the visualization reference, verifies the active local plugin and API, grounds semantics in the selected source of truth, applies additive elements through ExcalidrawAutomate, reloads the persisted scene, proves preservation, resolves links, and visually checks a PNG for every changed frame.",
+      "grading": "verifiable",
+      "assertions": [
+        "Uses the local Excalidraw plugin and ExcalidrawAutomate rather than Mermaid, JSON Canvas, a screenshot, or compressed drawing-data edits.",
+        "Pins authoritative repository links and does not invent runtime behavior from a style reference.",
+        "Reloads the persisted scene and confirms original IDs and important fields are unchanged.",
+        "Exports each changed frame from the reloaded scene and reports visual inspection."
+      ]
+    },
+    {
+      "id": "excalidraw-api-absent",
+      "prompt": "The vault lists an Excalidraw plugin ID, but there is no installed manifest or active ExcalidrawAutomate global. Save the architecture diagram anyway.",
+      "expected_behavior": "Reports the exact missing installation and API layers, performs only bounded source/layout preparation, and does not install the plugin, alter settings, or claim a saved drawing.",
+      "grading": "verifiable",
+      "assertions": [
+        "Does not treat a listed plugin ID as usable installation proof.",
+        "Does not install or enable the plugin without separate authorization.",
+        "Does not claim save, reload, export, or visual QA success."
+      ]
+    },
+    {
+      "id": "excalidraw-new-drawing-async",
+      "prompt": "Create a new obsidian visualize drawing through the active plugin. The CLI eval returned blank, and the window still has a result from an earlier run.",
+      "expected_behavior": "Creates and opens only the authorized drawing through an observed plugin-owned surface, starts a distinct pending run before asynchronous work, and waits for that same run's terminal result before persisted-scene or render claims.",
+      "grading": "verifiable",
+      "assertions": [
+        "Does not synthesize compressed drawing data or guess an unsupported creation command.",
+        "Requires the new file and matching Excalidraw leaf before acquiring the workbench.",
+        "Does not accept an earlier run's terminal value as completion.",
+        "Treats blank eval output as pending and delays reload and render claims until the current run fulfills."
+      ]
+    },
+    {
+      "id": "excalidraw-semantic-grounding",
+      "prompt": "Use this pretty architecture image as the visual style, GitHub at the commit I gave you as SSOT, and the vault notes only as background. Show where ML runs and include a debug timeline.",
+      "expected_behavior": "Uses the image only for appearance, verifies each component and stage against pinned source and callsites, labels CPU/GPU ownership per verified stage/provider, and marks any synthetic debug timeline as illustrative.",
+      "grading": "subjective",
+      "rubric": [
+        "Separates system/container boundaries and nested modules from complementary pipeline, sequence, deployment, contract, and observability views.",
+        "Distinguishes declarations from inspected internals and source defaults from deployed behavior.",
+        "Does not invent services, protocols, telemetry, values, acknowledgments, per-frame network status, or payload fields.",
+        "Keeps probability, admission, local acceptance, upstream receipt, and missing score semantics distinct."
+      ]
+    }
+  ]
+}
