@@ -103,7 +103,7 @@ class CodexCloneGuardTest(unittest.TestCase):
             result = _run("codex", cwd=Path(tmp))
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertIn(
-                "codex plugin marketplace add GoBeromsu/craft-skills",
+                "codex plugin marketplace add Xia-Ataraxia/craft-skills",
                 result.stdout,
             )
             self.assertFalse((Path(tmp) / ".agents").exists())
@@ -119,10 +119,10 @@ class HermesTapCheckTest(unittest.TestCase):
             return _run("hermes", env={"HERMES_HOME": tmp})
 
     def test_registered_tap_passes(self) -> None:
-        result = self._hermes('{"taps": [{"repo": "GoBeromsu/craft-skills", "path": "skills/"}]}\n')
+        result = self._hermes('{"taps": [{"repo": "Xia-Ataraxia/craft-skills", "path": "skills/"}]}\n')
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("is registered", result.stdout)
-        self.assertIn("hermes skills tap add GoBeromsu/craft-skills", result.stdout)
+        self.assertIn("hermes skills tap add Xia-Ataraxia/craft-skills", result.stdout)
 
     def test_missing_tap_fails(self) -> None:
         result = self._hermes('{"taps": []}\n')
@@ -135,17 +135,17 @@ class HermesTapCheckTest(unittest.TestCase):
         self.assertIn("not registered", result.stdout)
 
     def test_unrelated_string_does_not_pass(self) -> None:
-        result = self._hermes('{"notes": "GoBeromsu/craft-skills", "taps": []}\n')
+        result = self._hermes('{"notes": "Xia-Ataraxia/craft-skills", "taps": []}\n')
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("not registered", result.stdout)
 
     def test_malformed_json_does_not_pass(self) -> None:
-        result = self._hermes('{"taps": [{"repo": "GoBeromsu/craft-skills", "path": "skills/"}')
+        result = self._hermes('{"taps": [{"repo": "Xia-Ataraxia/craft-skills", "path": "skills/"}')
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("not registered", result.stdout)
 
     def test_wrong_path_does_not_pass(self) -> None:
-        result = self._hermes('{"taps": [{"repo": "GoBeromsu/craft-skills", "path": "other/"}]}\n')
+        result = self._hermes('{"taps": [{"repo": "Xia-Ataraxia/craft-skills", "path": "other/"}]}\n')
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("not registered", result.stdout)
 

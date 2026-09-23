@@ -67,7 +67,7 @@ install_claude() {
   header "Claude Code"
   note "Claude Code uses the plugin marketplace — these commands run inside Claude Code, not the shell."
   printf '\n'
-  printf '    /plugin marketplace add GoBeromsu/craft-skills\n'
+  printf '    /plugin marketplace add Xia-Ataraxia/craft-skills\n'
   printf '    /plugin install craft-skills@craft-skills\n'
   printf '\n'
   ok "Paste those two lines into any Claude Code session to install craft-skills."
@@ -80,7 +80,7 @@ install_codex() {
 
   note "Canonical channel: install craft-skills from the Codex plugin marketplace."
   printf '\n'
-  printf '    codex plugin marketplace add GoBeromsu/craft-skills\n'
+  printf '    codex plugin marketplace add Xia-Ataraxia/craft-skills\n'
   printf '    codex plugin add craft-skills@craft-skills --json\n'
   printf '\n'
 
@@ -134,7 +134,7 @@ install_codex() {
     cd "${PROJECT_ROOT}"
     # Codex auxiliary clone path: .agents/skills/craft-skills.
     CLONE_DIR="${PWD}/.agents/skills/craft-skills"
-    REPO_URL="https://github.com/GoBeromsu/craft-skills.git"
+    REPO_URL="https://github.com/Xia-Ataraxia/craft-skills.git"
     note "Optional development clone target: ${CLONE_DIR}."
 
     if [ -d "${CLONE_DIR}/.git" ]; then
@@ -156,7 +156,7 @@ install_codex() {
 install_hermes() {
   header "Hermes"
 
-  TAP_REPO="GoBeromsu/craft-skills"
+  TAP_REPO="Xia-Ataraxia/craft-skills"
 
   note "Hermes installs craft-skills through a custom tap; each skill is one install unit."
   printf '\n'
@@ -196,7 +196,7 @@ install_gjc() {
 
   note "GJC installs craft-skills as a marketplace plugin and loads packages straight from it."
   printf '\n'
-  printf '    gjc plugin marketplace add GoBeromsu/craft-skills\n'
+  printf '    gjc plugin marketplace add Xia-Ataraxia/craft-skills\n'
   printf '    gjc plugin install craft-skills@craft-skills\n'
   printf '    gjc plugin upgrade              # the whole update path\n'
   printf '\n'
