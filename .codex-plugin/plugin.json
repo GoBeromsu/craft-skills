@@ -5,8 +5,8 @@
   "author": {
     "name": "Beomsu Koh"
   },
-  "homepage": "https://github.com/GoBeromsu/craft-skills",
-  "repository": "https://github.com/GoBeromsu/craft-skills",
+  "homepage": "https://github.com/Xia-Ataraxia/craft-skills",
+  "repository": "https://github.com/Xia-Ataraxia/craft-skills",
   "license": "MIT",
   "keywords": [
     "engineering",
@@ -23,7 +23,7 @@
     "developerName": "Beomsu Koh",
     "category": "Engineering",
     "capabilities": ["Read", "Write"],
-    "websiteURL": "https://github.com/GoBeromsu/craft-skills",
+    "websiteURL": "https://github.com/Xia-Ataraxia/craft-skills",
     "defaultPrompt": [
       "Use craft-skills document to structure project docs",
       "Use craft-skills research to investigate before deciding"

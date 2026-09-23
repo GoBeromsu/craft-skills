@@ -2,13 +2,17 @@
 
 Work-craft Agent Skills for research and engineering by Beomsu Koh.
 
+![License: MIT](https://img.shields.io/badge/license-MIT-green) [![Release](https://img.shields.io/github/v/release/Xia-Ataraxia/craft-skills)](https://github.com/Xia-Ataraxia/craft-skills/releases/latest)
+
 Own your craft, vendor-neutral: all 30 packages use the plain Agent Skills `SKILL.md` layout.
 The portable core contains no runtime-specific behavior; Claude Code, Codex, Hermes, Cursor, and Grok-native integration lives in runtime lenses and generated instruction-file adapters.
 This is a task-oriented library for software and research work — kept separate from [`bstack`](https://github.com/GoBeromsu/bstack) (personal / life / second-brain automation) so the two domains never bleed into each other's context.
 
 ---
 
-## Skills
+## Features
+
+### Skills
 
 | Skill | Purpose |
 |-------|---------|
@@ -45,7 +49,9 @@ This is a task-oriented library for software and research work — kept separate
 
 ---
 
-## Install and discovery
+## Installation
+
+### Install and discovery
 
 | Runtime | Vendor-native install or documented discovery path |
 |---|---|
@@ -57,12 +63,12 @@ This is a task-oriented library for software and research work — kept separate
 | Grok-native | Skills in `.grok/skills` or a configured plugin path |
 | Plain Agent Skills | One `SKILL.md` directory per skill under `.agents/skills` |
 
-### Claude Code — marketplace
+#### Claude Code — marketplace
 
 Use the Claude Code marketplace channel:
 
 ```
-/plugin marketplace add GoBeromsu/craft-skills
+/plugin marketplace add Xia-Ataraxia/craft-skills
 /plugin install craft-skills@craft-skills
 ```
 
@@ -70,12 +76,12 @@ Then invoke any of the 30 skills above by name, e.g. `api`, `ast-grep`, `defuddl
 
 ---
 
-### Codex — plugin or plain Agent Skills
+#### Codex — plugin or plain Agent Skills
 
 The observed Codex plugin marketplace channel is:
 
 ```bash
-codex plugin marketplace add GoBeromsu/craft-skills
+codex plugin marketplace add Xia-Ataraxia/craft-skills
 codex plugin add craft-skills@craft-skills --json
 ```
 
@@ -84,20 +90,20 @@ Marketplace package metadata is tracked in `.codex-plugin/plugin.json`.
 For plain Agent Skills development context, clone into a project-root `.agents/skills` directory:
 
 ```bash
-git clone https://github.com/GoBeromsu/craft-skills.git .agents/skills/craft-skills
+git clone https://github.com/Xia-Ataraxia/craft-skills.git .agents/skills/craft-skills
 ```
 
 The clone is optional development context; its skills have the nested layout `.agents/skills/craft-skills/skills/<name>/SKILL.md`.
 
 ---
 
-### Hermes — custom tap
+#### Hermes — custom tap
 
 Register the repository as a custom tap, then install each skill as one unit:
 
 ```bash
-hermes skills tap add GoBeromsu/craft-skills
-hermes skills install GoBeromsu/craft-skills/skills/<name>
+hermes skills tap add Xia-Ataraxia/craft-skills
+hermes skills install Xia-Ataraxia/craft-skills/skills/<name>
 hermes skills update            # pull upstream changes for every tap-installed skill
 ```
 
@@ -106,12 +112,12 @@ every package is kept scanner-clean (see `skills/skillify/references/runtime-hyg
 
 ---
 
-### GJC — marketplace plugin
+#### GJC — marketplace plugin
 
 Register the marketplace once, then install the plugin:
 
 ```bash
-gjc plugin marketplace add GoBeromsu/craft-skills
+gjc plugin marketplace add Xia-Ataraxia/craft-skills
 gjc plugin install craft-skills@craft-skills
 ```
 
@@ -128,29 +134,33 @@ The installed plugin is the only copy; a manual copy alongside it outranks the p
 
 ---
 
-### Cursor — documented skills directories
+#### Cursor — documented skills directories
 
 Cursor discovers project skills in `.cursor/skills/<name>/SKILL.md`; its Agent Skills compatibility also recognizes `.agents/skills/<name>/SKILL.md`.
 Copy or link the individual plain skill directories there using the deployment mechanism appropriate for the project.
 No Cursor plugin manifest or CLI command is provided by this repository.
 
-### Grok-native — documented skills or plugin configuration
+#### Grok-native — documented skills or plugin configuration
 
 Grok-native discovers plain skills at `.grok/skills/<name>/SKILL.md`, or through its configured plugin path.
 Use the vendor's configured plugin mechanism for the latter; this repository does not invent a Grok plugin manifest or command.
 
-### Plain Agent Skills layout
+#### Plain Agent Skills layout
 
 Each package is a self-contained `skills/<name>/SKILL.md`.
 For a generic Agent Skills runtime, place the desired package directory at `.agents/skills/<name>/SKILL.md`.
 The portable core is the same file used by every runtime; lenses hold runtime-specific guidance.
 
-### Operational deployment verification
+#### Operational deployment verification
 
 For the approved `m1-pro` deployment, verify the discovered skill directories and runtime behavior only through the approved Tailscale/Orca SSH route.
 This is operational verification guidance, not a vendor install command.
 
 ---
+
+## Usage
+
+After installation, skills are discovered by each runtime from their `SKILL.md` packages (GJC exposes them as `craft-skills:<name>`).
 
 ### Convenience Installer
 
@@ -168,7 +178,11 @@ The script is idempotent and safe to re-run.
 
 ---
 
-## Validation
+## Development
+
+Each skill lives in `skills/<name>/SKILL.md`; use the `skillify` skill for package lifecycle changes.
+
+### Validation
 
 `scripts/ci-local.sh` mirrors every required CI gate locally (pr-size, both Layer-1 validators, distribution-version, marketplace validation) and is the merge gate whenever GitHub Actions cannot run:
 
@@ -190,4 +204,4 @@ Hermes integration is covered by the isolated plugin install/load contract test 
 
 ## License
 
-MIT
+MIT, as declared in `.claude-plugin/plugin.json`. No `LICENSE` file is present in this repository yet.
