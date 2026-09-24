@@ -1,0 +1,22 @@
+{
+  "should_trigger": [
+    "format this as an Obsidian note",
+    "옵시디언 노트 스타일로 정리해줘",
+    "add wikilinks and frontmatter to this note",
+    "use callouts in this vault note",
+    "fix the markdown house style for this .md",
+    "wrap people and dates properly in my vault note",
+    "rewrite this Discord paste into nested bullets for Obsidian",
+    "embed another note and add properties"
+  ],
+  "should_not_trigger": [
+    "create a .base table view for my tasks",
+    "draw this flowchart as a .canvas",
+    "write a GitHub PR description in markdown",
+    "author a SKILL.md for a new skill",
+    "create a people CRM note for this contact",
+    "search my vault with qmd",
+    "lint the whole vault against guidelines",
+    "deploy the quartz site"
+  ]
+}

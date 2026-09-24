@@ -1,0 +1,17 @@
+{
+  "skill": "obsidian-markdown",
+  "cases": [
+    {
+      "prompt": "이 Discord 공지를 옵시디언 노트 스타일로 정리해줘. 마감은 2026-07-27이고 멤버는 고범수, 장현서야. 데모 URL은 https://open2-beta.upstage.ai/",
+      "expected_behavior": "Body dates become [[2026-07-27]]; people become [[고범수]] and [[장현서]]; demo URL is inline [label](https://open2-beta.upstage.ai/) with no [^n] footnotes; hierarchical content uses nested tab bullets under ## / #### headings."
+    },
+    {
+      "prompt": "Format this meeting note for Obsidian: Alice met Bob on 2026-08-01 about the launch, docs at https://example.com/docs",
+      "expected_behavior": "Uses [[2026-08-01]], [[Alice]]/[[Bob]] wikilinks (or equivalent person wikilinks), inline markdown link for the docs URL, no footnote definitions, compact body without blank lines around headings."
+    },
+    {
+      "prompt": "Add a References section with the recording URL for this vault note",
+      "expected_behavior": "Uses ## References with standard [title](url) markdown links; still does not introduce body footnotes for web links."
+    }
+  ]
+}
