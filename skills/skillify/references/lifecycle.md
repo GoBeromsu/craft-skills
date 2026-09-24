@@ -4,6 +4,8 @@ The full create / update / move-rename / retire mechanics skillify owns, plus th
 This file sequences those operations; it does not restate the authoring contract.
 Official vendor skills stay unmodified on their official channels; local packages hold only uncovered library or personal context.
 Create and update apply [contract §10](contract.md#10-external-facts-and-dependencies) rather than a second dependency procedure.
+A package plus its usable evidence handoff at the chosen location completes an authoring run only when its required authoring checks pass (contract §7).
+Clean start (§1) and branch → commit → PR (§6) apply only when the destination is a Git repository; a non-Git destination — a vault, a project directory without version control — skips them.
 A reviewable source package is not publication, install, or deployment.
 
 ## Table of Contents
@@ -20,6 +22,7 @@ A reviewable source package is not publication, install, or deployment.
 
 ## 1. Clean start
 
+Use this section when the destination is a Git repository; skip it otherwise.
 Before a formal package change, inspect the actual worktree and selected canonical base:
 
 ```bash
@@ -27,7 +30,8 @@ git status --short --branch
 git rev-parse HEAD
 ```
 
-Choose a topic branch from the recorded approved base when the tree is clean; do not implicitly repurpose the operator's checked-out branch:
+Use the destination's approved workspace arrangement; this library normally uses a topic branch from the recorded approved base when the tree is clean.
+Reuse a task-approved branch rather than creating another, and do not implicitly repurpose the operator's checked-out branch:
 
 ```bash
 git switch -c <topic-branch> <approved-base>
@@ -46,22 +50,22 @@ Record the workspace, base commit, current content identity, and task approval b
 ## 2. Create
 
 ```bash
-SKILL_DIR="skills/<skill-name>"
+SKILL_DIR="<destination>/<skill-name>"   # this library: skills/<skill-name>
 mkdir -p "$SKILL_DIR"
 ```
 
 1. State the artifact, location, relevant format, and cannot-succeed behavior before writing the rest of `SKILL.md` (contract §4). Heading names, procedural phrases, section order, description wording, and ~150-line body length are authoring guidance, not format gates.
 2. Choose focused functional, security, and data-integrity evidence for the requested effects (contract §7). Optional authored scenarios are allowed; generated run outputs, wording-locked corpora, and exact evals/triggers schema or counts are not required.
-3. Author `SKILL.md` (contract §1–§4) and seed `CHANGELOG.md` with the first dated bullet (contract §6).
-4. Add `references/`, `scripts/`, `assets/`, optional `agents/`, `templates/`, repo-root tests, and `.env.example` only as the package-parts table (contract §5) calls for them; keep generated `evals/` scratch local and gitignored.
-5. Apply [contract §10](contract.md#10-external-facts-and-dependencies) for related official skills and CLI/agent runtimes: current is a verified no-op; stale requires an actual official-channel update on the working host, resulting-version verification, and sibling repair; check-only or failed update leaves the run incomplete. Other devices update when that skill is deployed.
-6. Run the relevant [validator playbook](runtime-hygiene.md#2-validator-playbook) checks, then follow the delivery flow (§6). Delivery is not install or live publication.
+3. Author `SKILL.md` (contract §1–§4) and record history/version under the destination's policy (contract §5; this library seeds `CHANGELOG.md` per §6).
+4. Add `references/`, `scripts/`, `assets/`, optional `agents/`, `templates/`, tests where the destination keeps them (this library: repo-root `tests/<skill-name>/`), and `.env.example` only as the package-parts table (contract §5) calls for them; keep generated `evals/` scratch local and gitignored.
+5. Apply [contract §10](contract.md#10-external-facts-and-dependencies) for the related official skills and CLI/agent runtimes the task actually uses: current is a verified no-op; stale requires an actual official-channel update on the working host, resulting-version verification, and sibling repair; check-only or failed update leaves the run incomplete. Other devices update when that skill is deployed. Unused optional runtimes are unrelated.
+6. Run the checks the destination consumes (this library: the [validator playbook](runtime-hygiene.md#2-validator-playbook)), then hand off the evidence receipt (contract §7) with the package. Passing required checks and handing off usable evidence completes authoring; otherwise retain an incomplete draft. Branch/PR delivery (§6), install, registration, and publication are separate authorized effects.
 
 ## 3. Update
 
-Patch `SKILL.md` and/or `references/`, bump `metadata.version` per the version-bump rubric (contract §8), add one `CHANGELOG.md` bullet, apply [contract §10](contract.md#10-external-facts-and-dependencies), validate, then follow the delivery flow (§6).
-If the CHANGELOG would exceed 100 lines, drop the oldest whole entries until it fits; do not cut an entry in the middle, rewrite retained bullets, or grow a sidecar archive (contract §6).
-Git remains the history store.
+Patch `SKILL.md` and/or its support resources, record the destination's history/version change (contract §5), apply [contract §10](contract.md#10-external-facts-and-dependencies) to the dependencies actually used, validate with the destination's checks, and hand off the evidence receipt (contract §7); follow the delivery flow (§6) only when repository delivery is requested and authorized.
+In this library, bump `metadata.version` per contract §8 and append one `CHANGELOG.md` bullet; if it would exceed 100 lines, drop the oldest whole entries without rewriting retained bullets or growing a sidecar archive (contract §6).
+Git is the history store only for Git-managed destinations.
 
 ### Maintain declared dependencies
 
@@ -75,7 +79,7 @@ When the operator requests a harvest or an authorized formal correction, assign 
 
 1. **The corrected behavior** → an imperative step in the skill's workflow, only when the fix is a repeatable step rather than a one-off.
 2. **The failure it prevents** → one recorded-mistake entry: `- <unwanted behavior> → <what to do instead>.` Exact registry heading text is not a format gate (contract §4, §9).
-3. **The event, date, and any operator-supplied source** → the `CHANGELOG.md` bullet, with a `Provenance: <source>` clause when material was handed over, then trim to 100 lines if needed (contract §6). Bump PATCH — MINOR if the workflow gained a step.
+3. **The event, date, and any operator-supplied source** → the destination's history record (contract §5). In this library, append a `CHANGELOG.md` bullet with `Provenance: <source>` when applicable and trim to 100 lines (contract §6); bump PATCH, or MINOR if the workflow gained a step.
 
 Retain useful field learning until a requested harvest rather than scanning or rewriting all memory.
 
@@ -98,19 +102,20 @@ Reuse the common approved policy and task-bound evidence across domain batches r
 
 ## 4. Move or rename
 
-There is no routing-index file to update in this library's model — moving a skill means moving the real directory and fixing every path that names it.
+Move the actual selected package and repair its active references; this library has no routing-index file.
 
-1. `git mv skills/<old-name> skills/<new-name>` so history survives.
-2. Search the repo for the old path and rewrite every hit: script paths, reference links, verification blocks, CI workflow steps, other skills' cross-references.
-3. Verify by loading on the selected runtime, not by reading a routing index — confirm the moved skill still appears under its trigger phrases; run `python3 skills/skillify/scripts/validate-skill-format.py` to confirm the moved package is still well-formed.
-4. Record stale runtime registrations and caches as effect candidates; preserve unique content and use approved native cleanup rather than unilateral cache deletion.
+1. Resolve the source and destination under their applicable permissions, preserve unique contents, and stop on a conflicting destination or escaping symlink rather than overwriting unrelated work.
+2. Use the destination's move mechanism: `git mv <source> <destination>` for a tracked package, or a filesystem move for a non-Git package. In this library the paths are `skills/<old-name>` and `skills/<new-name>`; update frontmatter `name` when the package is renamed.
+3. Repair active references in the affected destination scope, including script paths, links, verification blocks, and registrations; do not rewrite historical records or unrelated projects.
+4. Run the destination's checks and assess affected trigger/path behavior. This library uses its format validator; other destinations do not acquire that validator's Git requirement. Reuse evidence for provably identical content, but refresh evidence for changed names, body, or required resources (contract §7).
+5. Runtime loading or registration cleanup runs only when selected and separately authorized; otherwise report it as unverified without blocking completed source work. Preserve unique cache contents and never claim a successful load from static inspection.
 
 ## 5. Retire
 
 Retire only an explicitly approved target after preserving unique knowledge and resolving live references and dependencies.
 Remove obsolete registration and package paths instead of leaving compatibility aliases or a loadable stub.
 Keep retirement history in the destination CHANGELOG or retained repository history, not an invented frontmatter status.
-If the CHANGELOG would exceed 100 lines, drop oldest whole entries (contract §6).
+Where this library's CHANGELOG convention applies, drop oldest whole entries if it would exceed 100 lines (contract §6).
 Record the removed trigger and output contract as a breaking change and require the corresponding approval before publication.
 Source retirement and installed cleanup are different effects; neither authorizes deletion of projects, worktrees, or personal data.
 
@@ -122,8 +127,10 @@ Do not merge or discard work merely to make the lifecycle appear complete.
 
 ## 6. Branch → commit → PR
 
-Prepare reviewable repository state.
+Prepare reviewable repository state when the destination is a Git repository and the operator requests delivery there.
+Authoring is already complete before this flow; it is an additional effect, not a completion condition.
 This flow does not authorize live publication, install, reload, or deployment.
+bstack registration, merge, and version publication belong to the bstack `promote` skill, which consumes the contract §7 evidence receipt and does not re-author or re-evaluate.
 
 1. Start from the clean-state route (§1).
 2. Make the change on the topic branch; do not carry unrelated old-branch state into it.

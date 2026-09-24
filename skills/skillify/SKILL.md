@@ -1,53 +1,66 @@
 ---
 name: skillify
-description: Owns the full lifecycle of craft-skills skill packages — creating, updating, moving/renaming, retiring them, and absorbing frontier labs' skill-creators into vendor lenses — through upstream-first lightweight authoring that leaves official skills unmodified. Use when a user says things like "make a skill", "skillify this workflow", "turn this into a skill", "update this skill", "move this skill", "absorb openai's new skill-creator", or "스킬 만들자", or when a recurring workflow correction needs to be encoded into a governing skill. Not for one-off project scripts or private field experiments, which stay local until a requested harvest, and not for rewriting official vendor skills.
+description: Owns the lifecycle of skill packages wherever the user chooses — creating, updating, moving/renaming, retiring them, and absorbing frontier labs' skill-creators into vendor lenses — completing with the package plus its evaluation evidence while official skills stay unmodified. Use when a user says "make a skill", "skillify this workflow", "turn this into a skill", "update this skill", "move this skill", "absorb openai's new skill-creator", or "스킬 만들자", or a recurring correction needs encoding into a governing skill. Not for registering, installing, or publishing a finished package (bstack uses `promote`), one-off project scripts, unharvested field experiments, or rewriting official skills.
 metadata:
-  version: 6.0.0
+  version: 7.0.0
 ---
 
 # skillify
 
-Turns a repeated workflow into a well-formed craft-skills package — required `SKILL.md` + `CHANGELOG.md`, plus the execution parts it needs — and owns that package's lifecycle afterward.
-Success looks like: related official skills remain unmodified originals on their official channels, the local package holds only uncovered context, related working-host dependencies satisfy [contract §10](references/contract.md#10-external-facts-and-dependencies), focused functional and safety evidence supports the stated outcome and failure boundary, and [delivery follows the authorized lifecycle](references/lifecycle.md#6-branch--commit--pr).
+Turns a repeated workflow into a well-formed skill package — required `SKILL.md`, the execution parts it needs, and history under the destination's policy — at the destination the user chooses, and owns that package's lifecycle afterward.
+The destination may be this library, another skill library, a project's skill directory, an Obsidian vault, or any other location; where skillify itself is stored does not decide where its output goes.
+Success looks like: the package exists at the chosen location, related official skills remain unmodified originals on their official channels, the package holds only uncovered context, the dependencies the task actually uses satisfy [contract §10](references/contract.md#10-external-facts-and-dependencies), and focused functional and safety evidence supporting the stated outcome and failure boundary is handed off with the package ([contract §7](references/contract.md#7-eval-first-authoring-loop)).
 The core contract stays vendor-agnostic; runtime plumbing lives in that vendor's lens.
 
-A formal authoring run leaves a reviewable package under `skills/<name>/` on its own branch; publication and deployment retain their separate approvals.
+The run is complete when the package exists, required authoring checks pass, and its usable evidence handoff identifies the evaluated content.
+Installation into a runtime, registration in a library, branch/PR delivery, merge, and publication are separate effects with their own approvals; none of them is an automatic side effect of authoring ([lifecycle §6](references/lifecycle.md#6-branch--commit--pr)).
+bstack registration and publication belong to the bstack `promote` skill, which consumes the evidence handoff and does not repeat authoring or quality evaluation.
 State the artifact, location, relevant format, and what happens when the run cannot succeed.
 Independent review judges that meaning; no exact heading, phrase, or section order is a format gate ([contract §4](references/contract.md#4-body)).
 
-The package includes:
+The result includes:
 
-- Focused functional, security, and data-integrity evidence under `tests/<name>/`. Optional reusable scenarios may live there; generated run outputs are not required ([contract §7](references/contract.md#7-eval-first-authoring-loop)).
-- A task-bound authoring receipt: base commit, content digest, intended effects, chosen verification, actual results, independent judgment where needed, [§10](references/contract.md#10-external-facts-and-dependencies) current/stale/failure outcomes, and any unverified obligation.
-- Every mentioned package-relative support path present in the package ([contract §12](references/contract.md#12-referenced-paths)). Refer to tests from repo-root `tests/<name>/`.
-- A dated `CHANGELOG.md` bullet, version bump per the [rubric](references/contract.md#8-version-bump-rubric), and a CHANGELOG at or under 100 lines ([contract §6](references/contract.md#6-changelog)).
-- A summary naming package, mode, evidence obtained, limitations, and delivery state.
+- The package at the chosen location, with every mentioned package-relative support path present ([contract §12](references/contract.md#12-referenced-paths)).
+- Focused functional, security, and data-integrity evidence where the destination keeps tests — repo-root `tests/<name>/` in this library, the destination's own convention elsewhere. Optional reusable scenarios may live there; generated run outputs are not required ([contract §7](references/contract.md#7-eval-first-authoring-loop)).
+- A task-bound authoring receipt: target location, requested effects, evaluated scope, base commit where one exists plus the content digest of the evaluated snapshot, chosen verification, actual results labeled as executed or reviewed, independent judgment where needed, [§10](references/contract.md#10-external-facts-and-dependencies) outcomes for the dependencies actually used, trigger findings, and any unverified obligation. This is the evidence a destination gate such as `promote` consumes.
+- A dated `CHANGELOG.md` bullet, version bump per the [rubric](references/contract.md#8-version-bump-rubric), and a CHANGELOG at or under 100 lines ([contract §6](references/contract.md#6-changelog)); a destination that keeps history elsewhere applies its own rule.
+- A summary naming package, location, mode, evidence obtained, limitations, and which separate effects (install, registration, PR, publication) were not requested or remain pending approval.
 
 When the run cannot succeed, leave no half-built package:
 
-- Admission fails → stop; return the failed question and owner (project-local, upstream harness, official vendor skill, or bstack `promote`).
+- The entry check fails → stop; return the failed question and the owner that should hold the candidate (project-local script, upstream harness, official vendor skill, or the destination's own gate).
 - A related official skill would be copied or rewritten → stop; keep the original and author only the uncovered gap, or report the official owner as the blocker.
-- [Contract §10](references/contract.md#10-external-facts-and-dependencies) current/stale/update-failure outcomes are unmet → incomplete.
-- A Layer-1 validator fails → fix the defect; change the validator only when it is the authorized target and still has a current consumer or independent safety owner.
+- A dependency the task actually uses is stale and cannot be updated and verified within the current approval ([contract §10](references/contract.md#10-external-facts-and-dependencies)) → report it and leave the run incomplete; a runtime the task does not use never blocks it.
+- A destination check fails (this library: a Layer-1 validator) → fix the defect; change the check only when it is the authorized target and still has a current consumer or independent safety owner.
 - A claimed improvement is not shown → revise the claim or recipe; do not fabricate a delta.
 - A near-miss triggers the skill → tighten the sibling boundary and rerun relevant probes.
 - Upstream skill-creator guidance conflicts → record the divergence in the vendor lens; never silently import.
-- Dirty tree or stale `main` → [clean-start](references/lifecycle.md#1-clean-start); report pending publication approval when it has not been granted.
+- A Git destination has unrelated work or a stale base → follow the [clean-start route](references/lifecycle.md#1-clean-start) without touching that work; a non-Git destination has no such step.
+- Required authoring evidence is missing, stale, or inaccessible → retain the draft and hand off an incomplete result identifying the gap. Unverified optional checks or separate, unrequested delivery effects do not block authoring; never report a run, PR, install, or publication that did not happen.
 
-## Admission check
+## Entry check
 
-Before authoring, answer three questions.
+Read context once at entry: the current request and conversation, the user's stated purpose, way of working, and mistakes to avoid, and the project instructions already in effect.
+Use the relevant context already available; do not harvest whole conversation or memory stores.
+Pull further material only when the task needs it — the selected destination's own policy (a library's contract, a project's skill conventions, a vault's placement, permission, style, and property rules), read for that destination only.
+Check whether that destination is private or shared before writing; do not include secrets, account values, or private source text in shared packages, and include personal context in a private package only when authorized and necessary.
+A non-vault task needs no vault path; a non-Git destination needs no worktree.
+Do not stand up a context service or require a new configuration file.
+
+Then answer three questions.
 All yes → proceed.
 Any no → keep the candidate project-local, or point at the upstream harness or official vendor skill that already owns it.
 
-1. **Reusable craft?** Useful on another relevant project or repeated workflow, without private project data.
-2. **Owned by this library?** No mature upstream harness or official vendor skill already performs this workflow. Official originals stay unmodified; this library records only uncovered local context.
+1. **Reusable craft?** Useful on another relevant project or repeated workflow; package only context appropriate for the authorized destination.
+2. **Owned here?** No mature upstream harness or official vendor skill already performs this workflow. Official originals stay unmodified; the package records only uncovered context.
 3. **Vendor-agnostic?** Plain Markdown with `${ENV_VAR}` indirection — no call that only one runtime exposes.
+
+A library destination adds its own admission on top of these questions (this library: root `AGENTS.md`; bstack: `promote`); apply it there rather than copying it into every run.
 
 ## Detect mode
 
 ```bash
-SKILL_DIR="skills/<skill-name>"
+SKILL_DIR="<destination>/<skill-name>"   # this library: skills/<skill-name>
 test -f "$SKILL_DIR/SKILL.md" && mode=update || mode=create
 ```
 
@@ -57,7 +70,7 @@ A request to absorb an upstream skill-creator is comparison and local-gap extrac
 
 Official vendor skills stay unmodified originals on their official channels.
 Local packages hold only uncovered context.
-Apply [contract §10](references/contract.md#10-external-facts-and-dependencies) on every create or update.
+Apply [contract §10](references/contract.md#10-external-facts-and-dependencies) on every create or update to the dependencies the task actually uses; installed-but-unused runtimes are unrelated.
 The agent chooses probe, update, recovery, and verification inside that contract.
 Do not add generic repeated consent for reversible in-scope work.
 
@@ -85,7 +98,7 @@ A version or help check is not compatibility or deployment proof.
 | [`vendor-hermes.md`](references/vendor-hermes.md) | Hermes runtime or its experience-capture craft. | [Hermes skill guide](https://github.com/NousResearch/hermes-agent/tree/main/website/docs/user-guide/skills) |
 | [`vendor-cursor.md`](references/vendor-cursor.md) | Cursor discovery and packaging. | [Cursor skills docs](https://prod.cursor.com/docs/skills) |
 | [`vendor-grok.md`](references/vendor-grok.md) | Grok model guidance; native packaging only when that runtime is selected. | [xAI model guide](https://docs.x.ai/developers/grok-4-6.md) |
-| [`vendor-gjc.md`](references/vendor-gjc.md) | Selected GJC workflow or direct authoring tools; official orca-cli/orchestration stay native originals. | [GJC SDK application guide](https://github.com/Yeachan-Heo/gajae-code/blob/main/docs/sdk-app-guide.md) |
+| [`vendor-gjc.md`](references/vendor-gjc.md) | GJC selected as the authoring runtime, or packaging this library for GJC plugin discovery and exact invocation; official orca-cli/orchestration stay native originals. Authoring never requires GJC. | [GJC skills doc](https://github.com/Yeachan-Heo/gajae-code/blob/main/docs/skills.md) |
 
 Core recipes do not depend on a vendor's loader or proprietary tool.
 Record actual support per selected runtime; do not invent an undocumented command.
@@ -93,22 +106,23 @@ Record actual support per selected runtime; do not invent an undocumented comman
 ## Lifecycle
 
 Choose create, update, move/rename, or retire from [`lifecycle.md`](references/lifecycle.md).
-Use the [clean-start route](references/lifecycle.md#1-clean-start) first.
+When the destination is a Git repository, use the [clean-start route](references/lifecycle.md#1-clean-start) first.
 Harvest field experiments only on request.
 
-## Validate and deliver
+## Validate and hand off
 
-Run the [validator playbook](references/runtime-hygiene.md#2-validator-playbook).
+Run the checks the destination consumes: this library's [validator playbook](references/runtime-hygiene.md#2-validator-playbook) for packages under `skills/`, the destination's own checks elsewhere.
 Keep only checks with a current consumer or independent safety owner.
-Follow [branch → commit → PR](references/lifecycle.md#6-branch--commit--pr). Delivery is not install or live publication.
+Hand off the evidence receipt with the package ([contract §7](references/contract.md#7-eval-first-authoring-loop)); label each result as executed or reviewed.
+Branch → commit → PR ([lifecycle §6](references/lifecycle.md#6-branch--commit--pr)) runs only for a Git destination when repository delivery is requested and authorized; install, registration, and publication need their own approvals and are not part of authoring.
 
 ## Requirements
 
-- `python3` — official source: https://docs.python.org/3/; safe probe: `python3 --version`; support boundary: Python 3.10+ for Layer-1 validators.
-- `git` — official source: https://git-scm.com/docs; safe probe: `git --version`; format validation requires a Git worktree in every mode, and `--root` identifies its root.
-- `gh` — official source: https://cli.github.com/manual/; safe probe: `gh --version`; support boundary: current `gh pr create`, `gh pr checks`, and `gh pr merge` command surfaces for the delivery flow.
+- `python3` — official source: https://docs.python.org/3/; safe probe: `python3 --version`; support boundary: Python 3.10+ for this library's Layer-1 validators; not needed for a destination that has no such checks.
+- `git` — official source: https://git-scm.com/docs; safe probe: `git --version`; needed only for a Git destination and for this library's format validator, which requires a Git worktree in every mode (`--root` identifies its root).
+- `gh` — official source: https://cli.github.com/manual/; safe probe: `gh --version`; support boundary: current `gh pr create`, `gh pr checks`, and `gh pr merge` command surfaces, needed only when an authorized PR delivery is requested.
 - The `init` skill's tool-preflight reference (`tool-preflight.md` under its references) records mutable CLI probes, support boundaries, and the CHANGELOG verification receipt convention.
-- Related official skills and CLI/agent runtimes follow [contract §10](references/contract.md#10-external-facts-and-dependencies).
+- Related official skills and CLI/agent runtimes that the task actually uses follow [contract §10](references/contract.md#10-external-facts-and-dependencies); GJC, vendor CLIs, and a vault path are optional and never a precondition for authoring elsewhere.
 
 ## Anti-patterns
 
@@ -121,16 +135,19 @@ Follow [branch → commit → PR](references/lifecycle.md#6-branch--commit--pr).
 - A recipe citing a missing support file → add the file or remove the mention.
 - Caps-lock to paper over overlapping routing → prove the §3 directive or keep ordinary prose.
 - A nested `SKILL.md` → one flat directory.
-- Hand-authoring into a destination's private conventions → run admission and focused verification here first.
+- Hand-authoring into a destination without reading its policy or choosing evidence → read the selected destination's policy once, state the outcome and failure boundary, then author there with focused verification.
+- Treating install, registration, branch/PR, or publication as an automatic authoring side effect → complete at the chosen location with the evidence handoff; each further effect needs its own approval.
+- Requiring GJC, a Git worktree, `gh`, or a vault path for a task that does not use them → bind only the dependencies the task actually invokes.
 - Importing upstream plumbing into core, or re-hosting a vendor harness as local SSOT → [absorption protocol](references/vendor-absorption.md).
 - Memorizing examples in the body → generalize and check unseen prompts ([evaluation.md §6](references/evaluation.md)).
 - Inventing a native API when official docs are uncertain → record the unknown.
 
 ## Verification
 
-- [ ] Official skills unmodified; local content is uncovered context; [§10](references/contract.md#10-external-facts-and-dependencies) current/stale/failure outcomes recorded
-- [ ] [Layer-1 validators](references/runtime-hygiene.md#2-validator-playbook) with a current consumer or safety owner pass
+- [ ] Package exists at the chosen location; official skills unmodified; local content is uncovered context; [§10](references/contract.md#10-external-facts-and-dependencies) outcomes recorded for the dependencies actually used
+- [ ] Destination checks pass (this library: [Layer-1 validators](references/runtime-hygiene.md#2-validator-playbook) with a current consumer or safety owner)
 - [ ] Focused functional, security, and data-integrity fixtures cover requested effects
 - [ ] Leading routing directive has bounded edges and discovery evidence when used
-- [ ] [CHANGELOG](references/contract.md#6-changelog) including the 100-line cap; [secret hygiene](references/runtime-hygiene.md#1-per-skill-secrets-rule)
-- [ ] Absorbed upstream recorded as gap extraction ([protocol §6](references/vendor-absorption.md#6-record-and-deliver)); [delivery](references/lifecycle.md#6-branch--commit--pr) complete
+- [ ] Destination history policy satisfied (this library: [CHANGELOG](references/contract.md#6-changelog) including the 100-line cap); [secret hygiene](references/runtime-hygiene.md#1-per-skill-secrets-rule)
+- [ ] Absorbed upstream recorded as gap extraction ([protocol §6](references/vendor-absorption.md#6-record-and-deliver))
+- [ ] Evidence receipt handed off with executed-versus-reviewed labels and content identity; install, registration, PR, and publication listed as not requested or pending their own approval

@@ -64,9 +64,7 @@ Section 5 makes re-absorption idempotent: when the vendor ships an update, diff 
 ## 6. Record and deliver
 
 - `CHANGELOG.md` bullet with a `Provenance:` clause linking the upstream (contract §6). If the file would exceed 100 lines, drop oldest whole entries; do not grow an archive.
-- Update the skill's row in `skills/PROVENANCE.md`.
-- Update `skills-manifest.yaml`: the package `version` and `provenance.absorbed_from`.
-- Register the new vendor's repo namespace (e.g. `openai`, `NousResearch`) in `external_repos` of `scripts/governance/fixtures/repos.portable.json` and the cross-repo fixture — the provenance checker blocks any `absorbed_from` entry whose namespace it cannot resolve.
-- Bump per contract §8 — an absorption that adds lenses or capabilities is MINOR.
+- Update the skill's row in `skills/PROVENANCE.md` when its primary source changes.
+- Bump per contract §8 — an absorption that adds lenses or capabilities is MINOR; a re-comparison that changes nothing records the verified no-op in the lens and needs no bump.
 - Run the relevant script, scenario, and routing checks from contract §7, with a rationale for the selected evidence. Do not require generated vendor-harness outputs or all corpus/runtime combinations.
 - Reuse the existing approved common-policy/domain boundary and exact evidence at destination admission, then use only authorized delivery effects (`lifecycle.md` §6). Delivery is not live publication or deployment.

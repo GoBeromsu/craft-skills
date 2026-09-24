@@ -5,6 +5,8 @@ The contract owns evidence selection, official-original ownership, and current/s
 Generated transcripts, scores, campaign receipts, and run outputs are gitignored scratch or retired Git history, not a pass condition.
 Do not lock wording or procedure snapshots; preserve real functional, security, and data-integrity fixtures.
 Official vendor evaluator harnesses may exist upstream; this library does not copy them or require their generated outputs.
+Label every result as **executed** (a real command, run, or observed effect) or **reviewed** (reading a document, contract, or diff); a review never stands in for a run, and an unavailable check is reported as not run.
+Evaluate what the task asked for — the requested outcome and the description's trigger fit — without adding a uniform run, case, or provider quota to every skill.
 Escalate to optional heavyweight machinery only when actual task risk warrants it.
 
 ## Table of Contents
