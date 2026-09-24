@@ -13,6 +13,7 @@ Official surfaces to consult first:
 - [`openai/plugins`](https://github.com/openai/plugins), the current OpenAI distribution source at last comparison (`6d99ee149c9fe3c7a55b96cab062cadc1ad36a9d`)
 
 Historical comparison snapshot (deprecated as a distribution source, not a local SSOT): [`openai/skills` at `49f948faa9258a0c61caceaf225e179651397431`](https://github.com/openai/skills/tree/49f948faa9258a0c61caceaf225e179651397431), especially the historical `skills/.system/skill-creator` package.
+Latest comparison: `openai/skills` `main` still resolves to `49f948f` and `skills/.system/skill-creator` last changed at `4ab6e0f` (`SKILL.md` sha256 `a17383bf…`), so the comparison is a verified no-op; §4–§5 hold the full keep/amend/decline disposition.
 A coordinator-verified working-host fact at authoring time was Codex `0.155.1`; that is not multi-runtime compatibility evidence and must be re-probed per [contract §10](contract.md#10-external-facts-and-dependencies).
 Use the selected model's current guide for Astra-specific controls; model guidance and the Codex runtime's native distribution are separate contracts.
 
@@ -52,6 +53,9 @@ Use task-shaped deterministic processing for repeatable, order-sensitive work ra
 - **Frontmatter and product fields.** `agents/openai.yaml` and any OpenAI-only fields are not admitted into the portable contract.
 - **Prompt tuning.** Model-specific parameters and API mechanics remain in their runtime boundary. Improve instructions, task shape, and evidence first.
 - **Evidence policy.** Upstream evaluation suggestions are not universal corpus counts, wording-locked harnesses, or proof that every supported runtime was tested. Local acceptance follows the actual requested behavior and effect (`contract.md` §7).
+- **Package history.** The OpenAI creator forbids `CHANGELOG.md`, `README.md`, and other auxiliary files inside a skill; this library keeps a per-package `CHANGELOG.md` as the single history owner (`contract.md` §6) and ships no README. A destination that forbids the file keeps history in its own store.
+- **Declined mechanisms.** `init_skill.py`, `quick_validate.py`, and `generate_openai_yaml.py` scaffolds are Codex product tooling; this library's format validator and package-parts table own the same checks portably. Tool-namespaced names (`gh-address-comments`) are not adopted; §2 naming keeps one or two tokens.
+- **Kept as confirmations.** Concise-is-key and "only add what the model lacks", degrees of freedom, three-level progressive disclosure with one-level-deep references and a table of contents past 100 lines, concrete-example planning, running added scripts, and iterating on real usage are all already core.
 
 ## 5. Absorbed into core
 

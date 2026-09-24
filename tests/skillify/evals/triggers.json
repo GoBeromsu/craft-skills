@@ -8,7 +8,9 @@
     "Move the obsidian-clipper skill into the obsidian package",
     "Retire the vmware skill, nobody uses it anymore",
     "Absorb Anthropic's updated skill-creator into our contract",
-    "Record this correction in the governing skill instead of just remembering it"
+    "Record this correction in the governing skill instead of just remembering it",
+    "Create a weekly-review skill inside my Obsidian vault's .claude/skills, not in craft-skills",
+    "Update the release-notes skill in this project's ./skills folder; gh isn't installed here"
   ],
   "should_not_trigger": [
     "Promote this skill to bstack and open the PR",
@@ -18,6 +20,8 @@
     "Refactor the parser module without changing behavior",
     "Draft a PRD for the onboarding feature",
     "Set up the Hermes cron job for the nightly digest",
-    "Write the weekly report from these meeting notes"
+    "Write the weekly report from these meeting notes",
+    "Install the craft-skills plugin into GJC and reload it",
+    "Register the finished skill in bstack and bump its plugin version"
   ]
 }

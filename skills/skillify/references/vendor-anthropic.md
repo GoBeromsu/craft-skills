@@ -12,6 +12,7 @@ Official surfaces to consult first:
 - Anthropic's current skills distribution and Claude Code documentation on their official channels
 
 Historical comparison snapshot (not a local SSOT, not a distribution source): [`anthropics/skills` at `3b3fad96af16a10759d930941b4520ba0c40edae`](https://github.com/anthropics/skills/tree/3b3fad96af16a10759d930941b4520ba0c40edae), especially `skills/skill-creator` and its runtime-owned evaluation scripts.
+Latest comparison: [`anthropics/skills` at `34040c9c568585f6929bedeaad110ad08f079624`](https://github.com/anthropics/skills/tree/34040c9c568585f6929bedeaad110ad08f079624); `skills/skill-creator` is unchanged since the historical snapshot (last path commit `b9e19e6`, `SKILL.md` sha256 `dcd4803e…`), so §4–§5 below record the full keep/amend/decline disposition and re-absorption is idempotent until that path changes.
 A coordinator-verified working-host fact at authoring time was Claude Code stable `2.1.267`; that is not multi-runtime compatibility evidence and must be re-probed per [contract §10](contract.md#10-external-facts-and-dependencies).
 
 ## 2. Portable lesson
@@ -51,6 +52,8 @@ Do not ask a model to transcribe private reasoning; request inspectable outputs,
 - **Evaluation scale.** Treat source examples and benchmark machinery as recommendations suited to their task, not fixed case counts, provider quotas, or a mandatory full runtime matrix.
 - **Frontmatter.** Anthropic-specific compatibility and tool fields are not part of the portable frontmatter contract.
 - **Interaction model.** Evidence-grounded progress, simplest-complete scope, supported delegation, fresh-context verification, and inspectable conclusions are portable. Adaptive thinking, refusal/fallback tuning, and send-to-user mechanics are not.
+- **Declined mechanisms.** Fixed counts (2–3 test prompts, 20 trigger queries, three runs per query, 60/40 split) are that harness's tuning, not a universal quota; the eval viewer, `benchmark.json`, `timing.json`, `feedback.json`, `.skill` packaging, and `claude -p` description optimization are runtime-owned and not re-hosted; "pushy" descriptions are absorbed as undertrigger-aware assertiveness bounded by a "Not for X" sentence, not as unbounded recall.
+- **Kept as confirmations.** Extract the workflow from conversation history before asking; spawn baseline and candidate in the same turn; snapshot the old version before improving; read transcripts for repeated work; explain the why instead of caps-lock rules; preserve the original name on update; hold out prompts not used for tuning. Core already states each of these in its own owner.
 
 ## 5. Absorbed into core
 
@@ -59,3 +62,5 @@ Do not ask a model to transcribe private reasoning; request inspectable outputs,
 - Delegation only when the runtime supports it → `contract.md` §4.
 - Fresh-context verification → `evaluation.md` §1.
 - Inspectable conclusions and evidence rather than reasoning-transcription requests → `contract.md` §4.
+- Principle of lack of surprise (contents match the description; no hidden effects or malicious intent) → `contract.md` §4.
+- Undertrigger-aware description assertiveness with a bounded "Not for X" edge → `contract.md` §3.

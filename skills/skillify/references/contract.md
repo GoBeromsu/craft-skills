@@ -3,6 +3,8 @@
 The permanent, self-contained authoring contract for every `SKILL.md` in this library.
 `SKILL.md` links here for the full rules; this file is the canonical source authors and reviewers check a package against.
 Root policy in `AGENTS.md` and `references/evaluation.md` must agree with this file.
+For a package authored at another destination, use the portable format, authoring, evidence, dependency, and containment rules here; its own policy governs placement, supported metadata, history/versioning, test location, admission, and delivery.
+This library's root policy and repository-specific validator commands do not apply there.
 
 ## Table of Contents
 
@@ -74,7 +76,7 @@ trigger phrases woven in naturally>. Not for <nearest-neighbor boundary — use 
 - Preserve useful decision guidance rather than optimizing line count. Compact bodies (around 150 lines of decision-depth) are authoring guidance, not a native loader limit or format failure; move optional depth to `references/*.md` without discarding it.
 - Structure: title → 1–2 sentence purpose with success criteria → the workflow and decision content → boundaries and hand-offs → any requirements, recorded mistakes, or verification notes the package actually needs. Cut preamble and restated-obvious practice — an agent is already competent; only add context it doesn't already have.
 - State the artifact, location, relevant format and summary, and what happens on an applicable no-result, partial-success, stop, or ambiguity case. Independent review judges that meaning. Do not require an exact heading, procedural phrase, anti-pattern registry wording, or arbitrary section order: a self-imposed wording validator is not an independent runtime consumer or safety owner.
-- Everything else the contract needs already has an owner: the trigger and the "Not for X" boundary live in the description (§3); the goal is the purpose sentence under the title; inputs and dependencies live with §10; recorded unwanted behaviors live in one registry when needed; focused functional, security, and data-integrity evidence lives in repo-root `tests/<skill-name>/` (§7). Do not add restating sections that duplicate those owners.
+- Everything else the contract needs already has an owner: the trigger and the "Not for X" boundary live in the description (§3); the goal is the purpose sentence under the title; inputs and dependencies live with §10; recorded unwanted behaviors live in one registry when needed; focused functional, security, and data-integrity evidence uses the destination's test location (§5, §7). Do not add restating sections that duplicate those owners.
 - Outcome over process: state the goal and constraints. Give numbered steps only where the exact sequence matters (a fragile or deterministic operation) — prose for judgment calls, scripts for mechanics.
 - Implement only what the requested outcome requires; no speculative features, refactors, or abstractions. Do not add fallbacks or validation for impossible internal states; validate system boundaries. Keep complete end-to-end behavior.
 - Keep instructions lean and single-owned: state the action, its autonomy boundary, and any required approval at the owner; link from every other location. Report progress through observable evidence and decisions, not private chain-of-thought, and never ask a user to reveal or transcribe internal reasoning.
@@ -89,13 +91,15 @@ trigger phrases woven in naturally>. Not for <nearest-neighbor boundary — use 
 - A table the body already earns (a routing table, a gate) stays a table.
 - Recorded unwanted behaviors live in one registry when the package needs them — one line per entry, shaped `- <unwanted behavior> → <what to do instead>.`, accumulated from real operator corrections (see the lifecycle's record-a-correction flow), not invented upfront. Exact registry heading text is not a format gate.
 - Document external-binary requirements (`git`, `python3`, …) only if the skill actually shells out to them.
+- A package's contents must not surprise a reader of its description: no undisclosed effects, commands, data collection, or exfiltration; refuse to author a misleading or malicious skill.
 - The agent chooses method and recovery inside this contract. Do not add generic repeated consent for reversible in-scope work; gate only new irreversible effects that lack an existing approval.
 
 ## 5. Package parts
 
-A package is one directory with required root `SKILL.md` and `CHANGELOG.md`, plus only the execution parts its concrete invocations need.
+A package is one directory with required root `SKILL.md`, plus only the execution parts its concrete invocations need.
+This library also requires `CHANGELOG.md` and the version rules in §8; elsewhere follow the destination's history/versioning policy, using this convention only when it has none.
 
-- Packages carry no `tests/`; tests live at repo-root `tests/<skill-name>/` so install bundles never ship fixtures.
+- In this library, packages carry no `tests/`; tests live at repo-root `tests/<skill-name>/` so install bundles never ship fixtures. Elsewhere use the destination's test location and keep private/generated evidence out of distributed packages.
 
 Plan package parts from relevant concrete invocations and identify what a fresh run would redo; do not repeat an arbitrary example quota for a small correction.
 Code every run would rewrite → `scripts/`.
@@ -111,8 +115,8 @@ What remains — the judgment and sequencing — is the `SKILL.md` body.
 | `templates/` | The skill emits a canonical artifact with a fixed shape. |
 | `assets/` | Files the deliverable copies or fills in — boilerplate trees, fonts, images — that the agent never reads as text. They are not background reference material. |
 | `agents/` | A bounded subagent role needs a charter or runtime metadata. Each file defines that role's scope, inputs, outputs, and hand-off; it is never a child skill and never contains `SKILL.md`. |
-| repo-root `tests/<skill-name>/` | Focused functional, security, and data-integrity fixtures for the requested effects. Any `scripts/` file ships with a matching test module. Packages carry no `tests/`; tests live at repo root so install bundles never ship fixtures. |
-| `evals/` | Local scratch for generated run transcripts, scores, and judge notes (§7) — **gitignored, never committed, never a pass condition**. Optional reusable scenarios may live under repo-root `tests/<skill-name>/evals/`; they are not a required wording- or procedure-locking corpus. |
+| Tests (this library: repo-root `tests/<skill-name>/`) | Focused functional, security, and data-integrity fixtures for the requested effects. Any `scripts/` file ships with matching regression coverage. This library keeps tests outside packages so install bundles never ship fixtures; other destinations follow their own placement policy. |
+| `evals/` | Local scratch for generated run transcripts, scores, and judge notes (§7) — **never committed, never a pass condition**; gitignore it in Git destinations. Optional reusable scenarios may live with the destination's tests (this library: `tests/<skill-name>/evals/`); they are not a required wording- or procedure-locking corpus. |
 | `.env` / `.env.example` | Any credential, token, or host-specific value. Commit only `.env.example` with placeholders. |
 
 An additional directory needs a concrete execution purpose not covered by these parts; document that purpose in the package rather than using it for grouping.
@@ -121,7 +125,7 @@ Hermes, Claude Code, Codex, Cursor, and Grok-native share each package's `SKILL.
 
 ## 6. CHANGELOG
 
-Every package owns a `CHANGELOG.md`.
+Every package in this library owns a `CHANGELOG.md`; other destinations follow §5's history rule.
 One line per entry:
 
 ```
@@ -151,7 +155,7 @@ A prose correction can use focused contract review; explain the selection instea
 Do not impose fixed case counts, a provider quorum, the entire model-by-runtime matrix, generated eval/run outputs as a pass condition, or a replacement checker-of-checker.
 Keep a schema field, check, gate, or receipt only when it has a current consumer or an independent safety obligation.
 
-Optional reusable scenarios may live at repo-root `tests/<skill-name>/evals/`.
+Optional reusable scenarios may live with the destination's tests (this library: repo-root `tests/<skill-name>/evals/`).
 They are authored inputs an evaluator or reviewer may choose; they are not a universal JSON vocabulary, a format gate, or generated run output.
 Presence, case count, grading shape, and wording snapshots are not quality gates and are not checked by the format validator.
 Absence of a corpus is not a format failure, and generated transcripts or scores must not be committed as SSOT.
@@ -161,8 +165,10 @@ Include negative expectations whenever the requested operation could encounter a
 
 Use matched baseline and candidate runs when claiming an improvement or comparing competing designs.
 For updates, preserve the current package snapshot rather than comparing the candidate to nothing.
-Record the exact task, base commit and package digest, actual runtime/model or human judge, invoked surface, results, and limitations.
-Uncommitted work requires its own content identity; the base commit does not identify it.
+Record the exact task, target location, requested effects, evaluated file and support-resource scope, base commit where one exists and the content digest of the evaluated snapshot, chosen checks, actual runtime/model or human judge, invoked surface, results labeled as executed or reviewed, trigger findings, and limitations.
+Keep this in the existing task summary or evaluation artifact and hand off its accessible reference with the package; do not prescribe a new receipt schema or universal filename.
+Uncommitted work requires its own content identity; the base commit does not identify it, and a location change alone does not invalidate provably identical content.
+This receipt is the evidence handoff a destination gate consumes (bstack `promote` verifies that it corresponds to the current snapshot and covers the requested effect, without re-authoring or repeating the quality evaluation); changed triggers, body, or required resources invalidate the affected evidence, and missing, stale, or inaccessible evidence returns the package to authoring as incomplete rather than passing as evaluated.
 Do not report a release commit, PR, measured delta, or successful live effect before it exists.
 
 For a stronger routing directive, freeze prompts and labels before tuning, keep unseen prompts for generalization, and judge the final candidate independently.
@@ -171,7 +177,7 @@ Use ordinary prose when stronger routing pressure is not justified.
 Never extrapolate the observed runtime result into verified support for unavailable runtimes.
 Keep transcripts and private judge notes in gitignored scratch; commit only approved reusable fixtures with the package change.
 
-Skillify owns authoring and useful evidence; the destination gate owns formal admission, routing, packaging, and release.
+Skillify owns authoring and useful evidence at the chosen location; the destination gate owns formal admission, routing, packaging, and release, and no install, registration, PR, or publication follows authoring automatically.
 Reuse evidence only when it covers the current task, exact snapshot, and requested effect; a stale historical receipt is not permission.
 Review a common policy once and use domain batches for its dependent changes, not a full workflow per skill.
 An active selected runtime workflow still owns its genuine verification and terminal rules.
@@ -211,6 +217,8 @@ Encode the resulting runtime form in the affected package, or link to the exact 
 When sources conflict, disclose the conflict where the fact is used; prefer a more-specific repository-local contract or reproducible evidence matching the target version and platform over general or stale documentation.
 Leave an unresolved fact unknown rather than inventing a value, behavior, or command.
 
+A dependency is related to a create or update only when the package's recipe actually invokes it or the selected destination or runtime requires it for this task.
+An installed but unused runtime or CLI — GJC, `gh`, a vendor CLI, a vault path — is unrelated to that run even when it is stale, and never blocks authoring at a destination that does not need it.
 For every mutable CLI, API, service, runtime, or related official skill requirement, the affected package records its name, official source URL, installed-version probe, support boundary, and release or update trigger in its requirements notes or a linked reference.
 Record `verified_against: <tool>@<version>` in the affected package's CHANGELOG bullet whenever its recipe depends on a probed mutable tool.
 The probe is an exact safe command or API query that reports the installed or selected version; the boundary says which version range, platform, or capability the recipe supports.
@@ -218,10 +226,10 @@ The probe is an exact safe command or API query that reports the installed or se
 Every create or update compares related official skills and CLI/agent runtimes to the official latest stable, including major, then applies these outcomes before the run can succeed:
 
 - **Current** — installed and resulting versions already match that latest stable. Record the verified no-op.
-- **Stale** — actually update through the official channel on the working host, then verify the resulting versions and repair and verify impacted siblings. Detecting staleness without updating is incomplete.
+- **Stale** — actually update through the official channel on the working host, then verify the resulting versions and repair and verify impacted siblings. Detecting staleness without updating is incomplete. The update is a host effect: when the current task's approval does not cover it, report the stale dependency and leave the run incomplete rather than updating silently or claiming success.
 - **Update or verification failure** — leave the authoring run incomplete. Do not report success, skip the update, or invent an unsupported blanket fallback.
 - **Other devices** — perform the same update when that skill is deployed there, not as a substitute for the working-host update.
-- **Unrelated tools** — leave them untouched.
+- **Unrelated tools** — leave them untouched; an optional runtime the task never invokes is unrelated.
 
 The agent chooses how to probe, update, recover, and verify within this contract.
 Do not add generic repeated consent for reversible in-scope work.
@@ -242,8 +250,9 @@ Official vendor skills remain the product-usage SSOT; local recipes do not repla
 
 ## 12. Referenced paths
 
-Every package-relative path a `SKILL.md` mentions — `scripts/<file>`, `references/<file>`, `templates/<file>`, `assets/<file>`, `agents/<file>` — must exist inside that package after resolving symlinks; test paths resolve under repo-root `tests/<skill-name>/`.
+Every package-relative path a `SKILL.md` mentions — `scripts/<file>`, `references/<file>`, `templates/<file>`, `assets/<file>`, `agents/<file>` — must exist inside that package after resolving symlinks; test paths resolve at the destination's test location (this library: repo-root `tests/<skill-name>/`).
 A recipe step that points at a script or reference the package does not ship is a broken recipe, and a reviewer cannot tell it from a real one by reading.
 The validator (`scripts/validate-skill-format.py`, `MISSING_REFERENCED_PATH`) fails the package on the first missing, dangling, or out-of-package path, including a link whose target lives in a sibling package even when that sibling file exists in the repository; fix it by adding the file inside this package or by removing the mention, never by leaving a placeholder.
-A markdown link that climbs out of the package (`](../other/...)`) is never allowed: cross-package pointers are prose that names the skill and its file, because the Hermes tap fetcher treats a `../` link as a traversal attempt and aborts the whole install (`TRAVERSAL_LINK`).
+In this library or a package targeting Hermes taps, a markdown link that climbs out of the package (`](../other/...)`) is not allowed: cross-package pointers are prose that names the skill and its file, because the Hermes tap fetcher treats a `../` link as a traversal attempt and aborts the whole install (`TRAVERSAL_LINK`).
+Other destinations use their own cross-package reference convention without treating external files as contained support resources or bypassing access permissions.
 In-package symlinks to contained files are valid; escaping or dangling links are missing.
