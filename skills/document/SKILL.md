@@ -1,8 +1,8 @@
 ---
 name: document
-description: Scaffolds and authors repository documentation through a six-type ontology and canonical artifacts. Use when asked to scaffold repository docs, "record this decision", "where does this spec go", "update the README", "draft the project CHANGELOG", or "comment-the-why". Not for conducting research (use research), technical reports (use write-report), API-surface comments, or DESIGN.md, visual direction, UX audits, and design-system work (use design).
+description: Scaffolds and authors repository documentation through a six-type ontology and canonical artifacts. Use when asked to scaffold repository docs, "record this decision", "where does this spec go", "draft the project CHANGELOG", or "comment-the-why". Not for READMEs (use readme), conducting research (use research), technical reports (use write-report), API-surface comments, or DESIGN.md, visual direction, UX audits, and design-system work (use design).
 metadata:
-  version: 4.1.4
+  version: 5.0.0
 ---
 
 # document
@@ -36,7 +36,6 @@ Create a `decision` artifact only when the user explicitly asks to record a deci
 | Task | Read | Author with |
 |------|------|--------------|
 | Record a cross-cutting decision / write an ADR | `references/adr.md` | `templates/adr.md` |
-| Write or update the repository README | `references/readme.md` | `templates/readme.md` |
 | Write the project-level CHANGELOG / release notes | `references/changelog.md` | `templates/changelog.md` |
 | Decide which code comments survive (Comment Sicko keep-list) | `references/inline-comments.md` | — |
 | Write or review prose in a doc, RFC, README, PR description, or commit message | `references/technical-writing.md` | — |
@@ -49,6 +48,7 @@ No documentation task should dead-end here — every repo-level artifact and eve
 ### Nearest-neighbor boundary
 
 `design` owns `DESIGN.md`, visual direction, UX audits, and design-system work; route those requests there.
+`readme` owns the repository `README.md`; route README authoring there.
 
 **References vs research:** a references file is a verbatim static copy of an external document; a research file is your own synthesis.
 Never merge them.

@@ -1,8 +1,8 @@
 ---
 name: write-prd
-description: Authors product requirements documents by filling a provided or packaged PRD template from product context, with One Pager, scope, metrics, rollout, open issues, and history kept coherent. Use when asked to "write a PRD", "fill this PRD template", "turn this product idea into a PRD", "complete the product requirements document", or "PRD 작성해줘". Not for ADRs, READMEs, changelogs, or docs-ontology artifacts (use `document`), or one-off technical reports (use `write-report`).
+description: Authors product requirements documents by filling a provided or packaged PRD template from product context, with One Pager, scope, metrics, rollout, open issues, and history kept coherent. Use when asked to "write a PRD", "fill this PRD template", "turn this product idea into a PRD", "complete the product requirements document", or "PRD 작성해줘". Not for READMEs (use `readme`), ADRs, changelogs, or docs-ontology artifacts (use `document`), or one-off technical reports (use `write-report`).
 metadata:
-  version: 1.1.0
+  version: 1.1.1
 ---
 
 # write-prd
