@@ -9,9 +9,13 @@ Depth belongs in <details> or in linked docs; the first screen stays short.
   </a>
 </h1>
 
-<h3 align="center">{What it does and for whom, in one sentence}</h3>
+<h3 align="center">{What it does, who runs it if that matters, and for whom, in one sentence}</h3>
 
-<p align="center">{Optional supporting line with the concrete scope}</p>
+<p align="center">{Optional supporting paragraph with the concrete scope}</p>
+
+<p align="center">
+  <b>{Audience}</b> {first step with a visible link}. <b>{Other audience}</b> {first step with a link}.
+</p>
 
 <p align="center">
   <b>{Authoritative language}</b> · <a href="{README.xx.md}">{Other language}</a>
