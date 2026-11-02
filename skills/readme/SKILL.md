@@ -35,7 +35,7 @@ The README is a map, not a manual. Orient the reader, collapse depth, and link t
 6. **Keep translations in parity.** Name one authoritative language. Update every maintained translation in the same change, or remove it. Never add a translation nobody will maintain. Parity covers facts, not sentences: write one fact list, then write each language from it, because a sentence-by-sentence pair reads as translated in at least one of them.
 7. **Audit the community files.** Follow the rules below, and link what exists from the README.
 8. **Align the repository's front door.** Follow the rules below.
-9. **Verify, then run `unslop`** over English prose, and use a language-specific editor for other languages if one is installed. Commands, code blocks, and fixed labels are excluded. Report any prose that had no editor.
+9. **Run `scripts/check_readme.py` on every README file and work through the verification list, then run `unslop`** over English prose, and use a language-specific editor for other languages if one is installed. Commands, code blocks, and fixed labels are excluded. Report any prose that had no editor.
 10. **Run the cold read, the fact check, and the clean checkout.** Follow the rules below and fix what they expose.
 
 ## Page order
@@ -67,7 +67,7 @@ The title, tagline, and quick start are required. Every other block is optional 
 - **Screenshots:** confirm the image contains no real names, emails, or tokens. Claim "synthetic data" only when the seed, fixture, or capture record says so, not from names visible in the image; otherwise leave the image out. Before capturing new images, look for a clean set the project already made, such as a docs site's, since QA evidence tends to show development badges, test names, and annotation boxes. If the capture record sits on an unmerged branch, say so in the report. Fetch each remote URL and view each image. Prefer committed files; an image on a release breaks if that release is deleted, so report any you keep there.
 - **Claims:** a feature appears only if the code or the current README supports it. A repository or manifest description is not evidence. When one claims more than the code does, leave the claim out and report it; change the manifest only on request.
 - **Product words:** read each label and term in the UI code before writing it, and use the word the product uses. A synonym from an earlier draft sends the reader looking for a button that does not exist.
-- **Disagreements:** when UI copy, a policy page, and the code disagree, report it instead of writing around it. Wording that fits both hides a bug from the people who could fix it.
+- **Disagreements:** when UI copy, a policy page, and the code disagree, report it to the owner instead of writing around it. Wording that fits both hides a bug from the people who could fix it. On the page, state what the code does now or leave the rule out. Do not publish an unfixed privacy or security gap in the README, and do not add a status such as "under review" that nobody gave you.
 - **Metrics and visibility:** read how a number is computed before saying what it measures. Before saying who can see something, check what the API returns to each kind of viewer, because a column the UI leaves out can still be in the response.
 - **Conditions:** a sentence about a rule says when it applies and to whom. A limit stated without its condition is false for the readers outside it.
 - **Diagrams:** keep the old diagram's edges unless the code shows otherwise, and add only edges you traced. An edge written from memory looks as plausible as a real one.
@@ -168,7 +168,7 @@ Skip the checks that need `{owner}/{repo}` and mark them not run, then repeat th
 - [ ] `python3 <this skill>/scripts/check_readme.py README.md [translations]` exits 0, covering links, anchors, images, badge state, placeholders, and translation structure, but no facts; its warnings were read
 - [ ] Each command the page prints, including teardown, was run from a clean checkout and its effect checked, or the point where that stopped is reported
 - [ ] A fresh fact-checker checked each claim against the code, or the check is reported as not run
-- [ ] Disagreements among copy, policy, and code, and unconfirmed official names, are reported
+- [ ] Disagreements among copy, policy, and code, and unconfirmed official names, are reported to the owner, and the page publishes no unfixed privacy or security gap
 - [ ] A new cold reader, after the last rewrite, named the project's purpose, audience, and next action without help, or the read is reported as not run
 - [ ] Rendered through `gh api -X POST /markdown -f mode=gfm -f context=<owner/repo> -f text="$(cat README.md)"` and inspected in a browser or headless screenshot; this path renders neither relative images nor Mermaid, so point image paths at local files and paste Mermaid into a repository preview
 - [ ] Translations match in facts, because the script only compares structure
