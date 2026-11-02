@@ -1,8 +1,8 @@
 ---
 name: write-report
-description: 'Scaffolds and authors a project''s one-off canonical technical report against a single YAML frame (technical-report.yaml) whose depth is the enforced table of contents — section, then heading, then required must-content. Use when asked to "scaffold a technical report" or "기술 보고서", when writing or restructuring a report section against that frame, or when checking a section''s structure and pinned sources for "TOC enforcement" against its source manifest. Not for ongoing project documentation, READMEs, ADRs, or changelogs (use `document`) — write-report owns exactly one canonical, one-off deliverable per project.'
+description: 'Scaffolds and authors a project''s one-off canonical technical report against a single YAML frame (technical-report.yaml) whose depth is the enforced table of contents — section, then heading, then required must-content. Use when asked to "scaffold a technical report" or "기술 보고서", when writing or restructuring a report section against that frame, or when checking a section''s structure and pinned sources for "TOC enforcement" against its source manifest. Not for READMEs (use `readme`), ongoing project documentation, ADRs, or changelogs (use `document`) — write-report owns exactly one canonical, one-off deliverable per project.'
 metadata:
-  version: 1.1.0
+  version: 1.1.1
 ---
 
 # write-report

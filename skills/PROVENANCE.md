@@ -11,7 +11,8 @@ Provenance never lives in `SKILL.md` (body or frontmatter): the recipe is presen
 
 | skill | origin | upstream repo / ref | relationship |
 |---|---|---|---|
-| `document` | six-type repository-documentation ontology and ADR/README/changelog guidance; former design sub-recipe transferred to `design` | addyosmani/agent-skills; code-yeongyu/lazycodex (MIT) | derived |
+| `document` | six-type repository-documentation ontology and ADR/changelog guidance; README guidance transferred to `readme`; former design sub-recipe transferred to `design` | addyosmani/agent-skills; code-yeongyu/lazycodex (MIT) | derived |
+| `readme` | README ownership and "map, not a manual" guidance moved from `document`; showcase page structure studied from two public READMEs, with no text copied | addyosmani/agent-skills; [thedotmack/claude-mem](https://github.com/thedotmack/claude-mem); [affaan-m/ECC](https://github.com/affaan-m/ECC) | adapted |
 | `design` | canonical `DESIGN.md`, UX/UI judgment, bad-UX audit, and rendered-evidence workflow; absorbs the former document design sub-recipe | [google-labs-code/design.md](https://github.com/google-labs-code/design.md) at [`9bf8eae67128b6cc55ad9bf86665767deb4c11cd`](https://github.com/google-labs-code/design.md/tree/9bf8eae67128b6cc55ad9bf86665767deb4c11cd) (Apache-2.0) | adapted |
 | `distil` | operator's own WIP draft (absorbed 2026-07-06) | — | original |
 | `principle-programming` | `programming` skill; ponytail ladder + never-cut list + root-cause rule; gajae-code agent discipline; TS clean-code + smell catalog | [code-yeongyu/lazycodex](https://github.com/code-yeongyu/lazycodex), [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) (MIT), [labs42io/clean-code-typescript](https://github.com/labs42io/clean-code-typescript) (MIT) | adapted |
