@@ -22,7 +22,7 @@ The README is a map, not a manual. Orient the reader, collapse depth, and link t
 
 | Situation | Where the facts come from | What changes |
 |---|---|---|
-| Existing repository | Current README, manifests, CI, releases, metadata | Inventory the old README's facts and account for each. Keep existing links and anchors working where other pages point at them. |
+| Existing repository | Current README, manifests, CI, releases, metadata | Inventory the old README's facts and account for each. If HEAD already holds a rewrite, inventory the last commit before it. Keep existing links and anchors working where other pages point at them. |
 | New repository | Code and manifests only | Skip the inventory. Run the project and capture real output. Leave out badges, sections, and translations with nothing behind them yet: a short true page beats a full template. |
 
 ## Workflow
@@ -47,7 +47,7 @@ The README is a map, not a manual. Orient the reader, collapse depth, and link t
 | Next action | One line, only with several audiences | Name each audience and its first link, with the URL visible. For a hosted service, say that the repository is its source code. |
 | Language row | Current language in bold | Only languages that exist. |
 | Badges | Two rows at most: status, then stack | See the badge rules. |
-| Navigation | One anchor per section that exists, seven at most | Primary action first. With no hosted URL or registry yet, that is the quick start. |
+| Navigation | One anchor per section that exists, seven at most; skip it under three sections | Primary action first. With no hosted URL or registry yet, that is the quick start. |
 | Preview or demo | Screenshots, GIF, or terminal output | Label synthetic data. Terminal output over a committed sample needs no label if the block shows the sample. |
 | Features | Eight one-line bullets at most | Benefit first; an emoji may lead, one per bullet. |
 | Quick start | Copy-paste commands to a working state | Include any step without which the commands fail. |
@@ -62,9 +62,9 @@ The title, tagline, and quick start are required. Every other block is optional 
 
 - **Badges:** show only what is true now and updates itself or changes rarely. Prefer release, CI status, license, and registry version. Point the CI badge at a workflow file that exists and check its current state.
 - **No vanity metrics:** no star-history charts, trending badges, or download, contributor, and test counts unless they are large, current, and dynamically sourced.
-- **Stack badges:** only for technology the manifests confirm, with the version constraint they declare and CI runs. Such a badge has something behind it even in a new repository.
+- **Stack badges:** only for technology the manifests or compose files confirm, with the version constraint they declare and CI runs. Write a caret range as its major version. Such a badge has something behind it even in a new repository.
 - **Commands:** confirm each script in the manifest. A quick start that needs secrets or config before it runs must say so before the run command.
-- **Screenshots:** confirm the image contains no real names, emails, or tokens. Claim "synthetic data" only when its source says so; otherwise leave the image out. Fetch each remote URL and view each image. Prefer committed files; an image on a release breaks if that release is deleted, so report any you keep there.
+- **Screenshots:** confirm the image contains no real names, emails, or tokens. Claim "synthetic data" only when the seed, fixture, or capture record says so, not from names visible in the image; otherwise leave the image out. Fetch each remote URL and view each image. Prefer committed files; an image on a release breaks if that release is deleted, so report any you keep there.
 - **Claims:** a feature appears only if the code or the current README supports it. A repository or manifest description is not evidence. When one claims more than the code does, leave the claim out and report it; change the manifest only on request.
 
 ## Hero rules
@@ -73,7 +73,7 @@ The title, tagline, and quick start are required. Every other block is optional 
 - Prefer one SVG with its own background so it works on light and dark themes without a `<picture>` pair. Use a pair only when the artwork needs a transparent background.
 - Stay language-neutral so every translation reuses the file.
 - Use system font stacks; a README image cannot load web fonts.
-- Commit it under the repository's existing assets or docs directory and render it to PNG once to check it.
+- Commit it under the repository's existing assets or docs directory and render it to PNG once with any SVG renderer to check it.
 - With no hero, use a plain `<h1 align="center">{Project}</h1>`.
 
 ## Community files
@@ -104,7 +104,7 @@ These are repository settings, so report proposed values and apply them only wit
 Writers cannot judge their own first screen, and they already know the steps a quick start omits.
 
 - **Cold read.** Give a reader with no context only the text above the first `##` heading, using a fresh subagent if one is available and otherwise the user. Images count only as alt text. Ask what the project does, who runs it, who it is for, and what each audience does next, without giving the intended answers. Check each thing they find unclear against the code before rewording it. Rewrite what they get wrong, then repeat with a new reader, since a fix can raise a new question. If no reader is available, mark it not run and report it.
-- **Clean checkout.** After committing, run `d=$(mktemp -d) && git clone -q . "$d/repo" && cd "$d/repo"`, then paste the quick start exactly as written. Add any missing step to the README. If the commands need secrets or services you cannot provide, run as far as you can and report where you stopped.
+- **Clean checkout.** After committing, in a temporary copy if the work should stay uncommitted, run `d=$(mktemp -d) && git clone -q . "$d/repo" && cd "$d/repo"`, then paste the quick start exactly as written. Add any missing step to the README. If the commands need secrets or services you cannot provide, run as far as you can and report where you stopped.
 - **Render.** View the first screen at desktop and phone width, in light and dark themes.
 
 ## No remote yet
@@ -147,7 +147,7 @@ Skip the checks that need `{owner}/{repo}` and mark them not run, then repeat th
 - [ ] `python3 <this skill>/scripts/check_readme.py README.md [translations]` exits 0, covering links, anchors, images, badge state, placeholders, and translation structure, but no facts; its warnings were read
 - [ ] Each command was run from a clean checkout, or the point where that stopped is reported
 - [ ] A new cold reader, after the last rewrite, named the project's purpose, audience, and next action without help, or the read is reported as not run
-- [ ] Rendered through `gh api -X POST /markdown -f mode=gfm -f context=<owner/repo> -f text="$(cat README.md)"` and inspected in a browser; relative images and Mermaid are checked separately because this path renders neither
+- [ ] Rendered through `gh api -X POST /markdown -f mode=gfm -f context=<owner/repo> -f text="$(cat README.md)"` and inspected in a browser or headless screenshot; this path renders neither relative images nor Mermaid, so point image paths at local files and paste Mermaid into a repository preview
 - [ ] Translations match in facts, because the script only compares structure
 - [ ] The repository's formatter and public-safety checks pass; report any it does not have
 - [ ] Description, homepage, topics, and social image match the README, or proposed values are reported
