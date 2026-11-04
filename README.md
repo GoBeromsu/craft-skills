@@ -2,7 +2,7 @@
 
 Work-craft Agent Skills for research and engineering by Beomsu Koh.
 
-![License: MIT](https://img.shields.io/badge/license-MIT-green) [![Release](https://img.shields.io/github/v/release/Xia-Ataraxia/craft-skills)](https://github.com/Xia-Ataraxia/craft-skills/releases/latest)
+![License: MIT](https://img.shields.io/badge/license-MIT-green) [![Release](https://img.shields.io/github/v/release/GoBeromsu/craft-skills)](https://github.com/GoBeromsu/craft-skills/releases/latest)
 
 Own your craft, vendor-neutral: all 49 packages use the plain Agent Skills `SKILL.md` layout.
 The portable core contains no runtime-specific behavior; Claude Code, Codex, Hermes, Cursor, and Grok-native integration lives in runtime lenses and generated instruction-file adapters.
@@ -87,7 +87,7 @@ This is a task-oriented library for software and research work — kept separate
 Use the Claude Code marketplace channel:
 
 ```text
-/plugin marketplace add Xia-Ataraxia/craft-skills
+/plugin marketplace add GoBeromsu/craft-skills
 /plugin install craft-skills@craft-skills
 ```
 
@@ -100,7 +100,7 @@ Then invoke a skill above by name, such as `craft-mode`, `correct`, `how`, `tdd`
 The observed Codex plugin marketplace channel is:
 
 ```bash
-codex plugin marketplace add Xia-Ataraxia/craft-skills
+codex plugin marketplace add GoBeromsu/craft-skills
 codex plugin add craft-skills@craft-skills --json
 ```
 
@@ -109,7 +109,7 @@ Marketplace package metadata is tracked in `.codex-plugin/plugin.json`.
 For plain Agent Skills development context, clone into a project-root `.agents/skills` directory:
 
 ```bash
-git clone https://github.com/Xia-Ataraxia/craft-skills.git .agents/skills/craft-skills
+git clone https://github.com/GoBeromsu/craft-skills.git .agents/skills/craft-skills
 ```
 
 The clone is optional development context; its skills have the nested layout `.agents/skills/craft-skills/skills/<name>/SKILL.md`.
@@ -121,7 +121,7 @@ The clone is optional development context; its skills have the nested layout `.a
 Install the repository as one portable Agent Plugin (root `plugin.json`) and let Hermes keep it current:
 
 ```bash
-hermes plugins install Xia-Ataraxia/craft-skills --enable
+hermes plugins install GoBeromsu/craft-skills --enable
 hermes config set plugins.auto_apply true   # apply git-plugin updates unattended
 ```
 
@@ -132,7 +132,7 @@ hermes config set plugins.auto_apply true   # apply git-plugin updates unattende
 Register the marketplace once, then install the plugin:
 
 ```bash
-gjc plugin marketplace add Xia-Ataraxia/craft-skills
+gjc plugin marketplace add GoBeromsu/craft-skills
 gjc plugin install craft-skills@craft-skills
 ```
 
