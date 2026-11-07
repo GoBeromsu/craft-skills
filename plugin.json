@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "craft-skills",
-  "version": "0.38.0",
+  "version": "0.39.0",
   "description": "Vendor-neutral research and engineering skills for Claude Code: craft-mode, principle owners, situational workflows, and domain tools discovered from skills/*/SKILL.md.",
   "author": {
     "name": "beomsukoh",

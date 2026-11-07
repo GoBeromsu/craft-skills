@@ -1,6 +1,6 @@
 {
   "name": "craft-skills",
-  "version": "0.38.0",
+  "version": "0.39.0",
   "description": "Vendor-neutral research and engineering skills for Codex: craft-mode, principle owners, situational workflows, and domain tools discovered from skills/*/SKILL.md.",
   "author": {
     "name": "beomsukoh",
@@ -20,7 +20,7 @@
   "interface": {
     "displayName": "craft-skills",
     "shortDescription": "Craft-mode, principle owners, and research and engineering workflows",
-    "longDescription": "craft-skills discovers its packages from skills/*/SKILL.md. Invoke craft-mode for multi-step playbooks, principle-architecture, principle-backend, principle-frontend, principle-programming, or principle-testing for policy, and named workflows for explanation, correction, TDD, evidence, review, parallel work, recall, and prose editing. Domain packages cover APIs, databases, CI/CD, design, documentation, research, debugging, version control, structural search, project bootstrap, ML, GPUs, security, browsers, Obsidian, Orca, and Tailscale.",
+    "longDescription": "craft-skills discovers its packages from skills/*/SKILL.md. Invoke craft-mode for multi-step playbooks, principle-architecture, principle-backend, principle-frontend, principle-programming, or principle-testing for policy, and named workflows for explanation, correction, TDD, evidence, review, parallel work, recall, and prose editing. Domain packages cover APIs, databases, CI/CD, design, documentation, research, debugging, version control, structural search, project bootstrap, ML, GPUs, security, browsers, Orca, and Tailscale.",
     "developerName": "beomsukoh",
     "category": "Engineering",
     "capabilities": ["Read", "Write"],
