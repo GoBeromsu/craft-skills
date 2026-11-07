@@ -2,7 +2,7 @@
 name: craft-help
 description: Guides users through craft-skills setup, craft-mode, and picking the skill, playbook, or principle for a task, then hands back a prompt they can send and the file the answer came from. Use for "craft-help", "which skill should I use", "how do I use craft-mode", "which playbook fits this", "how do I install craft-skills", or "my craft-mode run went wrong". Answers the question without starting the work. Not for doing the work - use craft-mode.
 metadata:
-  version: 1.0.7
+  version: 1.0.8
 ---
 
 # Craft help
@@ -11,7 +11,7 @@ Answer the user's question about craft-skills, hand them a prompt they can send,
 
 A message that asks for work, such as "use craft-skills to fix this bug", is not a help question. Read `craft-mode`, do the work under it, and mention once that a persistent mode keeps it on.
 
-This file maps questions to the skills and files that hold the answers. Those files own the details. Read the file you route to before you quote it, and trust it when it disagrees with this map. The paths here point into the installed plugin, which the user may not be able to open, so give the user the file's public copy: `https://github.com/Xia-Ataraxia/craft-skills/blob/main/` followed by its path.
+This file maps questions to the skills and files that hold the answers. Those files own the details. Read the file you route to before you quote it, and trust it when it disagrees with this map. The paths here point into the installed plugin, which the user may not be able to open, so give the user the file's public copy: `https://github.com/GoBeromsu/craft-skills/blob/main/` followed by its path.
 
 ## Find out what they need
 
@@ -32,7 +32,7 @@ When craft-skills isn't installed and it matters, give them the install route un
 
 ## Get set up
 
-1. Install craft-skills through the runtime's channel in `README.md`: the Claude Code, Codex, or GJC plugin marketplace, the Hermes portable plugin (`hermes plugins install Xia-Ataraxia/craft-skills --enable`), or a skills directory (`.cursor/skills`, `.grok/skills`, or `.agents/skills`) for Cursor, Grok-native, and plain Agent Skills runtimes.
+1. Install craft-skills through the runtime's channel in `README.md`: the Claude Code, Codex, or GJC plugin marketplace, the Hermes portable plugin (`hermes plugins install GoBeromsu/craft-skills --enable`), or a skills directory (`.cursor/skills`, `.grok/skills`, or `.agents/skills`) for Cursor, Grok-native, and plain Agent Skills runtimes.
 2. Start a real task with craft-mode in the runtime's native syntax (`/craft-mode`, or the plugin-qualified handle where the runtime uses one), a goal, and a check that can pass or fail.
 
 Installing changes nothing until the user invokes a skill. `README.md` has the details. Offer to word their first prompt with them, per [`references/prompting.md`](references/prompting.md).

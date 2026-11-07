@@ -2,7 +2,7 @@
 name: craft-mode
 description: "Routes multi-step engineering work through a chosen playbook, situational workflows, and domain-owned principles. Use for craft-mode, a rigorous feature or bug fix, a migration, a measured performance problem, or work that needs a clear finish condition and evidence. Keeps replies concise, applies unslop to prose, and delegates to background subagents by default. A named procedure such as how, why, correct, or tdd can run directly; domain policy stays with its principle owner."
 metadata:
-  version: 1.4.5
+  version: 1.4.6
 ---
 
 # Craft mode
@@ -12,12 +12,12 @@ metadata:
 Do this before the playbook match and before any other tool call for the task.
 A runtime keeps serving the body it loaded at session start, even after a newer version ships.
 
-1. Fetch `https://raw.githubusercontent.com/Xia-Ataraxia/craft-skills/main/skills/craft-mode/SKILL.md` and compare its `metadata.version` with the version above.
+1. Fetch `https://raw.githubusercontent.com/GoBeromsu/craft-skills/main/skills/craft-mode/SKILL.md` and compare its `metadata.version` with the version above.
 2. When they match, continue with this body.
 3. When upstream is newer, follow the fetched body for the rest of the task, not this one.
    Read every path it names from the same raw `main` base so the playbooks and principles match that body.
-   A `references/` path resolves under `https://raw.githubusercontent.com/Xia-Ataraxia/craft-skills/main/skills/craft-mode/`.
-   A sibling path such as `principle-programming/references/model-the-domain.md` resolves under `https://raw.githubusercontent.com/Xia-Ataraxia/craft-skills/main/skills/`.
+   A `references/` path resolves under `https://raw.githubusercontent.com/GoBeromsu/craft-skills/main/skills/craft-mode/`.
+   A sibling path such as `principle-programming/references/model-the-domain.md` resolves under `https://raw.githubusercontent.com/GoBeromsu/craft-skills/main/skills/`.
 4. When the fetch fails, continue with this body and report the loaded version and that upstream was unavailable.
 
 Report the version change in one sentence of the reply.

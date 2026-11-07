@@ -68,7 +68,7 @@ Provenance never lives in `SKILL.md` (body or frontmatter): the recipe is presen
 
 ## Retirement history
 
-- 2026-10-06 — retired `offline-transcribe`, `vmware`, `agents`, `defuddle`, and `guardrails` from source distribution. Their complete packages, owned tests, and provenance remain at [ea1a8123933e2fad19541118d363f2b015b6956e](https://github.com/Xia-Ataraxia/craft-skills/tree/ea1a8123933e2fad19541118d363f2b015b6956e). The Git worktree reference preserves its required dispatcher contract; refactor retains the autofix failure classes in its lint-first reference.
+- 2026-10-06 — retired `offline-transcribe`, `vmware`, `agents`, `defuddle`, and `guardrails` from source distribution. Their complete packages, owned tests, and provenance remain at [ea1a8123933e2fad19541118d363f2b015b6956e](https://github.com/GoBeromsu/craft-skills/tree/ea1a8123933e2fad19541118d363f2b015b6956e). The Git worktree reference preserves its required dispatcher contract; refactor retains the autofix failure classes in its lint-first reference.
 
 ## Relationship vocabulary
 

@@ -1,13 +1,13 @@
 {
   "name": "craft-skills",
-  "version": "0.40.0",
+  "version": "0.40.1",
   "description": "Vendor-neutral research and engineering skills for Codex: craft-mode, principle owners, situational workflows, and domain tools discovered from skills/*/SKILL.md.",
   "author": {
     "name": "beomsukoh",
     "url": "https://beomsukoh.com"
   },
-  "homepage": "https://github.com/Xia-Ataraxia/craft-skills",
-  "repository": "https://github.com/Xia-Ataraxia/craft-skills",
+  "homepage": "https://github.com/GoBeromsu/craft-skills",
+  "repository": "https://github.com/GoBeromsu/craft-skills",
   "license": "MIT",
   "keywords": [
     "engineering",
@@ -24,7 +24,7 @@
     "developerName": "beomsukoh",
     "category": "Engineering",
     "capabilities": ["Read", "Write"],
-    "websiteURL": "https://github.com/Xia-Ataraxia/craft-skills",
+    "websiteURL": "https://github.com/GoBeromsu/craft-skills",
     "defaultPrompt": [
       "Use craft-skills craft-mode for a verified multi-step engineering task",
       "Use craft-skills principle-backend for service architecture and persistence",

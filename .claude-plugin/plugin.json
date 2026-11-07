@@ -1,12 +1,12 @@
 {
   "name": "craft-skills",
   "description": "Vendor-neutral research and engineering skills for Claude Code: craft-mode, principle owners, situational workflows, and domain tools discovered from skills/*/SKILL.md.",
-  "version": "0.40.0",
+  "version": "0.40.1",
   "author": {
     "name": "beomsukoh",
     "url": "https://beomsukoh.com"
   },
-  "homepage": "https://github.com/Xia-Ataraxia/craft-skills",
-  "repository": "https://github.com/Xia-Ataraxia/craft-skills",
+  "homepage": "https://github.com/GoBeromsu/craft-skills",
+  "repository": "https://github.com/GoBeromsu/craft-skills",
   "license": "MIT"
 }
