@@ -13,12 +13,12 @@ The action gate is owned by SKILL.md; the record and read contracts are in [verd
 |---|---|---|---|---|
 | R1 duplicate | Same symptom signature, or same area + trigger + symptom | Canonical live issue link plus the matching signature or all three facts | Link the original; propose close-as-duplicate | Similar title only, possible overlap, or an old closed report only: note-uncertain, stay open |
 | R2 already fixed | A fix addresses reported behavior and is present on the target default-branch snapshot | Fix PR/commit link, default-branch HEAD SHA and proof of presence, comparison with reported behavior | Link the fix; propose close-as-fixed | Open, unmerged, or draft PR, or a fix only on a non-default branch: not R2 |
-| R3 bug | Classification of a defect only; never reproduce here | Existing repro evidence, or the stated missing repro fact | Unproven bug: propose label needs-repro; confirmed bug: route benny | Feature request or vague complaint: not R3 |
+| R3 bug | Classification of a defect only; never reproduce here | Existing repro evidence, or the stated missing repro fact | Unproven bug: propose label needs-repro; confirmed bug: route craft-mode Bug fix | Feature request or vague complaint: not R3 |
 | R4 already exists | Current default-branch implementation satisfies requested behavior and acceptance criteria | Code location link at the snapshot, compared with behavior and criteria | Link-existing-code (close after review); always awaiting-user-review | Partial, flag-gated/unreachable, or different behavior: not R4 |
 | R5 rescope | At least one scope signal below, or no checkable acceptance criteria | Issue link and concrete evidence for every triggered signal, including file count and subsystem boundaries when used | Propose vertical splits, or propose-rewrite when no checkable criteria exist; always awaiting-user-review | Zero signals and checkable criteria: no R5; never touch sibling open issues of another plan |
 
-R3 hands confirmed bugs to benny; benny applies its already-reproduced/existing-fix boundaries downstream.
-Do not reproduce, verify a fix interactively, or route directly to craft-mode bug-fix here.
+R3 hands confirmed bugs to craft-mode Bug fix; its reproduce and existing-fix gates apply downstream.
+Do not reproduce or verify a fix interactively here.
 R4 remains review-gated even when the optional feature map is absent and code evidence is complete.
 
 ### R5 signals

@@ -1,12 +1,12 @@
 # Control-adapter contract
 
-Benny does not know how to start or drive every app. The user must configure one control skill or adapter that implements this contract for the target app.
+craft-mode does not know how to start or drive every app. Reproduction needs one control skill or adapter that implements this contract.
 
-Set its skill name in `control.skill_name`.
+Use the control skill named in AGENTS.md or by the user.
 
-Set the completed user-facing feature map path in `control.feature_map_path`. Copy and fill [`feature-map.example.md`](./feature-map.example.md) outside the installed Benny package instead of editing the copied example.
+Use the user-facing feature map named in AGENTS.md. When there is none, ask the user, or draft one in the format of the **principle-testing** skill's `references/feature-map-example/`.
 
-If the skill, feature map, or a required capability is absent, ambiguous, or incomplete, repro and fix work must fail closed.
+If the skill or feature map is missing, ask the user. If a required capability is absent during a run, mark the run `Blocked` and claim no repro.
 
 ## Required capabilities
 
@@ -136,7 +136,7 @@ The adapter must:
 - Keep secrets out of logs and artifacts.
 - Keep captures outside the repository.
 - Support a fresh or reset state between the two repro attempts.
-- Avoid production changes unless the user explicitly configured a safe test action.
+- Avoid production changes unless the user explicitly agreed to a safe test action.
 
 ## Environment translation
 
@@ -145,7 +145,7 @@ Before declaring an environment block, restate the defect without platform-speci
 Examples:
 
 - A named browser may mean any external browser.
-- A named key may mean the configured shortcut.
+- A named key may mean the app's own shortcut for that action.
 - A named remote host may mean a delayed or disconnected remote target.
 
 Use a translated attempt only when it tests the same underlying behavior. Label it as translated evidence. Do not call it an exact repro when the missing environment is part of the defect.
@@ -154,7 +154,9 @@ Hardware prompts, operating-system permission dialogs, device-only APIs, and una
 
 ## Setup check
 
-Before enabling the repro automation, run one harmless adapter check:
+Before the first repro in a repository, confirm that the feature map has one section per user-facing feature, written from the user point of view. Each section names the user path, the adapter actions and reset, stable selectors, the states to exercise, preconditions (auth, fixtures, permissions, flags, services), and the screenshot, video, and read-only cross-check that prove the state. Leave implementation details and current code paths to runtime discovery.
+
+Then run one harmless adapter check:
 
 1. Bring up the app.
 2. Confirm the stable app marker.
@@ -166,4 +168,6 @@ Before enabling the repro automation, run one harmless adapter check:
 8. Record a short clip.
 9. Clean up.
 
-Enable repro work only when all nine steps succeed and no source post is involved.
+The check must also show that the adapter can navigate every mapped feature through the real UI and inspect state without forcing the result.
+
+Start repro work only when all nine steps succeed and no source post is involved; otherwise ask the user or mark the run `Blocked`.

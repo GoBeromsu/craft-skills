@@ -2,7 +2,7 @@
 name: principle-programming
 description: Guides correctness-first, type-strict Python and TypeScript implementation. Use when asked to write a `.py` or `.ts` file, scaffold a Python/TypeScript project, add strict types, assess an implementation diff for correctness or type holes, or fix a reproducible defect. Not for smell-only assessment or behavior-preserving restructuring — use refactor; not for suite-level test architecture — use principle-testing.
 metadata:
-  version: 3.2.4
+  version: 3.3.0
 ---
 
 # principle-programming

@@ -2,7 +2,7 @@
 name: show-me-your-work
 description: "Keeps a reviewable TSV decision trail for long-running, autonomous, or multi-phase work, with evidence pointers and outcomes. It applies to '/show-me-your-work', 'keep a decision log', and work a human reviews after stepping away. It audits each run's rows and keeps the file local unless a reviewer needs the trail committed. Not for designing the workflow that produces the decisions - use figure-it-out."
 metadata:
-  version: "1.0.3"
+  version: "1.0.4"
 ---
 
 # Show me your work
@@ -65,7 +65,7 @@ Correct the log, not the story. The audit never edits or removes a row, even an 
 
 ## Cross-model review of the trail
 
-Before handing back, spawn a subagent on a different model family from the one that did the work. Self-review is not a substitute. The subagent reads the audit trail and the run's transcript, then flags what the user should pay attention to. Not a redo of the work, a scan for what's suboptimal or risky.
+Before handing back, spawn a subagent on a different model family from the one that did the work. Self-review is not a substitute. The subagent reads the audit trail and the run's transcript, then flags what the user should pay attention to. Not a redo of the work, a scan for what's suboptimal or risky. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section of the **craft-mode** skill.
 
 - Decisions logged with weak or absent evidence.
 - Verification steps skipped or claimed without proof in the transcript.

@@ -2,7 +2,7 @@
 name: principle-testing
 description: Designs, improves, and audits test suites around behavior and risk, independent oracles, counterfactual evidence, deterministic diagnosis, and cost. Use for generated-test review, unit/component/integration/e2e or smoke placement, test-suite health, surviving-mutant triage on changed code, flaky-test policy, fixtures, and test audits. Not for production-code red-green implementation, which belongs to principle-programming; diagnosis or repair of one currently failing or intermittent test, which belongs to debug; structural-change characterization, which belongs to refactor; ML evaluation methodology, which belongs to ml; or project-specific agent evaluation methodology.
 metadata:
-  version: 3.3.0
+  version: 3.4.0
 ---
 
 # principle-testing
@@ -16,8 +16,8 @@ Keep taste, context, and judgment in docs; a policy document is a legitimate sub
 
 - [prove-it-works](references/prove-it-works.md) verifies the real artifact, not a proxy.
 - [sequence-verifiable-units](references/sequence-verifiable-units.md) ends each small unit in a check before starting the next.
-- [test-behavior-not-implementation](references/test-behavior-not-implementation.md) calls the code the way its users do and asserts a literal expected value, and deletes a test that would still pass if every imported function returned `undefined`.
-- [explain-the-number](references/explain-the-number.md) names what limits a measured number and rules out that it measured something else, before anyone trusts or reports it. `/benchmark-checklist` in the benchmark-checklist skill turns it into seven questions you answer from real runs.
+- [test-behavior-not-implementation](references/test-behavior-not-implementation.md) asserts what the code's users can observe, so that the test fails when that behavior breaks and keeps passing when only the internals change.
+- [explain-the-number](references/explain-the-number.md) names what limits a measured number and rules out that it measured something else, before you measure and before anyone trusts or reports it. `/benchmark-checklist` in the benchmark-checklist skill turns it into seven questions you answer from real runs.
 
 ## Output contract
 

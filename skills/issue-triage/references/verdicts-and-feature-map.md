@@ -11,7 +11,7 @@ Return a list of records in the current run. Store run artifacts only in the use
 | guard | For guarded none: required-read-failed, injection-suspected, or cross-repo-only; null otherwise |
 | evidence | Match: at least one target-repository link and facts satisfying the rule. None: issue link plus reason. R5 also lists every triggered signal |
 | proposed_action | close-as-duplicate, close-as-fixed, label needs-repro, link-existing-code (close after review), propose-split, propose-rewrite, note-uncertain, or none |
-| route | benny, deep-interview, write-prd, human, or none |
+| route | craft-mode-bug-fix, deep-interview, write-prd, human, or none |
 | review | not-required for evidence-complete R1/R2 and R3 labels; awaiting-user-review for R4/R5 always and human escalations |
 | write_status | not-applied-dry-run, proposed, or applied+readback; the last requires a real authorized write and observed read-back |
 
@@ -96,5 +96,5 @@ Regex completeness is not assumed; a clean automated pass alone is insufficient.
 Read docs/feature-map.md in the target repository by default.
 The sole override is a feature-map path explicitly named in the target's AGENTS.md or README; resolve it within that repository, not the installed skill.
 Write maps from the user's point of view: purpose, entry path, visible behavior, states, preconditions, and evidence, rather than a frozen internal architecture inventory.
-Benny's references/feature-map.example.md illustrates this convention; name that sibling resource in prose rather than linking across packages.
+The **principle-testing** skill's `references/feature-map-example/` illustrates this convention.
 Product data belongs in the target repository. This skill never creates, edits, or copies a feature map during triage.

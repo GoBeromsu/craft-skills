@@ -1,6 +1,6 @@
 ### Bug fix
 
-**You own this task. Plan, review, verify.** Delegate investigation and the fix to subagents, stay in the lead.
+**You own this task. Plan, review, verify.** Delegate investigation and the fix to subagents, stay in the lead. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section.
 
 Be scientific. Every shipped line traces to runtime evidence. Belt-and-suspenders that "might help" is a hypothesis, not a fix. It does not ship. When evidence refutes a hypothesis, revert what it motivated. The smallest change the evidence justifies ships, nothing more.
 
@@ -11,5 +11,7 @@ Be scientific. Every shipped line traces to runtime evidence. Belt-and-suspender
 5. Stage the commits so the failing repro lands before the fix in git history. See the **tdd** skill for the failing-test-first cadence when the bug has a cheap local test path. Skip it when the test would be expensive, integration-heavy, or unclear.
    This is the canonical **sequence-verifiable-units** principle skill, the failing test first and the fix on top.
 6. Run **Opening a PR**.
+
+For a report-driven run (an **issue-triage** intake verdict, or an external report the user linked or pasted), follow `references/reproduce-and-fix.md`, or `references/verify-existing-fix.md` when a fix already exists; their Hard safety rules override any conflicting step above.
 
 **Reply:** what was broken, root cause, fix, how you verified. Paste failing-then-passing repro output verbatim.

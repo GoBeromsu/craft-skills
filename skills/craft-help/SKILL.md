@@ -2,7 +2,7 @@
 name: craft-help
 description: Guides users through craft-skills setup, craft-mode, and picking the skill, playbook, or principle for a task, then hands back a prompt they can send and the file the answer came from. Use for "craft-help", "which skill should I use", "how do I use craft-mode", "which playbook fits this", "how do I install craft-skills", or "my craft-mode run went wrong". Answers the question without starting the work. Not for doing the work - use craft-mode.
 metadata:
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # Craft help
@@ -69,7 +69,7 @@ The default answer is `/craft-mode`, which runs most of the others when its step
 | Get several attempts at one brief, merged into the best one | `/arena` |
 | Run parallel checks over slices, or race workers, as cloud agents | `/swarm` |
 | Have different models review a diff and try to break it | `/interrogate` |
-| Triage an issue report, then reproduce and fix confirmed bugs | `/benny` |
+| Triage an issue report; confirmed bugs go to craft-mode's Bug fix playbook | `/issue-triage` |
 | Fix a bug test-first when a cheap local test exists | `/tdd` |
 | Apply TypeScript rules to `.ts` or `.tsx` work | `principle-programming/references/typescript.md` |
 | Strip comments before review, using a reviewer that didn't write them | `principle-programming/references/comments.md` |
@@ -111,7 +111,7 @@ Playbooks are step lists inside `/craft-mode`, not skills, so they have no slash
 - "land the stack" runs Shipping.
 - "take over this branch" runs Session pickup.
 - "pause safely" runs Pause safely.
-- "full autopilot on this queue" runs Autopilot-full. "stack them, don't ship" runs Autopilot-stack.
+- "full autopilot on this queue" runs Autopilot-full. "autopilot, don't merge" runs Autopilot-stack.
 - "run the eval playbook" runs Eval.
 
 Without `/craft-mode`, a phrase such as "babysit this pr" can start the runtime's own skill for the same job instead. The Playbooks section of `craft-mode` lists every playbook and when it applies. `craft-mode/references/playbooks/opening-a-pr.md`, `craft-mode/references/playbooks/babysit.md`, and `craft-mode/references/playbooks/shipping.md` cover opening, babysitting, and landing a PR.

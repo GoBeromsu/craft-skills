@@ -4,6 +4,8 @@ Use this mode when an open pull request or merged commit plausibly fixes the rep
 
 The existing artifact owns the fix. Verify it. Do not edit it, author a competing patch, or open another pull request.
 
+The Hard safety rules in `reproduce-and-fix.md` apply here unchanged.
+
 ## Qualify the artifact
 
 Require one concrete artifact:
@@ -27,15 +29,13 @@ Record:
 - Pull request or commit URL
 - Build and environment inputs shared by both runs
 
-Use regular `github.com` pull request links.
-
 ## Measure the baseline
 
 For an open pull request, use its base branch as the baseline.
 
 For a merged fix, use the revision immediately before the fix when that revision builds and represents the old behavior.
 
-Through the configured control adapter:
+Through the control adapter (`control-adapter.md`):
 
 1. Bring up the baseline app.
 2. Confirm the correct app and environment.
@@ -64,9 +64,9 @@ Do not stop at compilation or tests. The after result must come from a running p
 
 The baseline reproduces twice and the patched build resolves it twice.
 
-- Mark operations status as verified.
+- Report the verified result to the user.
 - Link the artifact.
-- Post one concise source-thread reply after the source preflight.
+- When the user asks for a source reply, post one concise source-thread reply after the source preflight.
 - Include the before and after result.
 - Open no pull request.
 
@@ -74,9 +74,9 @@ The baseline reproduces twice and the patched build resolves it twice.
 
 The symptom appears on both baseline and patched builds.
 
-- Mark operations status as reproduced but not fixed.
+- Report reproduced but not fixed to the user.
 - Link the artifact and say it did not resolve the symptom.
-- Post the normal confirmed-repro source update if the run has not already used it.
+- When the user asks for a source reply, post the normal confirmed-repro source update if the run has not already used it.
 - Open no competing pull request.
 
 ### Inconclusive
@@ -85,7 +85,7 @@ The baseline does not reproduce, the patched app cannot run, or the evidence doe
 
 - Do not claim success.
 - State which half could not be measured.
-- Keep the result in the operations thread or run output.
+- Report the result to the user.
 - Post nothing in the source thread unless a direct question requires an answer.
 
 ## Cleanup

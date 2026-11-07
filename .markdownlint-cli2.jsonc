@@ -37,10 +37,6 @@
     "skills/unslop/SKILL.md",
     "skills/principle-programming/references/typescript/patterns.md",
     "skills/document/references/technical-writing.md",
-    "skills/interrogate/references/code-quality-review.md",
-    "skills/interrogate/references/lead-judgment.md",
-    "skills/interrogate/references/reviewer-prompt.md",
-    "skills/interrogate/references/rubric.md",
     "skills/correct/SKILL.md",
     "skills/correct/references/**",
     "skills/how/SKILL.md",
@@ -64,7 +60,6 @@
     "skills/swarm/SKILL.md",
     "skills/swarm/references/**",
     "skills/interrogate/SKILL.md",
-    "skills/interrogate/references/**",
     "skills/benchmark-checklist/SKILL.md",
     "skills/benchmark-checklist/references/**",
     "skills/automate-me/SKILL.md",
@@ -81,9 +76,7 @@
     "skills/principle-testing/references/verification-skills.md",
     "skills/principle-testing/references/feature-map-example/**",
     "skills/craft-help/SKILL.md",
-    "skills/craft-help/references/**",
-    "skills/benny/references/**",
-    "skills/benny/templates/**"
+    "skills/craft-help/references/**"
   ],
   "config": {
     "default": true,

@@ -1,9 +1,9 @@
 # Acknowledgements
 
-Thank you to Lauren Tan for [pstack](https://github.com/cursor/plugins/tree/d0ef80d86795816da932a153458c5dbe192d294e/pstack), published in [cursor/plugins](https://github.com/cursor/plugins) under the MIT license.
+Thank you to Lauren Tan for [pstack](https://github.com/cursor/plugins/tree/6b0300214a09fd6029cfb7077043125758cd1fd2/pstack), published in [cursor/plugins](https://github.com/cursor/plugins) under the MIT license.
 Its principles and working methods shaped this library's engineering owners, and several of its texts are carried here word for word.
 
-The source is pinned at commit [`d0ef80d86795816da932a153458c5dbe192d294e`](https://github.com/cursor/plugins/tree/d0ef80d86795816da932a153458c5dbe192d294e/pstack).
+The source is pinned at commit [`6b0300214a09fd6029cfb7077043125758cd1fd2`](https://github.com/cursor/plugins/tree/6b0300214a09fd6029cfb7077043125758cd1fd2/pstack).
 
 ## Packages containing pstack text
 
@@ -37,7 +37,7 @@ These craft packages contain verbatim or adapted text from pstack at that commit
 - `unslop`
 - `recall`
 - `document`
-- `benny`, including its procedures and templates (from `pstack/automations/benny/`)
+- `benny` procedures (from `pstack/automations/benny/`), dissolved into `issue-triage` intake and the `craft-mode` Bug fix references
 
 ## pstack license
 
