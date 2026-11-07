@@ -37,7 +37,7 @@ These craft packages contain verbatim or adapted text from pstack at that commit
 - `unslop`
 - `recall`
 - `document`
-- `benny`, including its procedures and templates (from `pstack/automations/benny/`)
+- `benny` procedures (from `pstack/automations/benny/`), dissolved into `issue-triage` intake and the `craft-mode` Bug fix references
 
 ## pstack license
 

@@ -76,9 +76,7 @@
     "skills/principle-testing/references/verification-skills.md",
     "skills/principle-testing/references/feature-map-example/**",
     "skills/craft-help/SKILL.md",
-    "skills/craft-help/references/**",
-    "skills/benny/references/**",
-    "skills/benny/templates/**"
+    "skills/craft-help/references/**"
   ],
   "config": {
     "default": true,

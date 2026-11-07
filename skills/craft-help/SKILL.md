@@ -69,7 +69,7 @@ The default answer is `/craft-mode`, which runs most of the others when its step
 | Get several attempts at one brief, merged into the best one | `/arena` |
 | Run parallel checks over slices, or race workers, as cloud agents | `/swarm` |
 | Have different models review a diff and try to break it | `/interrogate` |
-| Triage an issue report, then reproduce and fix confirmed bugs | `/benny` |
+| Triage an issue report; confirmed bugs go to craft-mode's Bug fix playbook | `/issue-triage` |
 | Fix a bug test-first when a cheap local test exists | `/tdd` |
 | Apply TypeScript rules to `.ts` or `.tsx` work | `principle-programming/references/typescript.md` |
 | Strip comments before review, using a reviewer that didn't write them | `principle-programming/references/comments.md` |

@@ -58,7 +58,7 @@ Resolve them through that skill's discovery location.
 
 | Upstream pack | Origin | Current craft owner | Craft destination | Kind | Notes |
 |---|---|---|---|---|---|
-| `automations/benny` | pstack | none | `benny` | command | One issue workflow: triage, classify and dedupe, then reproduce confirmed bugs or performance reports; verify an existing fix or attempt a bounded fix with before/after proof. Slack source mechanics become the report's source issue/thread or pasted text; setup retains tracker, routing, feature-map, and control-adapter configuration. |
+| `automations/benny` | pstack | `issue-triage`, `craft-mode` | `issue-triage/references/intake.md`, `issue-triage/references/routing.example.md`; `craft-mode/references/reproduce-and-fix.md`, `verify-existing-fix.md`, `control-adapter.md` | reference | Dissolved: issue-triage intake triages, classifies, dedupes, and returns one verdict; the craft-mode Bug fix playbook reproduces confirmed bug or performance reports through those references, verifies an existing fix or attempts a bounded fix with before/after proof. Slack source mechanics become the report's source issue/thread or pasted text; scheduling and automation templates are dropped. |
 
 ## Principles
 

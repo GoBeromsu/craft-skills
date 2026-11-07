@@ -12,4 +12,6 @@ Be scientific. Every shipped line traces to runtime evidence. Belt-and-suspender
    This is the canonical **sequence-verifiable-units** principle skill, the failing test first and the fix on top.
 6. Run **Opening a PR**.
 
+For a report-driven run (an **issue-triage** intake verdict, or an external report the user linked or pasted), follow `references/reproduce-and-fix.md`, or `references/verify-existing-fix.md` when a fix already exists; their Hard safety rules override any conflicting step above.
+
 **Reply:** what was broken, root cause, fix, how you verified. Paste failing-then-passing repro output verbatim.

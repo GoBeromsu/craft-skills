@@ -6,6 +6,7 @@ A cell says `none found` when the checked sources do not confirm an equivalent, 
 
 Skill bodies describe each subagent's role, not its model: the fastest, cheapest setting for high-volume reading and code-writing, the most capable setting for synthesis and judgment, or a different family where a step asks for one.
 The agent picks the actual model in its runtime; pinning a model per role is optional and lives in each runtime's own configuration, as the Models row shows.
+Only the **issue-triage** skill's intake runs on a schedule; schedule it with the runtime's own scheduler or wake mechanism (the Continuation row), and keep reproduce-and-fix interactive.
 
 | Mechanic / phrase in the port | Cursor: pstack's wording | Claude Code | Codex | OmO (omo / senpi harness) | GJC (Gajae-Code) | Hermes |
 |---|---|---|---|---|---|---|

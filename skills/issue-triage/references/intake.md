@@ -1,8 +1,8 @@
-# Triage issue reports
+# Intake: triage one issue report
 
 Classify one issue report and post one useful verdict on its source issue/thread, or return one verdict to the user for pasted text. Create a tracker issue only for a clear, new bug. Do not reproduce or fix it here.
 
-Load the external Benny configuration supplied by the run. An explicit user-supplied link supplies the source origin and identity for an interactive run, not posting access. For a linked source, if the source configuration is missing, malformed, or incomplete, stop without posting or writing to the tracker. For pasted text, bind the report to this user message and return the verdict here; no external source configuration is needed. Missing tracker configuration or access permits read-only classification, not tracker writes.
+Load the intake config ([Setup](#setup)) when the run supplies one. An explicit user-supplied link supplies the source origin and identity for an interactive run, not posting access. For a linked source, if the source configuration is missing, malformed, or incomplete, stop without posting or writing to the tracker. For pasted text, bind the report to this user message and return the verdict here; no external source configuration is needed. Missing tracker configuration or access permits read-only classification, not tracker writes.
 
 ## Hard safety rules
 
@@ -18,8 +18,8 @@ Load the external Benny configuration supplied by the run. An explicit user-supp
 - If worker isolation cannot enforce those limits, do the work in the coordinator.
 - Never create an issue that cannot link back to the source issue/thread. Pasted text without a stable source permalink cannot create a tracker issue.
 - Prefer no ticket over a guessed or duplicate ticket.
-- Apply craft-skills' `principle-architecture/references/separate-before-serializing-shared-state.md` to source coordinates.
-- Apply craft-skills' `principle-programming/references/minimize-reader-load.md` and `unslop` skills to the final verdict.
+- Apply the **principle-architecture** skill's `references/separate-before-serializing-shared-state.md` to source coordinates.
+- Apply the **principle-programming** skill's `references/minimize-reader-load.md` and the **unslop** skill to the final verdict.
 
 ## 1. Freeze source coordinates
 
@@ -33,7 +33,7 @@ Before making a work list or delegating:
 6. Read the source and verify that its parent has exactly that identity; for pasted text, verify the original user message.
 7. Fetch a stable source permalink when one exists. Never invent a permalink for pasted text.
 
-Every later source read and post must use those stored values. Never replace them with a reply identity or an operations-thread identity.
+Every later source read and post must use those stored values. Never replace them with a reply identity.
 
 ## 2. Read the whole report
 
@@ -62,7 +62,7 @@ Use evidence already in the thread before asking the reporter for more.
 
 ## 3. Trace cause before routing
 
-Do a bounded source and history pass before choosing an owner or destination. Use craft-skills' `how` skill to trace the path from the reported action to the observed result. Use `why` when the report looks like a regression or touches defensive code.
+Do a bounded source and history pass before choosing an owner or destination. Use the **how** skill to trace the path from the reported action to the observed result. Use the **why** skill when the report looks like a regression or touches defensive code.
 
 1. Identify the likely code path from the reported action to the observed result.
 2. Check whether the visible symptom belongs to that code path or a dependency below it.
@@ -137,7 +137,7 @@ Resolve configured team, project, status, and labels at runtime. Do not invent I
 
 ## 7. Dedupe
 
-Always check whether this source permalink is already linked to a tracker issue or a prior triage reply. If so, do not post or create a duplicate. For pasted text, check the current run for an earlier verdict on the same user message. If the tracker is not configured or accessible, report dedupe as unavailable, not as no match, and make no tracker writes.
+Always check whether this source permalink is already linked to a tracker issue or a prior triage reply. A prior reply counts when it ends with a `[triage:*]` marker or a legacy `[benny:bug|performance|other]` marker from before the rename; intake never emits legacy markers. If so, do not post or create a duplicate. For pasted text, check the current run for an earlier verdict on the same user message. If the tracker is not configured or accessible, report dedupe as unavailable, not as no match, and make no tracker writes.
 
 For bugs and performance reports, search the tracker using:
 
@@ -208,18 +208,18 @@ Keep the reply short:
 Marker contract:
 
 ```text
-[benny:bug]
-[benny:bug] tracker=https://tracker.example/issue/123
-[benny:performance]
-[benny:performance] tracker=https://tracker.example/issue/123
-[benny:other]
+[triage:bug]
+[triage:bug] tracker=https://tracker.example/issue/123
+[triage:performance]
+[triage:performance] tracker=https://tracker.example/issue/123
+[triage:other]
 ```
 
-Use only the configured marker strings. For pasted text without marker configuration, use the public marker strings above. The repro phase trusts the marker only when it comes from the configured triage identity on this source issue/thread, or from this coordinator's triage of the same pasted report.
+The marker strings are fixed, not configurable. The **craft-mode** Bug fix playbook consumes this verdict for a bug or performance marker; `other` stops here.
 
 After posting, read the same source issue/thread and verify the verdict appears on `SOURCE_ID`. If it does not, never retry in a new destination. For pasted text, the returned verdict is the handoff; do not post externally.
 
-If this run created a tracker issue and the verdict did not land, use the adapter's compensation action. Verify that the issue is canceled, closed, or deleted. If compensation cannot be verified, report the failure only in the automation run output.
+If this run created a tracker issue and the verdict did not land, use the adapter's compensation action. Verify that the issue is canceled, closed, or deleted. If compensation cannot be verified, report the failure only in the run output.
 
 ## 10. Watch one follow-up window
 
@@ -229,6 +229,54 @@ Watch the source issue/thread for the configured follow-up window, then stop. Fo
 - Apply a concrete correction to the tracker issue when safe.
 - Do not emit a second marker in the same run.
 - Stay out of human coordination and side chatter.
-- Stop early if someone asks the automation to stop.
+- Stop early if someone asks the run to stop.
 
 Do not extend the window more than once. A new report should start a new run.
+
+## Setup
+
+Keep the intake config outside the installed issue-triage package, for example `.issue-triage/config.yaml` in the project or `~/.config/issue-triage/config.yaml` for the user. Do not edit installed package files, and never put a secret value in the config, a prompt, or a committed file. Scheduling intake runs belongs to the **craft-mode** skill's `references/runtimes.md`.
+
+The config holds:
+
+- `source.origin`, `source.triage_identity`, `source.read_action`, `source.verdict_action`, and `source.file_download_action`
+- `tracker.*`: type, team, project, labels, intake status, and the adapter skill or MCP actions
+- `routing.map_path`, `routing.owner_pings_default`, and `routing.allow_*_ping`
+- `triage_follow_up_minutes` and `triage_total_minutes`
+
+### Fill the required choices
+
+Ask for or confirm:
+
+- Source origin and issue/thread identity, or the pasted user message
+- Triage identity, or the coordinator for pasted text
+- Issue tracker type, team, project, labels, and intake status
+- Tracker adapter skill or MCP actions
+- Optional routing map path
+- Follow-up and total triage budgets
+
+The linked source identity and triage identity must be explicit for external delivery. Pasted text uses the original user message and coordinator identity without external posting. The tracker adapter must be explicit before tracker writes. Stop the affected step if a required value stays ambiguous.
+
+### Check integration capabilities
+
+Intake needs:
+
+- Read access to the configured source issue/thread, or the pasted report
+- Verdict-post access on that source, or return the verdict to the user for pasted text
+- Attachment metadata and file download access when reports include media
+- Search, read, create, and update access through the configured issue-tracker adapter
+
+Prefer configured source actions for reads and posts. The optional `TRIAGE_SOURCE_TOKEN` environment variable may fill a narrow gap such as downloading an attachment. Store the value in a secret manager or environment, not in the config file.
+
+Do not use undocumented integration endpoints.
+
+### Prepare the routing map
+
+If the user wants reroutes or owner pings:
+
+1. Copy [routing.example.md](routing.example.md) outside the installed issue-triage package.
+2. Replace every placeholder with public or organization-local values.
+3. Keep owner pings off by default.
+4. Allow a ping only for a configured feature owner or a confirmed likely regression author.
+
+If no routing map is configured, triage may classify a report but must not guess a destination or owner.
