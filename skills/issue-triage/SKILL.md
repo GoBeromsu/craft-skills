@@ -2,7 +2,7 @@
 name: issue-triage
 description: "Decides what to work on: intake triage of one incoming report (pasted message, linked issue, or chat thread) with dedupe and a create-or-not tracker decision, and refinement of existing backlog issues with rule-citing verdicts and routing. Use to triage this issue report, triage the backlog, ask is this a duplicate or is this already fixed, close stale issues with evidence, or split this issue into focused work. It checks current code and history before proposing actions and holds feature closures and scope changes for user review. Not for reproducing or fixing a bug - confirmed bugs go to the craft-mode Bug fix playbook; not for shaping a vague request - use deep-interview or write-prd."
 metadata:
-  version: 1.0.0
+  version: 2.0.0
 ---
 
 # Issue triage

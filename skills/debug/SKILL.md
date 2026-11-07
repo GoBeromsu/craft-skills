@@ -2,7 +2,7 @@
 name: debug
 description: 'Diagnoses a failing program under a hypothesis-driven loop: reproduce the failure before theorizing, log observed facts separately from inferences, hold competing hypotheses until the cheapest probe discriminates between them, and confirm the mechanism with instrumentation before any fix lands. Use when a test or command fails for an unclear reason, a bug needs bisecting to the commit or input that caused it, a failure only reproduces intermittently, or asked to find out why something is broken ("이거 왜 안 되는지 찾아줘"). Not for restructuring working code (use refactor), suite-level test architecture (use principle-testing), or triaging a vulnerability class (use security).'
 metadata:
-  version: 1.3.0
+  version: 1.4.0
 ---
 
 # debug

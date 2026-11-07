@@ -2,7 +2,7 @@
 name: architect
 description: "Sketches types, signatures, caller usage, and module boundaries before implementation and stays in the loop while code fills in the chosen shape. Use for \"/architect\", \"architect this\", \"design this\", or non-trivial work where jumping to code would lock in the wrong structure. Grounds through how and why, explores alternatives through arena, and applies principle-architecture. Not for explaining existing architecture alone - use how; not for behavior-preserving cleanup - use refactor."
 metadata:
-  version: 1.0.2
+  version: 1.1.0
 ---
 
 # Architect

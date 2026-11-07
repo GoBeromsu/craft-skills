@@ -2,7 +2,7 @@
 name: craft-help
 description: Guides users through craft-skills setup, craft-mode, and picking the skill, playbook, or principle for a task, then hands back a prompt they can send and the file the answer came from. Use for "craft-help", "which skill should I use", "how do I use craft-mode", "which playbook fits this", "how do I install craft-skills", or "my craft-mode run went wrong". Answers the question without starting the work. Not for doing the work - use craft-mode.
 metadata:
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # Craft help

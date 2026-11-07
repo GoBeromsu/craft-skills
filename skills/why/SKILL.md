@@ -2,7 +2,7 @@
 name: why
 description: "Investigates why code or a decision has its current shape through available source history, tickets, documents, chat, telemetry, error records, and analytics. Use for \"why does X work this way\", \"why did we pick Y\", design rationale, postmortems, regressions, or \"where did this threshold come from\". Returns cited findings, calibrated inferences, competing explanations, and source gaps. Not for runtime mechanics - use how; not for repairing a failure - use debug."
 metadata:
-  version: 1.0.3
+  version: 1.1.0
 ---
 
 # Why

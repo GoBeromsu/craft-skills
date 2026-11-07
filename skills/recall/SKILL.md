@@ -2,7 +2,7 @@
 name: recall
 description: "Reconstructs recent working context from the active workspace's chat history, scoped shared records, and live state. It applies to 'recall my work on X', 'catch me up', 'what have I been working on', and 'where did I leave off'. It returns a cited current-state brief and reads another project's transcripts only when asked. Not for turning working habits into a personal skill - use automate-me."
 metadata:
-  version: "1.0.1"
+  version: "1.0.2"
 ---
 
 # Recall

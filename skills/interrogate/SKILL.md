@@ -2,7 +2,7 @@
 name: interrogate
 description: "Has adversaries try to break a change or design and keeps only the findings a run proves. It applies to 'interrogate', 'adversarial review', 'multi-model review', 'challenge this', 'stress test this code', 'find blind spots', and 'tear this apart'. It reports verified findings without applying fixes. Not for proving one change's downstream safety fact - use blast-radius."
 metadata:
-  version: "1.0.2"
+  version: "1.1.0"
 ---
 
 # Interrogate

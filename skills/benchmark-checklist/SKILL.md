@@ -2,7 +2,7 @@
 name: benchmark-checklist
 description: "Vets performance measurements for the limiter, tuning, physical limits, errors, repeatability, relevance, and proof that timed work happened. It applies to 'check this benchmark', 'report this speedup', measured regressions, and choosing a library or configuration from numbers. It reports spread and gaps before drawing a conclusion. Not for general testing policy or choosing test oracles - use principle-testing."
 metadata:
-  version: "1.0.1"
+  version: "1.1.0"
 ---
 
 # Benchmark checklist

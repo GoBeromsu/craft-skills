@@ -2,7 +2,7 @@
 name: how
 description: "Explains how a system or process works by tracing entry points, data flow, boundaries, and ownership in real source evidence. Use for \"how does X work\", \"walk me through this code\", \"where should this live\", \"which package owns this\", or onboarding to a subsystem before changing it. Scales exploration to the question and reports untraced gaps. Not for historical motivation - use why; not for paced coaching combining both - use teach."
 metadata:
-  version: 1.0.2
+  version: 1.1.0
 ---
 
 # How

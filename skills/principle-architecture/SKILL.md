@@ -2,7 +2,7 @@
 name: principle-architecture
 description: "Guides cross-domain structural decisions before implementation. Use when choosing core data structures, integrating a requirement into an existing design, comparing architectures without precedent, planning a rewrite, retiring internal APIs, or isolating concurrent writers to a file or branch. Service structure and persistence belong to principle-backend, published HTTP contracts to api, and rendered UX to design. The architect workflow owns design sketches and implementation coordination; this skill supplies the structural principles it applies."
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # principle-architecture

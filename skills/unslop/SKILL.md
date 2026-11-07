@@ -2,7 +2,7 @@
 name: unslop
 description: "Removes AI writing patterns while preserving meaning and the intended tone. It applies to all prose the agent writes, including replies, docs, READMEs, PR descriptions, and commit messages, and to 'remove AI tells', 'rewrite this plainly', or 'unslop this'. It keeps stable numbered rule ids for callers. Code and fixed machine formats are excluded. Not for cleaning up code - use refactor."
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Unslop

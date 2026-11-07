@@ -2,7 +2,7 @@
 name: principle-backend
 description: Routes backend service architecture and persistence selection, including engine, provider, ORM, production major, roles, destructive-target proof, persistence implementation, schema-ledger retirement, and folder conventions. Use when building a service layer, choosing a persistence stack, adding a repository or use case, setting up production-fidelity local database development, retiring a migration ledger, or reviewing architecture drift (e.g. "백엔드 구조 잡아줘"). After selection, use db for database workload diagnosis, schema/access-path tradeoffs, and operations/configuration. Not for public HTTP API contracts—use api; UI rendering—use principle-frontend.
 metadata:
-  version: 4.1.0
+  version: 4.2.0
 ---
 
 # principle-backend

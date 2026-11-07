@@ -2,7 +2,7 @@
 name: swarm
 description: "Coordinates bounded workers across independent slices or declared races, drains their results, and returns one evidence-backed report. It applies to '/swarm', 'swarm this', parallel coverage, gauntlets, and exploration. It respawns a worker once when its result misses the brief and records a second miss as a gap, never a pass. Not for synthesizing competing candidate artifacts by grafting them - use arena."
 metadata:
-  version: "1.0.2"
+  version: "1.1.0"
 ---
 
 # Swarm

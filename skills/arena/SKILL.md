@@ -2,7 +2,7 @@
 name: arena
 description: "Runs N candidates at the same task, picks a base, and grafts the strongest parts into one verified artifact. It applies to '/arena', 'arena this', 'throw it in the arena', and design choices where one attempt could lock in the wrong shape. It fans out parallel subagents across model families and has a judge from another family cross-check the pick. Not for partitioning independent work slices - use swarm."
 metadata:
-  version: "1.0.2"
+  version: "1.1.0"
 ---
 
 # Arena

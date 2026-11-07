@@ -2,7 +2,7 @@
 name: automate-me
 description: "Drafts or updates one personal <handle>-mode skill from the user's working conventions, mined from the active workspace's recent transcripts and asked directly, and runs unslop on its prose. It applies to 'automate me', 'update my mode skill', 'capture my preferences', and 'work in my style'. It updates existing skills in place. Not for reconstructing the current state of past work - use recall."
 metadata:
-  version: "1.0.1"
+  version: "1.0.2"
 ---
 
 # Automate me

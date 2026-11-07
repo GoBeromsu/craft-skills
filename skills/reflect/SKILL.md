@@ -2,7 +2,7 @@
 name: reflect
 description: "Reviews durable learnings from the current session through judgment, tooling, and divergent lenses, then routes each accepted learning to an edit on an existing skill. Use for \"reflect\", \"/reflect\", \"what did this session teach us\", or \"capture the workflow lessons from this conversation\". Reads a current-session source only when the runtime exposes it and presents edits for approval. Not for enforcing repeated repository mistakes - use correct; not for recovering older sessions - use recall."
 metadata:
-  version: 1.0.2
+  version: 1.1.0
 ---
 
 # Reflect

@@ -2,7 +2,7 @@
 name: correct
 description: "Finds repeated mistake classes and changes the repository so agents cannot repeat them. Use for \"/correct\", \"agents keep leaving debug prints\", \"make this correction stick\", or recurring review fixes with two or more observed incidents. Chooses architecture, types, lint/CI, tests, then docs and proves enforcement rejects a real past error. Not for reflecting on session learnings - use reflect; not for diagnosing a single failure - use debug."
 metadata:
-  version: 1.0.2
+  version: 1.1.0
 ---
 
 # Correct

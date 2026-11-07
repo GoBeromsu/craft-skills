@@ -2,7 +2,7 @@
 name: figure-it-out
 description: "Designs an auditable playbook when no narrower workflow fits a large migration, multi-part change, or unattended run. It applies to '/figure-it-out', 'figure it out', and work a human reviews after stepping away. It scales rigor, tests hypotheses against real artifacts, and records decisions through show-me-your-work. Not for choosing among several candidates for one settled brief - use arena."
 metadata:
-  version: "1.0.1"
+  version: "1.0.2"
 ---
 
 # Figure it out
