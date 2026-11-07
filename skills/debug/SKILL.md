@@ -38,8 +38,8 @@ Make success countable rather than only emitting failures, and delete any counte
 
 ## Principles
 
-- [Fix Root Causes](references/fix-root-causes.md): trace each symptom to its root cause and fix it there; reproduce first, ask why until you reach it, resist nil-check guards that silence crashes.
-- [Attack the Premise](references/attack-the-premise.md): when two or more fixes that share one premise have failed the same gate, take a census of which actors hold the imbalance before the next fix, then question the premise instead of writing another fix that assumes it.
+- [Fix Root Causes](references/fix-root-causes.md): trace each symptom back to the first place the system went wrong and fix it there. A guard is a fix only when the state it handles is legitimate.
+- [Attack the Premise](references/attack-the-premise.md): when two or more fixes that share one premise have failed the same gate, write the premise down and test it directly before you write another fix that assumes it.
 
 ## Hand-offs
 

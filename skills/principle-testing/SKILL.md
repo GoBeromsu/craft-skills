@@ -16,8 +16,8 @@ Keep taste, context, and judgment in docs; a policy document is a legitimate sub
 
 - [prove-it-works](references/prove-it-works.md) verifies the real artifact, not a proxy.
 - [sequence-verifiable-units](references/sequence-verifiable-units.md) ends each small unit in a check before starting the next.
-- [test-behavior-not-implementation](references/test-behavior-not-implementation.md) calls the code the way its users do and asserts a literal expected value, and deletes a test that would still pass if every imported function returned `undefined`.
-- [explain-the-number](references/explain-the-number.md) names what limits a measured number and rules out that it measured something else, before anyone trusts or reports it. `/benchmark-checklist` in the benchmark-checklist skill turns it into seven questions you answer from real runs.
+- [test-behavior-not-implementation](references/test-behavior-not-implementation.md) asserts what the code's users can observe, so that the test fails when that behavior breaks and keeps passing when only the internals change.
+- [explain-the-number](references/explain-the-number.md) names what limits a measured number and rules out that it measured something else, before you measure and before anyone trusts or reports it. `/benchmark-checklist` in the benchmark-checklist skill turns it into seven questions you answer from real runs.
 
 ## Output contract
 

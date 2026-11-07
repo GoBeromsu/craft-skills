@@ -21,7 +21,7 @@ Use the architect workflow for sketches and implementation coordination, and cic
 ## Principles
 
 - [Foundational Thinking](references/foundational-thinking.md) chooses the core data structures before writing logic.
-- [Redesign from First Principles](references/redesign-from-first-principles.md) integrates a new requirement as if it had been there from day one.
+- [Redesign from First Principles](references/redesign-from-first-principles.md) integrates a new requirement as if it had been a foundational assumption from the start.
 - [Exhaust the Design Space](references/exhaust-the-design-space.md) builds two or three competing prototypes when there's no precedent.
 - [Outcome-Oriented Execution](references/outcome-oriented-execution.md) converges rewrites on the target design instead of preserving throwaway compatibility states.
 - [Migrate Callers Then Delete Legacy APIs](references/migrate-callers-then-delete-legacy-apis.md) migrates and deletes in one wave.
