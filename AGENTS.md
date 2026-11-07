@@ -1,6 +1,6 @@
 # Repository Guidelines
 
-<!-- init:managed id=init-root sha256=561818839bca68983546557b56c15ad2683ac92aee8aeb317c15412dc18e4771 -->
+<!-- init:managed id=init-root sha256=80082c02f19f6197e2d619ffcbf383ea79d24abf1e066112e9eca617911e3e58 -->
 ## Project Overview
 
 craft-skills is a public library of reusable research and engineering methods, not an application.
@@ -58,7 +58,7 @@ Keep `.env` private and gitignored; only `.env.example` with placeholders is com
 Keep one owner per rule and link to it; tables, rigid heading schemas, wording corpora, provider quorums, and checker-of-checker aggregators are not requirements.
 Sentence-per-line is nonblocking taste, not a reflow or formatting gate.
 Skills and plugins carry no CHANGELOG; history stays in `git log`.
-Per-change credit belongs in the commit message; update `skills/PROVENANCE.md` when primary lineage changes, preserving upstream attribution and applicable NOTICE/LICENSE obligations.
+Source credit and lineage belong in the commit message, preserving upstream attribution and applicable NOTICE/LICENSE obligations.
 
 ## Important Files
 
