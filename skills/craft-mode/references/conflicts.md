@@ -17,12 +17,11 @@ Affected files:
 
 ## (b) Package history
 
-(b) Skills and plugins carry no CHANGELOG. History and per-change credit stay in commit messages and git log; current lineage stays in `skills/PROVENANCE.md`.
+(b) Skills and plugins carry no CHANGELOG. History, source credit, and lineage stay in commit messages and git log.
 
 Affected files:
 
 - Repository `AGENTS.md`, the package-history convention.
-- `skills/PROVENANCE.md`, the lineage registry.
 
 ## (c) Validated TypeScript assertions
 

@@ -2,7 +2,7 @@
 name: distil
 description: Distils transferable rules and conventions from an external source — a well-crafted repo, an engineering article, an AGENTS.md, or a third-party skill — and lands them in the owning package with provenance recorded. Use when the user says "파쿠리", "distil the rules from this repo", "absorb this skill", or "pull the conventions out of this article", or hands over a link worth mining. Not for authoring a skill from your own workflow or shipping the final package; not for open-ended investigation of a question — use research; not for summarizing a source with no intent to land rules in the library.
 metadata:
-  version: 1.2.2
+  version: 1.2.3
 ---
 
 # distil
@@ -85,9 +85,7 @@ Delete the scratch directory after landing.
 
 Leave an absorption report in the completion summary that maps every candidate rule to its
 receiving package and landing form, with an explicit keep or drop decision for each. Record
-the source credit in
-the commit message and current lineage registry (`skills/PROVENANCE.md`), naming what the landing took
-and linking the source.
+the source credit in the commit message, naming what the landing took and linking the source.
 
 Report the receiving package, each landed rule, each dropped rule and its reason, the
 provenance credit recorded, and the smallest executable evaluation for every landing. If
@@ -102,7 +100,7 @@ no-result and reason, and write nothing.
 ## Anti-patterns
 
 - Treating a fetched script as runnable "to see what it does" → follow the [Intake rule](#intake).
-- Keeping the author's name in the body as credit → per-change credit goes in the commit message; current lineage goes in `skills/PROVENANCE.md`.
+- Keeping the author's name in the body as credit → source credit goes in the commit message.
 - Preserving the external skill's version number → a landed package starts at 1.0.0; foreign history does not transfer.
 - Absorbing a source that overlaps an existing skill "because it's close enough" → redundancy is a reject; name the owner instead.
 - Writing fetched material into `skills/` before the audit verdict → keep it in the scratch directory until [Audit completes](#audit--what-actually-transfers).
@@ -113,5 +111,5 @@ no-result and reason, and write nothing.
 - [ ] [Intake](#intake) passed
 - [ ] [Audit verdict and mapping confirmation](#audit--what-actually-transfers) are recorded
 - [ ] Every landed line survived the Strip table — no names, paths, secrets, or codenames
-- [ ] The commit message records source credit and `skills/PROVENANCE.md` records current lineage
+- [ ] The commit message records source credit
 - [ ] Scratch directory removed

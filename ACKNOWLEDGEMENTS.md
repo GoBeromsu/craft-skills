@@ -39,8 +39,6 @@ These craft packages contain verbatim or adapted text from pstack at that commit
 - `document`
 - `benny`, including its procedures and templates (from `pstack/automations/benny/`)
 
-`skills/PROVENANCE.md` records the source and relationship for each package.
-
 ## pstack license
 
 MIT License
@@ -64,3 +62,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## Other licensed sources
+
+These packages also adapt material from upstream projects under their own licenses; each upstream `LICENSE` governs the material taken from it.
+
+- [code-yeongyu/lazycodex](https://github.com/code-yeongyu/lazycodex) (MIT): `git`, including its vendored worktree guard scripts in `scripts/`; `document`; `principle-programming`; `principle-frontend` (patterns only); `refactor`.
+- [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) (MIT): `principle-programming`.
+- [labs42io/clean-code-typescript](https://github.com/labs42io/clean-code-typescript) (MIT): `principle-programming`, `refactor`.
+- [google-labs-code/design.md](https://github.com/google-labs-code/design.md/tree/9bf8eae67128b6cc55ad9bf86665767deb4c11cd) (Apache-2.0): `design`; `skills/design/references/sources.md` records the pinned commit.

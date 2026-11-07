@@ -65,7 +65,6 @@ ALLOWED_PACKAGE_FILES = frozenset({"SKILL.md", ".env.example", "env.example"})
 REPOSITORY_TOOL_FILES = frozenset({
     "AGENTS.md",
     "README.md",
-    "skills/PROVENANCE.md",
     "scripts/ci-local.sh",
     ".codex/config.yaml",
     ".github/workflows/pr-check.yml",
@@ -77,11 +76,6 @@ REPOSITORY_TOOL_PREFIXES = (
     ".github/",
     ".codex/",
 )
-# Historical prose may name a retired owner. Skip these in the dangling-
-# reference scan only; they still participate in scope and hygiene checks.
-HISTORICAL_REFERENCE_EXEMPT = frozenset({
-    "skills/PROVENANCE.md",
-})
 
 
 def require_skills_ref():
@@ -311,6 +305,10 @@ def select_packages(diff_base: str | None, packages: list[str]) -> tuple[list[Pa
         if is_repository_tool_path(rel):
             print(f"scope: repository-tool {rel!r} (no skill owner required)")
             continue
+        if not (REPO_ROOT / rel).exists():
+            # A removed unowned file leaves nothing to validate.
+            print(f"scope: removed {rel!r} (no skill owner)")
+            continue
         if rel.startswith(("skills/", "tests/", "scripts/")):
             raise ValueError(f"unresolved package/support ownership for {rel!r}")
         print(f"scope: excluded {rel!r} (outside package-format ownership)")
@@ -329,7 +327,7 @@ def select_packages(diff_base: str | None, packages: list[str]) -> tuple[list[Pa
                                         f"SKILL.md was removed but files remain under {rel_root}"))
         for rel in sorted(reference_paths):
             parts = PurePosixPath(rel).parts
-            if "archive" in parts or parts[0] in {".git", ".gjc"} or rel in HISTORICAL_REFERENCE_EXEMPT:
+            if "archive" in parts or parts[0] in {".git", ".gjc"}:
                 continue
             candidate = REPO_ROOT / rel
             if candidate.name == "CHANGELOG.md" or not candidate.is_file():
