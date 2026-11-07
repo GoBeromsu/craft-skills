@@ -125,3 +125,24 @@ Affected files:
 - `how/SKILL.md`, `why/SKILL.md`, `reflect/SKILL.md`, `swarm/SKILL.md`, `interrogate/SKILL.md`, `arena/SKILL.md` and `architect/SKILL.md`, at each upstream model assignment.
 - `craft-mode/SKILL.md`, the Subagents defaults, and `craft-mode/references/playbooks/` `bug-fix.md`, `feature.md`, `hillclimb.md`, `perf-issue.md`, `refactoring.md` and `multi-phase-plan.md`.
 - `craft-mode/references/runtimes.md`, the Models row.
+
+## (m) Dangling references to unimported skills
+
+(m) Upstream text that calls a skill this library does not import is inlined at the call site instead of linking a missing package: the `ketchup` catch-up runs in the **bro** skill's voice, and interrogate's `in-your-own-words` step keeps the local base wording; orch is deleted along with upstream's removal of it.
+
+Affected files:
+
+- `craft-mode/references/playbooks/autopilot-full.md`, the hourly tick and the Reply catch-up.
+- `interrogate/SKILL.md`, the intent sentence.
+- `craft-mode/references/playbooks/orchestrate.md` and the removed `craft-mode/scripts/orch/`.
+
+## (o) Forge CLI wording
+
+(o) Upstream's mentions of its named forge CLI take the existing local "alternative forge CLI" rewrite; `scripts/worktree-audit.sh` keeps the `origin` command it calls and rewrites only its comment.
+
+Affected files:
+
+- `craft-mode/references/playbooks/shipping.md`.
+- `craft-mode/references/playbooks/autopilot-full.md`.
+- `craft-mode/references/playbooks/autopilot-stack.md`, which keeps its local wording.
+- `craft-mode/references/playbooks/opening-a-pr.md` and `babysit.md`, the forge readiness and stack commands.

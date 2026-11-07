@@ -1,6 +1,6 @@
 # Source catalog
 
-This catalog maps every direct skill and every principle in pstack, pinned at cursor/plugins@d0ef80d86795816da932a153458c5dbe192d294e, to its place in this library.
+This catalog maps every direct skill and every principle in pstack, pinned at cursor/plugins@6b0300214a09fd6029cfb7077043125758cd1fd2, to its place in this library.
 Each row has three labels.
 **Origin** is where the source came from.
 **Current craft owner** is the package that already covered the topic before the import, or `none`.
@@ -96,6 +96,8 @@ craft-mode's SKILL.md indexes all of them.
 
 `setup-pstack` configured per-role models and budgets for Cursor; the owner dropped that outcome.
 No package pins a model or a budget.
+
+Skills added upstream after the previous pin are not imported: `ketchup` (#539), `ketchup-video` (#797), `sharpen` (#615), `statechart` (#741), `in-your-own-words` (#602), and `create-formal-verification-skill` / `maintain-formal-verification-skill` (#709, #716).
 
 Elsewhere, Cursor-only parts are removed and the portable outcome stays: Custom Mode persistence, fixed model tables, Cursor transcript paths, and Cursor's built-in skill authoring.
 
