@@ -1,6 +1,6 @@
 # Repository Guidelines
 
-<!-- init:managed id=init-root sha256=9f22c8b3c1fe8dd75c94662a8f55e73d715b67a12d3968a4b32e825d57c861bb -->
+<!-- init:managed id=init-root sha256=561818839bca68983546557b56c15ad2683ac92aee8aeb317c15412dc18e4771 -->
 ## Project Overview
 
 craft-skills is a public library of reusable research and engineering methods, not an application.
@@ -77,8 +77,8 @@ Consult current official guidance and installed help only for APIs and tools the
 Select authorized native update commands and scope from installed help; never author official caches or point `skills.customDirectories` at a version-pinned cache.
 Preserve unique field experiments separately; harvest only on request, recording owner, privacy, provenance, and admission for `canonical_package`, `proposed_pr`, `field_package`, or `reference_evidence`.
 Do not harvest whole memory/conversation stores, add automatic harvesting, or turn field learning into an automatic canonical edit or version bump.
-`browser` keeps Aside as the sole managed route and delegates product usage upstream; `obsidian` composes unchanged official format/CLI owners with local app/Sync and live-vault policy; `design` owns root `DESIGN.md` and rendered UX evidence.
-Optional environment names remain task-bound: `CRAFT_WT_REMOTE_HOST` for the git worktree recipe; `OBSIDIAN_VAULT_PATH` resolves per host, with `OBSIDIAN_CLI_PATH`, `OBSIDIAN_SYNC_REMOTE_HOST`, `OBSIDIAN_SYNC_PROCESS_NAME`, and `PM2_LOG_DIR` used only by their selected recipes.
+`browser` keeps Aside as the sole managed route and delegates product usage upstream; `design` owns root `DESIGN.md` and rendered UX evidence.
+Optional environment names remain task-bound: `CRAFT_WT_REMOTE_HOST` is used only by the git worktree recipe.
 Preserve unrelated dirty work; never stash, discard, or publish it to make a task look clean.
 Reuse unchanged approvals bound to target, command, and effect; new install, removal, restart, publication, or expanded delivery effects require their own authorization.
 A plan or passing test grants no external effect; do not upgrade unrelated tools or publish out-of-scope issues automatically.
