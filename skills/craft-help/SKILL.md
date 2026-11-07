@@ -111,7 +111,7 @@ Playbooks are step lists inside `/craft-mode`, not skills, so they have no slash
 - "land the stack" runs Shipping.
 - "take over this branch" runs Session pickup.
 - "pause safely" runs Pause safely.
-- "full autopilot on this queue" runs Autopilot-full. "stack them, don't ship" runs Autopilot-stack.
+- "full autopilot on this queue" runs Autopilot-full. "autopilot, don't merge" runs Autopilot-stack.
 - "run the eval playbook" runs Eval.
 
 Without `/craft-mode`, a phrase such as "babysit this pr" can start the runtime's own skill for the same job instead. The Playbooks section of `craft-mode` lists every playbook and when it applies. `craft-mode/references/playbooks/opening-a-pr.md`, `craft-mode/references/playbooks/babysit.md`, and `craft-mode/references/playbooks/shipping.md` cover opening, babysitting, and landing a PR.
