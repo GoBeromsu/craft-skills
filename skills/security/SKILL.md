@@ -2,7 +2,7 @@
 name: security
 description: Finds and fixes vulnerabilities in code the user owns across web, API, and LLM surfaces, and owns confidentiality for authorized remote credential handoffs. Use for a security review, "is this safe to ship," "check for vulnerabilities," "보안 점검," secrets hygiene, dependency risk, PR security regressions, or "hand a secret to a remote agent." Not for building LLM-agent systems, Orca session operation (use official `orca-cli`), or general hook and gate configuration; this skill never attacks.
 metadata:
-  version: 2.4.2
+  version: 2.4.3
 ---
 
 # security

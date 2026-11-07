@@ -1,8 +1,8 @@
 ---
 name: orca
-description: Organizes Orca around low-clutter project identities and preserves running work while diagnosing which local connection layer still needs evidence. Use to "organize Orca", "reduce sidebar clutter", consolidate the "same repo across hosts", clean old branches in Orca, reuse or account for task terminals, resolve selector_not_found or remote_runtime_unavailable, investigate SSH failures to an Orca host, or handle "orca에 연결이 안된다". Not for standalone Git maintenance (use git), vault taxonomy (use local policy), network-versus-SSH reachability triage (use tailscale), or executable command mechanics (use the installed orca-cli and orchestration guides).
+description: Organizes Orca around low-clutter project identities and preserves running work while diagnosing which local connection layer still needs evidence. Use to "organize Orca", "reduce sidebar clutter", consolidate the "same repo across hosts", clean old branches in Orca, reuse or account for task terminals, resolve selector_not_found or remote_runtime_unavailable, investigate SSH failures to an Orca host, or handle "orca에 연결이 안된다". Not for standalone Git maintenance (use git), vault taxonomy (use local policy), or executable command mechanics (use the installed orca-cli and orchestration guides).
 metadata:
-  version: 1.4.1
+  version: 1.4.2
 ---
 
 # orca
@@ -13,7 +13,7 @@ A thin router. Orca's official skills own the mechanics; this package adds the o
 
 - Commands, flags, retries, terminals, worktrees, and supervised workers → the official skills. Read the version-matched guide bundled with the selected executable (`orca skills list`, `orca skills get <name>`), or install them with `npx skills add https://github.com/stablyai/orca --skill <name>`. Use the installed guide rather than memory, and do not copy it here.
 - Grouping, cross-host identity, naming, task terminals, and old-branch cleanup → [operations](references/operations.md).
-- Git mechanics → the `git` skill. Tailnet reachability → the `tailscale` skill.
+- Git mechanics → the `git` skill.
 
 ## Boundaries
 

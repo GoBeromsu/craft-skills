@@ -2,7 +2,7 @@
 name: craft-help
 description: Guides users through craft-skills setup, craft-mode, and picking the skill, playbook, or principle for a task, then hands back a prompt they can send and the file the answer came from. Use for "craft-help", "which skill should I use", "how do I use craft-mode", "which playbook fits this", "how do I install craft-skills", or "my craft-mode run went wrong". Answers the question without starting the work. Not for doing the work - use craft-mode.
 metadata:
-  version: 1.0.6
+  version: 1.0.7
 ---
 
 # Craft help
@@ -84,7 +84,6 @@ The default answer is `/craft-mode`, which runs most of the others when its step
 | Turn their own working habits into a personal mode skill | `/automate-me` |
 | Turn what a finished task taught into skill edits | `/reflect` |
 | Stop agents from repeating the same mistakes in this repo | `/correct` |
-| Build a page whose buttons wake an agent over a webhook | `/make-bot-ui` |
 | Find their way around craft-skills | `/craft-help` |
 
 If a skill directory next to this one is missing from the table, read its frontmatter and route by its description. The `principle-*` directories are covered under principles below.
