@@ -38,7 +38,6 @@ Resolve them through that skill's discovery location.
 | `swarm` | pstack | none | `swarm` | command | Fans bounded subagents out over slices or a race and drains one report. |
 | `interrogate` | pstack | none | `interrogate` | command | Uses whatever reviewers the runtime offers; no fixed model list. |
 | `automate-me` | pstack | none | `automate-me` | command | Mines the active workspace's transcripts and asks the user, then drafts one personal mode skill and lands it through a PR. |
-| `make-bot-ui` | pstack | none | `make-bot-ui` | command | Cursor routine creation, secret card, endpoint, headers, and wake envelope become neutral phrases; per-runtime routes live in `runtimes.md`. |
 | `setup-pstack` | pstack | none | `craft-mode/references/setup.md` | dropped | Model and budget configuration dropped by owner decision; the file documents native discovery only. |
 | `reflect` | pstack | none | `reflect` | command | Three parallel reviewers read the active transcript or a session digest; edits wait for user approval, backlog items file automatically. |
 | `correct` | pstack | none | `correct` | command | Fixes each repeated mistake class at the highest level that works, one commit per class, and proves each check fails on a real past mistake. |

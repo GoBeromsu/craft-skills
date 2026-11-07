@@ -16,7 +16,7 @@ Keep private host details in their authorized context and use neutral role label
 ## Compose the native owners
 
 Use the unchanged official `orca-cli` skill and its version-matched guide for session discovery and nonsecret orchestration.
-Use the Craft `tailscale` package for tailnet identity and transport reachability, not as permission to disclose credentials.
+Tailnet reachability is transport, not permission to disclose credentials.
 Compose Bstack `hermes-secret-intake` for its native intake boundary and the `gjc` skill discovered through Bstack's installed `coding-agent` package for its session and credential-use boundary when those owners apply.
 Refer to these packages by identity; do not copy their command manuals or reimplement their credential storage.
 If the applicable native owner or capability is unavailable, report the missing boundary rather than improvising a credential reader or changing GJC/Hermes storage.
