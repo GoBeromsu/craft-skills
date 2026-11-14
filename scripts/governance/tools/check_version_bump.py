@@ -21,6 +21,7 @@ _ROOT_PLUGIN_MANIFESTS = (
     ".claude-plugin/plugin.json",
     "plugin.json",
 )
+_CLAUDE_MARKETPLACE = ".claude-plugin/marketplace.json"
 
 
 class VersionCheckError(Exception):
@@ -133,7 +134,7 @@ def _changed_packages(changed: set[str]) -> set[str]:
 
 
 def _root_plugin_manifest_changed(changed: set[str]) -> bool:
-    return any(relative in changed for relative in _ROOT_PLUGIN_MANIFESTS)
+    return any(relative in changed for relative in (*_ROOT_PLUGIN_MANIFESTS, _CLAUDE_MARKETPLACE))
 
 
 def _git_show(root: Path, revision: str, path: str) -> str | None:
@@ -205,6 +206,28 @@ def _version_from_plugin(text: str | None) -> str | None:
         return None
     version = payload.get("version") if isinstance(payload, dict) else None
     return version if isinstance(version, str) else None
+
+
+def _marketplace_version_violations(root: Path) -> list[str]:
+    text = _read_text(root, root / _CLAUDE_MARKETPLACE)
+    try:
+        payload = json.loads(text) if text is not None else None
+    except json.JSONDecodeError:
+        payload = None
+    plugins = payload.get("plugins") if isinstance(payload, dict) else None
+    entries = [
+        entry for entry in plugins
+        if isinstance(entry, dict) and entry.get("name") == "craft-skills"
+    ] if isinstance(plugins, list) else []
+    if len(entries) != 1:
+        return [f"{_CLAUDE_MARKETPLACE}: expected one craft-skills plugin entry"]
+    version = entries[0].get("version")
+    if not isinstance(version, str) or _parse_semver(version) is None:
+        return [f"{_CLAUDE_MARKETPLACE}: plugin entry version is not valid semver"]
+    for relative in _ROOT_PLUGIN_MANIFESTS:
+        if version != _version_from_plugin(_read_text(root, root / relative)):
+            return [f"{_CLAUDE_MARKETPLACE}: plugin entry version must match root plugin versions"]
+    return []
 
 
 def _root_plugin_violations(root: Path, base: str) -> list[str]:
@@ -291,7 +314,7 @@ def check(root: Path, diff_base: str) -> tuple[list[str], list[str]]:
     _git_worktree_root(root)
     base = _verify_commit(root, diff_base)
     changed = _changed_relpaths(root, base)
-    violations: list[str] = []
+    violations = _marketplace_version_violations(root)
     notes: list[str] = []
     changed_packages = _changed_packages(changed)
     if changed_packages or _root_plugin_manifest_changed(changed):
